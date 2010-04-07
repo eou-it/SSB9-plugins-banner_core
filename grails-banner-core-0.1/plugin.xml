@@ -1,0 +1,28 @@
+<plugin name='banner-core' version='0.1' grailsVersion='1.2.0 &gt; *'>
+  <author>SunGard Higher Education</author>
+  <authorEmail>horizon@sungardhe.com</authorEmail>
+  <title>Banner Core - Framework, Security, &amp; Foundation</title>
+  <description>\
+This plugin adds Spring Security (aka Acegi) and a custom 
+DataSource implementation (BannerDataSource) that together 
+provide for authentication and authorization based upon 
+Banner Security configuration. In addition, this plugin provides
+additional framework support (e.g., injecting CRUD methods into 
+    services) to facilitate development of Banner web applications.  
+</description>
+  <documentation>http://sungardhe.com/development/horizon/plugins/banner-core</documentation>
+  <resources>
+    <resource>BuildConfig</resource>
+    <resource>DataSource</resource>
+    <resource>UrlMappings</resource>
+    <resource>com.sungardhe.banner.security.AccessControlFilters</resource>
+    <resource>LoginController</resource>
+    <resource>LogoutController</resource>
+  </resources>
+  <dependencies>
+    <resolvers>
+      <resolver type='grailsPlugins' name='grailsPlugins' />
+    </resolvers>
+  </dependencies>
+  <behavior />
+</plugin>
