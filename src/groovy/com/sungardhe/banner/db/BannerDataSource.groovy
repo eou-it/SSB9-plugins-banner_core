@@ -65,6 +65,9 @@ public class BannerDataSource {
                 setRoles( oconn, user?.username, applicableAuthorities )
             }
         }
+        // Reset Oracle session plsql package state.
+        def sql = new Sql( conn )
+        sql.call( "{ call DBMS_SESSION.MODIFY_PACKAGE_STATE(2) }" ) // Constant DBMS_SESSION.REINITIALIZE = 2
         return new BannerConnection( conn, user?.username, this )  // Note that while an IDE may not like this, the delegate supports this type coersion
     }
     
