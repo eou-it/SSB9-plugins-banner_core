@@ -44,7 +44,7 @@ class BannerCoreGrailsPlugin {
     
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-            "grails-app/views/error.gsp"
+        "grails-app/views/error.gsp"
     ]
 
     def author = "SunGard Higher Education"
@@ -56,14 +56,15 @@ DataSource implementation (BannerDataSource) that together
 provide for authentication and authorization based upon 
 Banner Security configuration. In addition, this plugin provides
 additional framework support (e.g., injecting CRUD methods into 
-    services) to facilitate development of Banner web applications.  
+services, providing base test classes) to facilitate development of 
+Banner web applications.  
 '''
 
     def documentation = "http://sungardhe.com/development/horizon/plugins/banner-core"
     
 
     def doWithWebDescriptor = { xml ->
-        // TODO Implement additions to web.xml (optional), this event occurs before 
+        // no-op 
     }
     
 
@@ -97,6 +98,7 @@ additional framework support (e.g., injecting CRUD methods into
         basicAuthenticationEntryPoint( BasicProcessingFilterEntryPoint, application.classLoader ) {
             realmName = 'REST API Realm'
         }
+        
 
         basicExceptionTranslationFilter( ExceptionTranslationFilter, application.classLoader ) {
           authenticationEntryPoint = ref( 'basicAuthenticationEntryPoint' )
@@ -119,13 +121,13 @@ additional framework support (e.g., injecting CRUD methods into
     def doWithDynamicMethods = { ctx ->
         
         // inject CRUD methods into all services that have a this line: static defaultCrudMethods = true
-        application.serviceClasses.findAll {service ->
-            service.metaClass.theClass.metaClass.properties.find {p ->
+        application.serviceClasses.findAll { service ->
+            service.metaClass.theClass.metaClass.properties.find { p ->
                 ((p.name == "defaultCrudMethods") && (service.metaClass.theClass.defaultCrudMethods))
             }
-        }.each {domainManagedService ->
-            String serviceName = GrailsNameUtils.getPropertyName(domainManagedService.metaClass.theClass)
-            String domainName = serviceName.substring(0, serviceName.indexOf("Service"))
+        }.each { domainManagedService ->
+            String serviceName = GrailsNameUtils.getPropertyName( domainManagedService.metaClass.theClass )
+            String domainName = serviceName.substring( 0, serviceName.indexOf( "Service" ) )
 
             def domainClass = grailsApplication.domainClasses.find {
                 it.name.toLowerCase() == domainName.toLowerCase()
@@ -144,18 +146,15 @@ additional framework support (e.g., injecting CRUD methods into
     
 
     def doWithApplicationContext = { applicationContext ->
-        // TODO Implement post initialization spring config (optional)
+        // no-op
     }
     
 
     def onChange = { event ->
-        // TODO Implement code that is executed when any artefact that this plugin is
-        // watching is modified and reloaded. The event contains: event.source,
-        // event.application, event.manager, event.ctx, and event.plugin.
+        // no-op
     }
 
     def onConfigChange = { event ->
-        // TODO Implement code that is executed when the project configuration changes.
-        // The event is the same as for 'onChange'.
+        // no-op
     }
 }
