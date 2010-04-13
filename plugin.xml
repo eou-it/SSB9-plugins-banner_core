@@ -1,4 +1,4 @@
-<plugin name='banner-core' version='0.1' grailsVersion='1.2.0 &gt; *'>
+<plugin name='banner-core' version='0.1-SNAPSHOT' grailsVersion='1.2.0 &gt; *'>
   <author>SunGard Higher Education</author>
   <authorEmail>horizon@sungardhe.com</authorEmail>
   <title>Banner Core - Framework, Security, &amp; Foundation</title>
@@ -8,7 +8,8 @@ DataSource implementation (BannerDataSource) that together
 provide for authentication and authorization based upon 
 Banner Security configuration. In addition, this plugin provides
 additional framework support (e.g., injecting CRUD methods into 
-    services) to facilitate development of Banner web applications.  
+services, providing base test classes) to facilitate development of 
+Banner web applications.  
 </description>
   <documentation>http://sungardhe.com/development/horizon/plugins/banner-core</documentation>
   <resources>
@@ -20,6 +21,8 @@ additional framework support (e.g., injecting CRUD methods into
     <resource>LogoutController</resource>
   </resources>
   <dependencies>
+    <plugin name='acegi' version='0.5.2' />
+    <plugin name='functional-test' version='1.2.7' />
     <resolvers>
       <resolver type='grailsPlugins' name='grailsPlugins' />
     </resolvers>
