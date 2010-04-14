@@ -19,7 +19,7 @@ import org.springframework.security.GrantedAuthorityImpl
 import org.apache.log4j.Logger
 import java.sql.SQLException
 import groovy.sql.Sql
-import com.sungardhe.banner.db.BannerConnection
+import com.sungardhe.banner.db.BannerDS
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import oracle.jdbc.pool.OracleDataSource
 

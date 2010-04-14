@@ -14,7 +14,7 @@
 // You must create a small configuration file that contains your own specific  
 // configuration (e.g., URIs, usernames, etc.) and that resides at the location specified here:
 
-grails.config.locations = [ "file:${userHome}/.grails/${appName}-local-config.groovy"]
+grails.config.locations = [ "file:${userHome}/.grails/banner_on_grails-local-config.groovy"]
 
 /* ***************************** EXAMPLE local file ******************************
 def username = "banproxy"

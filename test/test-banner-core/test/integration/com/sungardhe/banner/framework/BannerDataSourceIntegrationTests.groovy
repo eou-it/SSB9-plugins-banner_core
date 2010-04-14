@@ -11,7 +11,7 @@
  ****************************************************************************** */
 package com.sungardhe.banner.framework
 
-import com.sungardhe.banner.db.BannerDataSource
+import com.sungardhe.banner.db.BannerDS as BannerDataSource
 import com.sungardhe.banner.db.BannerConnection
 
 import grails.test.GrailsUnitTestCase

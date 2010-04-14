@@ -11,13 +11,18 @@
  ****************************************************************************** */
 package com.sungardhe.banner.db
 
+
 import com.sungardhe.banner.security.FormContext
 import com.sungardhe.banner.security.BannerGrantedAuthority
+
 import groovy.sql.Sql
-import javax.sql.DataSource
+
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.CallableStatement
+
+import javax.sql.DataSource
+
 import oracle.jdbc.OracleConnection
 
 import org.apache.commons.dbcp.BasicDataSource
@@ -26,11 +31,18 @@ import org.springframework.security.GrantedAuthority
 import org.springframework.security.context.SecurityContextHolder
 
 
+// This class was renamed from the more desirable 'BannerDataSource' as doing so 
+// circumvented 'can not resolve class' issues when running applications using this plugin. 
+// It is not currently understood why the BannerDataSource naming was problematic.
+// To reduce confusion, you may want to import this class using:
+//     import com.sungardhe.banner.db.BannerDS as BannerDataSource
+// TODO: Investigate why BannerDataSource naming causes 'can not resolve class' while BannerDS works.
+
 /**
  * A dataSource that proxies connections, sets roles needed for the current request, 
  * and invokes p_commit and p_rollback.
  **/
-public class BannerDataSource {
+public class BannerDS {
 
     // Delegates all methods not implemented here, to the underlying dataSource injected via Spring.
     @Delegate
@@ -45,14 +57,14 @@ public class BannerDataSource {
      * Returns a proxied connection for the current logged in user, from the underlying connection pool.
      * In addition to proxying the connection, appropriate password protected roles are unlocked
      * (based upon the configuration within govurol).
-     * */
+     **/
     public Connection getConnection() throws SQLException {
-        log.trace "in BannerDataSource.getConnection() -- going to delegate to underlying dataSource"
+        log.trace "in BannerDS.getConnection() -- going to delegate to underlying dataSource"
 
         Connection conn = underlyingDataSource.getConnection()
         OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
 
-        log.trace "in BannerDataSource.getConnection() -- have attained connection ${oconn} from underlying dataSource"
+        log.trace "in BannerDS.getConnection() -- have attained connection ${oconn} from underlying dataSource"
 
         // We'll proxy and set roles on the underlying Oracle connection before wrapping it in
         // the BannerConnection
@@ -96,7 +108,7 @@ public class BannerDataSource {
      * will be proxied (this method should not be used to explicitly pass the username and password).
      * Note that this method does NOT set password protected roles, as it is intended solely for authentication
      * and not authorization. Subsequent calls to getConnection() method will unlock roles as appropriate.
-     * */
+     **/
     public Connection getUnproxiedConnection() {
         Connection conn = underlyingDataSource.getConnection()
         OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
@@ -130,7 +142,7 @@ public class BannerDataSource {
 
 
     private proxy( OracleConnection oconn, userName ) {
-        log.trace "BannerDataSource.proxyConnection invoked with $oconn, $userName"
+        log.trace "BannerDS.proxyConnection invoked with $oconn, $userName"
 
         Properties properties = new Properties()
         // Oracle bug 4689310 precludes setting the userName and password the 'right' way (per Oracle documentation)
@@ -143,7 +155,7 @@ public class BannerDataSource {
         properties.put( OracleConnection.PROXY_USER_NAME, ("${userName}" as String) )
 
         oconn.openProxySession( OracleConnection.PROXYTYPE_USER_NAME, properties )
-        log.trace "in BannerDataSource.proxyConnection - proxied connection for $userName and connection $oconn"
+        log.trace "in BannerDS.proxyConnection - proxied connection for $userName and connection $oconn"
     }
 
 
@@ -151,7 +163,7 @@ public class BannerDataSource {
         if (!grantedAuthorities) return
 
         List formContext = FormContext.get()
-        log.debug "BannerDataSource has retrieved the FormContext value: $formContext"
+        log.debug "BannerDS has retrieved the FormContext value: $formContext"
         log.debug "The user's granted authorities are $grantedAuthorities*.authority" // TODO remove logging of authorities, or log only in Test environment
 
         List applicableAuthorities = []
@@ -168,9 +180,9 @@ public class BannerDataSource {
         log.debug "Applicable roles are ${applicableAuthorities*.authority}" // TODO remove logging of authorities, or log only in Test environment
 
         try {
-            log.trace "BannerDataSource.setRoles - will unlock roles for the connection proxied for $proxiedUserName"
+            log.trace "BannerDS.setRoles - will unlock roles for the connection proxied for $proxiedUserName"
             applicableAuthorities?.each { auth -> unlockRole(oconn, (BannerGrantedAuthority) auth) }
-            log.trace "BannerDataSource.setRoles unlocked roles for the connection proxied for $proxiedUserName"
+            log.trace "BannerDS.setRoles unlocked roles for the connection proxied for $proxiedUserName"
         }
         catch (e) {
             //if we cannot unlock a role, abort the proxy session and rollback
@@ -194,13 +206,14 @@ public class BannerDataSource {
         Sql db = new Sql( conn )
         try {
             String stmt = "set role \"${bannerAuth.roleName}\" identified by \"${bannerAuth.bannerPassword}\""
-            log.debug "BannerDataSource.unlockRole will now execute $stmt"
+            log.debug "BannerDS.unlockRole will now execute $stmt"
             db.execute(stmt);
-            log.debug "BannerDataSource.unlockRole executed $stmt"
+            log.debug "BannerDS.unlockRole executed $stmt"
         }
         finally {
             // Note: Don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
         }
     }
+
 }
 

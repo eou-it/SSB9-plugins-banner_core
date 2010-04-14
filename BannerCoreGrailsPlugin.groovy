@@ -17,8 +17,8 @@ import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
 import org.codehaus.groovy.grails.plugins.springsecurity.GrailsAccessDeniedHandlerImpl
 
-import com.sungardhe.banner.db.BannerDataSource
 import com.sungardhe.banner.security.BannerAuthenticationProvider
+import com.sungardhe.banner.db.BannerDS
 
 import org.springframework.beans.factory.config.MapFactoryBean
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
@@ -40,7 +40,7 @@ class BannerCoreGrailsPlugin {
     def grailsVersion = "1.2.0 > *"
     
     // the other plugins this plugin depends on
-    def dependsOn = [ acegi: "0.5.2", 'functional-test': "1.2.7" ]
+    def dependsOn = [ acegi: "0.5.2" ]
     
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
@@ -48,8 +48,8 @@ class BannerCoreGrailsPlugin {
     ]
 
     def author = "SunGard Higher Education"
-    def authorEmail = "horizon@sungardhe.com"
-    def title = "Banner Core - Framework, Security, & Foundation"
+    def authorEmail = "horizon-support@sungardhe.com"
+    def title = "Banner Core Framework and Security Plugin"
     def description = '''\\
 This plugin adds Spring Security (aka Acegi) and a custom 
 DataSource implementation (BannerDataSource) that together 
@@ -70,7 +70,7 @@ Banner web applications.
 
     def doWithSpring = {
         
-        underlyingDataSource( BasicDataSource, application.classLoader ) {
+        underlyingDataSource( BasicDataSource ) {
             maxActive = 5
             maxIdle = 2
             defaultAutoCommit = "false"
@@ -78,36 +78,36 @@ Banner web applications.
         }
 
 
-        nativeJdbcExtractor( NativeJdbcExtractor, application.classLoader )
+        nativeJdbcExtractor( NativeJdbcExtractor )
 
-        authenticationDataSource( OracleDataSource, application.classLoader )
+        authenticationDataSource( OracleDataSource )
 
 
-        dataSource( BannerDataSource, application.classLoader ) {
+        dataSource( BannerDS ) {
             underlyingDataSource = underlyingDataSource
             nativeJdbcExtractor = nativeJdbcExtractor
         }
 
 
-        bannerAuthenticationProvider( BannerAuthenticationProvider, application.classLoader ) {
+        bannerAuthenticationProvider( BannerAuthenticationProvider ) {
             dataSource = dataSource
             authenticationDataSource = authenticationDataSource
         }
 
 
-        basicAuthenticationEntryPoint( BasicProcessingFilterEntryPoint, application.classLoader ) {
+        basicAuthenticationEntryPoint( BasicProcessingFilterEntryPoint ) {
             realmName = 'REST API Realm'
         }
         
 
-        basicExceptionTranslationFilter( ExceptionTranslationFilter, application.classLoader ) {
+        basicExceptionTranslationFilter( ExceptionTranslationFilter ) {
           authenticationEntryPoint = ref( 'basicAuthenticationEntryPoint' )
           accessDeniedHandler = ref( 'accessDeniedHandler' )
           portResolver = ref( 'portResolver' )
         }
 
 
-        springSecurityFilterChain( FilterChainProxy, application.classLoader ) {
+        springSecurityFilterChain( FilterChainProxy ) {
           filterInvocationDefinitionSource = """
                CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
                PATTERN_TYPE_APACHE_ANT
