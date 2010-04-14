@@ -18,7 +18,7 @@ import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryB
 import org.codehaus.groovy.grails.plugins.springsecurity.GrailsAccessDeniedHandlerImpl
 
 import com.sungardhe.banner.security.BannerAuthenticationProvider
-import com.sungardhe.banner.db.BannerDS
+import com.sungardhe.banner.db.BannerDS as BannerDataSource
 
 import org.springframework.beans.factory.config.MapFactoryBean
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
@@ -83,7 +83,7 @@ Banner web applications.
         authenticationDataSource( OracleDataSource )
 
 
-        dataSource( BannerDS ) {
+        dataSource( BannerDataSource ) {
             underlyingDataSource = underlyingDataSource
             nativeJdbcExtractor = nativeJdbcExtractor
         }
