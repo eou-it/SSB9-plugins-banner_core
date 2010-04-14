@@ -156,6 +156,5 @@ log4j = {
 // connection is attained and the user has the necessary role, the role is enabled 
 // for that user and Banner object. 
 formControllerMap = [
-    'interest'                          : [ 'STVINTS' ],
-    'dummyController'                   : [ 'ANY_FORM', 'ANOTHER_FORM' ]
+    'foo' : [ 'STVCOLL' ]
 ]

@@ -19,10 +19,6 @@ security {
 	// see DefaultSecurityConfig.groovy for all settable/overridable properties
 
 	active = true
-
-//	loginUserDomainClass = "com.sungardhe.banner.security.User"
-//	authorityDomainClass = "com.sungardhe.banner.security.Role"
-
 	useRequestMapDomainClass = false
 
     requestMapString = """
@@ -37,7 +33,7 @@ security {
       /images/**=IS_AUTHENTICATED_ANONYMOUSLY
       /plugins/**=IS_AUTHENTICATED_ANONYMOUSLY
       /errors/**=IS_AUTHENTICATED_ANONYMOUSLY
-      /interest/**=ROLE_STVINTS_BAN_DEFAULT_M
+      /foo/**=ROLE_STVINTS_BAN_DEFAULT_M
       /**=ROLE_ANY_FORM_BAN_DEFAULT_M
     """
     

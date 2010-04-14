@@ -20,8 +20,7 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguratio
 dataSource {
     configClass = GrailsAnnotationConfiguration.class
     dialect = "org.hibernate.dialect.Oracle10gDialect"
-    loggingSql = true
-        
+    loggingSql = true       
 }
 
 
