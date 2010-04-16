@@ -34,8 +34,9 @@ import org.springframework.security.util.FilterChainProxy
 class BannerCoreGrailsPlugin {
     
     // the plugin version
-    def version = "0.1-SNAPSHOT" // TODO: Remove -SNAPSHOT once stable
-    
+    def groupId = 'com.sungardhe.horizon'
+    def version = "0.1-SNAPSHOT" // We'll use SNAPSHOT during development, to put a timestamp on the artifact
+
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.2.0 > *"
     
