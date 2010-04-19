@@ -28,12 +28,12 @@
     <repository>
       <id>releases</id>
       <name>SunGardHE Internal Repository for Application Releases</name>
-      <url>http://admin:admin22@localhost:8081/nexus/content/repositories/releases/</url>
+      <url>http://admin:admin22@m038083.sungardhe.com:8081/nexus/content/repositories/releases/</url>
     </repository>
     <snapshotRepository>
       <id>snapshots</id>
       <name>SunGardHE Internal Repository for Application/Plugin Snapshots</name>
-      <url>http://admin:admin22@localhost:8081/nexus/content/repositories/snapshots/</url>
+      <url>http://admin:admin22@m038083.sungardhe.com:8081/nexus/content/repositories/snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
 </project>
