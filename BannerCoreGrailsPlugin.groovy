@@ -33,9 +33,12 @@ import org.springframework.security.util.FilterChainProxy
  **/
 class BannerCoreGrailsPlugin {
     
-    // the plugin version
-    def groupId = 'com.sungardhe.horizon'
-    def version = "0.1-SNAPSHOT" // We'll use SNAPSHOT during development, to put a timestamp on the artifact
+    // Note: the groupId 'should' be used when deploying this plugin via the 'grails maven-deploy --repository=snapshots' command,
+    // however it is not being picked up.  Consequently, a pom.xml file is added to the root directory with the correct groupId
+    // and will be removed when the maven-publisher plugin correctly sets the groupId based on the following field.
+    String groupId = "com.sungardhe"
+    
+    String version = "0.1-SNAPSHOT" // We'll use SNAPSHOT during development, to put a timestamp on the artifact
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.2.0 > *"
@@ -50,7 +53,7 @@ class BannerCoreGrailsPlugin {
 
     def author = "SunGard Higher Education"
     def authorEmail = "horizon-support@sungardhe.com"
-    def title = "Banner Core Framework and Security Plugin"
+    def title = "Banner Core Framework Plugin"
     def description = '''\\
 This plugin adds Spring Security (aka Acegi) and a custom 
 DataSource implementation (BannerDataSource) that together 

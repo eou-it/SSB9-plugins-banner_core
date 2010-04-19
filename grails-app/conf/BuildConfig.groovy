@@ -9,10 +9,22 @@ grails.project.dependency.resolution = {
         // excludes 'ehcache'
     }
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
+    
+    
+    grails.project.dependency.distribution = {
+         localRepository = ""
+         remoteRepository( id:"snapshots", url:"http://m038083.sungardhe.com:8081/nexus/content/repositories/snapshots")
+         remoteRepository( id:"releases", url:"http://m038083.sungardhe.com:8081/nexus/content/repositories/releases") {
+             authentication  username:'deployment', password:'deployment123'
+         }
+    }
+    
+    
     repositories {        
         grailsPlugins()
         grailsHome()
-
+        grailsCentral() 
+        
         // uncomment the below to enable remote dependency resolution
         // from public Maven repositories
         //mavenLocal()
