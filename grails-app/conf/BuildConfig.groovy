@@ -3,22 +3,24 @@ grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir	= "target/test-reports"
 //grails.project.war.file = "target/${appName}-${appVersion}.war"
 grails.project.dependency.resolution = {
+    
     // inherit Grails' default dependencies
     inherits( "global" ) {
         // uncomment to disable ehcache
         // excludes 'ehcache'
     }
+    
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     
-    
-    grails.project.dependency.distribution = {
+    distribution = {
          localRepository = ""
-         remoteRepository( id:"snapshots", url:"http://m038083.sungardhe.com:8081/nexus/content/repositories/snapshots")
-         remoteRepository( id:"releases", url:"http://m038083.sungardhe.com:8081/nexus/content/repositories/releases") {
-             authentication  username:'deployment', password:'deployment123'
+         remoteRepository( id:"snapshots", url:"http://m038083.sungardhe.com:8081/nexus/content/repositories/snapshots") {
+              authentication  username:'admin', password:'admin123'
          }
-    }
-    
+         remoteRepository( id:"releases", url:"http://m038083.sungardhe.com:8081/nexus/content/repositories/releases") {
+             authentication  username:'admin', password:'admin123'
+         }
+    }    
     
     repositories {        
         grailsPlugins()
@@ -34,6 +36,7 @@ grails.project.dependency.resolution = {
         //mavenRepo "http://download.java.net/maven/2/"
         //mavenRepo "http://repository.jboss.com/maven2/"
     }
+    
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
 
