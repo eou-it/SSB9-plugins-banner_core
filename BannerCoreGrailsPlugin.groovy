@@ -13,11 +13,14 @@
 import oracle.jdbc.pool.OracleDataSource
 
 import org.apache.commons.dbcp.BasicDataSource
+import org.apache.commons.logging.LogFactory
 
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
 import org.codehaus.groovy.grails.plugins.springsecurity.GrailsAccessDeniedHandlerImpl
 
 import com.sungardhe.banner.security.BannerAuthenticationProvider
+import com.sungardhe.banner.service.DomainManagementMethodsInjector
 import com.sungardhe.banner.db.BannerDS as BannerDataSource
 
 import org.springframework.beans.factory.config.MapFactoryBean
@@ -81,35 +84,29 @@ Banner web applications.
             // Note: url, username, password, and driver must be configured in a local configuration file: home-dir/.grails/banner_on_grails-local-config.groovy
         }
 
-
         nativeJdbcExtractor( NativeJdbcExtractor )
 
         authenticationDataSource( OracleDataSource )
-
 
         dataSource( BannerDataSource ) {
             underlyingDataSource = underlyingDataSource
             nativeJdbcExtractor = nativeJdbcExtractor
         }
 
-
         bannerAuthenticationProvider( BannerAuthenticationProvider ) {
             dataSource = dataSource
             authenticationDataSource = authenticationDataSource
         }
 
-
         basicAuthenticationEntryPoint( BasicProcessingFilterEntryPoint ) {
             realmName = 'REST API Realm'
         }
         
-
         basicExceptionTranslationFilter( ExceptionTranslationFilter ) {
           authenticationEntryPoint = ref( 'basicAuthenticationEntryPoint' )
           accessDeniedHandler = ref( 'accessDeniedHandler' )
           portResolver = ref( 'portResolver' )
         }
-
 
         springSecurityFilterChain( FilterChainProxy ) {
           filterInvocationDefinitionSource = """
@@ -125,19 +122,17 @@ Banner web applications.
     def doWithDynamicMethods = { ctx ->
         
         // inject CRUD methods into all services that have a this line: static defaultCrudMethods = true
-        application.serviceClasses.findAll { service ->
-            service.metaClass.theClass.metaClass.properties.find { p ->
-                ((p.name == "defaultCrudMethods") && (service.metaClass.theClass.defaultCrudMethods))
-            }
-        }.each { domainManagedService ->
-            String serviceName = GrailsNameUtils.getPropertyName( domainManagedService.metaClass.theClass )
-            String domainName = serviceName.substring( 0, serviceName.indexOf( "Service" ) )
+        application.serviceClasses.each { serviceArtefact ->
+            def needsCRUD = GCU.getStaticPropertyValue( serviceArtefact.clazz, "defaultCrudMethods" )
+            if (needsCRUD) {
+                String serviceSimpleName = serviceArtefact.clazz.simpleName
+                String domainSimpleName = serviceSimpleName.substring( 0, serviceSimpleName.indexOf( "Service" ) )
 
-            def domainClass = grailsApplication.domainClasses.find {
-                it.name.toLowerCase() == domainName.toLowerCase()
+                def domainArtefact = application.domainClasses.find {
+                    it.clazz.simpleName.toLowerCase() == domainSimpleName.toLowerCase()
+                }
+                DomainManagementMethodsInjector.injectDataManagement( serviceArtefact.clazz, domainArtefact.clazz )
             }
-
-            DomainManagementMethodsInjector.injectDataManagement(domainManagedService, domainClass.metaClass.theClass)
         }
         
         // inject the logger into every class (Grails only injects this into some artifacts)
@@ -157,6 +152,7 @@ Banner web applications.
     def onChange = { event ->
         // no-op
     }
+    
 
     def onConfigChange = { event ->
         // no-op

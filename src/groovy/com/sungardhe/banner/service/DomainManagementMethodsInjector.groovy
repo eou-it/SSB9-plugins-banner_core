@@ -54,14 +54,15 @@ public class DomainManagementMethodsInjector {
      * Controllers should also catch, after ApplicationException, any exception (in case services provide 
      * CRUD implementations that fail to wrap all exceptions).
      */
-    public static void injectDataManagement( serviceInstance, domainClass ) {
+    public static void injectDataManagement( serviceClassOrInstance, domainClass ) {
+        def serviceClass = (serviceClassOrInstance instanceof Class) ? serviceClassOrInstance : serviceClassOrInstance.class
 
-        def log = Logger.getLogger( serviceInstance.class.name )
-        
+        def log = Logger.getLogger( serviceClass.name )        
         String domainSimpleName = domainClass.simpleName
 
-        if (!serviceInstance.metaClass.respondsTo( serviceInstance, "create" )) {
-            serviceInstance.metaClass.create = { domainObjectOrParams ->
+        if (!serviceClass.metaClass.respondsTo( serviceClass, "create" )) {
+
+            serviceClass.metaClass.create = { domainObjectOrParams ->
                 log.trace "${domainSimpleName}Service.create invoked with $domainObjectOrParams"
                 try {
                     def domainObject = assignOrInstantiate( domainClass, domainObjectOrParams )
@@ -84,8 +85,8 @@ public class DomainManagementMethodsInjector {
             }
         }
 
-        if (!serviceInstance.metaClass.respondsTo( serviceInstance, "update" )) {
-            serviceInstance.metaClass.update = { domainObjectOrParams ->
+        if (!serviceClass.metaClass.respondsTo( serviceClass, "update" )) {
+            serviceClass.metaClass.update = { domainObjectOrParams ->
                 log.trace "${domainSimpleName}Service.update invoked with $domainObjectOrParams"
                 def content
                 if (domainObjectOrParams instanceof Map) {
@@ -121,8 +122,8 @@ public class DomainManagementMethodsInjector {
             }
         }
 
-        if (!(serviceInstance.metaClass.respondsTo( serviceInstance, "delete" ) || serviceInstance.metaClass.respondsTo( serviceInstance, "remove" ))) {
-            serviceInstance.metaClass.delete = { id ->
+        if (!(serviceClass.metaClass.respondsTo( serviceClass, "delete" ) || serviceClass.metaClass.respondsTo( serviceClass, "remove" ))) {
+            serviceClass.metaClass.delete = { id ->
                 log.trace "${domainSimpleName}Service.delete invoked with $id"
                 def domainObject
                 try {
@@ -139,8 +140,8 @@ public class DomainManagementMethodsInjector {
             }
         } 
                 
-        if (!serviceInstance.metaClass.respondsTo( serviceInstance, "read" )) {
-            serviceInstance.metaClass.read = { id ->
+        if (!serviceClass.metaClass.respondsTo( serviceClass, "read" )) {
+            serviceClass.metaClass.read = { id ->
                 try {
                     fetch( domainClass, id, log )
                 } catch (e) {
@@ -151,8 +152,8 @@ public class DomainManagementMethodsInjector {
             }  
         }
         
-        if (!serviceInstance.metaClass.respondsTo( serviceInstance, "get" )) { // TODO: remove this (refactor controllers that use it to instead use 'read')
-            serviceInstance.metaClass.get = { id ->
+        if (!serviceClass.metaClass.respondsTo( serviceClass, "get" )) { // TODO: remove this (refactor controllers that use it to instead use 'read')
+            serviceClass.metaClass.get = { id ->
                 try {
                     fetch( domainClass, id, log )
                 } catch (e) {
@@ -163,8 +164,8 @@ public class DomainManagementMethodsInjector {
             }  
         } 
         
-        if (!serviceInstance.metaClass.respondsTo( serviceInstance, 'list' )) {
-            serviceInstance.metaClass.list = { args ->
+        if (!serviceClass.metaClass.respondsTo( serviceClass, 'list' )) {
+            serviceClass.metaClass.list = { args ->
                 try {
                     domainClass.list( args )
                 } catch (e) {
@@ -175,8 +176,8 @@ public class DomainManagementMethodsInjector {
             }
         }   
         
-        if (!serviceInstance.metaClass.respondsTo( serviceInstance, 'count' )) {
-            serviceInstance.metaClass.count = { 
+        if (!serviceClass.metaClass.respondsTo( serviceClass, 'count' )) {
+            serviceClass.metaClass.count = { 
                 try {
                     domainClass.count()
                 } catch (e) {

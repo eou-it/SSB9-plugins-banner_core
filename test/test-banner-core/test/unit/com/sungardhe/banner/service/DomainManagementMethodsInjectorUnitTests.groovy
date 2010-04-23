@@ -29,7 +29,7 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     
     protected void setUp() {
         super.setUp()
-        
+        DomainManagementMethodsInjector.injectDataManagement( NonOverridingTestService, MyMock )        
         myService = new NonOverridingTestService() // all methods are the injected ones
         
         // This test injects 'test' callback handlers to test a service's ability to receive pre/post create/update/delete 
@@ -41,13 +41,20 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         injectTestCallbacks( myService )  
         
         mockDomain( MyMock, [ new MyMock( name: 'First' ), new MyMock( name: 'Second' ) ] )
-        DomainManagementMethodsInjector.injectDataManagement( myService, MyMock )
+    }
+    
+    
+    void testInjectionUsingInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
+        def createdDomain = myService.create( newMyMockParams() )
+        assertNotNull createdDomain?.id 
     }
     
     
     void testCreateCallbacks() { 
         assertFalse serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
-        myService.create( new MyMock( name: 'createMe' ) )
+        myService.create( newMyMockParams() )
         assertTrue serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
     }
     
@@ -211,6 +218,13 @@ class OverridingDeleteTestService {
     def delete( long id ) {
         deleteInvoked = true
     }
+}
+
+
+class AnotherTestService {
+
+    boolean transactional = true       // Grails won't find this service, so this is here 'just because services should have this'
+    static defaultCrudMethods = true   // we'll need to inject this explicitly here, so this is 'just to follow our convention'    
     
 }
 

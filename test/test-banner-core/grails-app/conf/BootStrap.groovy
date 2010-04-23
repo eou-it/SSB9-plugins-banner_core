@@ -37,9 +37,6 @@ class BootStrap {
         dataSource.setTestWhileIdle( false )
         dataSource.setTestOnReturn( false )
         dataSource.setValidationQuery( "select 1 from dual" )
-
-        // Inject common crud methods on all services with that have the appropriate flag set
-        injectCrudMethods()
     }
 
 
@@ -47,21 +44,4 @@ class BootStrap {
         // no-op
     }
     
-
-    private void injectCrudMethods() {
-        grailsApplication.serviceClasses.findAll { service ->
-            service.metaClass.theClass.metaClass.properties.find { p ->
-                ((p.name == "defaultCrudMethods") && (service.metaClass.theClass.defaultCrudMethods))
-            }
-        }.each { domainManagedService ->
-            String serviceName = GrailsNameUtils.getPropertyName( domainManagedService.metaClass.theClass )
-            String domainName = serviceName.substring( 0, serviceName.indexOf( "Service" ) )
-
-            def domainClass = grailsApplication.domainClasses.find {
-                it.name.toLowerCase() == domainName.toLowerCase()
-            }
-
-            DomainManagementMethodsInjector.injectDataManagement( domainManagedService, domainClass.metaClass.theClass )
-        }
-    }
 }
