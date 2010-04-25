@@ -41,10 +41,16 @@ class BannerCoreGrailsPlugin {
     // and will be removed when the maven-publisher plugin correctly sets the groupId based on the following field.
     String groupId = "com.sungardhe"
     
-    String version = "0.1-SNAPSHOT" // We'll use SNAPSHOT during development, to put a timestamp on the artifact
+    // Note: Using '0.1-SNAPSHOT' (to put a timestamp on the artifact) is not used due to GRAILS-5624 see: http://jira.codehaus.org/browse/GRAILS-5624
+    // Until this is resolved, Grails application's that use a SNAPSHOT plugin do not check for a newer plugin release, so that the 
+    // only way we'd be able to upgrade a project would be to clear the .grails and .ivy2 cache to force a fetch from our Nexus server. 
+    // Consequently, we'll use 'RELEASES' so that each project can explicitly identify the needed plugin version. Using RELEASES provides 
+    // more control on 'when' a grails app is updated to use a newer plugin version, and therefore 'could' allow delayed testing within those apps
+    // independent of deploying a new plugin build to Nexus. 
+    String version = "0.1.1" 
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "1.2.0 > *"
+    def grailsVersion = "1.3.0 > *"
     
     // the other plugins this plugin depends on
     def dependsOn = [ acegi: "0.5.2" ]
