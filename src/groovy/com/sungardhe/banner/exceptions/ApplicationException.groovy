@@ -41,10 +41,12 @@ import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureExcep
  **/
 class ApplicationException extends RuntimeException {    
     
-    def    wrappedException
-    String defaultResourceCode = "default.internal.error" // Only used if a closure (see below) is not found for the specific wrapped exception
-    String entityClassName
-    def    id
+    def    wrappedException    // a checked or runtime exception being wrapped
+    def    sqlException        // set if the wrappedException is either a SQLException or wraps a SQLException
+    String friendlyName        // a friendly name for the exception - exposed as 'type' property               
+    String resourceCode = "default.internal.error" // usually set based upon a specific wrappedException, but defaulted as well
+    String entityClassName    // the fully qualified class name for the associated domain model
+    def    id                 // optional, the id of the model if applicable
     
     def log = Logger.getLogger( ApplicationException.name )
 
@@ -62,7 +64,7 @@ class ApplicationException extends RuntimeException {
             default       : this.entityClassName = entityClassOrName.toString(); 
                             log.warn "ApplicationException was given an entityClassOrName of type ${entityClassOrName.class}"
         }    
-        wrappedException = e
+        wrapException( e )
     }
     
     
@@ -85,6 +87,11 @@ class ApplicationException extends RuntimeException {
     public ApplicationException( entityClassOrName, id, Throwable e ) {
         this( entityClassOrName, e )
         this.id = id
+    }
+    
+    
+    private def wrapException( e ) {
+        
     }
         
     
@@ -264,7 +271,7 @@ class ApplicationException extends RuntimeException {
     } 
     
     
-    // ----------------------- Private Methods ---------------------
+    // ------------------------------------ Private Methods -----------------------------------------
     
     
     // We have a constraint exception that requires additional processing to extract desired error messages.
@@ -360,7 +367,7 @@ class ApplicationException extends RuntimeException {
      * @param message the exception message that may contain a constraint name
      * @return String the constraint name or null if one couldn't be identified
      */
-    public String getConstraintName( String message ) {
+    private String getConstraintName( String message ) {
         log.debug( "ExceptionMapper given exception message: " + message );
         
         int templateStartPosition = message.indexOf( "constraint (" )
