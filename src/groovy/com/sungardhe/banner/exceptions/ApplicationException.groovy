@@ -42,7 +42,8 @@ import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureExcep
 class ApplicationException extends RuntimeException {    
     
     def    wrappedException    // a checked or runtime exception being wrapped
-    def    sqlException        // set if the wrappedException is either a SQLException or wraps a SQLException
+    SQLException sqlException  // set if the wrappedException is either a SQLException or wraps a SQLException
+    def sqlExceptionErrorCode  // set if there is an underlying SQLException
     String friendlyName        // a friendly name for the exception - exposed as 'type' property               
     String resourceCode = "default.internal.error" // usually set based upon a specific wrappedException, but defaulted as well
     String entityClassName    // the fully qualified class name for the associated domain model
@@ -91,7 +92,11 @@ class ApplicationException extends RuntimeException {
     
     
     private def wrapException( e ) {
-        
+        wrappedException = e
+        sqlException = extractSQLException( e )
+        if (sqlException) {
+            sqlExceptionErrorCode = sqlException.getErrorCode()
+        }
     }
         
     
@@ -120,26 +125,30 @@ class ApplicationException extends RuntimeException {
         } else {
             mapToReturn = exceptionHandlers[ 'AnyOtherException' ]( message )
         }
-        (mapToReturn + [ success: false, underlyingErrorMessage: wrappedException.message ])
+        def underlyingErrorMessage = (sqlException ? sqlException.message : wrappedException.message)
+        (mapToReturn + [ success: false, underlyingErrorMessage: underlyingErrorMessage ])
     }
             
     
-    public String getType() {        
-        def name = wrappedException.class.simpleName
-        if (name == 'HibernateOptimisticLockingFailureException') {
-            name = 'OptimisticLockException'
-        } else if (name == 'DataIntegrityViolationException') {
-            if (wrappedException.getRootCause() instanceof EntityExistsException) {
-                name = 'EntityExistsException'
-            } else if (extractSQLException( wrappedException )) {
-                name = 'SQLException'
-            } else {
-                name = 'ConstraintException'
+    public String getType() {  
+        if (sqlException) {
+            friendlyName = 'SQLException'
+        } else {
+            def name = wrappedException.class.simpleName
+            if (name == 'HibernateOptimisticLockingFailureException') {
+                name = 'OptimisticLockException'
+            } else if (name == 'DataIntegrityViolationException') {
+                if (wrappedException.getRootCause() instanceof EntityExistsException) {
+                    name = 'EntityExistsException'
+                } else {
+                    name = 'ConstraintException'
+                }
+            } else if (name == 'UncategorizedDataAccessException') {
+                name = 'UnknownException'
             }
-        } else if (name == 'UncategorizedDataAccessException') {
-            name = 'UnknownException'
-        }
-        name
+            friendlyName = name
+        }    
+        friendlyName
     }   
     
     
@@ -218,10 +227,7 @@ class ApplicationException extends RuntimeException {
          },
         
         // This includes Banner API Exceptions. 
-        'SQLException': { localize ->
-            // Although the 'type' is SQLException, it may 'still' be wrapped inside another exception...
-            def sqlException = (wrappedException instanceof SQLException) ? wrappedException : extractSQLException( wrappedException )
-            
+        'SQLException': { localize ->             
             // We can't just return a map, since many exceptions fall into this category and require specialized processing
             createReturnMapForSQLException( sqlException, localize )
         },
@@ -250,36 +256,34 @@ class ApplicationException extends RuntimeException {
             
     
     public String toString() {
-        def response = "ApplicationException:[type=${this.getType()}, entityClassName=$entityClassName"
+        def stringRepresentation = "ApplicationException:[type=${getType()}, entityClassName=$entityClassName"
         if (id) { 
-            response = response + ", id= $id"
+            stringRepresentation = stringRepresentation + ", id= $id"
         }
         def errors = (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.each { error: it } : null)
         if (errors) {
-            response = response + ", errors='${errors.join( " ** ")}'"
+            stringRepresentation = stringRepresentation + ", errors='${errors.join( " ** ")}'"
         }
-         
-        def sqlException = (wrappedException instanceof SQLException) ? wrappedException : extractSQLException( wrappedException )
 
-        if (sqlException != null) {
-            response = response + ", wrappedSQLException(errorCode=${sqlException.errorCode}, message=${sqlException.message})"
+        if (sqlException) {
+            stringRepresentation = stringRepresentation + ", SQLException(errorCode=${sqlException.errorCode}, message=${sqlException.message})"
         } else {
-            response = response + ", wrappedException(message=${wrappedException?.message})"
+            stringRepresentation = stringRepresentation + ", wrappedException(message=${wrappedException?.message})"
         }
-        response = response + "]"
-        response
+        stringRepresentation = stringRepresentation + "]"
+        stringRepresentation
     } 
     
     
-    // ------------------------------------ Private Methods -----------------------------------------
+// ------------------------------------ Private Methods -----------------------------------------
     
     
     // We have a constraint exception that requires additional processing to extract desired error messages.
     // Banner API Exceptions are handled here. 
     private def createReturnMapForSQLException( sqlException, localize ) {
-        def type // used when creating an appropriate integrity constraint resourceCode
+        def constraintType // used when creating an appropriate integrity constraint resourceCode
         
-        switch (sqlException.getErrorCode()) {
+        switch (sqlExceptionErrorCode) {
             case 1 : // 'Unique Exception' 
                 log.error "A 'Unique' constraint exception was encountered that apparently was not \
                           caught as a validation constraint, for $entityClassName with id=$id", sqlException
@@ -295,9 +299,9 @@ class ApplicationException extends RuntimeException {
                          errors: null 
                        ]
             case 2291 :  
-                type = 'parentNotFound'  // handled below...                            
+                constraintType = 'parentNotFound'  // handled below...                            
             case 2292 : 
-                type = type ? type : 'childExists'
+                constraintType = constraintType ?: 'childExists'
                 
                 // This isn't necessarily an error -- some constraint exceptions will likely be expected... we'll log as an error (at least initially)
                 // so the logging has access to the exception...
@@ -305,7 +309,7 @@ class ApplicationException extends RuntimeException {
                            by adding a validation constraint to the $entityClassName with id $id", sqlException
 
                 String constraintName = getConstraintName( sqlException.message )                
-                def resourceCode = (constraintName) ? "$entityClassName.$type.$constraintName" : 'default.constraint.error.message' 
+                def resourceCode = (constraintName) ? "$entityClassName.$constraintType.$constraintName" : 'default.constraint.error.message' 
                                
                 return [ message: localize( code: resourceCode, 
                                             args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
@@ -342,7 +346,6 @@ class ApplicationException extends RuntimeException {
                          errors: sqlException.getMessage() // may be ugly...
                        ] 
         }
-        
     } 
         
     

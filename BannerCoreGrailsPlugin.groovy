@@ -47,7 +47,7 @@ class BannerCoreGrailsPlugin {
     // Consequently, we'll use 'RELEASES' so that each project can explicitly identify the needed plugin version. Using RELEASES provides 
     // more control on 'when' a grails app is updated to use a newer plugin version, and therefore 'could' allow delayed testing within those apps
     // independent of deploying a new plugin build to Nexus. 
-    String version = "0.1.1" 
+    String version = "0.1.2" 
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
@@ -79,7 +79,7 @@ Banner web applications.
     def doWithWebDescriptor = { xml ->
         // no-op 
     }
-    
+
 
     def doWithSpring = {
         
@@ -88,6 +88,10 @@ Banner web applications.
             maxIdle = 2
             defaultAutoCommit = "false"
             // Note: url, username, password, and driver must be configured in a local configuration file: home-dir/.grails/banner_on_grails-local-config.groovy
+        }
+        
+        sqlExceptionTranslator( org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator, 'Oracle' ) {
+            dataSource = dataSource
         }
 
         nativeJdbcExtractor( NativeJdbcExtractor )

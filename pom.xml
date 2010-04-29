@@ -21,19 +21,19 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.sungardhe</groupId>
   <artifactId>banner-core</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <packaging>zip</packaging>
   <description>Common Framework for Banner Modules</description>
   <distributionManagement>
-    <repository>
-      <id>releases</id>
-      <name>SunGardHE Internal Repository for Application Releases</name>
-      <url>http://m038083:8081/nexus/content/repositories/releases/</url>
-    </repository>
     <snapshotRepository>
       <id>snapshots</id>
       <name>SunGardHE Internal Repository for Application/Plugin Snapshots</name>
       <url>http://m038083:8081/nexus/content/repositories/snapshots/</url>
     </snapshotRepository>
+    <repository>
+      <id>releases</id>
+      <name>SunGardHE Internal Repository for Application Releases</name>
+      <url>http://m038083:8081/nexus/content/repositories/releases/</url>
+    </repository>
   </distributionManagement>
 </project>

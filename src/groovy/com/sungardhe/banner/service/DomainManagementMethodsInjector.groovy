@@ -42,6 +42,16 @@ public class DomainManagementMethodsInjector {
      * methods are injected) if the service responds to preCreate, postCreate, preUpdate, postUpdate, 
      * preDelete, or postDelete.
      * Services need not provide any of these callback handlers -- they are used only if exposed by the service.
+     *
+     * The create and update methods accept any of the following arguments:
+     * --> a domain model instance to be created or updated
+     * --> a 'params-like' map that contains entries representing the properties of the domain object to be created or updated
+     * --> a map that contains a key named 'domainModel' that contains a domain model instance to be created or updated
+     *
+     * Additional entries provided in a 'params' map that do not correspond to domain model properties will be ignored.
+     * Whether these additional entries are provided in either a 'params-like' map or map containing a domainModel field, 
+     * they will be supplied to the preCreate or preUpdate callbacks. They are not provided to the postCreate and 
+     * postUpdate callbacks, as these callbacks supply only the as-persisted domain model instance. 
      * 
      * The use of the abovementioned callbacks may allow use of these injected methods even when additional 
      * behavior is necessary.  If this isn't sufficient, the service can always provide it's own implementation
@@ -65,12 +75,12 @@ public class DomainManagementMethodsInjector {
             serviceClass.metaClass.create = { domainObjectOrParams ->
                 log.trace "${domainSimpleName}Service.create invoked with $domainObjectOrParams"
                 try {
+                    if (delegate.respondsTo( 'preCreate' )) delegate.preCreate( domainObjectOrParams )
+                    
                     def domainObject = assignOrInstantiate( domainClass, domainObjectOrParams )
                     assert domainObject.id == null                    
                     updateSystemFields( domainObject )
-                    
-                    if (delegate.respondsTo( 'preCreate' )) delegate.preCreate( domainObjectOrParams )
-                    
+println "XXXXXXXXXXXXXXXX domainObject = $domainObject and it's properties are ${domainObject.properties}"                                        
                     log.trace "${domainSimpleName}Service.create will save $domainObject"
                     def createdModel = domainObject.save( failOnError: true, flush: true )
                     
@@ -193,12 +203,16 @@ public class DomainManagementMethodsInjector {
     
     // ---------------------------- Private Methods -----------------------------------
     
-    
+
     private static def assignOrInstantiate( domainClass, domainObjectOrParams ) {
-        if (domainObjectOrParams.class == domainClass) {
+        if (!(domainObjectOrParams instanceof Map) && (domainObjectOrParams.class == domainClass)) {
             domainObjectOrParams
         } else if (domainObjectOrParams instanceof Map) {
-            domainClass.newInstance( domainObjectOrParams )
+            if (domainObjectOrParams.domainModel) {
+                assignOrInstantiate( domainClass, domainObjectOrParams.domainModel )
+            } else {
+                domainClass.newInstance( domainObjectOrParams )
+            }
         } else {
             throw new IllegalArgumentException( "${domainObjectOrParams.class} is not an instance of $domainClass}" )
         }

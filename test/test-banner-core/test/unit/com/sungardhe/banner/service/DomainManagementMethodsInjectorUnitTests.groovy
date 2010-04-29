@@ -23,9 +23,8 @@ import org.springframework.security.context.SecurityContextHolder
  **/
 class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     
-    def myService           // created in setUp method
-    List serviceCallbacks   // created in setUp method
-    
+    def myService           // assigned in setUp method
+    List serviceCallbacks   // assigned in setUp method
     
     protected void setUp() {
         super.setUp()
@@ -44,10 +43,34 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     }
     
     
-    void testInjectionUsingInstance() {
+    void testCreateUsingInstance() {
         def svc = new AnotherTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
-        def createdDomain = myService.create( newMyMockParams() )
+        def createdDomain = svc.create( new MyMock( newMyMockParams() ) )
+        assertNotNull createdDomain?.id 
+    }
+    
+    
+    void testCreateUsingParams() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
+        def createdDomain = svc.create( newMyMockParams() )
+        assertNotNull createdDomain?.id 
+    }
+    
+    
+    void testCreateUsingParamsFromModelProperties() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
+        def createdDomain = svc.create( new MyMock( newMyMockParams() ).properties ) // map will have a 'class' key, that can be confused with model.class
+        assertNotNull createdDomain?.id 
+    }
+    
+    
+    void testCreateWithMapHavingDomainModelKeyWithInstance() { 
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
+        def createdDomain = svc.create( [ domainModel: new MyMock( newMyMockParams() ), otherJunk: 'Some validation stuff maybe?' ] )
         assertNotNull createdDomain?.id 
     }
     
@@ -56,6 +79,14 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         assertFalse serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
         myService.create( newMyMockParams() )
         assertTrue serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
+    }
+    
+    
+    void testCreateMethodCallback() { 
+        def svc = new AnotherWithCallbacksTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
+        svc.create( newMyMockParams() )        
+        assertTrue svc.preCreateCalled
     }
     
         
@@ -122,7 +153,7 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     
     
     private Map newMyMockParams() {
-        [ name: "Test" ]
+        [ name: "Test" ] + [ someExtraInfoNeededForValidation: "I need this in my callback!" ]
     }
         
     
@@ -135,21 +166,23 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         service.metaClass.preCreate = { domainObjectOrParams -> 
             registerCallback 'preCreate'
             assertNull domainObjectOrParams.id
+            assertEquals "Test", domainObjectOrParams.name
+            assertEquals "I need this in my callback!", domainObjectOrParams['someExtraInfoNeededForValidation']
         }
-        service.metaClass.postCreate = { domainObjectOrParams -> 
+        service.metaClass.postCreate = { domainObject -> 
             registerCallback 'postCreate'
-            assertNotNull domainObjectOrParams.id
+            assertNotNull domainObject.id
         }
         service.metaClass.preUpdate = { domainObjectOrParams -> 
             registerCallback 'preUpdate'
         }
-        service.metaClass.postUpdate = { domainObjectOrParams -> 
+        service.metaClass.postUpdate = { domainObject -> 
             registerCallback 'postUpdate'
         }
         service.metaClass.preDelete = { domainObjectOrParams -> 
             registerCallback 'preDelete'
         }
-        service.metaClass.postDelete = { domainObjectOrParams -> 
+        service.metaClass.postDelete = { domainObject -> 
             registerCallback 'postDelete'
         }        
     }
@@ -225,6 +258,16 @@ class AnotherTestService {
 
     boolean transactional = true       // Grails won't find this service, so this is here 'just because services should have this'
     static defaultCrudMethods = true   // we'll need to inject this explicitly here, so this is 'just to follow our convention'    
-    
 }
 
+
+class AnotherWithCallbacksTestService {
+
+    boolean transactional = true       // Grails won't find this service, so this is here 'just because services should have this'
+    static defaultCrudMethods = true   // we'll need to inject this explicitly here, so this is 'just to follow our convention'    
+    boolean preCreateCalled = false
+    
+    def preCreate( map ) {
+        preCreateCalled = true
+    }
+}

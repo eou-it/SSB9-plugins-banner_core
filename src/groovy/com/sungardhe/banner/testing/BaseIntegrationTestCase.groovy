@@ -11,6 +11,7 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
+import com.sungardhe.banner.exceptions.*
 import com.sungardhe.banner.security.FormContext
 
 import grails.util.GrailsNameUtils
@@ -55,6 +56,11 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     def renderMap                     // Use this to look at the rendered map: MyController.metaClass.render = { Map map -> renderMap = map }
     def redirectMap                   // Use this to look at the rendered map: MyController.metaClass.redirect = { Map map -> redirectMap = map }
 
+
+/*    public localizer = { mapToLocalize ->
+        messageSource.getMessage( mapToLocalize )
+    }
+*/    
 
     /**
      * Performs a login for the standard 'grails_user' if necessary, and calls super.setUp(). 
@@ -112,6 +118,10 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     }
     
     
+    /**
+     * Convenience method to login a user if not already logged in. You may pass in a username and password, 
+     * or omit and accept the default 'grails_user' and 'u_pick_it'.
+     **/
     protected void loginIfNecessary( userName = "grails_user", password = "u_pick_it" ) {
         if (!SecurityContextHolder.getContext().getAuthentication()) {
             login userName, password
@@ -147,8 +157,8 @@ class BaseIntegrationTestCase extends GroovyTestCase {
             assertNotNull domainObj
             domainObj.save( failOnError:true, flush: true )
         } catch (e) {
-            e.printStackTrace()
-            fail "Could not save $domainObj due to ${e.message}"
+            def ae = new ApplicationException( domainObj.class, e )            
+            fail "Could not save $domainObj due to ${ae}"
         }
     }
 
