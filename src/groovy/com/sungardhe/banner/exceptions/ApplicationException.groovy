@@ -25,6 +25,7 @@ import org.apache.log4j.Logger
 import org.hibernate.StaleObjectStateException
 
 import org.springframework.dao.DataIntegrityViolationException as ConstraintException
+import org.springframework.jdbc.UncategorizedSQLException
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
 
 
@@ -351,7 +352,9 @@ class ApplicationException extends RuntimeException {
     
     // Extracts and returns a SQLException if present, else returns null. 
     private SQLException extractSQLException( Throwable e ) {
-        def SQLException sqlException
+        if (e instanceof UncategorizedSQLException) {
+            return e.getSQLException() 
+        }
         while (e != null && !(e instanceof SQLException)) {
             e = e.getCause()
         }

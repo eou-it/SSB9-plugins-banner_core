@@ -80,7 +80,6 @@ public class DomainManagementMethodsInjector {
                     def domainObject = assignOrInstantiate( domainClass, domainObjectOrParams )
                     assert domainObject.id == null                    
                     updateSystemFields( domainObject )
-println "XXXXXXXXXXXXXXXX domainObject = $domainObject and it's properties are ${domainObject.properties}"                                        
                     log.trace "${domainSimpleName}Service.create will save $domainObject"
                     def createdModel = domainObject.save( failOnError: true, flush: true )
                     
@@ -205,7 +204,7 @@ println "XXXXXXXXXXXXXXXX domainObject = $domainObject and it's properties are $
     
 
     private static def assignOrInstantiate( domainClass, domainObjectOrParams ) {
-        if (!(domainObjectOrParams instanceof Map) && (domainObjectOrParams.class == domainClass)) {
+        if (domainObjectOrParams.getClass() == domainClass) {
             domainObjectOrParams
         } else if (domainObjectOrParams instanceof Map) {
             if (domainObjectOrParams.domainModel) {
