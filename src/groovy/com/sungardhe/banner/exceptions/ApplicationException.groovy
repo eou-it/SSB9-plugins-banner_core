@@ -42,13 +42,13 @@ import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureExcep
  **/
 class ApplicationException extends RuntimeException {    
     
-    def    wrappedException    // a checked or runtime exception being wrapped
-    SQLException sqlException  // set if the wrappedException is either a SQLException or wraps a SQLException
-    def sqlExceptionErrorCode  // set if there is an underlying SQLException
-    String friendlyName        // a friendly name for the exception - exposed as 'type' property               
-    String resourceCode = "default.internal.error" // usually set based upon a specific wrappedException, but defaulted as well
-    String entityClassName    // the fully qualified class name for the associated domain model
-    def    id                 // optional, the id of the model if applicable
+    def          wrappedException       // a checked or runtime exception being wrapped
+    SQLException sqlException           // set if the wrappedException is either a SQLException or wraps a SQLException
+    def          sqlExceptionErrorCode  // set if there is an underlying SQLException
+    String       friendlyName           // a friendly name for the exception - exposed as 'type' property               
+    String       resourceCode = "default.internal.error" // usually set based upon a specific wrappedException, but defaulted as well
+    String       entityClassName        // the fully qualified class name for the associated domain model
+    def          id                     // optional, the id of the model if applicable
     
     def log = Logger.getLogger( ApplicationException.name )
 
@@ -95,9 +95,7 @@ class ApplicationException extends RuntimeException {
     private def wrapException( e ) {
         wrappedException = e
         sqlException = extractSQLException( e )
-        if (sqlException) {
-            sqlExceptionErrorCode = sqlException.getErrorCode()
-        }
+        sqlExceptionErrorCode = sqlException?.getErrorCode()
     }
         
     
@@ -359,7 +357,7 @@ class ApplicationException extends RuntimeException {
             e = e.getCause()
         }
         if (e instanceof SQLException) {
-            (SQLException) e
+            return (SQLException) e
         } else {
             null
         }

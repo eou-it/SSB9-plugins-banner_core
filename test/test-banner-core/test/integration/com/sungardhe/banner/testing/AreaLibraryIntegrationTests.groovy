@@ -35,7 +35,7 @@ class AreaLibraryIntegrationTests extends BaseIntegrationTestCase {
             fail "AreaLibrary should not have been successfully saved, due to and expected 'invalid hex number' error"
         } catch (e) {
             def ae = new ApplicationException( AreaLibrary, e )
-            assertEquals 'SQLException', ae.type
+            assertTrue ('SQLException' == ae.type || 'UncategorizedSQLException' == ae.type)
             assertEquals 1465, ae.sqlExceptionErrorCode
             
             def localizer = new FooController().localizer // just using this as a quick way to get a localizer closure

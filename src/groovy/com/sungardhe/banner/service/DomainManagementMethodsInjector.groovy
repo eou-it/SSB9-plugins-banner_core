@@ -204,7 +204,7 @@ public class DomainManagementMethodsInjector {
     
 
     private static def assignOrInstantiate( domainClass, domainObjectOrParams ) {
-        if (domainObjectOrParams.getClass() == domainClass) {
+        if (domainClass.isAssignableFrom( domainObjectOrParams.getClass() ) && !(Map.isAssignableFrom( domainObjectOrParams.getClass() ))) {
             domainObjectOrParams
         } else if (domainObjectOrParams instanceof Map) {
             if (domainObjectOrParams.domainModel) {
