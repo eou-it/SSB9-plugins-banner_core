@@ -52,7 +52,7 @@ import org.springframework.validation.Errors
     
     // defaulted to a string that may be parsed to support localization.
     public String getMessage() {
-        "@@r1:default.multi.model.validation.errors@@"
+        "@@r1:multi.model.validation.errors@@"
     }
     
     

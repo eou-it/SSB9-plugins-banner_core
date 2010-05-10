@@ -46,7 +46,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 		    fail( "Invalid foo was successfully saved!" )
 		} catch (ValidationException e) {
 
-		    def ae = new ApplicationException( Foo, e )		    		    
+		    def ae = new ApplicationException( Foo, e, false )		    		    
     	    assertTrue "toString() does not have expected content, but has: ${ae}", ae.toString().contains( "code.maxSize" ) // should include the resourceCode
 		    assertEquals 'ValidationException', ae.getType()
 		    
@@ -102,14 +102,14 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 		def ae = new ApplicationException( 'ParentModelClassName', mmve ) 
 	    assertNotNull ae.toString()
 	    assertEquals 'MultiModelValidationException', ae.getType()
-	    
 	    def returnMap = ae.returnMap( controller.localizer )
+	    
 	    assertFalse returnMap.success
 	    assertTrue returnMap.message ==~ /.*Please correct the following errors and try again.*/
-	    assertNotNull returnMap.errors                  // lumps all validation errors across all model instances into one list
+	    assertNotNull returnMap.errors  // lumps all validation errors across all model instances into one list
 	    assertTrue returnMap.errors ==~ /.*The foo code is too long, it must be no more than 2 characters.*/  
-	    assertNotNull returnMap.modelValidationErrorsMaps // simplifies retrieval of errors using entityName and id 
-	    assertTrue returnMap.underlyingErrorMessage ==~ /.*@@r1:default.multi.model.validation.errors@@.*/ 
+	    assertNotNull returnMap.modelValidationErrorsMaps  // simplifies retrieval of errors using entityName and id 
+	    assertTrue returnMap.underlyingErrorMessage ==~ /.*@@r1:multi.model.validation.errors@@.*/ 
     }
        
 
@@ -133,7 +133,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 		try {
             foo.save( failOnError:true, flush: true )
 		} catch (OptimisticLockException e) {
-		    def ae = new ApplicationException( Foo, e )
+		    def ae = new ApplicationException( Foo, e, false )
 		    assertNotNull ae.toString()
 		    assertEquals 'OptimisticLockException', ae.getType()
 		    
@@ -148,7 +148,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     
     void testWrappedNotFoundException() {
 		def e = new NotFoundException( id: -666666, entityClassName: 'Foo' )
-		def ae = new ApplicationException( Foo, e )
+		def ae = new ApplicationException( Foo, e, false )
 	    assertNotNull ae.toString()
 		assertEquals 'NotFoundException', ae.getType()
 		
@@ -163,7 +163,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     // Tests our ability to handle a constraint exception programmatically created, that has no underlying SQLException
     void testWrappedConstraintException() {
 		def e = new ConstraintException( 'test' )
-		def ae = new ApplicationException( Foo, e )
+		def ae = new ApplicationException( Foo, e, false )
 	    assertNotNull ae.toString()
 		assertEquals 'ConstraintException', ae.getType()
 		
@@ -210,7 +210,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     
     public void testWrappedLocalizedBannerApiException() {
         SQLException e = new SQLException( "::this is the first error::::this is the second error::::this is the third one::", "0", -20100 )
-		def ae = new ApplicationException( Foo, e )		
+		def ae = new ApplicationException( Foo, e, false )		
 	    assertTrue "toString() does not have expected content, but has: ${ae}", 
 	               ae.toString().contains( "::this is the first error::::this is the second error::::this is the third one::" )
 	    assertTrue "toString() does not have expected content, but has: ${ae}", ae.toString().contains( "-20100" ) 

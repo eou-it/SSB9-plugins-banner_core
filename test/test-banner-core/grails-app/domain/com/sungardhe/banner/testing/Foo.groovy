@@ -30,7 +30,7 @@ class Foo implements Serializable { // Currently based on 'College'; may replace
 	@GenericGenerator(name = "triggerAssigned", strategy = "com.sungardhe.banner.framework.persistence.util.TriggerAssignedIdentityGenerator")
 	Long id
 
-	@Column(name="STVCOLL_CODE", nullable = false, length=2)
+	@Column(name="STVCOLL_CODE", nullable = false) // , length=2
 	String code
 
 	@Column(name="STVCOLL_DESC", nullable = false, length=30)
@@ -94,7 +94,7 @@ class Foo implements Serializable { // Currently based on 'College'; may replace
 	
 
 	static constraints = {
-		code(nullable: false, maxSize: 2)
+		code(nullable: false, maxSize: 2) 
 		description(nullable: false, maxSize: 30)
 		addressStreetLine1(nullable: true, maxSize: 75)
 		addressStreetLine2(nullable: true, maxSize: 75)

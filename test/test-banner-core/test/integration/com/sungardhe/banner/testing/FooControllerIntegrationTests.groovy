@@ -14,11 +14,16 @@ package com.sungardhe.banner.testing
 import com.sungardhe.banner.json.JsonHelper
 import com.sungardhe.banner.testing.BaseIntegrationTestCase
 
+import java.sql.Connection
+
+import groovy.sql.Sql
+
 import grails.converters.JSON
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 import org.springframework.security.context.SecurityContextHolder
+
 
 /**
  * Integration test for the Foo controller.
@@ -40,7 +45,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         // You may set the formContext explicitly before calling super.setUp(). This may be needed if the formControllerMap 
         // within the configuration uses a different controller name than the 'grails name' for the controller. 
                  
-        // formContext = ['GOAMEDI'] // will be set automatically since we'll set our controller before calling super.setUp()
+        // formContext = ['STVCOLL'] // will be set automatically since we'll set our controller before calling super.setUp()
 
         controller = new FooController()    
         
@@ -236,12 +241,10 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         // The following fails when 'unit' tests are run alongside of integration tests. The exception is a 'null' violation 
         // due to the lastModified date not being set. The underlying exception is a JSON converter exception due to not being 
         // able to parse the date format. The Config.groovy sets grails.converters.json.date = "javascript", however when 
-        // unit tests are run this setting is not effective. 
+        // unit tests are run this setting is apparently not effective. 
         // 
-        // This project does NOT use Grails 'unit' tests.  
-        // If by chance you attempt to run them along with integration tests, you'll know why this fails...
-// For now, this isn't integral to the framework testing, so we'll comment out so all tests can run together. 
-// This code exists in banner_on_grails (e.g., CollegeControllerIntegrationTests) which forces unit and integration tests to be 
+// For now, this isn't integral to the framework plugin testing, so we'll comment out so all tests can run together.
+// This test exists within banner_on_grails (e.g., CollegeControllerIntegrationTests) which forces unit and integration tests to be 
 // executed separately. 
 /*        result.data.each { 
             JsonHelper.replaceJSONObjectNULL( it ) // Minimal workaround for Jira Grails-5585
@@ -254,7 +257,51 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
                 fail( "Validation errors: $message" )
             }
         }           
-*/    }
+*/
+    }
+
+
+    // Not really a 'controller' test, this tests that we can see pending creates in the
+    // current transaction and that we cannot see pending creates in a different transaction.
+    // We'll put this here as we need the full database environment versus a unit test.
+    void testJoiningTransaction() {
+        Connection conn = null
+        def sql = null
+        def found = "I better be set to null by otherThread!"
+        def otherThread
+    
+        try {
+            Foo.withTransaction {
+                def foo = new Foo( newFooParamsWithAuditTrailProperties() ).save( flush: true )
+    
+                // Now try from a connection in the same thread...
+                conn = sessionFactory.getCurrentSession().connection()
+                sql = new Sql( conn )
+                def row = sql.firstRow("select STVCOLL_CODE from saturn.STVCOLL where STVCOLL_CODE = 'TT'")
+                assertEquals("Expected code 'TT' but found code ${row?.STVCOLL_CODE}", "TT", row?.STVCOLL_CODE)
+    
+                // and lastly ensure we can't see it using a connnection from another thread...
+                otherThread = new Thread( {  // we'll use a closure to get a connection via a different thread
+                    com.sungardhe.banner.security.FormContext.set( ['STVCOLL'] )
+                    login()
+                    def sqlB = null
+                    try {
+                        sqlB = new Sql( dataSource )
+                        found = sqlB.firstRow( "select STVCOLL_CODE from saturn.STVCOLL where STVCOLL_CODE = 'TT'" )
+                    } finally {
+                        sqlB?.close()
+                    }
+                })
+                otherThread.start()
+            }
+        } finally {
+            sql?.close()
+            // note we don't close the connection - the test framework will perform a rollback and then close
+        }
+    
+        otherThread.join()
+        assertNull( found )
+    }
     
     
     // NOTICE: A 'functional' test is used to test the XML interface (as it relies on GSP processing that is beyond the scope of an integration test)

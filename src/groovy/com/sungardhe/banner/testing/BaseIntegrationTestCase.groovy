@@ -38,7 +38,8 @@ import org.springframework.security.providers.UsernamePasswordAuthenticationToke
  */
 class BaseIntegrationTestCase extends GroovyTestCase {
     
-    def transactional = false
+    def transactional = false         // this turns off 'Grails' test framework management of transactions    
+    def useTransactions = true        // and this enables our own management of transactions, which is what most tests will want
     
     def formContext = null            // This may be set within the subclass, prior to calling super.setUp(). If it isn't, 
                                       // it will be looked up automatically.
@@ -56,11 +57,6 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     def renderMap                     // Use this to look at the rendered map: MyController.metaClass.render = { Map map -> renderMap = map }
     def redirectMap                   // Use this to look at the rendered map: MyController.metaClass.redirect = { Map map -> redirectMap = map }
 
-
-/*    public localizer = { mapToLocalize ->
-        messageSource.getMessage( mapToLocalize )
-    }
-*/    
 
     /**
      * Performs a login for the standard 'grails_user' if necessary, and calls super.setUp(). 
@@ -97,11 +93,13 @@ class BaseIntegrationTestCase extends GroovyTestCase {
         
         loginIfNecessary() 
         
-        sessionFactory.currentSession.connection().rollback()                 // needed to protect from other tests
-        sessionFactory.currentSession.clear()                                 // needed to protect from other tests
-        sessionFactory.currentSession.disconnect()                            // needed to release the old database connection
-        sessionFactory.currentSession.reconnect( dataSource.getConnection() ) // get a new connection that has unlocked the needed roles
-        transactionManager.getTransaction().setRollbackOnly()                 // and make sure we don't commit to the database
+        if (useTransactions) {
+            sessionFactory.currentSession.connection().rollback()                 // needed to protect from other tests
+            sessionFactory.currentSession.clear()                                 // needed to protect from other tests
+            sessionFactory.currentSession.disconnect()                            // needed to release the old database connection
+            sessionFactory.currentSession.reconnect( dataSource.getConnection() ) // get a new connection that has unlocked the needed roles
+            transactionManager.getTransaction().setRollbackOnly()                 // and make sure we don't commit to the database
+        }
     }
 
 
@@ -113,8 +111,10 @@ class BaseIntegrationTestCase extends GroovyTestCase {
          super.tearDown()
          FormContext.clear()
 
-         sessionFactory.currentSession.connection().rollback()
-         sessionFactory.currentSession.close()
+         if (useTransactions) {
+             sessionFactory.currentSession.connection().rollback()
+             sessionFactory.currentSession.close()
+         }
     }
     
     
@@ -242,7 +242,7 @@ class BaseIntegrationTestCase extends GroovyTestCase {
             CH?.config?.formControllerMap
         } else {
             // Grails bug GRAILS-4687, and http://n4.nabble.com/Grails-Unit-Integration-Testing-apparent-Random-Failures-td1315936.html#a1315936
-            // result in the configuration holder being null when running all, or all integration, tests. The holder is availabel 
+            // result in the configuration holder being null when running all, or all integration, tests. The holder is available 
             // when running tests individually. To workaround this, we'll use the ConfigSlurper to read the formControllerMap.
             def config = new ConfigSlurper().parse( new File( 'grails-app/conf/Config.groovy' ).toURL() )
             config?.formControllerMap

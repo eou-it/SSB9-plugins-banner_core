@@ -72,22 +72,25 @@ public class DomainManagementMethodsInjector {
 
         if (!serviceClass.metaClass.respondsTo( serviceClass, "create" )) {
 
-            serviceClass.metaClass.create = { domainObjectOrParams ->
-                log.trace "${domainSimpleName}Service.create invoked with $domainObjectOrParams"
+            serviceClass.metaClass.create = { domainModelOrMap ->
+                log.trace "${domainSimpleName}Service.create invoked with $domainModelOrMap"
                 try {
-                    if (delegate.respondsTo( 'preCreate' )) delegate.preCreate( domainObjectOrParams )
+                    if (delegate.respondsTo( 'preCreate' )) delegate.preCreate( domainModelOrMap )
                     
-                    def domainObject = assignOrInstantiate( domainClass, domainObjectOrParams )
+                    def domainObject = assignOrInstantiate( domainClass, domainModelOrMap )
                     assert domainObject.id == null                    
                     updateSystemFields( domainObject )
                     log.trace "${domainSimpleName}Service.create will save $domainObject"
                     def createdModel = domainObject.save( failOnError: true, flush: true )
                     
-                    if (delegate.respondsTo( 'postCreate' )) delegate.postCreate( createdModel )
+                    if (delegate.respondsTo( 'postCreate' )) delegate.postCreate( [ before: domainModelOrMap, after: createdModel ] )
                     
                     createdModel
+                } catch (ApplicationException ae) {
+                    log.debug "Could not save a new ${domainSimpleName} due to exception: $ae", ae
+                    throw ae
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e )
+                    def ae = new ApplicationException( domainClass, e, false )
                     log.debug "Could not save a new ${domainSimpleName} due to exception: $ae", e
                     throw ae
                 }
@@ -95,78 +98,87 @@ public class DomainManagementMethodsInjector {
         }
 
         if (!serviceClass.metaClass.respondsTo( serviceClass, "update" )) {
-            serviceClass.metaClass.update = { domainObjectOrParams ->
-                log.trace "${domainSimpleName}Service.update invoked with $domainObjectOrParams"
-                def content
-                if (domainObjectOrParams instanceof Map) {
-                    content = domainObjectOrParams
-                } else {
-                    content = domainObjectOrParams.properties
-                    content.version = domainObjectOrParams.version // version is not included in bulk asisgnments
-                }
+            serviceClass.metaClass.update = { domainModelOrMap ->
+                log.trace "${domainSimpleName}Service.update invoked with $domainModelOrMap"
                 def domainObject
                 try {
-                    domainObject = fetch( domainClass, content.id, log )
+                    if (delegate.respondsTo( 'preUpdate' )) delegate.preUpdate( domainModelOrMap )
+                    
+                    def content = extractParams( domainClass, domainModelOrMap )
+                    domainObject = fetch( domainClass, content?.id, log )
                     domainObject.properties = content
                     domainObject.version = content.version // needed as version is not included in bulk assignment                    
                     updateSystemFields( domainObject )
-                  
-                    if (delegate.respondsTo( 'preUpdate' )) delegate.preUpdate( domainObject )
-                    
+                                      
                     log.trace "${domainSimpleName}Service.update applied updates and will save $domainObject"
                     def updatedModel = domainObject.save( failOnError:true, flush: true )
 
-                    if (delegate.respondsTo( 'postUpdate' )) delegate.postUpdate( updatedModel )
+                    if (delegate.respondsTo( 'postUpdate' )) delegate.postUpdate( [ before: domainModelOrMap, after: updatedModel ] )
 
                     updatedModel
+                } catch (ApplicationException ae) {
+                    log.debug "Could not update an existing ${domainSimpleName} with id = ${domainModelOrMap?.id} due to exception: ${ae.message}", ae
+                    throw ae
                 } catch (ValidationException e) {
-                    def ae = new ApplicationException( domainClass, e )
+                    def ae = new ApplicationException( domainClass, e, false )
                     log.debug "Could not update an existing ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", e
                     checkOptimisticLockIfInvalid( domainObject, content, log ) // optimistic lock trumps validation errors
                     throw ae
                 } catch (e) {
-                    log.debug "Could not update an existing ${domainSimpleName} with id = ${domainObjectOrParams?.id} due to exception: ${e.message}", e
-                    throw new ApplicationException( domainClass, e )
+                    log.debug "Could not update an existing ${domainSimpleName} with id = ${domainModelOrMap?.id} due to exception: ${e.message}", e
+                    throw new ApplicationException( domainClass, e, false )
                 }
             }
         }
 
         if (!(serviceClass.metaClass.respondsTo( serviceClass, "delete" ) || serviceClass.metaClass.respondsTo( serviceClass, "remove" ))) {
-            serviceClass.metaClass.delete = { id ->
-                log.trace "${domainSimpleName}Service.delete invoked with $id"
+            serviceClass.metaClass.delete = { domainModelOrMapOrId ->
+                log.trace "${domainSimpleName}Service.delete invoked with $domainModelOrMapOrId"
                 def domainObject
                 try {
+                    if (delegate.respondsTo( 'preDelete' )) delegate.preDelete( domainModelOrMapOrId )
+                    
+                    def id = extractId( domainClass, domainModelOrMapOrId )
                     domainObject = fetch( domainClass, id, log )
-                    if (delegate.respondsTo( 'preDelete' )) delegate.preDelete( domainObject )
                     domainObject.delete( failOnError:true, flush: true )
-                    if (delegate.respondsTo( 'postDelete' )) delegate.postDelete( domainObject )
+                    
+                    if (delegate.respondsTo( 'postDelete' )) delegate.postDelete( [ before: domainModelOrMapOrId, after: null ] )
                     true
+                } catch (ApplicationException ae) {
+                    log.debug "Could not delete ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", ae
+                    throw ae
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e )
+                    def ae = new ApplicationException( domainClass, e, false )
                     log.debug "Could not delete ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", e
                     throw ae
                 }
             }
         } 
                 
-        if (!serviceClass.metaClass.respondsTo( serviceClass, "read" )) {
+        if (!serviceClass.metaClass.respondsTo( serviceClass, "read" )) { // same as 'get' below, included as it's a 'cRud' method
             serviceClass.metaClass.read = { id ->
                 try {
                     fetch( domainClass, id, log )
+                } catch (ApplicationException ae) {
+                    log.debug "Exception executing ${domainSimpleName}.read() with id = $id, due to exception: $ae", ae
+                    throw ae
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e )
+                    def ae = new ApplicationException( domainClass, e, false )
                     log.debug "Exception executing ${domainSimpleName}.read() with id = $id, due to exception: $ae", e
                     throw ae
                 }                
             }  
         }
         
-        if (!serviceClass.metaClass.respondsTo( serviceClass, "get" )) { // TODO: remove this (refactor controllers that use it to instead use 'read')
+        if (!serviceClass.metaClass.respondsTo( serviceClass, "get" )) { // same as 'read' above, included as it is very common to have 'get'
             serviceClass.metaClass.get = { id ->
                 try {
                     fetch( domainClass, id, log )
+                } catch (ApplicationException ae) {
+                    log.debug "Exception executing ${domainSimpleName}.get() with id = $id, due to exception: $ae", ae
+                    throw ae
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e )
+                    def ae = new ApplicationException( domainClass, e, false )
                     log.debug "Exception executing ${domainSimpleName}.get() with id = $id, due to exception: $ae", e
                     throw ae
                 }                
@@ -178,7 +190,7 @@ public class DomainManagementMethodsInjector {
                 try {
                     domainClass.list( args )
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e )
+                    def ae = new ApplicationException( domainClass, e, false )
                     log.debug "Exception executing ${domainSimpleName}.list() with args = $args, due to exception: $ae", e
                     throw ae
                 }
@@ -190,7 +202,7 @@ public class DomainManagementMethodsInjector {
                 try {
                     domainClass.count()
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e )
+                    def ae = new ApplicationException( domainClass, e, false )
                     log.debug "Exception executing ${domainSimpleName}.count() due to exception: $ae", e
                     throw ae
                 }
@@ -200,38 +212,97 @@ public class DomainManagementMethodsInjector {
     }    
         
     
-    // ---------------------------- Private Methods -----------------------------------
+    // ---------------------------- Helper Methods -----------------------------------
+    // (public static methods, so they may be used within services that implement their own CRUD methods.)
     
+    
+    private static boolean isDomainModelInstance( domainClass, domainModelOrMap ) {
+        (domainClass.isAssignableFrom( domainModelOrMap.getClass() ) && 
+            !(Map.isAssignableFrom( domainModelOrMap.getClass() )))
+    }
 
-    private static def assignOrInstantiate( domainClass, domainObjectOrParams ) {
-        if (domainClass.isAssignableFrom( domainObjectOrParams.getClass() ) && !(Map.isAssignableFrom( domainObjectOrParams.getClass() ))) {
-            domainObjectOrParams
-        } else if (domainObjectOrParams instanceof Map) {
-            if (domainObjectOrParams.domainModel) {
-                assignOrInstantiate( domainClass, domainObjectOrParams.domainModel )
+
+    /**
+     * Returns a model instance based upon the supplied domainModelOrMap.
+     * The domainModelOrMap may:
+     * 1) already be the domain model instance that should be returned, 
+     * 2) be a 'params' map that may be used to create a new model instance 
+     * 3) be a map that contains a 'domainModel' key whose value is the domain model instance to return
+     * This static method is public so that it may be used within any services that implement their own CRUD methods.
+     **/
+    public static def assignOrInstantiate( domainClass, domainModelOrMap ) {
+        if (isDomainModelInstance( domainClass, domainModelOrMap )) {
+            domainModelOrMap
+        } else if (domainModelOrMap instanceof Map) {
+            domainClass.newInstance( extractParams( domainClass, domainModelOrMap ) )
+        } else {
+            throw new ApplicationException( domainClass, "Cannot assign a $domainClass using ${domainModelOrMap}", false )
+        }
+    }
+
+
+    /**
+     * Returns a 'params map' based upon the supplied domainObjectOrMap.
+     * The domainObjectOrMap may:
+     * 1) be a domain model instance whose properties should be returned, 
+     * 2) already be a 'params' map that may be returned
+     * 3) be a map that contains a 'domainModel' key whose value is the domain model instance whose properties should be returned
+     * This static method is public so that it may be used within any services that implement their own CRUD methods.
+     **/
+    public static def extractParams( domainClass, domainObjectOrMap ) {
+        if (isDomainModelInstance( domainClass, domainObjectOrMap )) {
+            def paramsMap = domainObjectOrMap.properties
+            if (domainObjectOrMap.version) {
+                paramsMap.version = domainObjectOrMap.version // version is not included in bulk asisgnments
+            }
+            paramsMap
+        } else if (domainObjectOrMap instanceof Map) {
+            if (domainObjectOrMap.domainModel) {
+                extractParams( domainClass, domainObjectOrMap.domainModel )
             } else {
-                domainClass.newInstance( domainObjectOrParams )
+                domainObjectOrMap
             }
         } else {
-            throw new IllegalArgumentException( "${domainObjectOrParams.class} is not an instance of $domainClass}" )
+            throw new ApplicationException( domainClass, "Cannot extract a params map supporting $domainClass from: ${domainObjectOrMap}", false )
         }
     }
     
     
-    private static def fetch( domainClass, id, log ) {
+    /**
+     * Returns an 'id' extracted from the supplied domainObjectParamsIdOrMap.
+     * The domainObjectParamsIdOrMap may:
+     * 1) already be a Long 'id' that should be returned, 
+     * 2) be a 'params' map that contains a key named 'id' 
+     * 3) be a map that contains a 'domainModel' key whose value is a domain model instance from which the 'id' may be extracted
+     * This static method is public so that it may be used within any services that implement their own CRUD methods.
+     **/
+    public static def extractId( domainClass, domainObjectParamsIdOrMap ) {
+        if (domainObjectParamsIdOrMap.toString().isNumber()) {
+            (Long) domainObjectParamsIdOrMap
+        } else if (isDomainModelInstance( domainClass, domainObjectParamsIdOrMap )) {
+            (Long) domainObjectParamsIdOrMap.id
+        } else if (domainObjectParamsIdOrMap instanceof Map) {
+            def paramsMap = extractParams( domainClass, domainObjectParamsIdOrMap )
+            paramsMap?.id
+        } else {
+            throw new ApplicationException( domainClass, "Could not extract an 'id' from ${domainObjectParamsIdOrMap}", false )
+        }
+    }
+    
+    
+    public static def fetch( domainClass, id, log ) {
         if (id == null) {
             throw new NotFoundException( id: id, entityClassName: domainClass.simpleName )
         }
         def persistentEntity = domainClass.get( id )
         if (!persistentEntity) {
-            log.debug "Could not find an existing ${domainClass.simpleName} with id = $id"
-            throw new NotFoundException(  id: id, entityClassName: domainClass.simpleName )
+            throw new ApplicationException( domainClass, new NotFoundException(  id: id, entityClassName: domainClass.simpleName ), false )
         }
         persistentEntity
     }
     
     
-    private static def updateSystemFields( entity ) {
+    public static def updateSystemFields( entity ) {
         if (entity.hasProperty( 'dataOrigin' )) {
             def dataOrigin = CH.config?.dataOrigin ?: "Banner" // protect from missing configuration
             entity.dataOrigin = dataOrigin
@@ -265,15 +336,15 @@ public class DomainManagementMethodsInjector {
      * @param domainObject the domainObject as represented in the database
      * @content a map contianing updated fields
      **/  
-    private static def checkOptimisticLockIfInvalid( domainObject, content, log ) {
+    public static def checkOptimisticLockIfInvalid( domainObject, content, log ) {
         if ((content.version != null) && (domainObject.hasProperty( 'version' ) != null)) { 
             domainObject.refresh() // query the database, as a domainObject.get(id) will just hit the cache...
             if (content.version != domainObject.version) {
                 log.debug "Optimistic lock violation between params $content and the model's state in the database $domainObject that has version ${domainObject.version}"
-                throw new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.name, domainObject.id ) ) )
+                throw new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.name, domainObject.id ) ), false )
             }
         } else if (domainObject.hasProperty( 'version' )) {
-            def ae = new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.simpleName, domainObject.id ) ) )
+            def ae = new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.simpleName, domainObject.id ) ), false )
             log.debug "Could not update an existing ${domainObject.class.simpleName} with id = ${domainObject?.id} and version = ${domainObject?.version} due to Optimistic Lock violation, when given version ${content.version}. Exception is $ae"
             throw ae
         } else {
