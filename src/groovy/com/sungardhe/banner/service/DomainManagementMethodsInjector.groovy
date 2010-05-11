@@ -100,11 +100,12 @@ public class DomainManagementMethodsInjector {
         if (!serviceClass.metaClass.respondsTo( serviceClass, "update" )) {
             serviceClass.metaClass.update = { domainModelOrMap ->
                 log.trace "${domainSimpleName}Service.update invoked with $domainModelOrMap"
-                def domainObject
+                def content      // we'll extract the domainModelOrMap into a params map of the properties
+                def domainObject // we'll fetch the model instance into this, and bulk assign the 'content'
                 try {
                     if (delegate.respondsTo( 'preUpdate' )) delegate.preUpdate( domainModelOrMap )
                     
-                    def content = extractParams( domainClass, domainModelOrMap )
+                    content = extractParams( domainClass, domainModelOrMap )
                     domainObject = fetch( domainClass, content?.id, log )
                     domainObject.properties = content
                     domainObject.version = content.version // needed as version is not included in bulk assignment                    
@@ -142,7 +143,7 @@ public class DomainManagementMethodsInjector {
                     domainObject = fetch( domainClass, id, log )
                     domainObject.delete( failOnError:true, flush: true )
                     
-                    if (delegate.respondsTo( 'postDelete' )) delegate.postDelete( [ before: domainModelOrMapOrId, after: null ] )
+                    if (delegate.respondsTo( 'postDelete' )) delegate.postDelete( [ before: domainObject, after: null ] )
                     true
                 } catch (ApplicationException ae) {
                     log.debug "Could not delete ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", ae
@@ -268,6 +269,7 @@ public class DomainManagementMethodsInjector {
     }
     
     
+    // TODO: Refactor this -- it's pretty ugly...
     /**
      * Returns an 'id' extracted from the supplied domainObjectParamsIdOrMap.
      * The domainObjectParamsIdOrMap may:
@@ -277,15 +279,28 @@ public class DomainManagementMethodsInjector {
      * This static method is public so that it may be used within any services that implement their own CRUD methods.
      **/
     public static def extractId( domainClass, domainObjectParamsIdOrMap ) {
-        if (domainObjectParamsIdOrMap.toString().isNumber()) {
+        if (domainObjectParamsIdOrMap instanceof Long) {
             (Long) domainObjectParamsIdOrMap
+        } else if (domainObjectParamsIdOrMap instanceof String) { 
+            if (domainObjectParamsIdOrMap.isNumber()) { 
+                // note: we'll 'assume' we can coerce a number into a long -- given our use of long for IDs, this should not be too risky...
+                //       but this note is included here in case there are issues -- note the use of isNumber and toLong
+                (Long) domainObjectParamsIdOrMap.toLong()
+            } else {
+                return domainObjectParamsIdOrMap // return as a string
+            }             
         } else if (isDomainModelInstance( domainClass, domainObjectParamsIdOrMap )) {
-            (Long) domainObjectParamsIdOrMap.id
+            extractId( domainClass, domainObjectParamsIdOrMap.id )
         } else if (domainObjectParamsIdOrMap instanceof Map) {
             def paramsMap = extractParams( domainClass, domainObjectParamsIdOrMap )
-            paramsMap?.id
+            extractId( domainClass, paramsMap?.id ) 
         } else {
-            throw new ApplicationException( domainClass, "Could not extract an 'id' from ${domainObjectParamsIdOrMap}", false )
+            if (domainObjectParamsIdOrMap.toString().isNumber()) { 
+                // now we'll try to see if we can use an intermidiate coercion (to a string) to extract the id
+                extractId( domainClass, domainObjectParamsIdOrMap.toString() )
+            } else {
+                throw new ApplicationException( domainClass, "Could not extract an 'id' from ${domainObjectParamsIdOrMap}", false )
+            }
         }
     }
     

@@ -175,12 +175,28 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     }
     
     
+    void testDeleteUsingNumber() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
+        assertTrue svc.delete( 1 )
+        assertNull MyMock.get( 1 )
+    }
+    
+    
     void testDeleteUsingPrimativeId() {
         def existingModel = MyMock.findByName( 'First' )
         def svc = new AnotherTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         assertTrue svc.delete( (long) existingModel.id )
         assertNull MyMock.findByName( 'First' )
+    }
+    
+    
+    void testDeleteUsingString() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
+        assertTrue svc.delete( '1' )
+        assertNull MyMock.get( 1 )
     }
         
     
