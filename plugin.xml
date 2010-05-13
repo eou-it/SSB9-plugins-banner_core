@@ -1,4 +1,4 @@
-<plugin name='banner-core' version='0.1.4' grailsVersion='1.3.0 &gt; *'>
+<plugin name='banner-core' version='0.1-SNAPSHOT' grailsVersion='1.3.0 &gt; *'>
   <author>SunGard Higher Education</author>
   <authorEmail>horizon-support@sungardhe.com</authorEmail>
   <title>Banner Core Framework Plugin</title>
@@ -19,6 +19,7 @@ Banner web applications.
     <resource>com.sungardhe.banner.security.AccessControlFilters</resource>
     <resource>LoginController</resource>
     <resource>LogoutController</resource>
+    <resource>com.sungardhe.banner.constraints.ValidPropertyConstraint</resource>
   </resources>
   <dependencies>
     <plugin name='acegi' version='0.5.2' />
