@@ -11,7 +11,10 @@
  ****************************************************************************** */
 package com.sungardhe.banner.exceptions
 
+import grails.util.GrailsNameUtils
+
 import org.springframework.validation.AbstractErrors
+import org.springframework.validation.BindingResult
 import org.springframework.validation.Errors
 
 
@@ -48,6 +51,42 @@ import org.springframework.validation.Errors
     private MultiModelValidationException( modelErrorsMaps ) {
         modelValidationErrorsMaps = modelErrorsMaps
     }
+
+        
+    /**
+     * Constructor for a MultiModelValidationException, that may then be used to accumulate Errors.
+     * An errors instance may optionally be provided, and errors objects may be added to this 
+     * exception. 
+     * @see #addErrors( Errors errors )
+     * @param errors optionally provide an Errors instance containing errors for a model instance
+     **/
+    public MultiModelValidationException( Errors errors = null ) {
+        modelValidationErrorsMaps = []
+    }
+    
+    
+    /**
+     * Adds the supplied Errors object to this exception.  If an Errors object already exists for 
+     * the specific model, then an IllegalStateException will be thrown.  That is, only one Errors object
+     * corresponding to a model instance may be added. 
+     * @param errors An Errors instance containing errors
+     * @throws IllegalStateException if attempting to add a second Errors object for a model instance
+     **/
+    public addErrors( Errors errors ) {
+        assert modelValidationErrorsMaps != null // All constructor's are expected to instantiate this map
+        def entitySimpleClassName = GrailsNameUtils.getShortName( errors.objectName )
+        def target = extractTarget( errors )
+        def id = extractId( target )
+        
+        def mapForModel = modelValidationErrorsMaps.find { it.entitySimpleClassName == entitySimpleClassName && it.id == id }
+        if (mapForModel) {
+            // we'll throw an exception -- this is a programmer exception and should be caught via testing (hence it is not localized)
+            throw new IllegalStateException( "Attempt to add an Errors object for a model instance, when an Errors object already exists!")
+        } else {
+            // we don't have an existing Errors for this model instance
+            modelValidationErrorsMaps << [ entitySimpleClassName: entitySimpleClassName, id: id, errors: errors ]           
+        }
+    }
     
     
     // defaulted to a string that may be parsed to support localization.
@@ -61,11 +100,11 @@ import org.springframework.validation.Errors
      * Returns an Errors instance containing all errors (across all models that have validation errors).
      **/
     public Errors getErrors() {
-        Errors allErrors = new MultiModelErrors()
+        Errors accumulatedErrors = new MultiModelErrors()
         modelValidationErrorsMaps.each { 
-            allErrors.addAllErrors( it.errors )    
+            accumulatedErrors.addAllErrors( it.errors )    
         } 
-        allErrors      
+        accumulatedErrors      
     }
     
     
@@ -73,16 +112,12 @@ import org.springframework.validation.Errors
      * Returns an errors object containing errors for a specific entity type.
      **/
     public Errors getErrorsFor( String entitySimpleClassName ) {
-        List errorMapForModel = modelValidationErrorsMaps?.findAll { it.entitySimpleClassName == entitySimpleClassName }
-        Errors allErrors
-        errorMapForModel.each { 
-            if (!allErrors) {
-                allErrors = it.errors
-            } else {
-                allErrors.addAllErrors(  it.errors )    
-            }
+        List errorsForModelClass = modelValidationErrorsMaps?.findAll { it.entitySimpleClassName == entitySimpleClassName }
+        def accumulatedErrors = new MultiModelErrors()
+        errorsForModelClass.each { 
+            accumulatedErrors.addAllErrors( it.errors ) 
         } 
-        allErrors      
+        accumulatedErrors      
     } 
     
     
@@ -90,11 +125,22 @@ import org.springframework.validation.Errors
      * Returns an errors object containing errors for a specific model instance.
      **/
     public Errors getErrorsFor( String entityName, id ) {
-        def modelErrorsMap = modelValidationErrorsMaps?.find { it.entitySimpleClassName == entityName && it.id == id }
-        modelErrorsMap?.errors
+        def errorsForModelInstance = modelValidationErrorsMaps?.find { it.entitySimpleClassName == entityName && it.id == id }
+        errorsForModelInstance?.errors
     } 
     
+    
+    private def extractTarget( Errors errors ) {
+        (errors instanceof BindingResult) ? errors.target : null
+    }
+    
+    
+    private def extractId( Object target ) {
+        ((target && target.hasProperty( 'id' )) ? target.id : null)
+    }
+    
 }
+
 
 /**
  * Spring 'Errors' implementations support the collection of errors for a single entity, 

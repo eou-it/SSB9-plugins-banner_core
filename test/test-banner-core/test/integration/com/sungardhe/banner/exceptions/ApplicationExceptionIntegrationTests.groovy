@@ -111,6 +111,35 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 	    assertNotNull returnMap.modelValidationErrorsMaps  // simplifies retrieval of errors using entityName and id 
 	    assertTrue returnMap.underlyingErrorMessage ==~ /.*@@r1:multi.model.validation.errors@@.*/ 
     }
+    
+
+    void testAccummulateSpringErrors() {
+        def mmve = new MultiModelValidationException()
+        def foo1 = new Foo( code: "TTTTTTTTT", 
+                            description: "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", 
+                            lastModified: new Date(), lastModifiedBy: 'horizon', dataOrigin: 'horizon' ) 
+        foo1.id = 9991
+        foo1.validate()
+        mmve.addErrors( foo1.errors ) // note: the errors object in a Grails model implements the Spring validation 'Errors' interface 
+        
+        def foo2 = new Foo( code: "TT", 
+                            description: "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+                            lastModified: new Date(), lastModifiedBy: 'horizon', dataOrigin: 'horizon' ) 
+        foo2.id = 9992
+        foo2.validate()
+        mmve.addErrors( foo2.errors )
+        
+        // Now we'll assert that we have 3 total errors, 2 for foo1 and 1 for foo2
+        assertEquals 3L, mmve.getErrors().allErrors?.size()
+        assertEquals 3L, mmve.getErrorsFor( 'Foo' )?.allErrors?.size()
+        assertEquals 2L, mmve.getErrorsFor( 'Foo', foo1.id )?.allErrors?.size()
+        assertEquals 1L, mmve.getErrorsFor( 'Foo', foo2.id )?.allErrors?.size()
+        
+        // If we try to add Errors for one of our Foo instances again, we'll get an exception
+        shouldFail( IllegalStateException ) {
+            mmve.addErrors( foo1.errors )
+        }
+    }
        
 
     void testWrappedOptimisticLockException() {
