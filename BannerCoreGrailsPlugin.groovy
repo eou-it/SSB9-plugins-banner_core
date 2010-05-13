@@ -47,9 +47,13 @@ class BannerCoreGrailsPlugin {
     // Consequently, we'll use 'RELEASES' so that each project can explicitly identify the needed plugin version. Using RELEASES provides 
     // more control on 'when' a grails app is updated to use a newer plugin version, and therefore 'could' allow delayed testing within those apps
     // independent of deploying a new plugin build to Nexus. 
-    //
     //String version = "0.1-SNAPSHOT"
+<<<<<<< HEAD
     String version = "0.1.4" 
+=======
+
+    String version = "0.1.3" 
+>>>>>>> Added constraints plugin and supporting tests
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"

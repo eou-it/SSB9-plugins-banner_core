@@ -86,8 +86,17 @@ class Foo implements Serializable { // Currently based on 'College'; may replace
 	String lastModifiedBy 
 
 	@Column(name="STVCOLL_DATA_ORIGIN", length=30, nullable = false)
-	String dataOrigin 
-    
+	String dataOrigin
+
+    @Transient
+    Foo childByDefault
+
+    @Transient
+    Foo childByCode
+
+    @Transient
+    Foo childById
+
 	public String toString() {
 		"Foo[id=$id, code=$code, description=$description, addressStreetLine1=$addressStreetLine1, addressStreetLine2=$addressStreetLine2, addressStreetLine3=$addressStreetLine3, addressCity=$addressCity, addressState=$addressState, addressCountry=$addressCountry, addressZipCode=$addressZipCode, lastModified=$lastModified, systemRequiredIndicator=$systemRequiredIndicator, voiceResponseMessageNumber=$voiceResponseMessageNumber, statisticsCanadianInstitution=$statisticsCanadianInstitution, districtDivision=$districtDivision, houseNumber=$houseNumber, addressStreetLine4=$addressStreetLine4, lastModifiedBy=$lastModifiedBy, version=$version, dataOrigin=$dataOrigin]"
 	}
@@ -112,6 +121,8 @@ class Foo implements Serializable { // Currently based on 'College'; may replace
 	    lastModified(nullable: false)
 		lastModifiedBy(nullable: true, maxSize: 30)
 		dataOrigin(nullable: true, maxSize: 30)
-        
+        childByDefault(nullable: true, validProperty: true)
+        childByCode(nullable: true, validProperty: "code")
+        childById(nullable: true, validProperty: "id")
 	}
 }
