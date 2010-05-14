@@ -43,11 +43,14 @@ import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureExcep
 class ApplicationException extends RuntimeException {    
     
     def          wrappedException       // a checked or runtime exception being wrapped
+    
     SQLException sqlException           // set if the wrappedException is either a SQLException or wraps a SQLException
     def          sqlExceptionErrorCode  // set if there is an underlying SQLException
+    
     String       friendlyName           // a friendly name for the exception - exposed as 'type' property               
     String       resourceCode = "internal.error" // usually set based upon a specific wrappedException, but defaulted as well
     String       prePendResourceCode    // either the fully qualified class name or 'default', which will be used when creating the resourceCode
+    
     String       entityClassName        // the fully qualified class name for the associated domain model
     def          id                     // optional, the id of the model if applicable
     
@@ -95,10 +98,13 @@ class ApplicationException extends RuntimeException {
     }
     
     
-    private def wrapException( e ) {
-        wrappedException = e
-        sqlException = extractSQLException( e )
-        sqlExceptionErrorCode = sqlException?.getErrorCode()
+    public def getHttpStatusCode() {
+        def code
+        if (exceptionHandlers[ getType() ]) {
+            code = exceptionHandlers[ getType() ].httpStatusCode
+        } 
+        code ?: 500
+        code
     }
         
     
@@ -123,9 +129,9 @@ class ApplicationException extends RuntimeException {
         // in order to return the map that is returned by the invoked closure
         def mapToReturn
         if (exceptionHandlers[ getType() ]) {
-            mapToReturn = exceptionHandlers[ getType() ]( message )
+            mapToReturn = exceptionHandlers[ getType() ].returnMap( message )
         } else {
-            mapToReturn = exceptionHandlers[ 'AnyOtherException' ]( message )
+            mapToReturn = exceptionHandlers[ 'AnyOtherException' ].returnMap( message )
         }
         def underlyingErrorMessage = (sqlException ? sqlException.message : wrappedException.message)
         (mapToReturn + [ success: false, underlyingErrorMessage: underlyingErrorMessage ])
@@ -152,6 +158,36 @@ class ApplicationException extends RuntimeException {
         }    
         friendlyName
     }   
+
+
+    public String toString() {
+        def stringRepresentation = "ApplicationException:[type=${getType()}, entityClassName=$entityClassName"
+        if (id) { 
+            stringRepresentation = stringRepresentation + ", id= $id"
+        }
+        def errors = (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.each { error: it } : null)
+        if (errors) {
+            stringRepresentation = stringRepresentation + ", errors='${errors.join( " ** ")}'"
+        }
+    
+        if (sqlException) {
+            stringRepresentation = stringRepresentation + ", SQLException(errorCode=${sqlException.errorCode}, message=${sqlException.message})"
+        } else {
+            stringRepresentation = stringRepresentation + ", wrappedException(message=${wrappedException?.message})"
+        }
+        stringRepresentation = stringRepresentation + "]"
+        stringRepresentation
+    } 
+    
+    
+// ---------------------------- Private Methods ------------------------------    
+    
+    
+    private def wrapException( e ) {
+        wrappedException = e
+        sqlException = extractSQLException( e )
+        sqlExceptionErrorCode = sqlException?.getErrorCode()
+    }
     
     
     private String getUserFriendlyName() {
@@ -167,114 +203,125 @@ class ApplicationException extends RuntimeException {
     // exception class can use specifc values when returning the standard 'returnMap'  
     // map that provides a common interface that may be used by controllers. 
     //
+    // Note: This map is very long -- while it could be made smaller delegating to separate closures,
+    // it is thought that readability is actually better simply having most the closures in-line. 
+    // This is subjective -- and certainly may be refactored in the future. 
+    //
     private def exceptionHandlers = [  
     
         // An exception we throw explicitly within our services when GORM is not able to find an entity
-        'NotFoundException': { localize -> 
-            [ message: localize( code: "${prePendResourceCode}.not.found.message", 
-                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
-              errors: null
-            ]            
-        },
+        'NotFoundException': [ 
+            httpStatusCode: 404,
+            returnMap:  { localize -> 
+                            [ message: localize( code: "${prePendResourceCode}.not.found.message", 
+                                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+                              errors: null
+                            ] 
+                        }
+        ],
 
         // May be thrown when a record cannot be found in the database, when using SQL or when using GORM with failOnError. 
         // This exception is less desirable, as it does not carry the 'id' of the entity that could not be found.
-        'DataRetrievalFailureException': { localize ->  
-            [ message: localize( code: "${prePendResourceCode}.not.found.message", 
-                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ), '' ] ) as String,
-              errors: null
-            ]            
-        },
+        'DataRetrievalFailureException': [
+            httpStatusCode: 404,
+            returnMap:  { localize ->  
+                            [ message: localize( code: "${prePendResourceCode}.not.found.message", 
+                                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ), '' ] ) as String,
+                              errors: null
+                            ]
+                        }
+        ],
         
-        'OptimisticLockException': { localize ->
-            [ message: localize( code: "${prePendResourceCode}.optimistic.locking.failure", 
-                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
-              errors: null
-            ]            
-        },
+        'OptimisticLockException': [ 
+            httpStatusCode: 409,
+            returnMap:  { localize ->
+                            [ message: localize( code: "${prePendResourceCode}.optimistic.locking.failure", 
+                                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+                              errors: null
+                            ] 
+                        }           
+        ],
         
-        'ValidationException': { localize ->
-            [ message: localize( code: "${prePendResourceCode}.validation.errors.message",
-                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
-              errors: wrappedException.errors?.allErrors?.collect { localize( error: it ) }
-            ]
-         },
+        'ValidationException': [ 
+            httpStatusCode: 400,
+            returnMap:  { localize ->
+                            [ message: localize( code: "${prePendResourceCode}.validation.errors.message",
+                                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+                              errors: wrappedException.errors?.allErrors?.collect { localize( error: it ) }
+                            ]
+                        }
+        ],
         
-        'MultiModelValidationException': { localize ->
-            String msg
-            if (wrappedException.message?.startsWith("@@r1")) {
-                def rcp = getResourceCodeAndParams( wrappedException.message )
-                msg = localize( code: "${prePendResourceCode}.${rcp.resourceCode}", args: rcp.bindingParams ) as String
-            } else {
-                msg = wrappedException.message
-            }
-            [ message: msg,
-              errors: wrappedException.errors?.allErrors?.collect { localize( error: it ) },
-              modelValidationErrorsMaps: wrappedException.modelValidationErrorsMaps
-            ]
-         },
+        'MultiModelValidationException': [ 
+            httpStatusCode: 400,
+            returnMap:  { localize ->
+                            String msg
+                            if (wrappedException.message?.startsWith("@@r1")) {
+                                def rcp = getResourceCodeAndParams( wrappedException.message )
+                                msg = localize( code: "${prePendResourceCode}.${rcp.resourceCode}", args: rcp.bindingParams ) as String
+                            } else {
+                                msg = wrappedException.message
+                            }
+                            [ message: msg,
+                              errors: wrappedException.errors?.allErrors?.collect { localize( error: it ) },
+                              modelValidationErrorsMaps: wrappedException.modelValidationErrorsMaps
+                            ]
+                        }
+        ],
         
-        'ConstraintException': { localize ->
-            // A SQLException may be wrapped, a number of times, by one or more hibernate and Spring exceptions
-            def sqlException = extractSQLException( wrappedException )
-            if (sqlException) {
-                // We can't just return a map, since many exceptions fall into this category and require specialized processing
-                createReturnMapForSQLException( sqlException, localize )
-            } else {
-                [ message: localize( code: "${prePendResourceCode}.constraint.error.message", 
-                                     args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
-                  errors: null
-                ] 
-            }
-         },
+        'ConstraintException': [ 
+            httpStatusCode: 400,
+            returnMap:  { localize ->
+                            // A SQLException may be wrapped, a number of times, by one or more hibernate and Spring exceptions
+                            def sqlException = extractSQLException( wrappedException )
+                            if (sqlException) {
+                                // We can't just return a map, since many exceptions fall into this category and require specialized processing
+                                createReturnMapForSQLException( sqlException, localize )
+                            } else {
+                                [ message: localize( code: "${prePendResourceCode}.constraint.error.message", 
+                                                     args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+                                  errors: null
+                                ] 
+                            }
+                        }
+        ],
+                 
+        'SQLException': [ // *** This includes Banner API Exceptions. ***
+            httpStatusCode: 400,
+            returnMap:  { localize ->             
+                            // We can't just return a map, since many exceptions fall into this category and require specialized processing
+                            createReturnMapForSQLException( sqlException, localize )
+                        }
+        ],
         
-        // This includes Banner API Exceptions. 
-        'SQLException': { localize ->             
-            // We can't just return a map, since many exceptions fall into this category and require specialized processing
-            createReturnMapForSQLException( sqlException, localize )
-        },
+        'EntityExistsException': [ 
+            httpStatusCode: 409,
+            returnMap:  { localize ->
+                            [ message: localize( code: "${prePendResourceCode}.entity.exists.error.message", 
+                                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+                              errors: null
+                            ]
+                        }
+        ],
         
-        'EntityExistsException': { localize ->
-            [ message: localize( code: "${prePendResourceCode}.entity.exists.error.message", 
-                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
-              errors: null
-            ]
-         },
-        
-        'AnyOtherException': { localize ->
-            if (wrappedException.message.startsWith( "@@r1")) {
-                def rcp = getResourceCodeAndParams( wrappedException.message )                               
-                return [ message: localize( code: "${prePendResourceCode}.${rcp.resourceCode}", args: rcp.bindingParams ) as String,
-                         errors:  (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.collect { message( error: it ) } : null) 
-                       ]
-            } else {
-                log.error "ApplicationException cannot localize or handle it's wrapped exception $wrappedException"
-                [ message: "Sorry, an unexpected error has occurred: ${wrappedException.message}", // If this is an unmapped message, we won't localize at all...
-                  errors:  (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.collect { message( error: it ) } : null)
-                ]
-            }            
-        }
+        'AnyOtherException':  [ 
+            httpStatusCode: 400, // TODO: Refine processing (e.g., not.implemented should be 501)
+            returnMap:  { localize ->
+                            if (wrappedException.message.startsWith( "@@r1")) {
+                                def rcp = getResourceCodeAndParams( wrappedException.message )                               
+                                return [ 
+                                    message: localize( code: "${prePendResourceCode}.${rcp.resourceCode}", args: rcp.bindingParams ) as String,
+                                    errors:  (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.collect { message( error: it ) } : null) 
+                                ]
+                            } else {
+                                log.error "ApplicationException cannot localize or handle it's wrapped exception $wrappedException"
+                                [ message: "Sorry, an unexpected error has occurred: ${wrappedException.message}", // If this is an unmapped message, we won't localize at all...
+                                  errors:  (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.collect { message( error: it ) } : null)
+                                ]
+                            } 
+                        }
+        ]           
     ]
-            
-    
-    public String toString() {
-        def stringRepresentation = "ApplicationException:[type=${getType()}, entityClassName=$entityClassName"
-        if (id) { 
-            stringRepresentation = stringRepresentation + ", id= $id"
-        }
-        def errors = (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.each { error: it } : null)
-        if (errors) {
-            stringRepresentation = stringRepresentation + ", errors='${errors.join( " ** ")}'"
-        }
-
-        if (sqlException) {
-            stringRepresentation = stringRepresentation + ", SQLException(errorCode=${sqlException.errorCode}, message=${sqlException.message})"
-        } else {
-            stringRepresentation = stringRepresentation + ", wrappedException(message=${wrappedException?.message})"
-        }
-        stringRepresentation = stringRepresentation + "]"
-        stringRepresentation
-    } 
     
     
 // ------------------------------------ Private Methods -----------------------------------------

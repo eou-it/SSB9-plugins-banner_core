@@ -89,7 +89,7 @@ class FooController {
                     }
                 } 
                 catch (ApplicationException e) {
-                    response.setStatus( 409 ) 
+                    response.setStatus( e.getHttpStatusCode() ) 
                     render( (e.returnMap( localizer ) + [ data: foo ]) as JSON ) // exception already logged within service
                 } 
                 catch (e) { // CI logging
@@ -122,7 +122,7 @@ class FooController {
                     render( template:"single.v1.0.xml", model: [ foo: foo, refBase: refBase ] )
                 } 
                 catch (ApplicationException e) {
-                    response.setStatus( 409 ) 
+                    response.setStatus( e.getHttpStatusCode() ) 
                     render( e.returnMap( localizer ) as XML )  // exception already logged within service
                 } 
                 catch (e) { // CI logging
@@ -151,10 +151,7 @@ class FooController {
                                         args: [ message( code: 'foo.label', default: 'Foo'), foo.code ] )}" ] as JSON )
                 } 
                 catch (ApplicationException e) {
-                    switch (e.getType()) {
-                        case 'NotFoundException'       : response.setStatus( 404 ); break 
-                        default                        : response.setStatus( 409 ); break 
-                    }
+                    response.setStatus( e.getHttpStatusCode() ) 
                     render( e.returnMap( localizer ) as JSON ) // exception already logged within service
                 } 
                 catch (e) { // CI logging
@@ -181,10 +178,7 @@ class FooController {
                     render( template:"single.v1.0.xml", model: [ foo: foo, refBase: refBase ] )
                 } 
                 catch (ApplicationException e) {                
-                    switch (e.getType()) {
-                        case 'NotFoundException'       : response.setStatus( 404 ); break 
-                        default                        : response.setStatus( 409 ); break 
-                    }
+                    response.setStatus( e.getHttpStatusCode() ) 
                     render( e.returnMap( localizer ) as XML ) // exception already logged within service
                 } 
                 catch (e) { // CI logging
@@ -211,10 +205,7 @@ class FooController {
                     render ( [ success: true ] as JSON )
                 } 
                 catch (ApplicationException e) {
-                    switch (e.getType()) {
-                        case 'NotFoundException'       : response.setStatus( 404 ); break 
-                        default                        : response.setStatus( 409 ); break 
-                    }
+                    response.setStatus( e.getHttpStatusCode() ) 
                     render( ((ApplicationException) e).returnMap( localizer ) as JSON ) // exception already logged within service
                 } 
                 catch (e) { // CI logging
@@ -234,7 +225,7 @@ class FooController {
                     render ( [ success: true ] as XML )
                 } 
                 catch (ApplicationException e) {
-                    response.setStatus( 409 ) 
+                    response.setStatus( e.getHttpStatusCode() ) 
                     render( e.returnMap( localizer ) as XML ) 
                 } 
                 catch (e) { // CI logging
@@ -278,10 +269,7 @@ class FooController {
                     render( [ success: true, data: result ] as JSON )
                 } 
                 catch (ApplicationException e) {                    
-                    switch (e.getType()) {
-                        case 'NotFoundException' : response.setStatus( 404 ); break 
-                        default                  : response.setStatus( 409 ); break 
-                    }
+                    response.setStatus( e.getHttpStatusCode() ) 
                     render( e.returnMap( localizer ) as JSON ) // exception already logged within service
                 } 
                 catch (e) { // CI logging
@@ -302,10 +290,7 @@ class FooController {
                     render( template:"single.v1.0.xml", model: [ foo: result, refBase: refBase ] )
                 } 
                 catch (ApplicationException e) {                    
-                    switch (e.getType()) {
-                        case 'NotFoundException'       : response.setStatus( 404 ); break 
-                        default                        : response.setStatus( 409 ); break 
-                    }
+                    response.setStatus( e.getHttpStatusCode() ) 
                     render( e.returnMap( localizer ) as XML ) 
                 } 
                 catch (e) { // CI logging
