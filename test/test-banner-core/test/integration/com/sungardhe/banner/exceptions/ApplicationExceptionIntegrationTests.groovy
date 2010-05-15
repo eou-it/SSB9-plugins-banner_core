@@ -46,7 +46,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 		    fail( "Invalid foo was successfully saved!" )
 		} catch (ValidationException e) {
 
-		    def ae = new ApplicationException( Foo, e, false )		    		    
+		    def ae = new ApplicationException( Foo, e )		    		    
     	    assertTrue "toString() does not have expected content, but has: ${ae}", ae.toString().contains( "code.maxSize" ) // should include the resourceCode
 		    assertEquals 'ValidationException', ae.getType()
 		    
@@ -162,7 +162,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 		try {
             foo.save( failOnError:true, flush: true )
 		} catch (OptimisticLockException e) {
-		    def ae = new ApplicationException( Foo, e, false )
+		    def ae = new ApplicationException( Foo, e )
 		    assertNotNull ae.toString()
 		    assertEquals 'OptimisticLockException', ae.getType()
 		    
@@ -177,7 +177,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     
     void testWrappedNotFoundException() {
 		def e = new NotFoundException( id: -666666, entityClassName: 'Foo' )
-		def ae = new ApplicationException( Foo, e, false )
+		def ae = new ApplicationException( Foo, e )
 	    assertNotNull ae.toString()
 		assertEquals 'NotFoundException', ae.getType()
 		
@@ -192,7 +192,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     // Tests our ability to handle a constraint exception programmatically created, that has no underlying SQLException
     void testWrappedConstraintException() {
 		def e = new ConstraintException( 'test' )
-		def ae = new ApplicationException( Foo, e, false )
+		def ae = new ApplicationException( Foo, e )
 	    assertNotNull ae.toString()
 		assertEquals 'ConstraintException', ae.getType()
 		
@@ -239,7 +239,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     
     public void testWrappedLocalizedBannerApiException() {
         SQLException e = new SQLException( "::this is the first error::::this is the second error::::this is the third one::", "0", -20100 )
-		def ae = new ApplicationException( Foo, e, false )		
+		def ae = new ApplicationException( Foo, e )		
 	    assertTrue "toString() does not have expected content, but has: ${ae}", 
 	               ae.toString().contains( "::this is the first error::::this is the second error::::this is the third one::" )
 	    assertTrue "toString() does not have expected content, but has: ${ae}", ae.toString().contains( "-20100" ) 

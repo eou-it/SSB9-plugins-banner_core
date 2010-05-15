@@ -89,10 +89,12 @@ class FooController {
                     }
                 } 
                 catch (ApplicationException e) {
+println "XXXXXXXXXXXXXXXXXXXXX AE: $e"
                     response.setStatus( e.getHttpStatusCode() ) 
                     render( (e.returnMap( localizer ) + [ data: foo ]) as JSON ) // exception already logged within service
                 } 
                 catch (e) { // CI logging
+println "XXXXXXXXXXXXXXXXXXXXX E: $e"
                     response.setStatus( 500 ) 
                     log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
                     render( [ data: foo,

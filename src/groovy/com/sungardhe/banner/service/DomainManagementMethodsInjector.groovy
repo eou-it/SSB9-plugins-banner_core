@@ -90,7 +90,7 @@ public class DomainManagementMethodsInjector {
                     log.debug "Could not save a new ${domainSimpleName} due to exception: $ae", ae
                     throw ae
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e, false )
+                    def ae = new ApplicationException( domainClass, e )
                     log.debug "Could not save a new ${domainSimpleName} due to exception: $ae", e
                     throw ae
                 }
@@ -121,13 +121,13 @@ public class DomainManagementMethodsInjector {
                     log.debug "Could not update an existing ${domainSimpleName} with id = ${domainModelOrMap?.id} due to exception: ${ae.message}", ae
                     throw ae
                 } catch (ValidationException e) {
-                    def ae = new ApplicationException( domainClass, e, false )
+                    def ae = new ApplicationException( domainClass, e )
                     log.debug "Could not update an existing ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", e
                     checkOptimisticLockIfInvalid( domainObject, content, log ) // optimistic lock trumps validation errors
                     throw ae
                 } catch (e) {
                     log.debug "Could not update an existing ${domainSimpleName} with id = ${domainModelOrMap?.id} due to exception: ${e.message}", e
-                    throw new ApplicationException( domainClass, e, false )
+                    throw new ApplicationException( domainClass, e )
                 }
             }
         }
@@ -149,7 +149,7 @@ public class DomainManagementMethodsInjector {
                     log.debug "Could not delete ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", ae
                     throw ae
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e, false )
+                    def ae = new ApplicationException( domainClass, e )
                     log.debug "Could not delete ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", e
                     throw ae
                 }
@@ -164,7 +164,7 @@ public class DomainManagementMethodsInjector {
                     log.debug "Exception executing ${domainSimpleName}.read() with id = $id, due to exception: $ae", ae
                     throw ae
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e, false )
+                    def ae = new ApplicationException( domainClass, e )
                     log.debug "Exception executing ${domainSimpleName}.read() with id = $id, due to exception: $ae", e
                     throw ae
                 }                
@@ -179,7 +179,7 @@ public class DomainManagementMethodsInjector {
                     log.debug "Exception executing ${domainSimpleName}.get() with id = $id, due to exception: $ae", ae
                     throw ae
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e, false )
+                    def ae = new ApplicationException( domainClass, e )
                     log.debug "Exception executing ${domainSimpleName}.get() with id = $id, due to exception: $ae", e
                     throw ae
                 }                
@@ -191,7 +191,7 @@ public class DomainManagementMethodsInjector {
                 try {
                     domainClass.list( args )
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e, false )
+                    def ae = new ApplicationException( domainClass, e )
                     log.debug "Exception executing ${domainSimpleName}.list() with args = $args, due to exception: $ae", e
                     throw ae
                 }
@@ -203,7 +203,7 @@ public class DomainManagementMethodsInjector {
                 try {
                     domainClass.count()
                 } catch (e) {
-                    def ae = new ApplicationException( domainClass, e, false )
+                    def ae = new ApplicationException( domainClass, e )
                     log.debug "Exception executing ${domainSimpleName}.count() due to exception: $ae", e
                     throw ae
                 }
@@ -237,7 +237,7 @@ public class DomainManagementMethodsInjector {
         } else if (domainModelOrMap instanceof Map) {
             domainClass.newInstance( extractParams( domainClass, domainModelOrMap ) )
         } else {
-            throw new ApplicationException( domainClass, "Cannot assign a $domainClass using ${domainModelOrMap}", false )
+            throw new ApplicationException( domainClass, "Cannot assign a $domainClass using ${domainModelOrMap}" )
         }
     }
 
@@ -264,7 +264,7 @@ public class DomainManagementMethodsInjector {
                 domainObjectOrMap
             }
         } else {
-            throw new ApplicationException( domainClass, "Cannot extract a params map supporting $domainClass from: ${domainObjectOrMap}", false )
+            throw new ApplicationException( domainClass, "Cannot extract a params map supporting $domainClass from: ${domainObjectOrMap}" )
         }
     }
     
@@ -299,7 +299,7 @@ public class DomainManagementMethodsInjector {
                 // now we'll try to see if we can use an intermidiate coercion (to a string) to extract the id
                 extractId( domainClass, domainObjectParamsIdOrMap.toString() )
             } else {
-                throw new ApplicationException( domainClass, "Could not extract an 'id' from ${domainObjectParamsIdOrMap}", false )
+                throw new ApplicationException( domainClass, "Could not extract an 'id' from ${domainObjectParamsIdOrMap}" )
             }
         }
     }
@@ -311,7 +311,7 @@ public class DomainManagementMethodsInjector {
         }
         def persistentEntity = domainClass.get( id )
         if (!persistentEntity) {
-            throw new ApplicationException( domainClass, new NotFoundException(  id: id, entityClassName: domainClass.simpleName ), false )
+            throw new ApplicationException( domainClass, new NotFoundException(  id: id, entityClassName: domainClass.simpleName ) )
         }
         persistentEntity
     }
@@ -356,10 +356,10 @@ public class DomainManagementMethodsInjector {
             domainObject.refresh() // query the database, as a domainObject.get(id) will just hit the cache...
             if (content.version != domainObject.version) {
                 log.debug "Optimistic lock violation between params $content and the model's state in the database $domainObject that has version ${domainObject.version}"
-                throw new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.name, domainObject.id ) ), false )
+                throw new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.name, domainObject.id ) ) )
             }
         } else if (domainObject.hasProperty( 'version' )) {
-            def ae = new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.simpleName, domainObject.id ) ), false )
+            def ae = new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.simpleName, domainObject.id ) ) )
             log.debug "Could not update an existing ${domainObject.class.simpleName} with id = ${domainObject?.id} and version = ${domainObject?.version} due to Optimistic Lock violation, when given version ${content.version}. Exception is $ae"
             throw ae
         } else {

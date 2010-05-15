@@ -29,16 +29,14 @@ import org.springframework.jdbc.UncategorizedSQLException
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
 
 
-// TODO: This implementation borrows code from Enrollment Management and needs to be refactored to be 'more groovy' 
 /**
  * A runtime exception thrown from services (and other artifacts as necessary).  
  * This exception often wraps underlying runtime exceptions thrown by various libraries 
  * like Spring, Hibernate, Oracle, etc., and is used to provide a common interface for 
  * interogating the exception. 
- * Specific exceptions wrapped by this exception include:
- * update and delete may throw com.sungardhe.banner.exceptions.NotFoundException if the entity cannot be found in the database
- * update and delete may throw org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException a runtime exception if an optimistic lock failure occurs
- * create, update, and delete may throw grails.validation.ValidationException a runtime exception when there is a validation failure      
+ * 
+ * Developers who need to add specific support for a particular exception should add an 
+ * entry to the private 'exceptionHandlers' map.       
  **/
 class ApplicationException extends RuntimeException {    
     
@@ -49,7 +47,7 @@ class ApplicationException extends RuntimeException {
     
     String       friendlyName           // a friendly name for the exception - exposed as 'type' property               
     String       resourceCode = "internal.error" // usually set based upon a specific wrappedException, but defaulted as well
-    String       prePendResourceCode    // either the fully qualified class name or 'default', which will be used when creating the resourceCode
+    String       defaultMessage         // Used when a supplied localizable message ('@@r1:xxx') string cannot be found in message.properties
     
     String       entityClassName        // the fully qualified class name for the associated domain model
     def          id                     // optional, the id of the model if applicable
@@ -63,7 +61,7 @@ class ApplicationException extends RuntimeException {
      * @param e the Throwable to wrap within this application exception
      * @param prePendClassNameInResourceCode a boolean indicating whether to use the qualified class name or 'default' as part of the resourceCode
      **/  
-    public ApplicationException( entityClassOrName, Throwable e, prePendClassNameInResourceCode = false ) { 
+    public ApplicationException( entityClassOrName, Throwable e ) { 
         if (!entityClassOrName) entityClassOrName = ''  
         switch (entityClassOrName.class) {
             case (Class)  : this.entityClassName = entityClassOrName.name; break;
@@ -71,18 +69,21 @@ class ApplicationException extends RuntimeException {
             default       : this.entityClassName = entityClassOrName.toString(); 
                             log.warn "ApplicationException was given an entityClassOrName of type ${entityClassOrName.class}"
         }
-        prePendResourceCode = prePendClassNameInResourceCode ? "$entityClassName" : 'default'
         wrapException( e )
     }  
     
     
     /**
-     * Constructor for an Application Exception.
+     * Constructor for an Application Exception.  If the supplied msg follows the '@@:r1' 
+     * convention for embedding resource strings and properties, the resourceString will be 
+     * be prepended with the fully qualified class name. 
      * @param entityClassOrName a Class or name of an entity that will be used when localizing messages 
      * @param msg the message that will be used to create a RuntimeException that will be wrapped
+     * @param defaultMessage the message to use if 'msg' is encoded as a resourceCode (i.e., "@@r1:xxx") and that resourceCode is not found in message.properties
      **/  
-    public ApplicationException( entityClassOrName, String msg, prePendClassNameInResourceCode = true ) {        
+    public ApplicationException( entityClassOrName, String msg, String defaultMessage = null ) {        
         this( entityClassOrName, new RuntimeException( msg ) )
+        this.defaultMessage = defaultMessage
     }
     
     
@@ -92,7 +93,7 @@ class ApplicationException extends RuntimeException {
      * @param id the id of the entity, if applicable
      * @param e the Throwable to wrap within this application exception
      **/  
-    public ApplicationException( entityClassOrName, id, Throwable e, prePendClassNameInResourceCode = true ) {
+    public ApplicationException( entityClassOrName, id, Throwable e ) {
         this( entityClassOrName, e )
         this.id = id
     }
@@ -195,6 +196,22 @@ class ApplicationException extends RuntimeException {
     }
     
     
+    private String translate( map ) {
+        def msg
+        if (defaultMessage) {
+            msg = map.localize( code: map.code, args: map.args, default: defaultMessage )
+        } else {
+            msg = map.localize( code: "${entityClassName}.${map.code}", args: map.args )
+            if (!msg || msg == "${entityClassName}.${map.code}") {
+                msg = map.localize( code: "default.${map.code}", args: map.args )
+            }
+        }
+        msg
+    }
+    
+    
+    // ----------------------- Exception Handlers Map ------------------------
+    //
     // The following map associates closures with wrapped exceptions, in order to return  
     // specific, localized 'returnMap' values (i.e., message, args, errors) versus only 
     // generic values.  Controllers may return this 'returnMap', or convert it to JSON or XML
@@ -213,8 +230,10 @@ class ApplicationException extends RuntimeException {
         'NotFoundException': [ 
             httpStatusCode: 404,
             returnMap:  { localize -> 
-                            [ message: localize( code: "${prePendResourceCode}.not.found.message", 
-                                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+                            [ message: translate( localize: localize,
+                                                  code: "not.found.message", 
+                                                  args: [ localize( code: "${entityClassName}.label", 
+                                                                    default: getUserFriendlyName() ) ] ) as String,
                               errors: null
                             ] 
                         }
@@ -225,8 +244,10 @@ class ApplicationException extends RuntimeException {
         'DataRetrievalFailureException': [
             httpStatusCode: 404,
             returnMap:  { localize ->  
-                            [ message: localize( code: "${prePendResourceCode}.not.found.message", 
-                                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ), '' ] ) as String,
+                            [ message: translate( localize: localize,
+                                                  code: "not.found.message",
+                                                  args: [ localize( code: "${entityClassName}.label", 
+                                                                    default: getUserFriendlyName() ), '' ] ) as String,
                               errors: null
                             ]
                         }
@@ -235,8 +256,10 @@ class ApplicationException extends RuntimeException {
         'OptimisticLockException': [ 
             httpStatusCode: 409,
             returnMap:  { localize ->
-                            [ message: localize( code: "${prePendResourceCode}.optimistic.locking.failure", 
-                                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+                            [ message: translate( localize: localize,
+                                                  code: "optimistic.locking.failure",
+                                                  args: [ localize( code: "${entityClassName}.label", 
+                                                                    default: getUserFriendlyName() ) ] ) as String,
                               errors: null
                             ] 
                         }           
@@ -245,8 +268,10 @@ class ApplicationException extends RuntimeException {
         'ValidationException': [ 
             httpStatusCode: 400,
             returnMap:  { localize ->
-                            [ message: localize( code: "${prePendResourceCode}.validation.errors.message",
-                                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+                            [ message: translate( localize: localize,
+                                                  code: "validation.errors.message",
+                                                  args: [ localize( code: "${entityClassName}.label", 
+                                                                    default: getUserFriendlyName() ) ] ) as String,
                               errors: wrappedException.errors?.allErrors?.collect { localize( error: it ) }
                             ]
                         }
@@ -254,11 +279,13 @@ class ApplicationException extends RuntimeException {
         
         'MultiModelValidationException': [ 
             httpStatusCode: 400,
-            returnMap:  { localize ->
+            returnMap:  { localize -> 
                             String msg
-                            if (wrappedException.message?.startsWith("@@r1")) {
+                            if (wrappedException.message?.startsWith( "@@r1" )) {
                                 def rcp = getResourceCodeAndParams( wrappedException.message )
-                                msg = localize( code: "${prePendResourceCode}.${rcp.resourceCode}", args: rcp.bindingParams ) as String
+                                msg = translate( localize: localize,
+                                                 code: rcp.resourceCode,
+                                                 args: rcp.bindingParams ) as String
                             } else {
                                 msg = wrappedException.message
                             }
@@ -271,15 +298,17 @@ class ApplicationException extends RuntimeException {
         
         'ConstraintException': [ 
             httpStatusCode: 400,
-            returnMap:  { localize ->
+            returnMap:  { localize -> 
                             // A SQLException may be wrapped, a number of times, by one or more hibernate and Spring exceptions
                             def sqlException = extractSQLException( wrappedException )
                             if (sqlException) {
                                 // We can't just return a map, since many exceptions fall into this category and require specialized processing
                                 createReturnMapForSQLException( sqlException, localize )
                             } else {
-                                [ message: localize( code: "${prePendResourceCode}.constraint.error.message", 
-                                                     args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+                                [ message: translate( localize: localize,
+                                                      code: "constraint.error.message",
+                                                      args: [ localize( code: "${entityClassName}.label", 
+                                                                        default: getUserFriendlyName() ) ] ) as String,
                                   errors: null
                                 ] 
                             }
@@ -296,9 +325,10 @@ class ApplicationException extends RuntimeException {
         
         'EntityExistsException': [ 
             httpStatusCode: 409,
-            returnMap:  { localize ->
-                            [ message: localize( code: "${prePendResourceCode}.entity.exists.error.message", 
-                                                 args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+            returnMap:  { localize -> entity.exists.error.message
+                            [ message: translate( localize: localize,
+                                                  code: "entity.exists.error.message", 
+                                                  args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
                               errors: null
                             ]
                         }
@@ -306,11 +336,11 @@ class ApplicationException extends RuntimeException {
         
         'AnyOtherException':  [ 
             httpStatusCode: 400, // TODO: Refine processing (e.g., not.implemented should be 501)
-            returnMap:  { localize ->
+            returnMap:  { localize -> 
                             if (wrappedException.message.startsWith( "@@r1")) {
                                 def rcp = getResourceCodeAndParams( wrappedException.message )                               
                                 return [ 
-                                    message: localize( code: "${prePendResourceCode}.${rcp.resourceCode}", args: rcp.bindingParams ) as String,
+                                    message: translate( localize: localize, code: rcp.resourceCode, args: rcp.bindingParams ) as String,
                                     errors:  (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.collect { message( error: it ) } : null) 
                                 ]
                             } else {
@@ -324,27 +354,27 @@ class ApplicationException extends RuntimeException {
     ]
     
     
-// ------------------------------------ Private Methods -----------------------------------------
-    
-    
-    // We have a constraint exception that requires additional processing to extract desired error messages.
-    // Banner API Exceptions are handled here. 
+    // SQLException handling is performed in the below method (versus being handled in-line in the above exceptionHandlers map).
+    // This includes 'normal' Oracle SQLException exceptions as well as 'Banner API' exceptions.
+    //    
     private def createReturnMapForSQLException( sqlException, localize ) {
         def constraintType // used when creating an appropriate integrity constraint resourceCode
         
         switch (sqlExceptionErrorCode) {
-            case 1 : // 'Unique Exception' 
+            case 1 : // 'Unique Exception'  
                 log.error "A 'Unique' constraint exception was encountered that apparently was not \
                           caught as a validation constraint, for $entityClassName with id=$id", sqlException
-                return [ message: localize( code: "${prePendResourceCode}.not.unique.message", 
-                                            args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+                return [ message: translate( localize: localize,
+                                             code: "not.unique.message", 
+                                             args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
                          errors: null 
                        ]
             case 2290 : // 'Check' constraint -- This is considered a programming error, as this can be avoided using model validation constraints
                 log.error "A 'Check' constraint exception was encountered which may be better handled \
                           by adding a validation constraint to the $entityClassName with id $id", sqlException
-                return [ message: localize( code: "${prePendResourceCode}.constraint.error.message", 
-                                            args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+                return [ message: translate( localize: localize,
+                                             code: "constraint.error.message", 
+                                             args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
                          errors: null 
                        ]
             case 2291 :  
@@ -372,9 +402,10 @@ class ApplicationException extends RuntimeException {
             case  20200 : // handled below       
             case -20101 : // handled below
             case  20101 : // Banner API exceptions that tunnel resource codes  
-                def rcp = getResourceCodeAndParams( sqlException )                               
-                return [ message: localize( code: "${prePendResourceCode}.${rcp.resourceCode}", 
-                                            args: rcp.bindingParams ) as String,
+                def rcp = getResourceCodeAndParams( sqlException )                          
+                return [ message: translate( localize: localize,
+                                             code: rcp.resourceCode, 
+                                             args: rcp.bindingParams ) as String,
                          errors: null 
                        ]
                        
@@ -383,15 +414,17 @@ class ApplicationException extends RuntimeException {
             case -20100 : // handled below
             case  20100 : // handled below
             case -28115 : // handled below
-            case  28115 : // Banner API exceptions that contain full messages (localized per Banner)
-                return [ message: localize( code: "${prePendResourceCode}.banner.api.error", 
-                                            args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
+            case  28115 : // Banner API exceptions that contain full messages (localized per Banner) banner.api.error
+                return [ message: translate( localize: localize,
+                                             code: "banner.api.error", 
+                                             args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
                          errors: extractErrorMessages( sqlException.getMessage() )
                        ]
                        
             default :
-                return [ message: localize( code: "${prePendResourceCode}.banner.api.error", 
-                                            args: null ) as String,
+                return [ message: translate( localize: localize,
+                                             code: "banner.api.error", 
+                                             args: null ) as String,
                          errors: sqlException.getMessage() // may be ugly...
                        ] 
         }
