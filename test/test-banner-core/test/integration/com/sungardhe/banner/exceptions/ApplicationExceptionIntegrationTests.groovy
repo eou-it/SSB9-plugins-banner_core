@@ -38,13 +38,15 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     
 
     void testWrappedValidationException() {
+        
         def foo = new Foo( code: "TTTTTTTTT", description: "TT", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
 		             addressState: "TT", addressCountry: "TT", addressZipCode: "TT", systemRequiredIndicator: "N", voiceResponseMessageNumber: 1, statisticsCanadianInstitution: "TT",
 		             districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT" ) 
 		try {
 		    foo.save( failOnError:true, flush: true )
 		    fail( "Invalid foo was successfully saved!" )
-		} catch (ValidationException e) {
+		} 
+		catch (ValidationException e) {
 
 		    def ae = new ApplicationException( Foo, e )		    		    
     	    assertTrue "toString() does not have expected content, but has: ${ae}", ae.toString().contains( "code.maxSize" ) // should include the resourceCode
@@ -114,6 +116,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     
 
     void testAccummulateSpringErrors() {
+        
         def mmve = new MultiModelValidationException()
         def foo1 = new Foo( code: "TTTTTTTTT", 
                             description: "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT", 
@@ -143,6 +146,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
        
 
     void testWrappedOptimisticLockException() {
+        
         def foo = new Foo( code: "TT", description: "TT", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
 		             addressState: "TT", addressCountry: "TT", addressZipCode: "TT", systemRequiredIndicator: "N", voiceResponseMessageNumber: 1, statisticsCanadianInstitution: "TT",
 		             districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT",
@@ -154,14 +158,16 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
         try {
             sql = new Sql( sessionFactory.getCurrentSession().connection() )
             sql.executeUpdate( "update STVCOLL set STVCOLL_VERSION = 999 where STVCOLL_SURROGATE_ID = ?", [foo.id] )
-        } finally {
+        } 
+        finally {
             sql?.close() // note that the test will close the connection, since it's our current session's connection
         }
         
         foo.description = "This better fail"
 		try {
             foo.save( failOnError:true, flush: true )
-		} catch (OptimisticLockException e) {
+		} 
+		catch (OptimisticLockException e) {
 		    def ae = new ApplicationException( Foo, e )
 		    assertNotNull ae.toString()
 		    assertEquals 'OptimisticLockException', ae.getType()
@@ -352,8 +358,8 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     }
     
         
-    public void testStringWithAutoWrappingRuntimeException() {
-		def ae = new ApplicationException( "Foo", "@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@" )		
+    public void testAutoWrappingRuntimeExceptionWithUnneededDefault() {
+		def ae = new ApplicationException( Foo, "@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@", "The the default message!" )		
 	    assertTrue "toString() does not have expected content, but has: ${ae}", 
 	               ae.toString().contains( "@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@" )
 		assertEquals 'RuntimeException', ae.getType()
@@ -361,9 +367,24 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 		def returnMap = ae.returnMap( controller.localizer )
 		assertFalse returnMap.success
 
-		assertTrue returnMap.message ==~ /.*Sorry, FooController.SomeMissingAction is not yet implemented.*/
+		assertTrue "message not as expected but was: ${returnMap.message}", returnMap.message ==~ /.*Sorry, FooController.SomeMissingAction is not yet implemented.*/
 	    assertNull returnMap.errors 
 	    assertTrue returnMap.underlyingErrorMessage ==~ /.*@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@.*/					
+    }
+    
+        
+    public void testAutoWrappingRuntimeExceptionWithNeededDefault() {
+		def ae = new ApplicationException( Foo, "@@r1:runtime.you.wont.find.me:FooController:.SomeMissingAction@@", "The default message!" )		
+	    assertTrue "toString() does not have expected content, but has: ${ae}", 
+	               ae.toString().contains( "@@r1:runtime.you.wont.find.me:FooController:.SomeMissingAction@@" )
+		assertEquals 'RuntimeException', ae.getType()
+        
+		def returnMap = ae.returnMap( controller.localizer )
+		assertFalse returnMap.success
+
+		assertTrue "message not as expected but was: ${returnMap.message}", returnMap.message ==~ /.*The default message!.*/
+	    assertNull returnMap.errors 
+	    assertTrue returnMap.underlyingErrorMessage ==~ /.*@@r1:runtime.you.wont.find.me:FooController:.SomeMissingAction@@.*/					
     }
     
 }

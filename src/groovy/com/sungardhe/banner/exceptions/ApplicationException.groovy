@@ -197,15 +197,18 @@ class ApplicationException extends RuntimeException {
     
     
     private String translate( map ) {
-        def msg
-        if (defaultMessage) {
-            msg = map.localize( code: map.code, args: map.args, default: defaultMessage )
-        } else {
-            msg = map.localize( code: "${entityClassName}.${map.code}", args: map.args )
-            if (!msg || msg == "${entityClassName}.${map.code}") {
+        def msg = map.localize( code: "${entityClassName}.${map.code}", args: map.args )
+        log.debug "translate STEP1: msg = $msg"
+        if (msg == "${entityClassName}.${map.code}") {
+            if (defaultMessage) {
+                msg = map.localize( code: "default.${map.code}", args: map.args, default: defaultMessage )
+                log.debug "translate STEP2a: msg = $msg"
+            } else {
                 msg = map.localize( code: "default.${map.code}", args: map.args )
+                log.debug "translate STEP2b: msg = $msg"
             }
         }
+        log.debug "translate RETURNING: msg = $msg"
         msg
     }
     
