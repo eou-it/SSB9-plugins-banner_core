@@ -42,7 +42,7 @@ import org.apache.log4j.Logger
  *
  * Specifically, controllers using injected RESTful API methods should:
  *
- * Define closures that return appropriate returnMap maps:
+ * 1) Define closures that return appropriate returnMap maps IF the default ones here do not suffice:
  *
  * static def overrides = [
  *     save: [ success: [ success: true, 
@@ -58,50 +58,14 @@ import org.apache.log4j.Logger
  *     delete: etc...
  * ]
  * 
- * 
+ * 2) Define an 'extractParams' closure IF the default extraction of params does not suffice. If 
+ * a controller provides an implementation, it should return an appropriate params map as extracted 
+ * from the Grails Controller 'params' object (e.g., for a given request format, parsing may be required).
+ * The 'default' params extraction implemented here simply parses the 'params' object with the normal XML 
+ * and JSON Grails converters when supporting those requested formats. 
  **/
 class DefaultRestfulControllerMethods { 
-        
-
-    // The 'message' tag library is available to all controllers and is accessible via a 'message' method.
-    // Here we wrap this method as a closure, so that we can pass it as an argument.
-    // It is needed when asking a cought ApplicationException to prepare a localized response (i.e., returnMap). 
-    protected def localizer = { mapToLocalize ->
-        delegate.message( mapToLocalize )     // TODO: Use currying to expose this with the delegate already set by injectRestCrudActions
-    }
-    
-    
-    private static Map extractParams( delegate ) {  
-        if (delegate.metaClass.respondsTo( delegate.class, "fromParams" )) {
-            return delegate.fromParams()
-        } else if (delegate.request.format ==~ /.*html.*/) {
-            return delegate.params
-        } else if (delegate.request.format ==~ /.*json.*/) {
-            return JSON.parse( delegate.params?.data )
-        } else if (delegate.request.format ==~ /.*xml.*/) {
-            return XML.parse( delegate.params ) 
-        } else {
-            throw new RuntimeException( "@@r1:com.sungardhe.framework.unsupported_content_type:${delegate.request.format}" )
-        }        
-    }
-        
-    
-    private static void renderResult( delegate, responseMap ) {
-        if (delegate.request.format ==~ /.*html.*/) {
-            delegate.response.setHeader( "Content-Type", "application/html" ) 
-            delegate.render( responseMap )
-        } else if (delegate.request.format ==~ /.*json.*/) {
-            delegate.response.setHeader( "Content-Type", "application/json" ) 
-            delegate?.renderResult( responseMap as JSON )
-        } else if (delegate.request.format ==~ /.*xml.*/) {
-            // TODO: Need to support multiple approaches / formats / versions / etc.
-            delegate.response.setHeader( "Content-Type", "application/xml" ) 
-            delegate.render( responseMap as XML )
-        } else {
-            throw new RuntimeException( "@@r1:com.sungardhe.framework.unsupported_content_type:${delegate.request.format}" )
-        }        
-    }
-    
+            
         
     public static void injectRestCrudActions( controllerClassOrInstance, domainClass ) {
         def controllerClass = (controllerClassOrInstance instanceof Class) ? controllerClassOrInstance : controllerClassOrInstance.class
@@ -149,8 +113,8 @@ class DefaultRestfulControllerMethods {
                                               errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { delegate.message( error: it ) } : null),
                                               underlyingErrorMessage: e.message ]  )
                 }               
-            } // metaClass.save            
-        } // if save
+            }             
+        } 
         
         if (!controllerClass.metaClass.respondsTo( controllerClass, "update" )) {
 
@@ -185,8 +149,8 @@ class DefaultRestfulControllerMethods {
                                               underlyingErrorMessage: e.message ]  )
                 }               
         
-            } // metaClass.update
-        } // if update()
+            } 
+        } 
 
         if (!controllerClass.metaClass.respondsTo( controllerClass, "delete" )) {
 
@@ -219,9 +183,9 @@ class DefaultRestfulControllerMethods {
                                               errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { delegate.message( error: it ) } : null),
                                               underlyingErrorMessage: e.message ]  )
                 }               
-            } // metaClass.delete
-        } // if delete()
-
+            } 
+        } 
+        
         if (!controllerClass.metaClass.respondsTo( controllerClass, "show" )) {
 
             controllerClass.metaClass.show = { 
@@ -254,8 +218,8 @@ class DefaultRestfulControllerMethods {
                                               errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { delegate.message( error: it ) } : null),
                                               underlyingErrorMessage: e.message ]  )
                 }               
-            } // metaClass.show
-        } // if show()
+            } 
+        } 
         
         if (!controllerClass.metaClass.respondsTo( controllerClass, "list" )) {
 
@@ -290,50 +254,48 @@ class DefaultRestfulControllerMethods {
                                               errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { delegate.message( error: it ) } : null),
                                               underlyingErrorMessage: e.message ]  )
                 }               
-            } // metaClass.list
-        } // if list()
+            } 
+        } 
 
     }
-
-/*    
+        
     
-    
-    // If an exception occurs here, we won't really know how to handle... we'll let the errors controller deal with it.
-    def list = { 
-        params.max = Math.min( params.max ? params.max.toInteger() : 10, 100 ) 
-        def results
-        def totalCount
-        if (params.query != null) {
-            def q = "%" + params.query + "%"
-            results = Foo.findAllByDescriptionIlikeOrCodeIlike( q, q )
-            totalCount = Foo.countByDescriptionIlikeOrCodeIlike( q, q )
-        } 
-        else {
-            results = fooService.list( params )
-            totalCount = fooService.count()
+    private static Map extractParams( delegate ) {  
+        def extractedParams
+        if (delegate.metaClass.respondsTo( delegate.class, "extractParams" )) {
+            extractedParams = delegate.extractParams()
         }
-         
-        withFormat {
-            
-            json {
-                render( [ success: true, data: results, totalCount: totalCount ] as JSON )
-            }
-            
-            xml {
-                def refBase = "${request.scheme}://${request.serverName}:${request.serverPort}/${grailsApplication.metadata.'app.name'}/$controllerName"
-                switch (request.getHeader( 'Content-Type' )) {
-                    case 'application/vnd.sungardhe.student.v0.01+xml' :
-                         response.setHeader( 'Content-Type', request.getHeader( 'Content-Type' ) )
-                         render """<?xml version="1.0" encoding="UTF-8"?>
-                                   <TestResponse>This pretend old version does not have any useful data!</TestResponse>
-                                """
-                         return
-                    default :                
-                         response.setHeader( "Content-Type", "text/xml" )
-                         render( template:"list.v1.0.xml", model: [ fooList: results, totalCount: totalCount, refBase: refBase ] )
-                }
-            }
-        } 
+        
+        // if the delegate was able to extract the params, we're done -- otherwise we'll do it ourselves 
+        if (extractedParams) {
+            return extractedParams 
+        } else if (delegate.request.format ==~ /.*html.*/) {
+            return delegate.params
+        } else if (delegate.request.format ==~ /.*json.*/) {
+            return JSON.parse( delegate.params?.data )
+        } else if (delegate.request.format ==~ /.*xml.*/) {
+            return XML.parse( delegate.params ) 
+        } else {
+            throw new RuntimeException( "@@r1:com.sungardhe.framework.unsupported_content_type:${delegate.request.format}" )
+        }                    
     }
-*/                    
+        
+    
+    private static void renderResult( delegate, responseMap ) {
+        if (delegate.request.format ==~ /.*html.*/) {
+            delegate.response.setHeader( "Content-Type", "application/html" ) 
+            delegate.render( responseMap )
+        } else if (delegate.request.format ==~ /.*json.*/) {
+            delegate.response.setHeader( "Content-Type", "application/json" ) 
+            delegate?.renderResult( responseMap as JSON )
+        } else if (delegate.request.format ==~ /.*xml.*/) {
+            // TODO: Need to support multiple approaches / formats / versions / etc.
+            delegate.response.setHeader( "Content-Type", "application/xml" ) 
+            delegate.render( responseMap as XML )
+        } else {
+            throw new RuntimeException( "@@r1:com.sungardhe.framework.unsupported_content_type:${delegate.request.format}" )
+        }        
+    }
+
+
 }

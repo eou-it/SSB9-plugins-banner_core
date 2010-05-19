@@ -201,7 +201,7 @@ class FooController {
             json {        
                 response.setHeader( "Content-Type", "application/json" ) 
                 try {
-                    fooService.delete( params.id )
+                    fooService.delete( JSON.parse( params?.data ) )
                     render ( [ success: true ] as JSON )
                 } 
                 catch (ApplicationException e) {

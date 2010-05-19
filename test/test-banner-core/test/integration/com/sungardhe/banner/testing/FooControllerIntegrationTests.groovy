@@ -237,7 +237,6 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
 
         def result = JSON.parse( content )
         assertTrue "Expected success to be true but found results = $result", result?.success
-        assertNotNull result?.message // TODO: assert correct localized message
         
         assertNull Foo.get( entity.id )
     }
