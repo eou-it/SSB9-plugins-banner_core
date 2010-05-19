@@ -104,7 +104,7 @@ class ApplicationException extends RuntimeException {
         if (exceptionHandlers[ getType() ]) {
             code = exceptionHandlers[ getType() ].httpStatusCode
         } 
-        code ?: 500
+        code = code ?: 500
         code
     }
         
