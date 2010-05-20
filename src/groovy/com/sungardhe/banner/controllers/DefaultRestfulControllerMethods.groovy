@@ -9,7 +9,7 @@
  NOR USED FOR ANY PURPOSE OTHER THAN THAT WHICH IT IS SPECIFICALLY PROVIDED
  WITHOUT THE WRITTEN PERMISSION OF THE SAID COMPANY
  ****************************************************************************** */
-package com.sungardhe.banner.testing
+package com.sungardhe.banner.controllers
 
 import com.sungardhe.banner.exceptions.*
 
@@ -22,14 +22,16 @@ import org.apache.log4j.Logger
 
 /**
  * Methods that may be injected into controllers, giving them a default RESTful API 
- * supporting XML and JSON representations.
+ * supporting XML and JSON representations.  Controllers can have these methods 
+ * injected automatically simply by including the following line in their implementation:
+ * <code>static defaultCrudActions = true</code>
  *
  * Controllers that also render GSP/Zul pages are responsible for implementing separate 
  * actions that do not conflict with the default ones. (In general, this is expected 
- * to be limited to a 'main' action, as well as an index action that redirects to the main action.)
+ * to be limited to a 'view' action, as well as an index action that redirects to the view action.)
  *
  * NOTE: URI's containing 'api' will be directed to the appropriate controller 
- * action based upon HTTP type (see UriMappings.groovy).  These URIs will also 
+ * action based upon HTTP method (see UriMappings.groovy).  These URIs will also 
  * be authenticated using BasicAuthentication. URIs that do not have 'api' in their name 
  * will be directed to the appropriate action using non-REST conventions 
  * (i.e., the action name must be part of the URI). 
@@ -40,19 +42,20 @@ import org.apache.log4j.Logger
  * When using the default RESTful API actions, additional information must be specified in the 
  * controller when conventions cannot sufficiently define the desired behavior.
  *
- * Specifically, controllers using injected RESTful API methods should:
+ * Specifically, controllers using injected RESTful API methods may:
  *
- * 1) Define closures that return appropriate returnMap maps IF the default ones here do not suffice:
+ * 1) Define a map that specifies appropriate returnMap maps IF the default ones do not suffice:
  *
  * static def overrides = [
  *     save: [ success: [ success: true, 
  *                        data: foo, 
- *                        message: "${message( code: 'foo.created.message', \
+ *                        someExtraInfoNotAvailableInTheDefaultReturnMap: "my extra, very important information"
+ *                        message: "${message( code: 'foo.some_really_special.message', \
  *                        args: [ message( code: 'foo.label', default: 'Foo'), foo.code ] )}" ]}
  *           ],
  *     update: [ success: [ success: true, 
  *                          data: foo, 
- *                          message: "${message( code: 'foo.created.message', \
+ *                          message: "${message( code: 'foo.some_really_special.message', \
  *                          args: [ message( code: 'foo.label', default: 'Foo'), foo.code ] )}" ]}
  *           ]
  *     delete: etc...
@@ -81,22 +84,25 @@ class DefaultRestfulControllerMethods {
         controllerClass.metaClass.renderResult = { result ->
             render result
         }
+        
+        // And now we'll inject the CRUD actions        
 
         if (!controllerClass.metaClass.respondsTo( controllerClass, "save" )) {
 
             controllerClass.metaClass.save = { 
                 log.trace "${controllerClass.simpleName}.save invoked with ${delegate.params}"
+                def localizer = { mapToLocalize -> delegate.message( mapToLocalize ) }
                 def entity
                 try {
-                    def paramsMap = extractParams( delegate )
-                    entity = delegate."$serviceName".create( paramsMap )
+                    entity = delegate."$serviceName".create( params )
                     def successReturnMap
 //                  if - else .... the delegate doesn't specify a custom success return map for 'save'.... TODO: implement!
                         successReturnMap = [ success: true, 
                                              data: entity, 
-                                             message:  delegate.message( code: 'default.created.message',
-                                                                         args: [ delegate.message( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
+                                             message:  localizer( code: 'default.created.message',
+                                                                         args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
                                                                                  entity.id ] ) ]
+                    delegate.response.status = 201
                     renderResult( delegate, successReturnMap )
                 } 
                 catch (ApplicationException e) {
@@ -108,9 +114,9 @@ class DefaultRestfulControllerMethods {
                     log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
                     renderResult( delegate, [ data: entity,
                                               success: false, 
-                                              message: delegate.message( code: 'default.not.created.message', 
-                                                                         args: [ delegate.message( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
-                                              errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { delegate.message( error: it ) } : null),
+                                              message: localizer( code: 'default.not.created.message', 
+                                                                           args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
+                                              errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
                                               underlyingErrorMessage: e.message ]  )
                 }               
             }             
@@ -121,17 +127,17 @@ class DefaultRestfulControllerMethods {
             controllerClass.metaClass.update = { 
         
                 log.trace "${controllerClass.simpleName}.update invoked with ${delegate.params}"
+                def localizer = { mapToLocalize -> delegate.message( mapToLocalize ) }
                 def entity
                 try {
-                    def paramsMap = extractParams( delegate )
-                    entity = delegate."$serviceName".update( paramsMap )
+                    entity = delegate."$serviceName".update( params )
                     def successReturnMap
 //                  if - else .... the delegate doesn't specify a custom success return map for 'update' .... TODO: implement!
                         successReturnMap = [ success: true, 
                                              data: entity, 
-                                             message:  delegate.message( code: 'default.updated.message',
-                                                                         args: [ delegate.message( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
-                                                                                 entity.id ] ) ]
+                                             message:  localizer( code: 'default.updated.message',
+                                                                  args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
+                                                                          entity.id ] ) ]
                     renderResult( delegate, successReturnMap )
                 } 
                 catch (ApplicationException e) {
@@ -143,9 +149,9 @@ class DefaultRestfulControllerMethods {
                     log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
                     renderResult( delegate, [ data: entity,
                                               success: false, 
-                                              message: delegate.message( code: 'default.not.updated.message', 
-                                                                         args: [ delegate.message( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
-                                              errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { delegate.message( error: it ) } : null),
+                                              message: localizer( code: 'default.not.updated.message', 
+                                                                         args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
+                                              errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
                                               underlyingErrorMessage: e.message ]  )
                 }               
         
@@ -157,30 +163,29 @@ class DefaultRestfulControllerMethods {
             controllerClass.metaClass.delete = { 
 
                 log.trace "${controllerClass.simpleName}.delete invoked with ${delegate.params}"
-                def paramsMap
+                def localizer = { mapToLocalize -> delegate.message( mapToLocalize ) }
                 try {
-                    paramsMap = extractParams( delegate )
-                    delegate."$serviceName".delete( paramsMap )
+                    delegate."$serviceName".delete( params )
                     def successReturnMap
 //                  if - else .... the delegate doesn't specify a custom success return map for 'delete' .... TODO: implement!
                         successReturnMap = [ success: true, 
                                              data: null, 
-                                             message:  delegate.message( code: 'default.deleted.message',
-                                                                         args: [ delegate.message( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
+                                             message:  localizer( code: 'default.deleted.message',
+                                                                         args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
                     renderResult( delegate, successReturnMap )
                 } 
                 catch (ApplicationException e) {
                     delegate.response.setStatus( e.httpStatusCode ) 
-                    renderResult( delegate, (e.returnMap( localizer ) + [ data: paramsMap ]) )
+                    renderResult( delegate, (e.returnMap( localizer ) + [ data: params ]) )
                 } 
                 catch (e) { // CI logging
                     delegate.response.setStatus( 500 ) 
                     log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
                     renderResult( delegate, [ data: entity,
                                               success: false, 
-                                              message: delegate.message( code: 'default.not.deleted.message', 
-                                                                         args: [ delegate.message( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
-                                              errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { delegate.message( error: it ) } : null),
+                                              message: localizer( code: 'default.not.deleted.message', 
+                                                                         args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
+                                              errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
                                               underlyingErrorMessage: e.message ]  )
                 }               
             } 
@@ -191,31 +196,30 @@ class DefaultRestfulControllerMethods {
             controllerClass.metaClass.show = { 
 
                 log.trace "${controllerClass.simpleName}.show invoked with ${delegate.params}"
-                def paramsMap
+                def localizer = { mapToLocalize -> delegate.message( mapToLocalize ) }
                 def entity
                 try {
-                    paramsMap = params // no conversion -- expect only Long id
-                    entity = delegate."$serviceName".read( paramsMap.id )
+                    entity = delegate."$serviceName".read( params.id )
                     def successReturnMap
 //                  if - else .... the delegate doesn't specify a custom success return map for 'delete' .... TODO: implement!
                         successReturnMap = [ success: true, 
                                              data: entity, 
-                                             message:  delegate.message( code: 'default.show.message',
-                                                                         args: [ delegate.message( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
+                                             message:  localizer( code: 'default.show.message',
+                                                                  args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
                     renderResult( delegate, successReturnMap )
                 } 
                 catch (ApplicationException e) {
                     delegate.response.setStatus( e.httpStatusCode ) 
-                    renderResult( delegate, (e.returnMap( localizer ) + [ data: paramsMap ]) )
+                    renderResult( delegate, (e.returnMap( localizer ) + [ data: params ]) )
                 } 
                 catch (e) { // CI logging
                     delegate.response.setStatus( 500 ) 
                     log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
                     renderResult( delegate, [ data: entity,
                                               success: false, 
-                                              message: delegate.message( code: 'default.not.shown.message', 
-                                                                         args: [ delegate.message( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
-                                              errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { delegate.message( error: it ) } : null),
+                                              message: localizer( code: 'default.not.shown.message', 
+                                                                  args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
+                                              errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
                                               underlyingErrorMessage: e.message ]  )
                 }               
             } 
@@ -226,76 +230,60 @@ class DefaultRestfulControllerMethods {
             controllerClass.metaClass.list = { 
 
                 log.trace "${controllerClass.simpleName}.list invoked with ${delegate.params}"
-                def paramsMap
+                def localizer = { mapToLocalize -> delegate.message( mapToLocalize ) }
+
                 def entities
+                def totalCount
                 try {
-                    paramsMap = extractParams( delegate )
 //                  if-else ... the delegate may substitute it's own implementation versus the default service.read (e.g., to use a query instead)
-                    entities = delegate."$serviceName".list( paramsMap )
+                    entities = delegate."$serviceName".list( params )
+                    totalCount = delegate."$serviceName".count( params )
                     def successReturnMap
 //                  if - else .... the delegate doesn't specify a custom success return map for 'list' .... TODO: implement!
                         successReturnMap = [ success: true, 
-                                             data: entities, 
-                                             message:  delegate.message( code: 'default.list.message',
-                                                                         args: [ delegate.message( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
+                                             data: entities,
+                                             totalCount: totalCount, 
+                                             message: localizer( code: 'default.list.message',
+                                                                 args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
                     renderResult( delegate, successReturnMap )
                 } 
                 catch (ApplicationException e) {
                     delegate.response.setStatus( e.httpStatusCode ) 
-                    renderResult( delegate, (e.returnMap( localizer ) + [ data: paramsMap ]) )
+                    renderResult( delegate, (e.returnMap( localizer ) + [ data: params ]) )
                 } 
                 catch (e) { // CI logging
                     delegate.response.setStatus( 500 ) 
                     log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
                     renderResult( delegate, [ data: entities,
                                               success: false, 
-                                              message: delegate.message( code: 'default.not.listed.message', 
-                                                                         args: [ delegate.message( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
-                                              errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { delegate.message( error: it ) } : null),
+                                              message: localizer( code: 'default.not.listed.message', 
+                                                                         args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
+                                              errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
                                               underlyingErrorMessage: e.message ]  )
                 }               
             } 
         } 
-
     }
-        
-    
-    private static Map extractParams( delegate ) {  
-        def extractedParams
-        if (delegate.metaClass.respondsTo( delegate.class, "extractParams" )) {
-            extractedParams = delegate.extractParams()
-        }
-        
-        // if the delegate was able to extract the params, we're done -- otherwise we'll do it ourselves 
-        if (extractedParams) {
-            return extractedParams 
-        } else if (delegate.request.format ==~ /.*html.*/) {
-            return delegate.params
-        } else if (delegate.request.format ==~ /.*json.*/) {
-            return JSON.parse( delegate.params?.data )
-        } else if (delegate.request.format ==~ /.*xml.*/) {
-            return XML.parse( delegate.params ) 
-        } else {
-            throw new RuntimeException( "@@r1:com.sungardhe.framework.unsupported_content_type:${delegate.request.format}" )
-        }                    
-    }
-        
+             
     
     private static void renderResult( delegate, responseMap ) {
+        
         if (delegate.request.format ==~ /.*html.*/) {
             delegate.response.setHeader( "Content-Type", "application/html" ) 
             delegate.render( responseMap )
-        } else if (delegate.request.format ==~ /.*json.*/) {
+        } 
+        else if (delegate.request.format ==~ /.*json.*/) {
             delegate.response.setHeader( "Content-Type", "application/json" ) 
             delegate?.renderResult( responseMap as JSON )
-        } else if (delegate.request.format ==~ /.*xml.*/) {
+        } 
+        else if (delegate.request.format ==~ /.*xml.*/) {
             // TODO: Need to support multiple approaches / formats / versions / etc.
             delegate.response.setHeader( "Content-Type", "application/xml" ) 
             delegate.render( responseMap as XML )
-        } else {
+        } 
+        else {
             throw new RuntimeException( "@@r1:com.sungardhe.framework.unsupported_content_type:${delegate.request.format}" )
         }        
     }
-
 
 }

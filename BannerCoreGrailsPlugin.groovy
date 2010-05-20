@@ -19,9 +19,10 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
 import org.codehaus.groovy.grails.plugins.springsecurity.GrailsAccessDeniedHandlerImpl
 
+import com.sungardhe.banner.controllers.DefaultRestfulControllerMethods
+import com.sungardhe.banner.db.BannerDS as BannerDataSource
 import com.sungardhe.banner.security.BannerAuthenticationProvider
 import com.sungardhe.banner.service.DomainManagementMethodsInjector
-import com.sungardhe.banner.db.BannerDS as BannerDataSource
 
 import org.springframework.beans.factory.config.MapFactoryBean
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
@@ -135,7 +136,9 @@ Banner web applications.
         
         // inject CRUD methods into all services that have a this line: static defaultCrudMethods = true
         application.serviceClasses.each { serviceArtefact ->
-            def needsCRUD = GCU.getStaticPropertyValue( serviceArtefact.clazz, "defaultCrudMethods" )
+            
+            def needsCRUD = GCU.getStaticPropertyValue( serviceArtefact.clazz, "defaultCrudMethods" )  
+            
             if (needsCRUD) {
                 String serviceSimpleName = serviceArtefact.clazz.simpleName
                 String domainSimpleName = serviceSimpleName.substring( 0, serviceSimpleName.indexOf( "Service" ) )
@@ -144,6 +147,27 @@ Banner web applications.
                     it.clazz.simpleName.toLowerCase() == domainSimpleName.toLowerCase()
                 }
                 DomainManagementMethodsInjector.injectDataManagement( serviceArtefact.clazz, domainArtefact.clazz )
+            }
+        }
+        
+        // inject CRUD actions into all Controllers that have this line: static defaultCrudActions = true
+        application.controllerClasses.each { controllerArtefact ->
+
+            def needsCRUD = GCU.getStaticPropertyValue( controllerArtefact.clazz, "defaultCrudActions" )  
+            
+            if (needsCRUD) {
+                String controllerSimpleName = controllerArtefact.clazz.simpleName
+                String domainSimpleName = controllerSimpleName.substring( 0, controllerSimpleName.indexOf( "Controller" ) )
+
+                // We'll put in a 'test hack' to facilitate testing injected methods using different controllers all supporting Foo
+                if (domainSimpleName.startsWith( "Foo") ) {
+                    domainSimpleName = "Foo" 
+                }
+
+                def domainArtefact = application.domainClasses.find {
+                    it.clazz.simpleName.toLowerCase() == domainSimpleName.toLowerCase()
+                }
+                DefaultRestfulControllerMethods.injectRestCrudActions( controllerArtefact.clazz, domainArtefact.clazz )
             }
         }
         

@@ -31,29 +31,34 @@ import org.springframework.security.context.SecurityContextHolder
 class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTestCase {
 
     def fooService   // injected by Spring
-    
-    static List serviceCallbacks
-    
+        
     
     protected void setUp() {
         
-        DefaultRestfulControllerMethods.injectRestCrudActions( FooInjectedRestMethodsController, Foo )
-        controller = new FooInjectedRestMethodsController()    
+        // For testing RESTful APIs, we don't want the default 'controller support' added by our base class.
+        // Most importantly, we don't want to redefine the controller's params to be a map within this test,
+        // as we need Grails to automatically populate the params from the request.
+        //
+        // So, we'll set the formContext and then call super(), just as if this were not a controller test.
+        // That is, we'll set the controller after we call super() so the base class won't manipulate it.
+        formContext = [ 'STVCOLL' ]  
         
         super.setUp()
+
+        controller = new FooInjectedRestMethodsController()    
         
         assert fooService != null    
         controller.fooService = fooService        
     }
     
 
-    void testShowWithJSON() { 
+    void testShowWithJson() { 
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
         
-        params = [ id: entity.id ] 
-        
+        controller.request.content = "{'id': ${entity.id} }".getBytes()        
         controller.request.contentType = "application/json"
+        controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
         controller.show() 
          
         def result = JSON.parse( controller.response.contentAsString )
@@ -66,11 +71,13 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
     } 
     
                    
-    void testListWithJSON() {
+    void testListWithJson() {
         def MAX = 15 
-        params = [ max: MAX ]  
 
+        controller.request.content = "{'max': ${MAX} }".getBytes()        
         controller.request.contentType = "application/json"
+        controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
+
         controller.list() 
 
         def result = JSON.parse( controller.response.contentAsString )
@@ -78,7 +85,6 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
         assertTrue "Total count expected to be ${Foo.count()} but was ${result?.totalCount}", result?.totalCount == Foo.count()
 
         // Next we'll reconstitute Foo model instances from the JSON
-println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
         // The following fails when 'unit' tests are run alongside of integration tests. The exception is a 'null' violation 
         // due to the lastModified date not being set. The underlying exception is a JSON converter exception due to not being 
         // able to parse the date format. The Config.groovy sets grails.converters.json.date = "javascript", however when 
@@ -101,10 +107,12 @@ println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
     }
 
     
-    void testInsertWithJSON() {    
-        params = [ data: "${newFooParams() as JSON}" ] // notice we send json as well as receive json        
+    void testInsertWithJson() {    
 
-        controller.request.contentType = "text/json"
+        controller.request.content = "${newFooParams() as JSON}".getBytes()        
+        controller.request.contentType = "application/json"
+        controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
+
         controller.save() 
         
         def content = controller?.response?.contentAsString
@@ -123,10 +131,13 @@ println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
 
 
 
-    void testInsertWithJsonUsingInvalidEntity() { 
+    void testAttemptInsertInvalidEntityWithJson() { 
         def paramMap = newFooParams()  
         paramMap.code = "TOO_LONG"              
-        params = [ data: "${paramMap as JSON}" ] 
+
+        controller.request.content = "${paramMap as JSON}".getBytes()        
+        controller.request.contentType = "application/json"
+        controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
 
         controller.request.contentType = "text/json"      
         controller.save() 
@@ -144,13 +155,16 @@ println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
     }
     
     
-    void testUpdateWithJSON() {
+    void testUpdateWithJson() {
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
         int version = entity.version
         def code = "JJ"
-        params = [ data: "${((newFooParams() + [ id: entity.id, version: entity.version, code: code ]) as JSON)}" ]
+        
+        controller.request.content = "${((newFooParams() + [ id: entity.id, version: entity.version, code: code ]) as JSON)}".getBytes()        
         controller.request.contentType = "application/json"
+        controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
+
         controller.update()
     
         def content = controller.response.contentAsString
@@ -158,7 +172,6 @@ println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
 
         def result = JSON.parse( content )
         assertTrue result?.success
-
         assertNotNull result?.message // TODO: assert correct localized message
         
         entity = Foo.get( entity.id )
@@ -167,10 +180,11 @@ println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
     }
     
     
-    void testUpdateNotFound() {
-        params = [ data: "${((newFooParams() + [ id: -66666 ]) as JSON)}" ] // notice we send json as well as receive json      
-          
+    void testUpdateNotFoundWithJson() {          
+        controller.request.content = "${((newFooParams() + [ id: -66666 ]) as JSON)}".getBytes()        
         controller.request.contentType = "application/json"
+        controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
+
         controller.update()
     
         def content = controller.response.contentAsString
@@ -182,7 +196,7 @@ println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
     }
 
 
-    void testOptimisticLock() { 
+    void testOptimisticLockWithJson() { 
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
         int version = entity.version
@@ -191,9 +205,11 @@ println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
         executeUpdateSQL "update STVCOLL set STVCOLL_VERSION = 999 where STVCOLL_SURROGATE_ID = ?", entity.id
     
         def description = "This better fail" // due to optimistic lock exception
-        params = [ data: "${(newFooParams() + [ id: entity.id, version: entity.version, description: description ]) as JSON}" ] 
         
+        controller.request.content = "${(newFooParams() + [ id: entity.id, version: entity.version, description: description ]) as JSON}".getBytes()        
         controller.request.contentType = "application/json"
+        controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
+
         controller.update() 
                 
         def content = controller.response.contentAsString
@@ -213,7 +229,7 @@ println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
     }
 
 
-    void testOptimisticLockFailuresTrumpValidationFailures() { 
+    void testOptimisticLockFailuresTrumpValidationFailuresWithJson() { 
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
         int version = entity.version
@@ -222,9 +238,10 @@ println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
         executeUpdateSQL "update STVCOLL set STVCOLL_VERSION = 999 where STVCOLL_SURROGATE_ID = ?", entity.id
     
         // Should fail with optimistic lock even though it would also fail validation due to code being set to null
-        params = [ data: "${[ id: entity.id, code: '', version: entity.version ] as JSON}" ] 
-        
+        controller.request.content = "${[ id: entity.id, code: '', version: entity.version ] as JSON}".getBytes()        
         controller.request.contentType = "application/json"
+        controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
+        
         controller.update() 
         
         def content = controller.response.contentAsString
@@ -243,11 +260,14 @@ println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
     }
     
     
-    void testDeleteUsingJson() {
+    void testDeleteWithJson() {
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
-        params = [ data: "${((newFooParams() + [ id: entity.id, version: entity.version ]) as JSON)}" ]
+
+        controller.request.content = "${((newFooParams() + [ id: entity.id, version: entity.version ]) as JSON)}".getBytes()        
         controller.request.contentType = "application/json"
+        controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
+
         controller.delete()
     
         def content = controller.response.contentAsString
@@ -258,6 +278,13 @@ println "XXXXXXXXXXXXXXXXXX result = ${controller.response.contentAsString}"
         assertNotNull result?.message // TODO: assert correct localized message
         
         assertNull Foo.get( entity.id )
+    }
+    
+    
+    void testViewAction() {
+        controller.view()
+        def content = controller.response.contentAsString
+        assertEquals "If I had a UI, I'd render it now!", content
     }
     
     
