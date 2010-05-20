@@ -19,7 +19,7 @@ import grails.converters.XML
 
 /**
  * Controller supporting the Foo test model using injected RESTful CRUD methods.  
- * See 'FooOverridenInjectedMethodsController' for usage of injected methods while having control
+ * See 'FooOverriddenInjectedMethodsController' for usage of injected methods while having control
  * over 'success' rendering and param map extraction.
  **/
 class FooInjectedRestMethodsController { 

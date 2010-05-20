@@ -44,24 +44,35 @@ import org.apache.log4j.Logger
  *
  * Specifically, controllers using injected RESTful API methods may:
  *
- * 1) Define a map that specifies appropriate returnMap maps IF the default ones do not suffice:
+ * 1) Expose custom methods that perform custom rendering. These methods must accept a map that would 
+ *    have been used for default rendering. They must 'NOT' actually perform the rendering, but instead 
+ *    must simply return a Closure that 'can' perform the rendering if one is available that can  
+ *    handle the current request (i.e., HTTP type - a custom MIME type specifying a particular XML Schema version, etc.).
+ *    The reason these methods return closures is so that they do not have to implement custom support 
+ *    across the board, but can indicate (i.e., by returning a closure) specific individual responses 
+ *    it supports (e.g., perhaps only a custom MIME type is supported, and everything else is handled by  
+ *    the default rendering provided by the injected action).
  *
- * static def overrides = [
- *     save: [ success: [ success: true, 
- *                        data: foo, 
- *                        someExtraInfoNotAvailableInTheDefaultReturnMap: "my extra, very important information"
- *                        message: "${message( code: 'foo.some_really_special.message', \
- *                        args: [ message( code: 'foo.label', default: 'Foo'), foo.code ] )}" ]}
- *           ],
- *     update: [ success: [ success: true, 
- *                          data: foo, 
- *                          message: "${message( code: 'foo.some_really_special.message', \
- *                          args: [ message( code: 'foo.label', default: 'Foo'), foo.code ] )}" ]}
- *           ]
- *     delete: etc...
- * ]
+ *    Custom renderers are needed primarily for two situations: 
+ *       a) Grails cannot parse or write the needed format (e.g., the default Grails Converters for XML or JSON 
+ *          cannot properly handle a particular complex object correctly).  In this case, the renderAction methods
+ *          would really have to provide full support (as none of the default rendering would be functional).  
+ *       b) A Custom type is needed. For example, a custom MIME type may have been requested, as would be the case 
+ *          when asking for a particular XML version (based upon a versioned XML Schema).  In this situation, 
+ *          a renderAction method may check the 'request' and only return a Closure if the request.format was 
+ *          a supported custom MIME type. Otherwise, it would return null and the injected action would use it's 
+ *          own Grails Converter based rendering for XML. 
+ *
+ * It is important to note, the default JSON and XML rendering is simply based upon the Grails Converters, 
+ * and the JSON and XML structure is subject to change as the domain model classes are modified over time. 
  * 
- * 2) Define an 'extractParams' closure IF the default extraction of params does not suffice. If 
+ *         Closure 'renderSave( returnMap )   // the returnMap that 'would' have been rendered as default
+ *         Closure 'renderUpdate( returnMap ) // also note returnMap could reflect either a success or an error case. 
+ *         Closure 'renderDelete( returnMap )
+ *         Closure 'renderShow( returnMap )
+ *         Closure 'renderList( returnMap )
+ *
+ * 2) Expose an 'extractParams' closure IF the default extraction of params does not suffice. If 
  * a controller provides an implementation, it should return an appropriate params map as extracted 
  * from the Grails Controller 'params' object (e.g., for a given request format, parsing may be required).
  * The 'default' params extraction implemented here simply parses the 'params' object with the normal XML 
@@ -95,15 +106,22 @@ class DefaultRestfulControllerMethods {
                 def entity
                 try {
                     entity = delegate."$serviceName".create( params )
-                    def successReturnMap
-//                  if - else .... the delegate doesn't specify a custom success return map for 'save'.... TODO: implement!
-                        successReturnMap = [ success: true, 
+                    def successReturnMap = [ success: true, 
                                              data: entity, 
                                              message:  localizer( code: 'default.created.message',
-                                                                         args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
-                                                                                 entity.id ] ) ]
-                    delegate.response.status = 201
-                    renderResult( delegate, successReturnMap )
+                                                                  args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
+                                                                          entity.id ] ) ]
+                    def customRenderer
+                    if (controllerClass.metaClass.respondsTo( controllerClass, "renderSave" )) {
+                        customRenderer = delegate.renderSave( successReturnMap )
+                    } 
+                    if (customRenderer) {
+                        customRenderer( successReturnMap ) 
+                    } else {
+                        // the delegate didn't specify a closure that should be used to render the result 
+                        delegate.response.status = 201 // the 'created' code
+                        renderResult( delegate, successReturnMap )
+                    }
                 } 
                 catch (ApplicationException e) {
                     delegate.response.setStatus( e.httpStatusCode ) 
@@ -131,14 +149,21 @@ class DefaultRestfulControllerMethods {
                 def entity
                 try {
                     entity = delegate."$serviceName".update( params )
-                    def successReturnMap
-//                  if - else .... the delegate doesn't specify a custom success return map for 'update' .... TODO: implement!
-                        successReturnMap = [ success: true, 
+                    def successReturnMap = [ success: true, 
                                              data: entity, 
                                              message:  localizer( code: 'default.updated.message',
                                                                   args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
                                                                           entity.id ] ) ]
-                    renderResult( delegate, successReturnMap )
+                    def customRenderer
+                    if (controllerClass.metaClass.respondsTo( controllerClass, "renderUpdate" )) {
+                        customRenderer = delegate.renderUpdate( successReturnMap )
+                    } 
+                    if (customRenderer) {
+                        customRenderer( successReturnMap ) 
+                    } else {
+                        // the delegate didn't specify a closure that should be used to render the result 
+                        renderResult( delegate, successReturnMap )
+                    }
                 } 
                 catch (ApplicationException e) {
                     delegate.response.setStatus( e.httpStatusCode ) 
@@ -166,13 +191,21 @@ class DefaultRestfulControllerMethods {
                 def localizer = { mapToLocalize -> delegate.message( mapToLocalize ) }
                 try {
                     delegate."$serviceName".delete( params )
-                    def successReturnMap
-//                  if - else .... the delegate doesn't specify a custom success return map for 'delete' .... TODO: implement!
-                        successReturnMap = [ success: true, 
+                    def successReturnMap = [ success: true, 
                                              data: null, 
                                              message:  localizer( code: 'default.deleted.message',
-                                                                         args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
-                    renderResult( delegate, successReturnMap )
+                                                                  args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
+                                                                          params.id ] ) ]
+                    def customRenderer
+                    if (controllerClass.metaClass.respondsTo( controllerClass, "renderDelete" )) {
+                        customRenderer = delegate.renderDelete( successReturnMap )
+                    } 
+                    if (customRenderer) {
+                        customRenderer( successReturnMap ) 
+                    } else {
+                        // the delegate didn't specify a closure that should be used to render the result 
+                        renderResult( delegate, successReturnMap )
+                    }
                 } 
                 catch (ApplicationException e) {
                     delegate.response.setStatus( e.httpStatusCode ) 
@@ -181,7 +214,7 @@ class DefaultRestfulControllerMethods {
                 catch (e) { // CI logging
                     delegate.response.setStatus( 500 ) 
                     log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
-                    renderResult( delegate, [ data: entity,
+                    renderResult( delegate, [ data: null,
                                               success: false, 
                                               message: localizer( code: 'default.not.deleted.message', 
                                                                          args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
@@ -200,13 +233,20 @@ class DefaultRestfulControllerMethods {
                 def entity
                 try {
                     entity = delegate."$serviceName".read( params.id )
-                    def successReturnMap
-//                  if - else .... the delegate doesn't specify a custom success return map for 'delete' .... TODO: implement!
-                        successReturnMap = [ success: true, 
+                    def successReturnMap = [ success: true, 
                                              data: entity, 
                                              message:  localizer( code: 'default.show.message',
                                                                   args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
-                    renderResult( delegate, successReturnMap )
+                    def customRenderer
+                    if (controllerClass.metaClass.respondsTo( controllerClass, "renderShow" )) {
+                        customRenderer = delegate.renderShow( successReturnMap )
+                    } 
+                    if (customRenderer) {
+                        customRenderer( successReturnMap ) 
+                    } else {
+                        // the delegate didn't specify a closure that should be used to render the result 
+                        renderResult( delegate, successReturnMap )
+                    }
                 } 
                 catch (ApplicationException e) {
                     delegate.response.setStatus( e.httpStatusCode ) 
@@ -238,14 +278,21 @@ class DefaultRestfulControllerMethods {
 //                  if-else ... the delegate may substitute it's own implementation versus the default service.read (e.g., to use a query instead)
                     entities = delegate."$serviceName".list( params )
                     totalCount = delegate."$serviceName".count( params )
-                    def successReturnMap
-//                  if - else .... the delegate doesn't specify a custom success return map for 'list' .... TODO: implement!
-                        successReturnMap = [ success: true, 
+                    def successReturnMap = [ success: true, 
                                              data: entities,
                                              totalCount: totalCount, 
                                              message: localizer( code: 'default.list.message',
                                                                  args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
-                    renderResult( delegate, successReturnMap )
+                    def customRenderer
+                    if (controllerClass.metaClass.respondsTo( controllerClass, "renderList" )) {
+                        customRenderer = delegate.renderList( successReturnMap )
+                    } 
+                    if (customRenderer) {
+                        customRenderer( successReturnMap ) 
+                    } else {
+                        // the delegate didn't specify a closure that should be used to render the result 
+                        renderResult( delegate, successReturnMap )
+                    }
                 } 
                 catch (ApplicationException e) {
                     delegate.response.setStatus( e.httpStatusCode ) 
