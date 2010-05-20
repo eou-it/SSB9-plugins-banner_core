@@ -204,13 +204,13 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     
     
     void testCreateCallbacks() { 
-        assertFalse serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
+        assertTrue serviceCallbacks.size() == 0
         myService.create( newMyMockParams() )
         assertTrue serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
     }
     
     
-    void testCreateMethodCallback() { 
+    void testCreateExplicitMethodCallback() { 
         def svc = new AnotherWithCallbacksTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         svc.create( newMyMockParams() )        
@@ -218,15 +218,30 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     }
     
         
-    void testUpdateCallbacks() { // with html
-        assertFalse serviceCallbacks.containsAll( [ 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 2
+    void testUpdateCallbacks() { 
+        assertTrue serviceCallbacks.size() == 0
         myService.update( newMyMockParams() + [ id: 1, description: "Updated", version: 0 ] )
         assertTrue serviceCallbacks.containsAll( [ 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 2
     }
     
     
+    void testCreateOrUpdateWithCallbacks() { 
+        assertTrue serviceCallbacks.size() == 0
+        def createdDomain = myService.create( newMyMockParams() )
+        assertNotNull createdDomain?.id
+        assertTrue serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
+        
+        // now we'll issue the same and expect an update
+        createdDomain.description = "Updated" // note the update callback handler asserts this specific content
+        assertTrue serviceCallbacks?.size() == 2
+        def updatedDomain = myService.update( createdDomain ) 
+        assertEquals createdDomain.id, updatedDomain?.id
+        assertTrue serviceCallbacks.containsAll( [ 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 4
+    }
+    
+    
     void testDeleteCallbacks() { 
-        assertFalse serviceCallbacks.containsAll( [ 'preDelete', 'postDelete' ] ) && serviceCallbacks.size() == 2
+        assertTrue serviceCallbacks.size() == 0
         myService.delete( 1 )
         assertTrue serviceCallbacks.containsAll( [ 'preDelete', 'postDelete' ] ) && serviceCallbacks.size() == 2
     }

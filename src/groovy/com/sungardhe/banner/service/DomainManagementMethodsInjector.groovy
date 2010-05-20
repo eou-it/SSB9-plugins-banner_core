@@ -131,6 +131,26 @@ public class DomainManagementMethodsInjector {
                 }
             }
         }
+                
+        if (!serviceClass.metaClass.respondsTo( serviceClass, "createOrUpdate" )) {
+
+            serviceClass.metaClass.createOrUpdate = { domainModelOrMap ->
+                log.trace "${domainSimpleName}Service.createOrUpdate invoked with $domainModelOrMap"
+                def content = extractParams( domainClass, domainModelOrMap )
+                if (content.id) {
+                    log.trace "${domainSimpleName}Service.createOrUpdate will delegate to 'update'"
+                    // note: even though we extracted a params map, we'll pass the original so that other information (e.g., a keyBlock)
+                    // will remain available to any callbacks. If redundant processing incurs too much performance penalty, this 
+                    // will require changes to prevent the redundant processing. 
+                    delegate.update( domainModelOrMap ) 
+                } else {
+                    log.trace "${domainSimpleName}Service.createOrUpdate will delegate to 'create'"
+                    // see note above
+                    delegate.create( domainModelOrMap )
+                }
+                
+            }
+        }
 
         if (!(serviceClass.metaClass.respondsTo( serviceClass, "delete" ) || serviceClass.metaClass.respondsTo( serviceClass, "remove" ))) {
             serviceClass.metaClass.delete = { domainModelOrMapOrId ->
