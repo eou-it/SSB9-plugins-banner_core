@@ -53,9 +53,11 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
     
 
     void testShowWithJson() { 
+        
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
         
+        controller.request.method = 'GET'
         controller.request.content = "{'id': ${entity.id} }".getBytes()        
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
@@ -72,8 +74,9 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
     
                    
     void testListWithJson() {
+        
         def MAX = 15 
-
+        controller.request.method = 'GET'
         controller.request.content = "{'max': ${MAX} }".getBytes()        
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
@@ -109,6 +112,7 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
     
     void testInsertWithJson() {    
 
+        controller.request.method = 'POST'
         controller.request.content = "${newFooParams() as JSON}".getBytes()        
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
@@ -132,9 +136,11 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
 
 
     void testAttemptInsertInvalidEntityWithJson() { 
+        
         def paramMap = newFooParams()  
         paramMap.code = "TOO_LONG"              
 
+        controller.request.method = 'POST'
         controller.request.content = "${paramMap as JSON}".getBytes()        
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
@@ -156,11 +162,13 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
     
     
     void testUpdateWithJson() {
+        
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
         int version = entity.version
         def code = "JJ"
         
+        controller.request.method = 'PUT'
         controller.request.content = "${((newFooParams() + [ id: entity.id, version: entity.version, code: code ]) as JSON)}".getBytes()        
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
@@ -180,7 +188,9 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
     }
     
     
-    void testUpdateNotFoundWithJson() {          
+    void testUpdateNotFoundWithJson() {    
+              
+        controller.request.method = 'PUT'
         controller.request.content = "${((newFooParams() + [ id: -66666 ]) as JSON)}".getBytes()        
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
@@ -197,6 +207,7 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
 
 
     void testOptimisticLockWithJson() { 
+        
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
         int version = entity.version
@@ -206,6 +217,7 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
     
         def description = "This better fail" // due to optimistic lock exception
         
+        controller.request.method = 'PUT'
         controller.request.content = "${(newFooParams() + [ id: entity.id, version: entity.version, description: description ]) as JSON}".getBytes()        
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
@@ -237,11 +249,12 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
         // Now we'll issue a SQL update statement to adjust the version column
         executeUpdateSQL "update STVCOLL set STVCOLL_VERSION = 999 where STVCOLL_SURROGATE_ID = ?", entity.id
     
-        // Should fail with optimistic lock even though it would also fail validation due to code being set to null
+        controller.request.method = 'PUT'
         controller.request.content = "${[ id: entity.id, code: '', version: entity.version ] as JSON}".getBytes()        
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
         
+        // Should fail with optimistic lock even though it would also fail validation due to code being set to null
         controller.update() 
         
         def content = controller.response.contentAsString
@@ -261,9 +274,11 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
     
     
     void testDeleteWithJson() {
+        
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
 
+        controller.request.method = 'DELETE'
         controller.request.content = "${((newFooParams() + [ id: entity.id, version: entity.version ]) as JSON)}".getBytes()        
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
@@ -282,6 +297,7 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
     
     
     void testViewAction() {
+        
         controller.view()
         def content = controller.response.contentAsString
         assertEquals "If I had a UI, I'd render it now!", content
