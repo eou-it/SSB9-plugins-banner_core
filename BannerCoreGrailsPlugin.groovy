@@ -49,8 +49,8 @@ class BannerCoreGrailsPlugin {
     // more control on 'when' a grails app is updated to use a newer plugin version, and therefore 'could' allow delayed testing within those apps
     // independent of deploying a new plugin build to Nexus. 
     //
-    String version = "0.1-SNAPSHOT"
-    //String version = "0.1.6" 
+    //String version = "0.1-SNAPSHOT"
+    String version = "0.1.7" 
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
