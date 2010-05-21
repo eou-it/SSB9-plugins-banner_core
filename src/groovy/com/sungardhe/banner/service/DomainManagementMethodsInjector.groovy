@@ -17,6 +17,7 @@ import org.apache.log4j.Logger
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
+import org.hibernate.Session
 import org.hibernate.StaleObjectStateException
 
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
@@ -72,8 +73,8 @@ public class DomainManagementMethodsInjector {
 
         if (!serviceClass.metaClass.respondsTo( serviceClass, "create" )) {
 
-            serviceClass.metaClass.create = { domainModelOrMap ->
-                log.trace "${domainSimpleName}Service.create invoked with $domainModelOrMap"
+            serviceClass.metaClass.create = { domainModelOrMap, flushImmediately = true ->
+                log.trace "${domainSimpleName}Service.create invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
                 try {
                     if (delegate.respondsTo( 'preCreate' )) delegate.preCreate( domainModelOrMap )
                     
@@ -81,7 +82,8 @@ public class DomainManagementMethodsInjector {
                     assert domainObject.id == null                    
                     updateSystemFields( domainObject )
                     log.trace "${domainSimpleName}Service.create will save $domainObject"
-                    def createdModel = domainObject.save( failOnError: true, flush: true )
+                    
+                    def createdModel = domainObject.save( failOnError: true, flush: flushImmediately ) 
                     
                     if (delegate.respondsTo( 'postCreate' )) delegate.postCreate( [ before: domainModelOrMap, after: createdModel ] )
                     
@@ -98,8 +100,8 @@ public class DomainManagementMethodsInjector {
         }
 
         if (!serviceClass.metaClass.respondsTo( serviceClass, "update" )) {
-            serviceClass.metaClass.update = { domainModelOrMap ->
-                log.trace "${domainSimpleName}Service.update invoked with $domainModelOrMap"
+            serviceClass.metaClass.update = { domainModelOrMap, flushImmediately = true ->
+                log.trace "${domainSimpleName}Service.update invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
                 def content      // we'll extract the domainModelOrMap into a params map of the properties
                 def domainObject // we'll fetch the model instance into this, and bulk assign the 'content'
                 try {
@@ -112,7 +114,7 @@ public class DomainManagementMethodsInjector {
                     updateSystemFields( domainObject )
                                       
                     log.trace "${domainSimpleName}Service.update applied updates and will save $domainObject"
-                    def updatedModel = domainObject.save( failOnError:true, flush: true )
+                    def updatedModel = domainObject.save( failOnError:true, flush: flushImmediately )
 
                     if (delegate.respondsTo( 'postUpdate' )) delegate.postUpdate( [ before: domainModelOrMap, after: updatedModel ] )
 
@@ -134,34 +136,34 @@ public class DomainManagementMethodsInjector {
                 
         if (!serviceClass.metaClass.respondsTo( serviceClass, "createOrUpdate" )) {
 
-            serviceClass.metaClass.createOrUpdate = { domainModelOrMap ->
-                log.trace "${domainSimpleName}Service.createOrUpdate invoked with $domainModelOrMap"
+            serviceClass.metaClass.createOrUpdate = { domainModelOrMap, flushImmediately = true ->
+                log.trace "${domainSimpleName}Service.createOrUpdate invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
                 def content = extractParams( domainClass, domainModelOrMap )
                 if (content.id) {
                     log.trace "${domainSimpleName}Service.createOrUpdate will delegate to 'update'"
                     // note: even though we extracted a params map, we'll pass the original so that other information (e.g., a keyBlock)
                     // will remain available to any callbacks. If redundant processing incurs too much performance penalty, this 
                     // will require changes to prevent the redundant processing. 
-                    delegate.update( domainModelOrMap ) 
+                    delegate.update( domainModelOrMap, flushImmediately ) 
                 } else {
                     log.trace "${domainSimpleName}Service.createOrUpdate will delegate to 'create'"
                     // see note above
-                    delegate.create( domainModelOrMap )
+                    delegate.create( domainModelOrMap, flushImmediately )
                 }
                 
             }
         }
 
         if (!(serviceClass.metaClass.respondsTo( serviceClass, "delete" ) || serviceClass.metaClass.respondsTo( serviceClass, "remove" ))) {
-            serviceClass.metaClass.delete = { domainModelOrMapOrId ->
-                log.trace "${domainSimpleName}Service.delete invoked with $domainModelOrMapOrId"
+            serviceClass.metaClass.delete = { domainModelOrMapOrId, flushImmediately = true ->
+                log.trace "${domainSimpleName}Service.delete invoked with domainModelOrMapOrId = $domainModelOrMapOrId and flushImmediately = $flushImmediately"
                 def domainObject
                 try {
                     if (delegate.respondsTo( 'preDelete' )) delegate.preDelete( domainModelOrMapOrId )
                     
                     def id = extractId( domainClass, domainModelOrMapOrId )
                     domainObject = fetch( domainClass, id, log )
-                    domainObject.delete( failOnError:true, flush: true )
+                    domainObject.delete( failOnError:true, flush: flushImmediately )
                     
                     if (delegate.respondsTo( 'postDelete' )) delegate.postDelete( [ before: domainObject, after: null ] )
                     true
@@ -228,7 +230,30 @@ public class DomainManagementMethodsInjector {
                     throw ae
                 }
             }
-        }   
+        }  
+        
+        // This 'may' be used to explicitly flush the hibernate session if previous create or update
+        // invocations postponed flush (by specifying false as the second argument). 
+        // Note that the only benefit gained is that exceptions will be wrapped in an 
+        // ApplicationException if necessary to facilitate responding to a user. It is optional.  
+        if (!serviceClass.metaClass.respondsTo( serviceClass, "flush" )) {
+
+            serviceClass.metaClass.flush = { ->
+                log.trace "${domainSimpleName}Service.flush invoked"
+                try {
+                    domainClass.withSession { session ->
+                        session.flush()    
+                    }
+                } catch (ApplicationException ae) { 
+                    log.debug "Could not save a new ${domainSimpleName} due to exception: $ae", ae
+                    throw ae
+                } catch (e) {
+                    def ae = new ApplicationException( domainClass, e )
+                    log.debug "Could not save a new ${domainSimpleName} due to exception: $ae", e
+                    throw ae
+                }
+            }
+        }
         
     }    
         

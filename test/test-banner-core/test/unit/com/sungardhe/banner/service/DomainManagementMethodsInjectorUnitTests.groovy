@@ -15,6 +15,8 @@ import grails.test.GrailsUnitTestCase
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
+import org.hibernate.Session // we mock this within this test
+
 import org.springframework.security.context.SecurityContextHolder
 
 
@@ -25,6 +27,7 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     
     def myService           // assigned in setUp method
     List serviceCallbacks   // assigned in setUp method
+    
     
     protected void setUp() {
         super.setUp()
@@ -41,6 +44,13 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         
         mockDomain( MyMock, [ new MyMock( name: 'First', description: 'A first Mock object' ), 
                               new MyMock( name: 'Second', description: 'A second Mock object' ) ] )
+        
+        // We'll mock the session and just return the number of times we've called a method on it...                      
+        MyMock.metaClass.static.withSession = { Closure closure ->
+            def sessionMock = [:].asType( Session )
+            sessionMock.metaClass.invokeMethod { String name, args -> } 
+            closure( sessionMock )
+        }
     }
     
     
@@ -76,6 +86,22 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         def createdDomain = svc.create( [ domainModel: new MyMock( newMyMockParams() ), otherJunk: 'Some validation stuff maybe?' ] )
         assertNotNull createdDomain?.id 
+    }
+    
+    
+    void testCreateUsingModelInstanceAndNotFlushingSession() { 
+        // actually, can't really test that via mocking, but we'll at least test signatures here and 
+        // implement 'real' testing to the FooServiceIntegrationTests. The below is more or less, documentation. 
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
+        def createdDomains = [ svc.create( new MyMock( newMyMockParams() ), false ), // yup, looks like we can pass a boolean
+                               svc.create( new MyMock( newMyMockParams() ), false ), // without getting a methodMissing exception
+                               svc.create( new MyMock( newMyMockParams() ), false ) ]
+        // since the mocking library won't delegate to the session (as it isn't even mocked normally),
+        // all we'll really be able to do here is ensure we don't get a method missing exception... 
+        // Ideally, the mocking will become more sophisticated to handle flush: true. 
+        svc.flush()  
+        
     }
     
     

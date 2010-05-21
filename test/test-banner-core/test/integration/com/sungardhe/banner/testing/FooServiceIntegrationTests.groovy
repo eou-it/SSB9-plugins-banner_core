@@ -34,6 +34,8 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def fooService   // injected by Spring
     
+    def sessionContext  // injected by Spring
+    
     
     protected void setUp() {
         formContext = ['STVCOLL'] 
@@ -41,22 +43,14 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 //        useTransactions = false   // this is what most tests should do, to ensure declarative transactions        
         assert fooService != null            
         super.setUp()
-        tearDownTestFoo( true ) // tearDown should take care of this
+        tearDownTestFoo( true ) // tearDown should take care of this -- will really only be effective once we stop managing
+                                // transactions within the test framework (that is, for a specific framework test of transactions) 
+                                // but instead rely on declarative transactions. 
     }
     
     protected void tearDown() {
         tearDownTestFoo()
         super.tearDown()
-    }
-    
-    
-    private def tearDownTestFoo( boolean warnIfFound = false ) {
-        def testFoo = Foo.findByDescription( "Horizon Test Data" )
-        if (testFoo) {
-            if (warnIfFound) log.warn "Test data was found that should have been torn down!"
-            Foo.withTransaction { testFoo.delete( failOnError:true, flush: true ) }
-            assertNull Foo.findByDescription( "Horizon Test Data" )
-        }
     }
     
     
@@ -67,6 +61,33 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     }
     
     
+    // Note: This test is not effective, and thus only ensures we don't encounter exceptions etc.
+    // There does not seem to be exposed callbacks to monitor when the flush actually occurs, 
+    // and using flush=false does not seem to have any effect -- at least when running integration tests.
+    // The code exercised by this test is retained simply as it does pass the boolean in accordance
+    // with Grails conventions. TODO: Implement true test, investigate why flushing is immediate regardless of 'flush: false'. 
+    // 
+    void testSaveWithoutFlush() { 
+        Foo.withSession { session ->            
+            def foos = [ fooService.create( newTestFooParams(), false ),
+                         fooService.create( newTestFooParams() + [code: 'UU'], false ),
+                         fooService.create( newTestFooParams() + [code: 'VV'], false ) ]
+/*
+        // Note: This currently finds the record -- proving that the DDL has in fact been executed. 
+        def sql = null
+            try {
+                sql = new Sql( session.connection() )
+                assertNull sql.firstRow( "select STVCOLL_CODE from saturn.STVCOLL where STVCOLL_CODE = 'UU'" )
+            } finally {
+                sql?.close()
+            }
+*/
+            fooService.flush()
+            assertEquals 3, foos.findAll { it.id > 0 }.size()
+        }
+    }
+    
+    
     void testReadOnlyMethod() { 
         def foo = fooService.create( newTestFooParams() )
         assertNotNull foo.id
@@ -74,42 +95,49 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     }
     
 
-// Currently disabled pending full support of transaction testing and transaction demarcation using @Transaction annotations
-    // This tests that we can see pending creates in the
-    // current transaction and that we cannot see pending creates in a different transaction.
-    // We'll put this here as we need the full database environment versus a unit test.
-/*    void testTransactionCommitted() {
+    // This is a 'framework' test -- please do not copy it into your normal service integration tests.
+    // This tests that we can see pending creates in the current transaction and that we cannot see 
+    // pending creates in a different transaction.
+    void testTransactionIsolation() {
         Connection conn = null
-        def sql = null
         def found 
         def otherThread
     
-        try {
-            def foo = fooService.create( newTestFooParams() )
-            assertNotNull foo.id
+        def foo = fooService.create( newTestFooParams() )
+        assertNotNull foo.id
         
-            // and ensure we can see it using a connnection from another thread -- i.e., that the transaction committed
-            otherThread = new Thread( {  // we'll use a closure to get a connection via a different thread
-                com.sungardhe.banner.security.FormContext.set( ['STVCOLL'] )
-                login()
-                def sqlB = null
-                try {
-                    sqlB = new Sql( dataSource )
-                    found = sqlB.firstRow( "select STVCOLL_DESC from saturn.STVCOLL where STVCOLL_DESC = 'Horizon Test Data'" )
-                } finally {
-                    sqlB?.close()
-                }
-            })
-            otherThread.start()
-        } finally {
-            sql?.close()
-            // note we don't close the connection - the test framework will perform a rollback and then close
-        }
+        // and ensure we can see it using a connnection from another thread -- i.e., that the transaction committed
+        otherThread = new Thread( {  // we'll use a closure to get a connection via a different thread
+            com.sungardhe.banner.security.FormContext.set( ['STVCOLL'] )
+            login()
+            def sql = null
+            try {
+                sql = new Sql( dataSource )
+                found = sql.firstRow( "select STVCOLL_DESC from saturn.STVCOLL where STVCOLL_DESC = 'Horizon Test Data'" )
+            } finally {
+                sql?.close()
+            }
+        })
+        otherThread.start()
     
         otherThread.join()
-        assertTrue found?.toString().contains( "Horizon Test Data" )
+        assertNull found
     }
-*/                       
+                       
+    
+    // really only effective once we stop managing transactions within tests and truly use the declarative transaction boundaries.
+    // This testing, once the @Transactional attribute is working, may need to be performed within a functional test...
+    private def tearDownTestFoo( boolean warnIfFound = false ) {
+        def testFoos = Foo.findAllByDescription( "Horizon Test Data" )
+        if (testFoos?.size() > 0) {
+            if (warnIfFound) log.warn "Test data was found that should have been torn down!"
+            Foo.withTransaction { 
+                testFoos.each { it.delete( failOnError:true, flush: true ) } 
+            }
+            assertEquals 0, Foo.findAllByDescription( "Horizon Test Data" ).size()
+        }
+    }
+    
 
     private Map newTestFooParams() {
         [ code: "TT", description: "Horizon Test Data", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
