@@ -11,8 +11,8 @@
 *******************************************************************************/
 package com.sungardhe.banner.security
 
-import org.springframework.security.GrantedAuthority
-import org.springframework.security.GrantedAuthorityImpl
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.GrantedAuthorityImpl
 
 
 // NOTE: This implementation holds the Banner password that must be used 

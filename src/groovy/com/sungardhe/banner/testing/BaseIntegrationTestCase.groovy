@@ -1,5 +1,4 @@
 /** *****************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -20,9 +19,9 @@ import groovy.sql.Sql
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
-import org.springframework.security.Authentication
-import org.springframework.security.context.SecurityContextHolder
-import org.springframework.security.providers.UsernamePasswordAuthenticationToken as UPAT
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken as UPAT
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 
 
 /**

@@ -17,7 +17,6 @@ import org.apache.commons.logging.LogFactory
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
-import org.codehaus.groovy.grails.plugins.springsecurity.GrailsAccessDeniedHandlerImpl
 
 import com.sungardhe.banner.controllers.DefaultRestfulControllerMethods
 import com.sungardhe.banner.db.BannerDS as BannerDataSource
@@ -26,9 +25,9 @@ import com.sungardhe.banner.service.DomainManagementMethodsInjector
 
 import org.springframework.beans.factory.config.MapFactoryBean
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
-import org.springframework.security.ui.basicauth.BasicProcessingFilterEntryPoint
-import org.springframework.security.ui.ExceptionTranslationFilter
-import org.springframework.security.util.FilterChainProxy
+import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
+import org.springframework.security.web.access.ExceptionTranslationFilter
+import org.springframework.security.web.FilterChainProxy
 
 
 /**
@@ -56,7 +55,7 @@ class BannerCoreGrailsPlugin {
     def grailsVersion = "1.3.0 > *"
     
     // the other plugins this plugin depends on
-    def dependsOn = [ acegi: "0.5.2" ]
+//    def dependsOn = [ 'spring-security-core': "0.3.1" ]
     
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
@@ -111,14 +110,14 @@ Banner web applications.
             authenticationDataSource = authenticationDataSource
         }
 
-        basicAuthenticationEntryPoint( BasicProcessingFilterEntryPoint ) {
+        basicAuthenticationEntryPoint( BasicAuthenticationEntryPoint ) {
             realmName = 'REST API Realm'
         }
         
         basicExceptionTranslationFilter( ExceptionTranslationFilter ) {
           authenticationEntryPoint = ref( 'basicAuthenticationEntryPoint' )
           accessDeniedHandler = ref( 'accessDeniedHandler' )
-          portResolver = ref( 'portResolver' )
+//          portResolver = ref( 'portResolver' )
         }
 
         springSecurityFilterChain( FilterChainProxy ) {

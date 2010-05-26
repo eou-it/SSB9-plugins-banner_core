@@ -13,17 +13,21 @@ package com.sungardhe.banner.db
 
 import com.sungardhe.banner.security.FormContext
 import com.sungardhe.banner.security.BannerGrantedAuthority
+
 import groovy.sql.Sql
+
 import javax.sql.DataSource
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.CallableStatement
+
 import oracle.jdbc.OracleConnection
 
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.Logger
-import org.springframework.security.GrantedAuthority
-import org.springframework.security.context.SecurityContextHolder
+
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 
 
 /**

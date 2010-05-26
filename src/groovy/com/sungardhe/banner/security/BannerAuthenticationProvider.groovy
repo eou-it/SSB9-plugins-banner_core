@@ -12,10 +12,10 @@
 package com.sungardhe.banner.security
 
 
-import org.springframework.security.providers.*
-import org.springframework.security.Authentication
-import org.springframework.security.GrantedAuthority
-import org.springframework.security.GrantedAuthorityImpl
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.GrantedAuthorityImpl
 import org.apache.log4j.Logger
 import java.sql.SQLException
 import groovy.sql.Sql
@@ -51,12 +51,12 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         }
         
         try {
-            GrantedAuthority[] authorities = determineAuthorities( authentication.name.toUpperCase() )
+            Collection<GrantedAuthority> authorities = determineAuthorities( authentication.name.toUpperCase() )
 
             if (authorities) {
                 def user = new BannerUser( authentication.name, authentication.credentials as String,
                                            true /*enabled*/, true /*accountNonExpired*/,
-                                           true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities )
+                                           true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities as Collection )
                 def token = new BannerAuthenticationToken( user )
 
                 log.trace "BannerAuthenticationProvider.authenticate authenticated user $user and is returning a token $token"
@@ -79,9 +79,9 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     }
 
 
-    private GrantedAuthority[] determineAuthorities( String name ) {
+    private Collection<GrantedAuthority> determineAuthorities( String name ) {
         def conn = null
-        List authorities = []
+        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
         name = name.toUpperCase()
         try {
             // We query the database for all role assignments for the user, using an unproxied connection.
@@ -100,7 +100,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             conn?.close()
         }
         log.trace "BannerAuthenticationProvider.determineAuthorities is returning $authorities"
-        authorities as GrantedAuthority[]
+        authorities
     }
 
 }

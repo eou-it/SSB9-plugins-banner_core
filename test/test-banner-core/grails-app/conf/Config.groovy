@@ -125,8 +125,8 @@ log4j = {
     off  'grails.app' // The artefact may be omitted to apply to all artefacts  
         
     // Configure logging for other classes (e.g., in src/ or grails-app/utils/) here:
-    off  'com.sungardhe.banner.security'
-    off  'com.sungardhe.banner.db'
+    all  'com.sungardhe.banner.security'
+    all  'com.sungardhe.banner.db'
     off 'com.sungardhe.banner.student'
     
     // Grails framework classes

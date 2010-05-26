@@ -21,7 +21,7 @@ import org.hibernate.Session
 import org.hibernate.StaleObjectStateException
 
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
-import org.springframework.security.context.SecurityContextHolder as SCH
+import org.springframework.security.core.context.SecurityContextHolder as SCH
 
 import grails.validation.ValidationException
 

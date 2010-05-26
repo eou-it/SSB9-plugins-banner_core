@@ -17,7 +17,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 import org.hibernate.Session // we mock this within this test
 
-import org.springframework.security.context.SecurityContextHolder
+import org.springframework.security.core.context.SecurityContextHolder
 
 
 /**

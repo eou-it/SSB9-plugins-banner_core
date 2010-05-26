@@ -11,8 +11,8 @@
  ****************************************************************************** */
 package com.sungardhe.banner.security
 
-import org.springframework.security.Authentication
-import org.springframework.security.GrantedAuthority
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.GrantedAuthority
 
 /**
  * An authentication token created upon successful authentication.
@@ -28,7 +28,7 @@ public class BannerAuthenticationToken implements Authentication {
     }
 
 
-    public GrantedAuthority[] getAuthorities() {
+    public Collection getAuthorities() {
         user?.authorities;
     }
 

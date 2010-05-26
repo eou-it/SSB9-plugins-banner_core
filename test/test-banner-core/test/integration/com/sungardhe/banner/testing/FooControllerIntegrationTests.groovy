@@ -22,7 +22,7 @@ import grails.converters.JSON
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
-import org.springframework.security.context.SecurityContextHolder
+import org.springframework.security.core.context.SecurityContextHolder
 
 
 /**

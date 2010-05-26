@@ -20,15 +20,15 @@ import groovy.sql.Sql
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.CallableStatement
-
 import javax.sql.DataSource
 
 import oracle.jdbc.OracleConnection
 
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.Logger
-import org.springframework.security.GrantedAuthority
-import org.springframework.security.context.SecurityContextHolder
+
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 
 
 // This class was renamed from the more desirable 'BannerDataSource' as doing so 
