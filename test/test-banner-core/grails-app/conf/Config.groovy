@@ -1,4 +1,3 @@
-
 /** *****************************************************************************
 
  © 2010 SunGard Higher Education.  All Rights Reserved.
@@ -11,10 +10,13 @@
  WITHOUT THE WRITTEN PERMISSION OF THE SAID COMPANY
  ****************************************************************************** */
 
+import grails.plugins.springsecurity.SecurityConfigType
+
+
 // You must create a small configuration file that contains your own specific  
 // configuration (e.g., URIs, usernames, etc.) and that resides at the location specified here:
-
-grails.config.locations = [ "file:${userHome}/.grails/banner_on_grails-local-config.groovy"]
+//
+grails.config.locations = [ "file:${userHome}/.grails/banner_on_grails-local-config.groovy" ]
 
 /* ***************************** EXAMPLE local file ******************************
 def username = "banproxy"
@@ -125,21 +127,24 @@ log4j = {
     off  'grails.app' // The artefact may be omitted to apply to all artefacts  
         
     // Configure logging for other classes (e.g., in src/ or grails-app/utils/) here:
-    all  'com.sungardhe.banner.security'
-    all  'com.sungardhe.banner.db'
+    off  'com.sungardhe.banner.security'
+    off  'com.sungardhe.banner.db'
     off 'com.sungardhe.banner.student'
     
     // Grails framework classes
-    off    'org.codehaus.groovy.grails.web.servlet'        // controllers
-    off    'org.codehaus.groovy.grails.web.pages'          // GSP
-    off    'org.codehaus.groovy.grails.web.sitemesh'       // layouts
-	off    'org.codehaus.groovy.grails.web.mapping.filter' // URL mapping
-	off    'org.codehaus.groovy.grails.web.mapping'        // URL mapping
-	off    'org.codehaus.groovy.grails.commons'            // core / classloading
-	off    'org.codehaus.groovy.grails.plugins'            // plugins
-	off    'org.codehaus.groovy.grails.orm.hibernate'      // hibernate integration
-	off    'org.springframework'                           // Spring IoC
-	off    'org.hibernate'                                 // hibernate ORM
+//  off    'org.codehaus.groovy.grails.web.servlet'        // controllers
+//  off    'org.codehaus.groovy.grails.web.pages'          // GSP
+//  off    'org.codehaus.groovy.grails.web.sitemesh'       // layouts
+	all    'org.codehaus.groovy.grails.web.mapping.filter' // URL mapping
+	all    'org.codehaus.groovy.grails.web.mapping'        // URL mapping
+//	off    'org.codehaus.groovy.grails.commons'            // core / classloading
+//	off    'org.codehaus.groovy.grails.plugins'            // plugins
+//	off    'org.codehaus.groovy.grails.orm.hibernate'      // hibernate integration
+//	off    'org.springframework'                           // Spring IoC
+//	off    'org.hibernate'                                 // hibernate ORM
+	
+	all    'grails.plugins.springsecurity' 
+	all    'org.springframework.security'
 }
 
 
@@ -157,5 +162,40 @@ log4j = {
 // for that user and Banner object. 
 formControllerMap = [
     'foo' : [ 'STVCOLL' ],
-    'fooinjectedrestmethods' : [ 'STVCOLL' ]
+    'foorestful' : [ 'STVCOLL' ]
 ]
+
+
+grails.plugins.springsecurity.useRequestMapDomainClass = false
+grails.plugins.springsecurity.providerNames = ['bannerAuthenticationProvider']
+//grails.plugins.springsecurity.rejectIfNoRule = true
+
+grails.plugins.springsecurity.filterChain.chainMap = [
+    '/api/**': 'authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor',
+    '/**': 'securityContextPersistenceFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
+]
+
+grails.plugins.springsecurity.securityConfigType = SecurityConfigType.InterceptUrlMap
+ 
+grails.plugins.springsecurity.interceptUrlMap = [
+        '/': ['IS_AUTHENTICATED_ANONYMOUSLY'],      
+        '/zkau/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/zkau**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/login/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/logout/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/js/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/css/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/images/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/plugins/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/login/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/logout/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],      
+        '/js/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/css/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/images/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/plugins/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/errors/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/foo/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
+        '/api/foo/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
+        '/**': ['ROLE_ANY_FORM_BAN_DEFAULT_M']
+]
+        

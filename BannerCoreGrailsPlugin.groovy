@@ -25,8 +25,13 @@ import com.sungardhe.banner.service.DomainManagementMethodsInjector
 
 import org.springframework.beans.factory.config.MapFactoryBean
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
+import org.springframework.security.authentication.AnonymousAuthenticationProvider
+import org.springframework.security.authentication.ProviderManager
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.access.ExceptionTranslationFilter
+import org.springframework.security.web.context.HttpSessionContextIntegrationFilter
 import org.springframework.security.web.FilterChainProxy
 
 
@@ -49,7 +54,7 @@ class BannerCoreGrailsPlugin {
     // independent of deploying a new plugin build to Nexus. 
     //
     //String version = "0.1-SNAPSHOT"
-    String version = "0.1.7" 
+    String version = "0.1.8" 
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
@@ -92,42 +97,65 @@ Banner web applications.
             // Note: url, username, password, and driver must be configured in a local configuration file: home-dir/.grails/banner_on_grails-local-config.groovy
         }
         
-        sqlExceptionTranslator( org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator, 'Oracle' ) {
-            dataSource = dataSource
+        nativeJdbcExtractor( NativeJdbcExtractor )
+
+        dataSource( BannerDataSource ) {
+            underlyingDataSource = ref( underlyingDataSource )
+            nativeJdbcExtractor = ref( nativeJdbcExtractor )
         }
 
-        nativeJdbcExtractor( NativeJdbcExtractor )
+        sqlExceptionTranslator( org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator, 'Oracle' ) {
+            dataSource = ref( dataSource )
+        }
 
         authenticationDataSource( OracleDataSource )
 
-        dataSource( BannerDataSource ) {
-            underlyingDataSource = underlyingDataSource
-            nativeJdbcExtractor = nativeJdbcExtractor
-        }
-
         bannerAuthenticationProvider( BannerAuthenticationProvider ) {
-            dataSource = dataSource
-            authenticationDataSource = authenticationDataSource
+            dataSource = ref( dataSource )
+            authenticationDataSource = ref( authenticationDataSource )
         }
 
-        basicAuthenticationEntryPoint( BasicAuthenticationEntryPoint ) {
-            realmName = 'REST API Realm'
+        authenticationManager( ProviderManager ) {
+            providers = [ bannerAuthenticationProvider ]
         }
         
+        basicAuthenticationEntryPoint( BasicAuthenticationEntryPoint ) {
+            realmName = 'Banner REST API Realm'
+        }
+        
+       basicAuthenticationFilter( BasicAuthenticationFilter ) {
+            authenticationManager = ref( authenticationManager )
+            authenticationEntryPoint = ref( basicAuthenticationEntryPoint )
+        }
+                
         basicExceptionTranslationFilter( ExceptionTranslationFilter ) {
           authenticationEntryPoint = ref( 'basicAuthenticationEntryPoint' )
           accessDeniedHandler = ref( 'accessDeniedHandler' )
 //          portResolver = ref( 'portResolver' )
+        }
+         
+        anonymousProcessingFilter( AnonymousAuthenticationFilter ) {
+            key = 'horizon-anon'
+            userAttribute = 'anonymousUser,ROLE_ANONYMOUS'
+        }
+/*       
+        anonymousAuthenticationProvider( AnonymousAuthenticationProvider ) {
+            key = 'horizon-anon'
+        }
+        
+        httpSessionContextIntegrationFilter( HttpSessionContextIntegrationFilter ) {
+            forceEagerSessionCreation = true
         }
 
         springSecurityFilterChain( FilterChainProxy ) {
           filterInvocationDefinitionSource = """
                CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
                PATTERN_TYPE_APACHE_ANT
-               /api/**=authenticationProcessingFilter,basicProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor
+               /api/**=authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor
                /**=httpSessionContextIntegrationFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor
                """
-        }        
+        }   
+*/     
     }
     
 
@@ -148,28 +176,7 @@ Banner web applications.
                 DomainManagementMethodsInjector.injectDataManagement( serviceArtefact.clazz, domainArtefact.clazz )
             }
         }
-        
-        // inject CRUD actions into all Controllers that have this line: static defaultCrudActions = true
-        application.controllerClasses.each { controllerArtefact ->
-
-            def needsCRUD = GCU.getStaticPropertyValue( controllerArtefact.clazz, "defaultCrudActions" )  
-            
-            if (needsCRUD) {
-                String controllerSimpleName = controllerArtefact.clazz.simpleName
-                String domainSimpleName = controllerSimpleName.substring( 0, controllerSimpleName.indexOf( "Controller" ) )
-
-                // We'll put in a 'test hack' to facilitate testing injected methods using different controllers all supporting Foo
-                if (domainSimpleName.startsWith( "Foo") ) {
-                    domainSimpleName = "Foo" 
-                }
-
-                def domainArtefact = application.domainClasses.find {
-                    it.clazz.simpleName.toLowerCase() == domainSimpleName.toLowerCase()
-                }
-                DefaultRestfulControllerMethods.injectRestCrudActions( controllerArtefact.clazz, domainArtefact.clazz )
-            }
-        }
-        
+                
         // inject the logger into every class (Grails only injects this into some artifacts)
         application.allClasses.each { c ->
             c.metaClass.getLog = { ->

@@ -11,6 +11,7 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
+import com.sungardhe.banner.controllers.RestfulControllerBase
 import com.sungardhe.banner.exceptions.*
 
 import grails.converters.JSON
@@ -22,14 +23,23 @@ import grails.converters.XML
  * See 'FooOverriddenInjectedMethodsController' for usage of injected methods while having control
  * over 'success' rendering and param map extraction.
  **/
-class FooInjectedRestMethodsController { 
+class FooRestfulController extends RestfulControllerBase { 
     
-    static defaultCrudActions = true // injects save, update, delete, show, and list actions
-    
+        
     static allowedMethods = [ index: "GET", view: "GET",                                                 // --> allow non-RESTful,
                               show: "GET", list: "GET", save: "POST", update: "PUT", remove: "DELETE" ]  // --> ensure RESTful
                
     def fooService  // injected by Spring
+    
+    // We'll override the 'domainSimpleName' as we are not following conventions and can thus not determine the 
+    // the simple domain name from this Controller's class name. (i.e., we want 'Foo' not 'FooRestful')
+    public FooRestfulController() {
+        super( "Foo" )
+    }
+    
+    
+    // ------------------------------------- Controller Actions -------------------------------------
+    //                    (note: RESTful 'actions' are provided by the base class.)
     
     
     // in case someone uses a URI explicitly indicating 'index' or our URI mapping includes a non-RESTful mapping to 'index'
@@ -38,7 +48,7 @@ class FooInjectedRestMethodsController {
     }
     
     
-    // Render main User Interface page -- note that ALL other actions are injected :-)
+    // Render main User Interface page -- note that ALL other actions are provided by the base class. :-)
     def view = {
         render "If I had a UI, I'd render it now!"
         // Render the main ZUL page supporting this model.  All subseqent requests from this UI will be 

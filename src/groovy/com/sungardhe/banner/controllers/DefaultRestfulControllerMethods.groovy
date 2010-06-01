@@ -100,7 +100,7 @@ class DefaultRestfulControllerMethods {
 
         if (!controllerClass.metaClass.respondsTo( controllerClass, "save" )) {
 
-            controllerClass.metaClass.save = { 
+            controllerClass.metaClass.getSave = { 
                 log.trace "${controllerClass.simpleName}.save invoked with ${delegate.params}"
                 def localizer = { mapToLocalize -> delegate.message( mapToLocalize ) }
                 def entity
@@ -142,7 +142,7 @@ class DefaultRestfulControllerMethods {
         
         if (!controllerClass.metaClass.respondsTo( controllerClass, "update" )) {
 
-            controllerClass.metaClass.update = { 
+            controllerClass.metaClass.getUpdate = { 
         
                 log.trace "${controllerClass.simpleName}.update invoked with ${delegate.params}"
                 def localizer = { mapToLocalize -> delegate.message( mapToLocalize ) }
@@ -185,7 +185,7 @@ class DefaultRestfulControllerMethods {
 
         if (!controllerClass.metaClass.respondsTo( controllerClass, "delete" )) {
 
-            controllerClass.metaClass.delete = { 
+            controllerClass.metaClass.getDelete = { 
 
                 log.trace "${controllerClass.simpleName}.delete invoked with ${delegate.params}"
                 def localizer = { mapToLocalize -> delegate.message( mapToLocalize ) }
@@ -226,7 +226,7 @@ class DefaultRestfulControllerMethods {
         
         if (!controllerClass.metaClass.respondsTo( controllerClass, "show" )) {
 
-            controllerClass.metaClass.show = { 
+            controllerClass.metaClass.getShow = { 
 
                 log.trace "${controllerClass.simpleName}.show invoked with ${delegate.params}"
                 def localizer = { mapToLocalize -> delegate.message( mapToLocalize ) }
@@ -267,9 +267,10 @@ class DefaultRestfulControllerMethods {
         
         if (!controllerClass.metaClass.respondsTo( controllerClass, "list" )) {
 
-            controllerClass.metaClass.list = { 
+            controllerClass.metaClass.getList = { 
 
                 log.trace "${controllerClass.simpleName}.list invoked with ${delegate.params}"
+println "XXXXXXXXXXXXXXXXXXXXXXXX ${controllerClass.simpleName}.list invoked with ${delegate.params}"
                 def localizer = { mapToLocalize -> delegate.message( mapToLocalize ) }
 
                 def entities
@@ -283,11 +284,13 @@ class DefaultRestfulControllerMethods {
                                              totalCount: totalCount, 
                                              message: localizer( code: 'default.list.message',
                                                                  args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
+println "XXXXXXXXXXXXX Going to render list()...."
                     def customRenderer
                     if (controllerClass.metaClass.respondsTo( controllerClass, "renderList" )) {
                         customRenderer = delegate.renderList( successReturnMap )
                     } 
                     if (customRenderer) {
+println "XXXXXXXXXXXXXXX going to use custom renderer"
                         customRenderer( successReturnMap ) 
                     } else {
                         // the delegate didn't specify a closure that should be used to render the result 
@@ -314,13 +317,14 @@ class DefaultRestfulControllerMethods {
              
     
     private static void renderResult( delegate, responseMap ) {
-        
+println "XXXXXXXXXXXXXXXXXXXXXX going to render result for request format: ${delegate.request.format}"
         if (delegate.request.format ==~ /.*html.*/) {
             delegate.response.setHeader( "Content-Type", "application/html" ) 
             delegate.render( responseMap )
         } 
         else if (delegate.request.format ==~ /.*json.*/) {
             delegate.response.setHeader( "Content-Type", "application/json" ) 
+println "XXXXXXXXXXXXXX GOING TO RETURN JSON: ${responseMap as JSON}"
             delegate?.renderResult( responseMap as JSON )
         } 
         else if (delegate.request.format ==~ /.*xml.*/) {

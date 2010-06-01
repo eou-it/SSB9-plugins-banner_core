@@ -363,14 +363,17 @@ public class DomainManagementMethodsInjector {
     
     
     public static def updateSystemFields( entity ) {
+println "XXXXXXXXX going to update system fields for entity $entity"
         if (entity.hasProperty( 'dataOrigin' )) {
             def dataOrigin = CH.config?.dataOrigin ?: "Banner" // protect from missing configuration
             entity.dataOrigin = dataOrigin
         }
         if (entity.hasProperty( 'lastModifiedBy' )) {
+println "XXXXXXXXX going to update lastModifiedBy for entity $entity"
             entity.lastModifiedBy = SCH.context?.authentication?.principal?.username
         }
         if (entity.hasProperty( 'lastModified' )) {
+println "XXXXXXXXX going to update lastModified for entity $entity"
             entity.lastModified = new Date()
         }
     }

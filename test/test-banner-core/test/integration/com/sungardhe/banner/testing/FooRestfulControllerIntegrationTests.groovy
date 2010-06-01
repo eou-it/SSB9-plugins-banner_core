@@ -28,7 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 /**
  * Integration test for the Foo controller.
  **/
-class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTestCase {
+class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
 
     def fooService   // injected by Spring
         
@@ -45,7 +45,7 @@ class FooInjectedRestMethodsControllerIntegrationTests extends BaseIntegrationTe
         
         super.setUp()
 
-        controller = new FooInjectedRestMethodsController()    
+        controller = new FooRestfulController()    
         
         assert fooService != null    
         controller.fooService = fooService        

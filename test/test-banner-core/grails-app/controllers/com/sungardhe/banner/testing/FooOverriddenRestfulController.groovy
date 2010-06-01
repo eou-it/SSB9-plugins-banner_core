@@ -11,6 +11,7 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
+import com.sungardhe.banner.controllers.RestfulControllerBase
 import com.sungardhe.banner.exceptions.*
 
 import grails.converters.JSON
@@ -21,20 +22,28 @@ import grails.converters.XML
  * Controller supporting the Foo test model using injected RESTful CRUD methods and 
  * that overrides both request parsing (into the params map) and rendering.  This 
  * controller supports custom XML rendering, that adheres to an XML Schema. 
- * @See com.sungardhe.banner.controllers.DefaultRestfulControllerMethods comments for
- * a discussion on the 'override' methods.
+ * @See com.sungardhe.banner.controllers.RestfulControllerBase comments for
+ * a discussion on overriding rendering and params extraction.
  **/
-class FooOverriddenInjectedRestMethodsController { 
-    
-    static defaultCrudActions = true // injects save, update, delete, show, and list actions
-    
+class FooOverriddenRestfulController extends RestfulControllerBase { 
+            
     static allowedMethods = [ index: "GET", view: "GET",                                                 // --> allow non-RESTful,
                               show: "GET", list: "GET", save: "POST", update: "PUT", remove: "DELETE" ]  // --> ensure RESTful
                
     def fooService  // injected by Spring
     
     
-    // in case someone uses a URI explicitly indicating 'index' or our URI mapping includes a non-RESTful mapping to 'index'
+    // We'll override the 'domainSimpleName' as we are not following conventions and can thus not determine the 
+    // the simple domain name from this Controller's class name. (i.e., we want 'Foo' not 'RooRestful')
+    public FooOverriddenRestfulController() {
+        super( "Foo" )
+    }
+    
+    
+    // ------------------------------------- Controller Actions -------------------------------------
+    //   note: The normal RESTful 'actions' are provided by the base class. Here we simply add 'UI' action(s).
+    
+    
     def index = {
         redirect( action: "view", params: params )  
     }
@@ -49,29 +58,49 @@ class FooOverriddenInjectedRestMethodsController {
     }
     
     
+    // --------------------------- Special 'params' handling & Rendering ---------------------------
+    
+    
+    // We'll return a closure for any specific content type formats that we explicitly support.
+    // If we don't return a closure, or if we don't even expose an 'extractParams' method at all, 
+    // the base class will check Spring for a registered handler class, and lastly will fall back to 
+    // it's default param extraction. 
+    //
     def extractParams() {
-        switch (request.header["Content-Type"]) {
+        switch (request.header[ "Content-Type" ]) {
             case "application/vnd.sungardhe.student.v0.01+xml" :
                 // we'll only add specific support for a custom MIME type
-                def handleXmlVer0_01 = {
-                    paramsXml_v1_0( request )
-                }
+                // TODO: This method won't have to handle content types that have closures registered 
+                //       in spring, as the base class will check Spring directly after calling this method. 
+                //       That is, only 'special' handling would have to be implemented here. 
                 return handleXmlVer0_01
             default:
                 return null // the injected action should use rely on default extraction
         }
     }
     
+    
+    // We override rendering only for cases where it cannot be performed generically in the base class.
+    // This includes, for example, rendering XML that is constrained to a versioned XML Schema. 
+    //
+//  def renderUpdate() {
+//      ... any special 'update' rendering (success case and error cases) would go here...    
+//  }
+    
                 
-    // TODO: Assess potential for code generation, given an XML Schema and a domain class
-    // TODO: Attain this 'mapper' from Spring configuration.  Since our XML will adhere to other standards, we cannot
-    // simply use the built-in Grails converters. Note that it is important to check for the existence of attributes and 
+    // TODO: Attain this 'mapper' from a Spring 'ContentTypeHandlerRegistry' bean, using the Content-Type as the key. Base class
+    //       should first check for an 'extractParams' method that may return a closure. If no closure is returned,
+    //       the base class should check Spring configuration (so we don't need 'extractParams' method just for these cases.)
+    //       If no handler is found in Spring configuration, then the base class will attempt default params extraction. 
+    // 
+    // Since our XML will adhere to other standards, we cannot simply use the built-in Grails converters. 
+    // Note that it is important to check for the existence of attributes and 
     // elements before adding to the map that will be used to create or modify the model.  This will allow us to 
     // accept partial XML fragments containing only the information needed to satisfy the request.  
     // For example, to update the foo description, the XML need only populate the description element. 
     // It is important that we do not add to the properties map any other properties (as doing so would set those  
     // property values to null when creating or updating a model instance.)
-    def paramsXml_v1_0( xml ) {
+    def handleXmlVer0_01 = { xml ->
         def props = [:]
         if (xml.@id?.text())                           props.id                 = xml.@id.toInteger()
         if (xml.@systemRequiredIndicator?.text())      props.systemRequiredIndicator = xml.@systemRequiredIndicator?.text()

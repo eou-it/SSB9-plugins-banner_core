@@ -12,16 +12,24 @@
 package com.sungardhe.banner.security
 
 
+import com.sungardhe.banner.db.BannerDS
+
 import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.GrantedAuthorityImpl
-import org.apache.log4j.Logger
+
 import java.sql.SQLException
+
 import groovy.sql.Sql
-import com.sungardhe.banner.db.BannerDS
+
+import org.apache.log4j.Logger
+
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+
 import oracle.jdbc.pool.OracleDataSource
+
 
 /**
  * An authentication provider which authenticates a user by logging into the Banner database.
@@ -90,7 +98,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             Sql db = new Sql( conn )
             db.eachRow( "select * from govurol where govurol_userid = ?", [name] ) { row ->
                 def authority = BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, row.GOVUROL_ROLE_PSWD )
-                log.trace "BannerAuthenticationProvider.determineAuthorities is adding authority $authority"
+                // log.trace "BannerAuthenticationProvider.determineAuthorities is adding authority $authority"
                 authorities << authority
             }
         } catch (SQLException e) {
