@@ -54,13 +54,13 @@ class BannerCoreGrailsPlugin {
     // independent of deploying a new plugin build to Nexus. 
     //
     //String version = "0.1-SNAPSHOT"
-    String version = "0.1.8" 
+    String version = "0.1.9"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
     
     // the other plugins this plugin depends on
-//    def dependsOn = [ 'spring-security-core': "0.3.1" ]
+    def dependsOn = [ 'springSecurityCore': "0.3.1" ]
     
     // resources that are excluded from plugin packaging
     def pluginExcludes = [

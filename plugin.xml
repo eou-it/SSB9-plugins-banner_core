@@ -21,6 +21,8 @@ Banner web applications.
     <resource>LogoutController</resource>
     <resource>com.sungardhe.banner.constraints.ValidPropertyConstraint</resource>
   </resources>
-  <dependencies />
+  <dependencies>
+    <plugin name='springSecurityCore' version='0.3.1' />
+  </dependencies>
   <behavior />
 </plugin>
