@@ -135,16 +135,16 @@ log4j = {
 //  off    'org.codehaus.groovy.grails.web.servlet'        // controllers
 //  off    'org.codehaus.groovy.grails.web.pages'          // GSP
 //  off    'org.codehaus.groovy.grails.web.sitemesh'       // layouts
-	all    'org.codehaus.groovy.grails.web.mapping.filter' // URL mapping
-	all    'org.codehaus.groovy.grails.web.mapping'        // URL mapping
+//	off    'org.codehaus.groovy.grails.web.mapping.filter' // URL mapping
+//	off    'org.codehaus.groovy.grails.web.mapping'        // URL mapping
 //	off    'org.codehaus.groovy.grails.commons'            // core / classloading
 //	off    'org.codehaus.groovy.grails.plugins'            // plugins
 //	off    'org.codehaus.groovy.grails.orm.hibernate'      // hibernate integration
 //	off    'org.springframework'                           // Spring IoC
 //	off    'org.hibernate'                                 // hibernate ORM
 	
-	all    'grails.plugins.springsecurity' 
-	all    'org.springframework.security'
+//	off    'grails.plugins.springsecurity'
+//	off    'org.springframework.security'
 }
 
 
