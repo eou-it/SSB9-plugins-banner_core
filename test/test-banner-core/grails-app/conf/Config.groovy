@@ -10,9 +10,9 @@
  ****************************************************************************** */
 
 import grails.plugins.springsecurity.SecurityConfigType
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
-
-// You must create a small configuration file that contains your own specific  
+// You must create a small configuration file that contains your own specific
 // configuration (e.g., URIs, usernames, etc.) and that resides at the location specified here:
 //
 grails.config.locations = [ "file:${userHome}/.grails/banner_on_grails-local-config.groovy" ]
@@ -20,26 +20,23 @@ grails.config.locations = [ "file:${userHome}/.grails/banner_on_grails-local-con
 /* ***************************** EXAMPLE local file ******************************
 def username = "banproxy"
 def password = "u_pick_it"
-def url      ="jdbc:oracle:thin:@winxp-50174ccec:1521:optimus1" // Update for your database
+def url      ="jdbc:oracle:thin:@winxp-50174ccec:1521:ban83" // CHANGE THIS FOR YOUR DATABASE!
 def driver   = "oracle.jdbc.OracleDriver"
 
-beans {	
-    // Note: When using the com.elvyx.Driver, you may run the standalone elvyx client to see the actual SQL being executed. 
-	// You must download the elvyx-1.0.24_beta.zip from http://sourceforge.net/projects/elvyx/files and unzip where you want to keep it. 
-	// Note: You do NOT need to add the jar file to the project -- it is already present.
-	// Next, Update the url below in this file for your environment, then
-	//       Run the elvyz.bat or elvyz.sh file to launch the swing UI, and lastly
-	//       Rrun your tests or the grails application. 
-    
-	underlyingDataSource.username = username
-	underlyingDataSource.password = password
-	
-    // underlyingDataSource.driverClassName = "com.elvyx.Driver" 
-    underlyingDataSource.driverClassName = driver
-	  
-    underlyingDataSource.url = url
-    // underlyingDataSource.url = "jdbc:elvyx://localhost:4448/?elvyx.real_driver=$driver&elvyx.real_jdbc=$url&user=$username&password=$password"
-}
+// Note: When using the com.elvyx.Driver, you may run the standalone elvyx client to see the actual SQL being executed.
+// You must download the elvyx-1.0.24_beta.zip from http://sourceforge.net/projects/elvyx/files and unzip where you want to keep it.
+// Note: You do NOT need to add the jar file to the project -- it is already present.
+// Next, Update the url below in this file for your environment, then
+//       Run the elvyz.bat or elvyz.sh file to launch the swing UI, and run your tests or the grails application.
+
+myDataSource.username = username
+myDataSource.password = password
+
+myDataSource.driver = driver
+// myDataSource.driver = "com.elvyx.Driver"
+
+myDataSource.url = url
+// myDataSource.url = "jdbc:elvyx://localhost:4448/?elvyx.real_driver=$driver&elvyx.real_jdbc=$url&user=$username&password=$password"
 ********************************************************************************* */
 
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format

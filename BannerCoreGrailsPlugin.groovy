@@ -33,7 +33,10 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.security.web.context.HttpSessionContextIntegrationFilter
 import org.springframework.security.web.FilterChainProxy
-
+import org.springframework.jndi.JndiObjectFactoryBean
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access 
@@ -53,8 +56,8 @@ class BannerCoreGrailsPlugin {
     // more control on 'when' a grails app is updated to use a newer plugin version, and therefore 'could' allow delayed testing within those apps
     // independent of deploying a new plugin build to Nexus. 
     //
-    //String version = "0.1-SNAPSHOT"
-    String version = "0.1.9"
+    String version = "0.1-SNAPSHOT"
+    //String version = "0.1.9"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
@@ -89,12 +92,26 @@ Banner web applications.
 
 
     def doWithSpring = {
-        
-        underlyingDataSource( BasicDataSource ) {
-            maxActive = 5
-            maxIdle = 2
-            defaultAutoCommit = "false"
-            // Note: url, username, password, and driver must be configured in a local configuration file: home-dir/.grails/banner_on_grails-local-config.groovy
+
+        switch (GrailsUtil.environment) {
+            case GrailsApplication.ENV_PRODUCTION:
+                log.info "Will use a dataSource configured via JNDI"
+                underlyingDataSource( JndiObjectFactoryBean ) {
+                    jndiName = "java:comp/env/jdbc/horizon"
+                }
+                break
+            default: // we'll use our locally configured dataSource for development and test environments
+                log.info "Using development/test datasource"
+                underlyingDataSource( BasicDataSource ) {
+                    maxActive = 5
+                    maxIdle = 2
+                    defaultAutoCommit = "false"
+                    driverClassName = "${ConfigurationHolder.config.myDataSource.driver}"
+                    url = "${ConfigurationHolder.config.myDataSource.url}"
+                    password = "${ConfigurationHolder.config.myDataSource.password}"
+                    username = "${ConfigurationHolder.config.myDataSource.username}"
+                }
+                break
         }
         
         nativeJdbcExtractor( NativeJdbcExtractor )
@@ -178,9 +195,9 @@ Banner web applications.
         }
                 
         // inject the logger into every class (Grails only injects this into some artifacts)
-        application.allClasses.each { c ->
-            c.metaClass.getLog = { ->
-                LogFactory.getLog( c )
+        application.allClasses.each { ->
+            it.metaClass.getLog = { ->
+                LogFactory.getLog( it )
             }
         }
     }
