@@ -63,7 +63,7 @@ class BannerCoreGrailsPlugin {
     def grailsVersion = "1.3.0 > *"
     
     // the other plugins this plugin depends on
-    def dependsOn = [ 'springSecurityCore': "0.4" ]
+    def dependsOn = [ 'springSecurityCore': "0.3.1" ]
     
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
