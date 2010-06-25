@@ -24,7 +24,6 @@ import javax.sql.DataSource
 
 import oracle.jdbc.OracleConnection
 
-import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.Logger
 
 import org.springframework.security.core.GrantedAuthority
@@ -135,7 +134,7 @@ public class BannerDS {
      * Returns the jdbcUrl of the real DataSource
      */
     public String getUrl() {
-    	return (underlyingDataSource as BasicDataSource).getUrl()
+    	return underlyingDataSource.getUrl()
     }
 
     // ------------- end of public methods ----------------

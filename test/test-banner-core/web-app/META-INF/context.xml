@@ -24,7 +24,7 @@
 -->
 
 <Context>
-    <ResourceLink name="jdbc/horizonDataSource"
-                  global="jdbc/bannerDataSource"
+    <ResourceLink name="horizonDataSource"
+                  global="bannerDataSource"
                   type="javax.sql.DataSource" />
 </Context>

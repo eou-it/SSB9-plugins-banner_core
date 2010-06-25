@@ -63,7 +63,7 @@ class BannerCoreGrailsPlugin {
     def grailsVersion = "1.3.0 > *"
     
     // the other plugins this plugin depends on
-    def dependsOn = [ 'springSecurityCore': "0.3.1" ]
+    def dependsOn = [ 'springSecurityCore': "0.4" ]
     
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
@@ -93,11 +93,11 @@ Banner web applications.
 
     def doWithSpring = {
 
-        switch (GrailsUtil.environment) {
+        switch (GrailsUtil.environment) { 
             case GrailsApplication.ENV_PRODUCTION:
                 log.info "Will use a dataSource configured via JNDI"
                 underlyingDataSource( JndiObjectFactoryBean ) {
-                    jndiName = "java:comp/env/jdbc/horizon"
+                   jndiName = "java:comp/env/jdbc/horizonDataSource"
                 }
                 break
             default: // we'll use our locally configured dataSource for development and test environments
