@@ -110,15 +110,24 @@ public class DomainManagementMethodsInjector {
                     content = extractParams( domainClass, domainModelOrMap )
                     domainObject = fetch( domainClass, content?.id, log )
                     domainObject.properties = content
-                    domainObject.version = content.version // needed as version is not included in bulk assignment                    
-                    updateSystemFields( domainObject )
-                                      
-                    log.trace "${domainSimpleName}Service.update applied updates and will save $domainObject"
-                    def updatedModel = domainObject.save( failOnError:true, flush: flushImmediately )
+                    domainObject.version = content.version // needed as version is not included in bulk assignment  
 
+                    def updatedModel
+                    if (domainObject.isDirty()) {
+	                    log.trace "${domainSimpleName}Service.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
+		
+	                    updateSystemFields( domainObject )
+
+	                    log.trace "${domainSimpleName}Service.update applied updates and will save $domainObject"
+	                    updatedModel = domainObject.save( failOnError:true, flush: flushImmediately )
+                    } else {
+	                    log.trace "${domainSimpleName}Service.update found the model to not be dirty and will not update it"
+	                    updatedModel = domainObject
+                    } 
+             
                     if (delegate.respondsTo( 'postUpdate' )) delegate.postUpdate( [ before: domainModelOrMap, after: updatedModel ] )
-
                     updatedModel
+
                 } catch (ApplicationException ae) {
                     log.debug "Could not update an existing ${domainSimpleName} with id = ${domainModelOrMap?.id} due to exception: ${ae.message}", ae
                     throw ae
@@ -363,17 +372,14 @@ public class DomainManagementMethodsInjector {
     
     
     public static def updateSystemFields( entity ) {
-println "XXXXXXXXX going to update system fields for entity $entity"
         if (entity.hasProperty( 'dataOrigin' )) {
             def dataOrigin = CH.config?.dataOrigin ?: "Banner" // protect from missing configuration
             entity.dataOrigin = dataOrigin
         }
         if (entity.hasProperty( 'lastModifiedBy' )) {
-println "XXXXXXXXX going to update lastModifiedBy for entity $entity"
             entity.lastModifiedBy = SCH.context?.authentication?.principal?.username
         }
         if (entity.hasProperty( 'lastModified' )) {
-println "XXXXXXXXX going to update lastModified for entity $entity"
             entity.lastModified = new Date()
         }
     }

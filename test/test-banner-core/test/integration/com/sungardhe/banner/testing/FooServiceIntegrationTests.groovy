@@ -59,6 +59,42 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull foo.id
         assertEquals "Horizon Test Data", foo.description 
     }
+
+    
+    void testUpdate() { 
+        def foo = fooService.create( newTestFooParams() )
+        assertNotNull foo.id
+        assertEquals "Horizon Test Data", foo.description 
+
+        assertFalse foo.isDirty()
+        foo.description = "Updated"
+        assertTrue foo.isDirty()
+        
+        def id = foo.id 
+        def version = foo.version
+        def lastModified = foo.lastModified
+
+        def updatedFoo = fooService.update( foo )
+        assertEquals id, updatedFoo.id
+        assertEquals version + 1, updatedFoo.version
+        assertFalse lastModified == updatedFoo.lastModified
+    }
+
+    
+    void testUpdateNotDirty() { 
+        def foo = fooService.create( newTestFooParams() )
+        assertNotNull foo.id
+        assertEquals "Horizon Test Data", foo.description 
+        
+        def id = foo.id 
+        def version = foo.version
+        def lastModified = foo.lastModified
+        
+        def updatedFoo = fooService.update( foo )
+        assertEquals id, updatedFoo.id
+        assertEquals version, updatedFoo.version
+        assertTrue lastModified == updatedFoo.lastModified
+    }
     
     
     // Note: This test is not effective, and thus only ensures we don't encounter exceptions etc.

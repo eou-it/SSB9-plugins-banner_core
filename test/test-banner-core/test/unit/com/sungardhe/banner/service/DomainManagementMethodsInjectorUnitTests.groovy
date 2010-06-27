@@ -387,10 +387,14 @@ class MyMock {
     def dataOrigin
     def lastModifiedBy
     def lastModified
+
     
     public static MyMock get( id ) {
         new MyMock( id: id, name: 'Mocked' )
     }
+
+    public boolean isDirty() { true } // we'll 'always' be dirty
+    public List getDirtyPropertyNames() { new ArrayList() }
 }
 
 
