@@ -41,9 +41,10 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         // they are injected here by this test.                              
         serviceCallbacks = new ArrayList().asSynchronized() 
         injectTestCallbacks( myService )  
-        
-        mockDomain( MyMock, [ new MyMock( name: 'First', description: 'A first Mock object' ), 
-                              new MyMock( name: 'Second', description: 'A second Mock object' ) ] )
+
+        def myMockedModels = []
+        (0..4).each { myMockedModels << new MyMock( name: "Mocked_$it" ) }
+        mockDomain( MyMock, myMockedModels )
         
         // We'll mock the session and just return the number of times we've called a method on it...                      
         MyMock.metaClass.static.withSession = { Closure closure ->
@@ -87,7 +88,15 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         def createdDomain = svc.create( [ domainModel: new MyMock( newMyMockParams() ), otherJunk: 'Some validation stuff maybe?' ] )
         assertNotNull createdDomain?.id 
     }
-    
+
+
+    void testCreateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {  // how's that for a name ;-)
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+        def createdDomain = svc.create( [ myMock: new MyMock( newMyMockParams() ), otherJunk: 'Some validation stuff maybe?' ] )
+        assertNotNull createdDomain?.id
+    }
+
     
     void testCreateUsingModelInstanceAndNotFlushingSession() { 
         // actually, can't really test that via mocking, but we'll at least test signatures here and 
@@ -100,16 +109,78 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         // since the mocking library won't delegate to the session (as it isn't even mocked normally),
         // all we'll really be able to do here is ensure we don't get a method missing exception... 
         // Ideally, the mocking will become more sophisticated to handle flush: true. 
-        svc.flush()  
-        
+        svc.flush()
     }
-    
+
+
+    // --------------------------- Test batch 'create' invocations ----------------------------
+
+
+    void testBatchCreateUsingModelInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+        List models = []
+        (0..4).each{ models << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
+        def createdDomains = svc.create( models )
+        assertEquals 5, createdDomains.size()
+        assertTrue  createdDomains.every { it.id }
+    }
+
+
+    void testBatchCreateUsingModelProperties() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+        List models = []
+        (0..4).each{ models << new MyMock( newMyMockParams( it ) ).properties }
+        def createdDomains = svc.create( models )
+        assertEquals 5, createdDomains.size()
+        assertTrue  createdDomains.every { it.id }
+    }
+
+
+    void testBatchCreateUsingParamsMap() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+        List models = []
+        (0..4).each { models << newMyMockParams( it ) + [ someExtraInfoNeededForValidation: "I need this in my callback!" ] }
+
+        def createdDomains = svc.create( models )
+        assertEquals 5, createdDomains.size()
+        assertTrue  createdDomains.every { it.id }
+    }
+
+
+    void testBatchCreateUsingMapHavingDomainModelKeyHoldingModelInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        List models = []
+        (0..4).each { models << [ domainModel: new MyMock( newMyMockParams( it ) ), otherJunk: 'Some validation stuff maybe?' ] }
+
+        def createdDomains = svc.create( models )
+        assertEquals 5, createdDomains.size()
+        assertTrue  createdDomains.every { it.id }
+    }
+
+
+    void testBatchCreateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        List models = []
+        (0..4).each { models << [ myMock: new MyMock( newMyMockParams( it) ), otherJunk: 'Some validation stuff maybe?' ] }
+
+        def createdDomains = svc.create( models )
+        assertEquals 5, createdDomains.size()
+        assertTrue  createdDomains.every { it.id }
+    }
+
     
     // --------------------------- Test 'update' method ----------------------------
     
     
     void testUpdateUsingModelInstance() {
-        def existingModel = MyMock.findByName( 'First' )
+        def existingModel = MyMock.findByName( 'Mocked_1' )
         existingModel.description = "Updated"
         def svc = new AnotherTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
@@ -119,8 +190,8 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     }
     
     
-    void testUpdateUsingModelProperties() { 
-        def existingModel = MyMock.findByName( 'First' )
+    void testUpdateUsingModelProperties() {
+        def existingModel = MyMock.findByName( 'Mocked_1' )
         existingModel.description = "Updated"
         def svc = new AnotherTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
@@ -131,7 +202,7 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     
     
     void testUpdateUsingParamsMap() {
-        def existingModel = MyMock.findByName( 'First' )
+        def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         def updatedDomain = svc.update( [ id: existingModel.id, name: existingModel.name, 
@@ -141,8 +212,8 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     }
     
     
-    void testUpdateUsingMapHavingDomainModelKeyHoldingModelInstance() { 
-        def existingModel = MyMock.findByName( 'First' )
+    void testUpdateUsingMapHavingDomainModelKeyHoldingModelInstance() {
+        def existingModel = MyMock.findByName( 'Mocked_1' )
         existingModel.description = "Updated"
         def svc = new AnotherTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
@@ -150,54 +221,148 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         assertNotNull updatedDomain.id 
         assertEquals "Updated", updatedDomain.description
     }
-    
+
+
+    void testUpdateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {
+        def existingModel = MyMock.findByName( 'Mocked_1' )
+        existingModel.description = "Updated"
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+        def updatedDomain = svc.update( [ myMock: existingModel, otherJunk: 'Some validation stuff maybe?' ] )
+        assertNotNull updatedDomain.id
+        assertEquals "Updated", updatedDomain.description
+    }
+
+
+    // --------------------------- Test batch 'update' invocations ----------------------------
+
+
+    void testBatchUpdateUsingModelInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        existingModels.eachWithIndex { model, i -> model.description = "Updated_$i" }
+
+        def createdDomains = svc.update( existingModels )
+        assertEquals 5, createdDomains.size()
+        assertTrue createdDomains.every { it.id }
+        assertTrue createdDomains.every { it.description ==~ /.*Updated.*/ }
+    }
+
+
+    void testBatchUpdateUsingModelProperties() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        def existingProperties = []
+        existingModels.eachWithIndex { model, i -> existingProperties << (model.properties + [ description: "Updated_$i" ]) }
+
+        def createdDomains = svc.update( existingProperties )
+        assertEquals 5, createdDomains.size()
+        assertTrue  createdDomains.every { it.id }
+        assertTrue createdDomains.every { it.description ==~ /.*Updated.*/ }
+    }
+
+
+    void testBatchUpdateUsingParamsMap() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        def existingParams = []
+        existingModels.eachWithIndex { model, i -> existingParams << [ id: model.id, name: model.name,
+                                                                       description: "Updated_$i", version: model.version ] }
+        def createdDomains = svc.update( existingParams )
+        assertEquals 5, createdDomains.size()
+        assertTrue  createdDomains.every { it.id }
+        assertTrue createdDomains.every { it.description ==~ /.*Updated.*/ }
+    }
+
+
+    void testBatchUpdateUsingMapHavingDomainModelKeyHoldingModelInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        def existingModelsInMapValues = []
+        existingModels.eachWithIndex { model, i ->
+            model.description = "Updated_$i"
+            existingModelsInMapValues << [ domainModel: model, otherJunk: 'Some validation stuff maybe?' ]
+        }
+
+        def createdDomains = svc.update( existingModelsInMapValues )
+        assertEquals 5, createdDomains.size()
+        assertTrue  createdDomains.every { it.id }
+        assertTrue createdDomains.every { it.description ==~ /.*Updated.*/ }
+    }
+
+
+    void testBatchUpdateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        def existingModelsInMap = []
+        existingModels.eachWithIndex { model, i ->
+            model.description = "Updated_$i"
+            existingModelsInMap << [ myMock: model, otherJunk: 'Some validation stuff maybe?' ]  
+        }
+
+        def createdDomains = svc.update( existingModelsInMap )
+        assertEquals 5, createdDomains.size()
+        assertTrue  createdDomains.every { it.id }
+        assertTrue createdDomains.every { it.description ==~ /.*Updated.*/ }
+    }
+
     
     // --------------------------- Test 'delete' method ----------------------------
     
     
     void testDeleteUsingModelInstance() {
-        def existingModel = MyMock.findByName( 'First' )
+        def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         assertTrue svc.delete( existingModel )
-        assertNull MyMock.findByName( 'First' )
+        assertNull MyMock.findByName( 'Mocked_1' )
     }
     
     
     void testDeleteUsingModelProperties() { 
-        def existingModel = MyMock.findByName( 'First' )
+        def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         assertTrue svc.delete( existingModel.properties )
-        assertNull MyMock.findByName( 'First' )
+        assertNull MyMock.findByName( 'Mocked_1' )
     }
     
     
     void testDeleteUsingParamsMap() {
-        def existingModel = MyMock.findByName( 'First' )
+        def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         assertTrue svc.delete( [ id: existingModel.id, name: existingModel.name, 
                                  description: existingModel.description, version: existingModel.version ] )
-        assertNull MyMock.findByName( 'First' )
+        assertNull MyMock.findByName( 'Mocked_1' )
     }
     
     
-    void testDeleteUsingMapHavingDomainModelKeyHoldingModelInstance() { 
-        def existingModel = MyMock.findByName( 'First' )
+    void testDeleteUsingMapHavingDomainModelKeyHoldingModelInstance() {
+        def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
         assertTrue svc.delete( [ domainModel: existingModel, otherJunk: 'Some validation stuff maybe?' ] )
-        assertNull MyMock.findByName( 'First' )
+        assertNull MyMock.findByName( 'Mocked_1' )
     }
     
     
     void testDeleteUsingLongId() {
-        def existingModel = MyMock.findByName( 'First' )
+        def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         assertTrue svc.delete( (Long) existingModel.id )
-        assertNull MyMock.findByName( 'First' )
+        assertNull MyMock.findByName( 'Mocked_1' )
     }
     
     
@@ -210,11 +375,11 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     
     
     void testDeleteUsingPrimativeId() {
-        def existingModel = MyMock.findByName( 'First' )
+        def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
         DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         assertTrue svc.delete( (long) existingModel.id )
-        assertNull MyMock.findByName( 'First' )
+        assertNull MyMock.findByName( 'Mocked_1' )
     }
     
     
@@ -224,7 +389,102 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         assertTrue svc.delete( '1' )
         assertNull MyMock.get( 1 )
     }
-        
+
+
+    // --------------------------- Test batch 'delete' invocations ----------------------------
+
+
+    void testBatchDeleteUsingModelInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        svc.delete( existingModels )
+        assertNull MyMock.findByName( 'Mocked_1' )
+        assertTrue MyMock.list()?.size() == 0
+    }
+
+
+    void testBatchDeleteUsingModelProperties() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        def existingProperties = []
+        existingModels.eachWithIndex { model, i -> existingProperties << (model.properties + [ description: "Updated_$i" ]) }
+        svc.delete( existingProperties )
+        assertNull MyMock.findByName( 'Mocked_1' )
+        assertTrue MyMock.list()?.size() == 0
+    }
+
+
+    void testBatchDeleteUsingParamsMap() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        def existingParams = []
+        existingModels.eachWithIndex { model, i -> existingParams << [ id: model.id, name: model.name,
+                                                                       description: model.description, version: model.version ] }
+        svc.delete( existingParams )
+        assertNull MyMock.findByName( 'Mocked_1' )
+        assertTrue MyMock.list()?.size() == 0
+    }
+
+
+    void testBatchDeleteUsingMapHavingDomainModelKeyHoldingModelInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        def existingModelsInMapValues = []
+        existingModels.each { model ->
+            existingModelsInMapValues << [ domainModel: model, otherJunk: 'Some validation stuff maybe?' ]
+        }
+        svc.delete( existingModelsInMapValues )
+        assertNull MyMock.findByName( 'Mocked_1' )
+        assertTrue MyMock.list()?.size() == 0
+    }
+
+
+    void testBatchDeleteUsingLongIds() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        def existingIds = []
+        existingModels.each { model -> existingIds << (Long) model.id }
+        svc.delete( existingIds )
+        assertNull MyMock.findByName( 'Mocked_1' )
+        assertTrue MyMock.list()?.size() == 0
+    }
+
+
+    void testBatchDeleteUsingPrimativeId() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        def existingIds = []
+        existingModels.each { model -> existingIds << (long) model.id }
+        svc.delete( existingIds )
+        assertNull MyMock.findByName( 'Mocked_1' )
+        assertTrue MyMock.list()?.size() == 0
+    }
+
+
+    void testBatchDeleteUsingStrings() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def existingModels = MyMock.list()
+        def existingStringIds = []
+        existingModels.each { model -> existingStringIds << Long.toString( model.id ) }
+        svc.delete( existingStringIds )
+        assertNull MyMock.findByName( 'Mocked_1' )
+        assertTrue MyMock.list()?.size() == 0
+    }
+
     
     // --------------------------- Test method callbacks ----------------------------
     
@@ -327,8 +587,10 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
     // ------------------------------ Helper Methods ---------------------------------
     
     
-    private Map newMyMockParams() {
-        [ name: "Test" ] + [ someExtraInfoNeededForValidation: "I need this in my callback!" ]
+    private Map newMyMockParams( index = null ) {
+        def name = index ? "Test_$index" : "Test"
+        def desc = index ? "Desc_$index" : "Description"
+        [ name: name, description: desc ]  + [ someExtraInfoNeededForValidation: "I need this in my callback!" ]
     }
         
     
@@ -395,6 +657,10 @@ class MyMock {
 
     public boolean isDirty() { true } // we'll 'always' be dirty
     public List getDirtyPropertyNames() { new ArrayList() }
+
+    public String toString() {
+        "${super.toString()}, id=$id, name=$name, description=$description, version=$version"
+    }
 }
 
 

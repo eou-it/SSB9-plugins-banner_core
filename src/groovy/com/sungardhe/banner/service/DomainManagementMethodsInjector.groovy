@@ -17,14 +17,13 @@ import org.apache.log4j.Logger
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
-import org.hibernate.Session
 import org.hibernate.StaleObjectStateException
 
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 
 import grails.validation.ValidationException
-
+import grails.util.GrailsNameUtils
 
 /**
  * Contains CRUD ('create', 'read', 'update', and 'delete') methods that may be injected into a service.
@@ -47,7 +46,11 @@ public class DomainManagementMethodsInjector {
      * The create and update methods accept any of the following arguments:
      * --> a domain model instance to be created or updated
      * --> a 'params-like' map that contains entries representing the properties of the domain object to be created or updated
-     * --> a map that contains a key named 'domainModel' that contains a domain model instance to be created or updated
+     * --> a map that contains a key named 'myModelName' (property name form of simple class name) that holds a domain model instance
+     * --> a map that contains a key named 'domainModel' that holds a domain model instance
+     * --> a list of any of the above, in any combination, which will be iterated (note this is not true batch processing, just convenient internal iteration)
+     *
+     * Note the delete method accepts all the above, as well as Long IDs, long IDs, or String representations of long IDs.
      *
      * Additional entries provided in a 'params' map that do not correspond to domain model properties will be ignored.
      * Whether these additional entries are provided in either a 'params-like' map or map containing a domainModel field, 
@@ -74,71 +77,91 @@ public class DomainManagementMethodsInjector {
         if (!serviceClass.metaClass.respondsTo( serviceClass, "create" )) {
 
             serviceClass.metaClass.create = { domainModelOrMap, flushImmediately = true ->
-                log.trace "${domainSimpleName}Service.create invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
-                try {
-                    if (delegate.respondsTo( 'preCreate' )) delegate.preCreate( domainModelOrMap )
-                    
-                    def domainObject = assignOrInstantiate( domainClass, domainModelOrMap )
-                    assert domainObject.id == null                    
-                    updateSystemFields( domainObject )
-                    log.trace "${domainSimpleName}Service.create will save $domainObject"
-                    
-                    def createdModel = domainObject.save( failOnError: true, flush: flushImmediately ) 
-                    
-                    if (delegate.respondsTo( 'postCreate' )) delegate.postCreate( [ before: domainModelOrMap, after: createdModel ] )
-                    
-                    createdModel
-                } catch (ApplicationException ae) {
-                    log.debug "Could not save a new ${domainSimpleName} due to exception: $ae", ae
-                    throw ae
-                } catch (e) {
-                    def ae = new ApplicationException( domainClass, e )
-                    log.debug "Could not save a new ${domainSimpleName} due to exception: $ae", e
-                    throw ae
+
+                if (domainModelOrMap instanceof List) {
+                    log.trace "${domainSimpleName}Service.create invoked with a list of size ${domainModelOrMap.size()} -- will iterate list and invoke 'create' on each..."
+                    List results = []
+                    domainModelOrMap.each { modelOrMap ->
+                        results << delegate.create( modelOrMap, flushImmediately )
+                    }
+                    results
+                } else {
+                    log.trace "${domainSimpleName}Service.create invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
+                    try {
+                        if (delegate.respondsTo( 'preCreate' )) delegate.preCreate( domainModelOrMap )
+
+                        def domainObject = assignOrInstantiate( domainClass, domainModelOrMap )
+                        assert domainObject.id == null
+                        updateSystemFields( domainObject )
+                        log.trace "${domainSimpleName}Service.create will save $domainObject"
+
+                        def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
+
+                        if (delegate.respondsTo( 'postCreate' )) delegate.postCreate( [ before: domainModelOrMap, after: createdModel ] )
+
+                        createdModel
+                    } catch (ApplicationException ae) {
+                        log.debug "Could not save a new ${domainSimpleName} due to exception: $ae", ae
+                        throw ae
+                    } catch (e) {
+                        def ae = new ApplicationException( domainClass, e )
+                        log.debug "Could not save a new ${domainSimpleName} due to exception: $ae", e
+                        throw ae
+                    }
                 }
             }
         }
 
         if (!serviceClass.metaClass.respondsTo( serviceClass, "update" )) {
             serviceClass.metaClass.update = { domainModelOrMap, flushImmediately = true ->
-                log.trace "${domainSimpleName}Service.update invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
-                def content      // we'll extract the domainModelOrMap into a params map of the properties
-                def domainObject // we'll fetch the model instance into this, and bulk assign the 'content'
-                try {
-                    if (delegate.respondsTo( 'preUpdate' )) delegate.preUpdate( domainModelOrMap )
-                    
-                    content = extractParams( domainClass, domainModelOrMap )
-                    domainObject = fetch( domainClass, content?.id, log )
-                    domainObject.properties = content
-                    domainObject.version = content.version // needed as version is not included in bulk assignment  
 
-                    def updatedModel
-                    if (domainObject.isDirty()) {
-	                    log.trace "${domainSimpleName}Service.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
-		
-	                    updateSystemFields( domainObject )
+                if (domainModelOrMap instanceof List) {
+                    log.trace "${domainSimpleName}Service.update invoked with a list of size ${domainModelOrMap.size()} -- will iterate list and invoke 'update' on each..."
+                    List results = []
+                    domainModelOrMap.each { modelOrMap ->
+                        results << delegate.update( modelOrMap, flushImmediately )
+                    }
+                    results
+                } else {
+                    log.trace "${domainSimpleName}Service.update invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
+                    def content      // we'll extract the domainModelOrMap into a params map of the properties
+                    def domainObject // we'll fetch the model instance into this, and bulk assign the 'content'
+                    try {
+                        if (delegate.respondsTo( 'preUpdate' )) delegate.preUpdate( domainModelOrMap )
 
-	                    log.trace "${domainSimpleName}Service.update applied updates and will save $domainObject"
-	                    updatedModel = domainObject.save( failOnError:true, flush: flushImmediately )
-                    } else {
-	                    log.trace "${domainSimpleName}Service.update found the model to not be dirty and will not update it"
-	                    updatedModel = domainObject
-                    } 
-             
-                    if (delegate.respondsTo( 'postUpdate' )) delegate.postUpdate( [ before: domainModelOrMap, after: updatedModel ] )
-                    updatedModel
+                        content = extractParams( domainClass, domainModelOrMap )
+                        domainObject = fetch( domainClass, content?.id, log )
+                        domainObject.properties = content
+                        domainObject.version = content.version // needed as version is not included in bulk assignment
 
-                } catch (ApplicationException ae) {
-                    log.debug "Could not update an existing ${domainSimpleName} with id = ${domainModelOrMap?.id} due to exception: ${ae.message}", ae
-                    throw ae
-                } catch (ValidationException e) {
-                    def ae = new ApplicationException( domainClass, e )
-                    log.debug "Could not update an existing ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", e
-                    checkOptimisticLockIfInvalid( domainObject, content, log ) // optimistic lock trumps validation errors
-                    throw ae
-                } catch (e) {
-                    log.debug "Could not update an existing ${domainSimpleName} with id = ${domainModelOrMap?.id} due to exception: ${e.message}", e
-                    throw new ApplicationException( domainClass, e )
+                        def updatedModel
+                        if (domainObject.isDirty()) {
+                            log.trace "${domainSimpleName}Service.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
+
+                            updateSystemFields( domainObject )
+
+                            log.trace "${domainSimpleName}Service.update applied updates and will save $domainObject"
+                            updatedModel = domainObject.save( failOnError: true, flush: flushImmediately )
+                        } else {
+                            log.trace "${domainSimpleName}Service.update found the model to not be dirty and will not update it"
+                            updatedModel = domainObject
+                        }
+
+                        if (delegate.respondsTo( 'postUpdate' )) delegate.postUpdate( [ before: domainModelOrMap, after: updatedModel ] )
+                        updatedModel
+
+                    } catch (ApplicationException ae) {
+                        log.debug "Could not update an existing ${domainSimpleName} with id = ${domainModelOrMap?.id} due to exception: ${ae.message}", ae
+                        throw ae
+                    } catch (ValidationException e) {
+                        def ae = new ApplicationException( domainClass, e )
+                        log.debug "Could not update an existing ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", e
+                        checkOptimisticLockIfInvalid( domainObject, content, log ) // optimistic lock trumps validation errors
+                        throw ae
+                    } catch (e) {
+                        log.debug "Could not update an existing ${domainSimpleName} with id = ${domainModelOrMap?.id} due to exception: ${e.message}", e
+                        throw new ApplicationException( domainClass, e )
+                    }
                 }
             }
         }
@@ -146,43 +169,67 @@ public class DomainManagementMethodsInjector {
         if (!serviceClass.metaClass.respondsTo( serviceClass, "createOrUpdate" )) {
 
             serviceClass.metaClass.createOrUpdate = { domainModelOrMap, flushImmediately = true ->
-                log.trace "${domainSimpleName}Service.createOrUpdate invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
-                def content = extractParams( domainClass, domainModelOrMap )
-                if (content.id) {
-                    log.trace "${domainSimpleName}Service.createOrUpdate will delegate to 'update'"
-                    // note: even though we extracted a params map, we'll pass the original so that other information (e.g., a keyBlock)
-                    // will remain available to any callbacks. If redundant processing incurs too much performance penalty, this 
-                    // will require changes to prevent the redundant processing. 
-                    delegate.update( domainModelOrMap, flushImmediately ) 
+
+                if (domainModelOrMap instanceof List) {
+                    log.trace "${domainSimpleName}Service.createOrUpdate invoked with a list of size ${domainModelOrMap.size()} -- will iterate list and invoke 'createOrUpdate' on each..."
+                    List results = []
+                    domainModelOrMap.each { modelOrMap ->
+                        results << delegate.createOrUpdate( modelOrMap, flushImmediately )
+                    }
+                    results
                 } else {
-                    log.trace "${domainSimpleName}Service.createOrUpdate will delegate to 'create'"
-                    // see note above
-                    delegate.create( domainModelOrMap, flushImmediately )
+                    log.trace "${domainSimpleName}Service.createOrUpdate invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
+                    def content = extractParams( domainClass, domainModelOrMap )
+                    if (content.id) {
+                        log.trace "${domainSimpleName}Service.createOrUpdate will delegate to 'update'"
+                        // note: even though we extracted a params map, we'll pass the original so that other information (e.g., a keyBlock)
+                        // will remain available to any callbacks. If redundant processing incurs too much performance penalty, this
+                        // will require changes to prevent the redundant processing.
+                        delegate.update( domainModelOrMap, flushImmediately )
+                    } else {
+                        log.trace "${domainSimpleName}Service.createOrUpdate will delegate to 'create'"
+                        // see note above
+                        delegate.create( domainModelOrMap, flushImmediately )
+                    }
                 }
-                
             }
         }
 
         if (!(serviceClass.metaClass.respondsTo( serviceClass, "delete" ) || serviceClass.metaClass.respondsTo( serviceClass, "remove" ))) {
             serviceClass.metaClass.delete = { domainModelOrMapOrId, flushImmediately = true ->
-                log.trace "${domainSimpleName}Service.delete invoked with domainModelOrMapOrId = $domainModelOrMapOrId and flushImmediately = $flushImmediately"
-                def domainObject
-                try {
-                    if (delegate.respondsTo( 'preDelete' )) delegate.preDelete( domainModelOrMapOrId )
-                    
-                    def id = extractId( domainClass, domainModelOrMapOrId )
-                    domainObject = fetch( domainClass, id, log )
-                    domainObject.delete( failOnError:true, flush: flushImmediately )
-                    
-                    if (delegate.respondsTo( 'postDelete' )) delegate.postDelete( [ before: domainObject, after: null ] )
-                    true
-                } catch (ApplicationException ae) {
-                    log.debug "Could not delete ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", ae
-                    throw ae
-                } catch (e) {
-                    def ae = new ApplicationException( domainClass, e )
-                    log.debug "Could not delete ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", e
-                    throw ae
+
+                if (domainModelOrMapOrId instanceof List) {
+                    log.trace "${domainSimpleName}Service.delete invoked with a list of size ${domainModelOrMapOrId.size()} -- will iterate list and invoke 'delete' on each..."
+
+                    // Since we can't delete while iterating the list containing things being deleted (i.e., concurrent access exception) we'll make them values in a map
+                    Map toBeDeletedMap = [:]
+                    domainModelOrMapOrId.eachWithIndex { modelOrMap, i -> toBeDeletedMap << [ "$i": modelOrMap ] }
+
+                    List results = []
+                    toBeDeletedMap.each { k, v ->
+                        results << delegate.delete( v, flushImmediately )
+                    }
+                    results
+                } else {
+                    log.trace "${domainSimpleName}Service.delete invoked with domainModelOrMapOrId = $domainModelOrMapOrId and flushImmediately = $flushImmediately"
+                    def domainObject
+                    try {
+                        if (delegate.respondsTo( 'preDelete' )) delegate.preDelete( domainModelOrMapOrId )
+
+                        def id = extractId( domainClass, domainModelOrMapOrId )
+                        domainObject = fetch( domainClass, id, log )
+                        domainObject.delete( failOnError: true, flush: flushImmediately )
+
+                        if (delegate.respondsTo( 'postDelete' )) delegate.postDelete( [ before: domainObject, after: null ] )
+                        true
+                    } catch (ApplicationException ae) {
+                        log.debug "Could not delete ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", ae
+                        throw ae
+                    } catch (e) {
+                        def ae = new ApplicationException( domainClass, e )
+                        log.debug "Could not delete ${domainSimpleName} with id = ${domainObject?.id} due to exception: $ae", e
+                        throw ae
+                    }
                 }
             }
         } 
@@ -262,8 +309,7 @@ public class DomainManagementMethodsInjector {
                     throw ae
                 }
             }
-        }
-        
+        }       
     }    
         
     
@@ -301,7 +347,9 @@ public class DomainManagementMethodsInjector {
      * The domainObjectOrMap may:
      * 1) be a domain model instance whose properties should be returned, 
      * 2) already be a 'params' map that may be returned
-     * 3) be a map that contains a 'domainModel' key whose value is the domain model instance whose properties should be returned
+     * 3) be a map that contains a model instance as the value for a key whose name is the simple class name but with
+     *    lower case first letter (i.e., in 'property name' form)
+     * 4) be a map that contains a model instance as the value for a key named 'domainModel'
      * This static method is public so that it may be used within any services that implement their own CRUD methods.
      **/
     public static def extractParams( domainClass, domainObjectOrMap ) {
@@ -312,8 +360,11 @@ public class DomainManagementMethodsInjector {
             }
             paramsMap
         } else if (domainObjectOrMap instanceof Map) {
-            if (domainObjectOrMap.domainModel) {
-                extractParams( domainClass, domainObjectOrMap.domainModel )
+            String specificModelKeyName = GrailsNameUtils.getPropertyName( domainClass.simpleName )
+            if (domainObjectOrMap."${specificModelKeyName}") {
+                extractParams( domainClass, domainObjectOrMap."${specificModelKeyName}" )
+            } else if (domainObjectOrMap.domainModel) {
+                 extractParams( domainClass, domainObjectOrMap.domainModel )
             } else {
                 domainObjectOrMap
             }
@@ -329,7 +380,9 @@ public class DomainManagementMethodsInjector {
      * The domainObjectParamsIdOrMap may:
      * 1) already be a Long 'id' that should be returned, 
      * 2) be a 'params' map that contains a key named 'id' 
-     * 3) be a map that contains a 'domainModel' key whose value is a domain model instance from which the 'id' may be extracted
+     * 3) be a map that contains a key named with the 'property name' form of the model's simple class
+     *    name (e.g., campusParty), whose value is a domain model instance from which the 'id' may be extracted
+     * 4) be a map that contains a 'domainModel' key whose value is a domain model instance from which the 'id' may be extracted
      * This static method is public so that it may be used within any services that implement their own CRUD methods.
      **/
     public static def extractId( domainClass, domainObjectParamsIdOrMap ) {

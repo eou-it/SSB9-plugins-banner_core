@@ -73,15 +73,13 @@ class BannerCoreGrailsPlugin {
     def author = "SunGard Higher Education"
     def authorEmail = "horizon-support@sungardhe.com"
     def title = "Banner Core Framework Plugin"
-    def description = '''\\
-This plugin adds Spring Security (aka Acegi) and a custom 
-DataSource implementation (BannerDataSource) that together 
-provide for authentication and authorization based upon 
-Banner Security configuration. In addition, this plugin provides
-additional framework support (e.g., injecting CRUD methods into 
-services, providing base test classes) to facilitate development of 
-Banner web applications.  
-'''
+    def description = '''This plugin adds Spring Security (aka Acegi) and a custom
+                         |DataSource implementation (BannerDataSource) that together
+                         |provide for authentication and authorization based upon
+                         |Banner Security configuration. In addition, this plugin provides
+                         |additional framework support (e.g., injecting CRUD methods into
+                         |services, providing base test classes) to facilitate development of
+                         |Banner web applications.'''//.stripMargin()  // TODO Enable this once we adopt Groovy 1.7.3
 
     def documentation = "http://sungardhe.com/development/horizon/plugins/banner-core"
     
