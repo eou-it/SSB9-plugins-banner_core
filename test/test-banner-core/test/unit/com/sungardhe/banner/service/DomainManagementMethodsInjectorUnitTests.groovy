@@ -316,6 +316,102 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         assertTrue createdDomains.every { it.description ==~ /.*Updated.*/ }
     }
 
+
+    // --------------------------- Test batch 'createOrUpdate' invocations ----------------------------
+
+
+    void testBatchCreateOrUpdateUsingModelInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def requestList = []
+        (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
+
+        def existingModels = MyMock.list()
+        existingModels.eachWithIndex { model, i -> requestList << (model.properties + [ description: "Updated_$i" ]) }
+
+        def result = svc.createOrUpdate( requestList )
+        assertEquals 10, result.size()
+        assertTrue result.every { it.id }
+result.each { println "XXXXXXXXXX $it" } 
+        assertEquals 5, result.findAll { it.description.contains( "Updated" ) }.size()
+    }
+
+
+    void testBatchCreateOrUpdateUsingModelProperties() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def requestList = []
+        (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
+
+        def existingModels = MyMock.list()
+        existingModels.eachWithIndex { model, i -> requestList << (model.properties + [ description: "Updated_$i" ]) }
+
+        def result = svc.createOrUpdate( requestList )
+        assertEquals 10, result.size()
+        assertTrue  result.every { it.id }
+        assertEquals 5, result.findAll { it.description.contains( "Updated" ) }.size()
+    }
+
+
+    void testBatchCreateOrUpdateUsingParamsMap() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def requestList = []
+        (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
+
+        def existingModels = MyMock.list()
+        existingModels.eachWithIndex { model, i -> requestList << [ id: model.id, name: model.name,
+                                                                       description: "Updated_$i", version: model.version ] }
+
+        def result = svc.createOrUpdate( requestList )
+        assertEquals 10, result.size()
+        assertTrue  result.every { it.id }
+        assertEquals 5, result.findAll { it.description.contains( "Updated" ) }.size()
+    }
+
+
+    void testBatchCreateOrUpdateUsingMapHavingDomainModelKeyHoldingModelInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def requestList = []
+        (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
+
+        def existingModels = MyMock.list()
+        existingModels.eachWithIndex { model, i ->
+            model.description = "Updated_$i"
+            requestList << [ domainModel: model, otherJunk: 'Some validation stuff maybe?' ]
+        }
+
+        def result = svc.createOrUpdate( requestList )
+        assertEquals 10, result.size()
+        assertTrue  result.every { it.id }
+        assertEquals 5, result.findAll { it.description.contains( "Updated" ) }.size()
+    }
+
+
+    void testBatchCreateOrUpdateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {
+        def svc = new AnotherTestService()
+        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
+
+        def requestList = []
+        (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
+
+        def existingModels = MyMock.list()
+        existingModels.eachWithIndex { model, i ->
+            model.description = "Updated_$i"
+            requestList << [ myMock: model, otherJunk: 'Some validation stuff maybe?' ]
+        }
+
+        def result = svc.createOrUpdate( requestList )
+        assertEquals 10, result.size()
+        assertTrue  result.every { it.id }
+        assertEquals 5, result.findAll { it.description.contains( "Updated" ) }.size()
+    }
+
     
     // --------------------------- Test 'delete' method ----------------------------
     
