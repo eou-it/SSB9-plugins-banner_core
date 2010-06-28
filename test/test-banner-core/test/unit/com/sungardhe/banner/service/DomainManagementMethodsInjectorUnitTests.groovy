@@ -333,7 +333,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         def result = svc.createOrUpdate( requestList )
         assertEquals 10, result.size()
         assertTrue result.every { it.id }
-result.each { println "XXXXXXXXXX $it" } 
         assertEquals 5, result.findAll { it.description.contains( "Updated" ) }.size()
     }
 
