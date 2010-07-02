@@ -1,5 +1,4 @@
 /** *****************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -10,33 +9,29 @@
  WITHOUT THE WRITTEN PERMISSION OF THE SAID COMPANY
  ****************************************************************************** */
 
+import com.sungardhe.banner.db.BannerDS as BannerDataSource
+import com.sungardhe.banner.security.BannerAuthenticationProvider
+import com.sungardhe.banner.service.DomainManagementMethodsInjector
+
+import grails.util.GrailsUtil
+
 import oracle.jdbc.pool.OracleDataSource
 
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.commons.logging.LogFactory
 
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
 
-import com.sungardhe.banner.controllers.DefaultRestfulControllerMethods
-import com.sungardhe.banner.db.BannerDS as BannerDataSource
-import com.sungardhe.banner.security.BannerAuthenticationProvider
-import com.sungardhe.banner.service.DomainManagementMethodsInjector
-
-import org.springframework.beans.factory.config.MapFactoryBean
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
-import org.springframework.security.authentication.AnonymousAuthenticationProvider
 import org.springframework.security.authentication.ProviderManager
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.access.ExceptionTranslationFilter
-import org.springframework.security.web.context.HttpSessionContextIntegrationFilter
-import org.springframework.security.web.FilterChainProxy
 import org.springframework.jndi.JndiObjectFactoryBean
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import grails.util.GrailsUtil
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access 
@@ -191,6 +186,18 @@ class BannerCoreGrailsPlugin {
                 DomainManagementMethodsInjector.injectDataManagement( serviceArtefact.clazz, domainArtefact.clazz )
             }
         }
+
+        application.controllerClasses.each { controllerArtefact ->
+            if (controllerArtefact.clazz.metaClass.properties.find { it.name.startsWith('hasRestMixin') }) {
+                controllerArtefact.registerMapping( 'list' )
+                controllerArtefact.registerMapping( 'show' )
+                controllerArtefact.registerMapping( 'create' )
+                controllerArtefact.registerMapping( 'update' )
+                controllerArtefact.registerMapping( 'destroy' )
+                println "${controllerArtefact} has been registered with REST API methods mixed-in to the controller"
+            }
+        }
+
                 
         // inject the logger into every class (Grails only injects this into some artifacts)
         application.allClasses.each { ->

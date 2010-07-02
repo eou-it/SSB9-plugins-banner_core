@@ -88,6 +88,7 @@ public class DomainManagementMethodsInjector {
                 } else {
                     log.trace "${domainSimpleName}Service.create invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
                     try {
+                        log.trace "${domainSimpleName}Service.create will now invoke the preCreate callback if it exists"
                         if (delegate.respondsTo( 'preCreate' )) delegate.preCreate( domainModelOrMap )
 
                         def domainObject = assignOrInstantiate( domainClass, domainModelOrMap )
@@ -97,6 +98,7 @@ public class DomainManagementMethodsInjector {
 
                         def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
 
+                        log.trace "${domainSimpleName}Service.update will now invoke the postCreate callback if it exists"
                         if (delegate.respondsTo( 'postCreate' )) delegate.postCreate( [ before: domainModelOrMap, after: createdModel ] )
 
                         createdModel
@@ -127,7 +129,6 @@ public class DomainManagementMethodsInjector {
                     def content      // we'll extract the domainModelOrMap into a params map of the properties
                     def domainObject // we'll fetch the model instance into this, and bulk assign the 'content'
                     try {
-                        if (delegate.respondsTo( 'preUpdate' )) delegate.preUpdate( domainModelOrMap )
 
                         content = extractParams( domainClass, domainModelOrMap )
                         domainObject = fetch( domainClass, content?.id, log )
@@ -136,8 +137,11 @@ public class DomainManagementMethodsInjector {
 
                         def updatedModel
                         if (domainObject.isDirty()) {
-                            log.trace "${domainSimpleName}Service.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
 
+                            log.trace "${domainSimpleName}Service.update will now invoke the preUpdate callback if it exists"
+                            if (delegate.respondsTo( 'preUpdate' )) delegate.preUpdate( domainModelOrMap )
+
+                            log.trace "${domainSimpleName}Service.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
                             updateSystemFields( domainObject )
 
                             log.trace "${domainSimpleName}Service.update applied updates and will save $domainObject"
@@ -147,6 +151,7 @@ public class DomainManagementMethodsInjector {
                             updatedModel = domainObject
                         }
 
+                        log.trace "${domainSimpleName}Service.update will now invoke the postUpdate callback if it exists"
                         if (delegate.respondsTo( 'postUpdate' )) delegate.postUpdate( [ before: domainModelOrMap, after: updatedModel ] )
                         updatedModel
 
@@ -214,12 +219,14 @@ public class DomainManagementMethodsInjector {
                     log.trace "${domainSimpleName}Service.delete invoked with domainModelOrMapOrId = $domainModelOrMapOrId and flushImmediately = $flushImmediately"
                     def domainObject
                     try {
+                        log.trace "${domainSimpleName}Service.delete will now invoke the preDelete callback if it exists"
                         if (delegate.respondsTo( 'preDelete' )) delegate.preDelete( domainModelOrMapOrId )
 
                         def id = extractId( domainClass, domainModelOrMapOrId )
                         domainObject = fetch( domainClass, id, log )
                         domainObject.delete( failOnError: true, flush: flushImmediately )
 
+                        log.trace "${domainSimpleName}Service.delete will now invoke the postDelete callback if it exists"
                         if (delegate.respondsTo( 'postDelete' )) delegate.postDelete( [ before: domainObject, after: null ] )
                         true
                     } catch (ApplicationException ae) {

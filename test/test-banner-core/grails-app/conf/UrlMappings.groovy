@@ -7,11 +7,12 @@ class UrlMappings {
         // ----------------------- API End Points -----------------------
       
         "/api/foo"( controller: "fooRestful" ) {
-            action = [ GET: "list", POST: "save" ]
+            action = [ GET: "list", POST: "create" ]
         }
         
+        
         "/api/foo/$id"( controller: "fooRestful" ) {
-            action = [ GET: "show", PUT: "update", DELETE: "delete" ]
+            action = [ GET: "show", PUT: "update", DELETE: "destroy" ]
         }
         
         // The following is 'normal' configuration, but since we are testing the framework we'll be more explicit

@@ -1,5 +1,4 @@
 /** *****************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -11,32 +10,38 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
-import com.sungardhe.banner.controllers.RestfulControllerBase
-import com.sungardhe.banner.exceptions.*
-
-import grails.converters.JSON
-import grails.converters.XML
-
+import com.sungardhe.banner.controllers.RestfulControllerMixin
 
 /**
  * Controller supporting the Foo test model using injected RESTful CRUD methods and 
  * that overrides both request parsing (into the params map) and rendering.  This 
  * controller supports custom XML rendering, that adheres to an XML Schema. 
- * @See com.sungardhe.banner.controllers.RestfulControllerBase comments for
+ * @See com.sungardhe.banner.controllers.RestfulControllerMixin comments for
  * a discussion on overriding rendering and params extraction.
  **/
-class FooOverriddenRestfulController extends RestfulControllerBase { 
-            
-    static allowedMethods = [ index: "GET", view: "GET",                                                 // --> allow non-RESTful,
-                              show: "GET", list: "GET", save: "POST", update: "PUT", remove: "DELETE" ]  // --> ensure RESTful
-               
+@Mixin(RestfulControllerMixin)
+class FooOverriddenRestfulController {
+
+    // HACK -- This property facilitates identifying this controller as having mixed-in REST actions.  It is needed since
+    //         the Mixin annotation is not available at runtime, and we need to discover these controllers during bootstrap
+    //         in order to register these REST actions so the URI mapping to them succeeds.
+    boolean hasRestMixin = true
+
     def fooService  // injected by Spring
     
     
     // We'll override the 'domainSimpleName' as we are not following conventions and can thus not determine the 
     // the simple domain name from this Controller's class name. (i.e., we want 'Foo' not 'RooRestful')
     public FooOverriddenRestfulController() {
-        super( "Foo" )
+        // NOTE: domainSimpleName and serviceName properties are provided by the mixin.  Since this controller does not
+        // follow normal naming conventions (i.e., there is no model named 'FooRestful'), we need this constructor
+        // in order to explicitly set the domainSimpleName.
+        domainSimpleName = "Foo"
+
+        // Similarly, we must explicitly set serviceName if it cannot be derived from the domainSimpleName using normal conventions.
+        // In this case, since we do follow normal conventions for services (based on the domainSimpleName), we don't need to
+        // explicitly set this here.
+        // serviceName = "fooService"
     }
     
     
@@ -52,7 +57,7 @@ class FooOverriddenRestfulController extends RestfulControllerBase {
     // Render main User Interface page -- note that ALL other actions are injected :-)
     def view = {
         render "If I had a UI, I'd render it now!"
-        // Render the main ZUL page supporting this model.  All subseqent requests from this UI will be 
+        // Render the main ZUL page supporting this model.  All subsequent requests from this UI will be
         // handled by the corresponding 'Composer'.  This is the +only+ action supporting the ZK based user interface.
         // The other actions in this controller support RESTful clients. 
     }

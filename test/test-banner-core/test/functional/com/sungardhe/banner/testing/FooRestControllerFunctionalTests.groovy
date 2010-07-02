@@ -51,5 +51,5 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
        assertTrue 45 <= data.totalCount
        assertEquals 5, data.data.size()
    }
-   
+
 }

@@ -1,5 +1,4 @@
 /** *****************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -22,7 +21,22 @@ import org.apache.log4j.Logger
 
 /**
  * A base class for controllers that provides them a full RESTful API 
- * supporting XML and JSON representations.  
+ * supporting XML and JSON representations. Specifically, 'create', 'update', 'destroy' 'list', and 'show'
+ * actions are provided by this mixin.
+ *
+ * When a controller mixes in this class, the BannerCoreGrailsPlugin will register these
+ * mixed-in actions such that the Grails URI mapping recognizes these new actions.
+ *
+ * The standard REST API is:
+ * http://the_host/the_app_name/the_controller       GET     --> 'list' action
+ * http://the_host/the_app_name/the_controller/id    GET     --> 'show' action
+ * http://the_host/the_app_name/the_controller       POST    --> 'create' action
+ * http://the_host/the_app_name/the_controller/id    PUT     --> 'update' action
+ * http://the_host/the_app_name/the_controller/id    DELETE  --> 'destroy' action
+ *
+ * If this mixin is modified to add/remove/rename the actions, the BannerCoreGrailsPlugin
+ * class will require a corresponding update (as it specifically registers these mixed in actions
+ * so the URI mapping is successful). Since doing so is not likely, this is likely not a concern. 
  *
  * Controllers that also render GSP/Zul pages are responsible for implementing separate 
  * actions that do not conflict with the RESTful ones. (In general, this is expected 
@@ -35,7 +49,7 @@ import org.apache.log4j.Logger
  * (i.e., the action name must be part of the URI). 
  * 
  * Any of the default RESTful API actions may be overriden by implementing the action 
- * within the concrete controller.
+ * within the specific controller.
  *
  * When using the default RESTful API actions, additional information must be specified in the 
  * controller when conventions cannot sufficiently define the desired behavior.
@@ -66,7 +80,7 @@ import org.apache.log4j.Logger
  * 
  *         Closure 'renderSave( returnMap )   // the returnMap that 'would' have been rendered as default
  *         Closure 'renderUpdate( returnMap ) // also note returnMap could reflect either a success or an error case. 
- *         Closure 'renderDelete( returnMap )
+ *         Closure 'renderDestroy( returnMap )
  *         Closure 'renderShow( returnMap )
  *         Closure 'renderList( returnMap )
  *
@@ -75,36 +89,46 @@ import org.apache.log4j.Logger
  * from the Grails Controller 'params' object (e.g., for a given request format, parsing may be required).
  * The 'default' params extraction implemented here simply parses the 'params' object with the normal XML 
  * and JSON Grails converters when supporting those requested formats. 
- **/
-abstract 
-class RestfulControllerBase { 
-            
+ **/ 
+class RestfulControllerMixin {
+
+    // DEVELOPER: Grails URI mapping must be made aware of the actions being mixed-in via this class.
+    // That is, we explicitly need to register these actions during bootstrap.
+    // Please update BannerCoreGrailsPlugin when adding, re-naming or removing mixed-in actions. 
+
+    static allowedMethods = [ show: "GET", list: "GET", create: "POST", update: "PUT", destroy: "DELETE" ]  // --> ensure RESTful
+
+    String domainSimpleName
+    String serviceName
 
     def log = Logger.getLogger( this.class.name )  
     
-    // Set this explicitly via the constructor if not using normal naming conventions
-    String domainSimpleName 
-    
-    String serviceName = GrailsNameUtils.getPropertyNameRepresentation( "${domainSimpleName}Service" )
-
 
     // wrap the 'message' invocation within a closure, so it can be passed into an ApplicationException to localize error messages
     def localizer = { mapToLocalize -> 
         this.message( mapToLocalize ) 
     }
 
-    
-    // Constructor allows overriding the 'domainSimpleName' for this controller
-    public RestfulControllerBase( String domainSimpleName = null ) { 
-        this.domainSimpleName = domainSimpleName ?: this.class.simpleName.substring( 0, this.class.simpleName.indexOf( "Controller" ) )
+
+    // if we didn't explicitly set this, we'll determine the domain name based upon normal naming conventions
+    String getDomainSimpleName() {
+        domainSimpleName = domainSimpleName ?: GrailsNameUtils.getLogicalName( this.class, "Controller" )
+        domainSimpleName
     }
+
     
+    // if we didn't explicitly set this, we'll determine the service name based upon normal naming conventions
+    String getServiceName() {
+        serviceName ?: GrailsNameUtils.getPropertyNameRepresentation( "${domainSimpleName}Service" )
+    }
+
     
     // ------------------------------------------- Controller Actions -------------------------------------
     // Note that Grails requires these as 'closures' versus methods (and hence normal method injection cannot be employed here.
     //      Injecting a 'property' versus a method also is not functional, hence the 'old fashioned' way of inheritance...)
         
-    def save = { 
+    def create = {
+        
         log.trace "${this.class.simpleName}.save invoked with ${this.params}"
         def entity
         try {
@@ -182,7 +206,7 @@ class RestfulControllerBase {
     } 
         
 
-    def delete = { 
+    def destroy = { 
 
         log.trace "${this.class.simpleName}.delete invoked with ${this.params}"
         try {

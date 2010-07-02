@@ -45,8 +45,7 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
         
         super.setUp()
 
-        controller = new FooRestfulController()    
-        
+        controller = new FooRestfulController()
         assert fooService != null    
         controller.fooService = fooService        
     }
@@ -117,7 +116,7 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
 
-        controller.save() 
+        controller.create()
         
         def content = controller?.response?.contentAsString
         assertNotNull content
@@ -146,7 +145,7 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
 
         controller.request.contentType = "text/json"      
-        controller.save() 
+        controller.create()
         
         def content = controller.response.contentAsString
         assertNotNull content
@@ -283,7 +282,7 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
 
-        controller.delete()
+        controller.destroy()
     
         def content = controller.response.contentAsString
         assertNotNull content
