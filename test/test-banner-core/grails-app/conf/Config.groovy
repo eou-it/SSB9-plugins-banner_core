@@ -56,10 +56,11 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                     ]
 
 // The default codec used to encode data with ${}
-grails.views.default.codec="html" // none, html, base64  **** Charlie note: Setting this to html will ensure html is escaped, to prevent XSS attack ****
-grails.views.gsp.encoding="UTF-8"
-grails.converters.encoding="UTF-8"
+grails.views.default.codec = "html" // none, html, base64  **** Setting this to html will ensure html is escaped, to prevent XSS attack ****
+grails.views.gsp.encoding = "UTF-8"
 
+grails.converters.domain.include.version = true
+grails.converters.encoding = "UTF-8"
 grails.converters.json.date = "javascript"
 grails.converters.json.pretty.print = true
 
@@ -120,12 +121,14 @@ log4j = {
     //         service    - For service classes
     //         controller - For controllers
     //         domain     - For domain entities 
-    off  'grails.app' // The artefact may be omitted to apply to all artefacts  
+//  off  'grails.app' // The artefact may be omitted to apply to all artefacts
         
     // Configure logging for other classes (e.g., in src/ or grails-app/utils/) here:
-    off  'com.sungardhe.banner.security'
-    off  'com.sungardhe.banner.db'
-    off 'com.sungardhe.banner.student'
+//  off  'com.sungardhe.banner.security'
+//  off  'com.sungardhe.banner.db'
+//  off  'REST API' // a generic logger for controllers if they don't have specific loggers
+//  off  'com.sungardhe.banner.testing' // a specific logger for our test controllers
+//  off  'com.sungardhe.banner.student'
     
     // Grails framework classes
 //  off    'org.codehaus.groovy.grails.web.servlet'        // controllers

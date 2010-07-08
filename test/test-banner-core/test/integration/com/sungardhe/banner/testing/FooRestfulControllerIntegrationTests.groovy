@@ -1,5 +1,4 @@
 /** *****************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -12,11 +11,6 @@
 package com.sungardhe.banner.testing
 
 import com.sungardhe.banner.json.JsonHelper
-import com.sungardhe.banner.testing.BaseIntegrationTestCase
-
-import java.sql.Connection
-
-import groovy.sql.Sql
 
 import grails.converters.JSON
 
@@ -60,8 +54,9 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.request.content = "{'id': ${entity.id} }".getBytes()        
         controller.request.contentType = "application/json"
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
-        controller.show() 
-         
+        controller.show()
+        assertEquals 1, controller.invokedRenderCallbacks.size()
+        assertTrue controller.invokedRenderCallbacks.any { it == 'show' } 
         def result = JSON.parse( controller.response.contentAsString )
 
         JsonHelper.replaceJSONObjectNULL( result?.data ) // Minimal workaround for Jira Grails-5585; TODO: Remove when Jira is resolved.
@@ -81,6 +76,8 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
 
         controller.list() 
+        assertEquals 1, controller.invokedRenderCallbacks.size()
+        assertTrue controller.invokedRenderCallbacks.any { it == 'list' }
 
         def result = JSON.parse( controller.response.contentAsString )
         assertTrue "Found ${result?.data?.size()} but expected $MAX", result?.data?.size() == MAX 
@@ -117,7 +114,9 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
 
         controller.create()
-        
+        assertEquals 1, controller.invokedRenderCallbacks.size()
+        assertTrue controller.invokedRenderCallbacks.any { it == 'create' }
+
         def content = controller?.response?.contentAsString
         assertNotNull content
 
@@ -133,7 +132,6 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-
     void testAttemptInsertInvalidEntityWithJson() { 
         
         def paramMap = newFooParams()  
@@ -146,7 +144,7 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
 
         controller.request.contentType = "text/json"      
         controller.create()
-        
+
         def content = controller.response.contentAsString
         assertNotNull content
         
@@ -173,7 +171,9 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
 
         controller.update()
-    
+        assertEquals 1, controller.invokedRenderCallbacks.size()
+        assertTrue controller.invokedRenderCallbacks.any { it == 'update' }
+
         def content = controller.response.contentAsString
         assertNotNull content
 
@@ -270,7 +270,35 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
         assertTrue "Errors were not expected: ${result?.internalError}", 
                    result?.underlyingErrorMessage ==~ /.*optimistic locking failed.*/ // underlying hibernate error message, TODO: Make presentable to user...
     }
-    
+
+
+    void testUpdateOnlyWhenDirtyWithJson() {
+
+        def entity = new Foo( newFooParamsWithAuditTrailProperties() )
+        save entity
+
+        int version = entity.version
+        def lastModified = entity.lastModified
+
+        controller.request.method = 'PUT'
+        controller.request.content = "${((newFooParams() + [ id: entity.id, version: entity.version ]) as JSON)}".getBytes()
+        controller.request.contentType = "application/json"
+        controller.request.getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
+
+        controller.update()
+
+        def content = controller.response.contentAsString
+        assertNotNull content
+
+        def result = JSON.parse( content )
+        assertTrue result?.success
+        assertNotNull result?.message // TODO: assert correct localized message
+
+        entity = Foo.get( entity.id )
+        assertEquals version, entity.version // should not be incremented!
+        assertEquals lastModified, entity.lastModified
+    }
+
     
     void testDeleteWithJson() {
         
@@ -285,6 +313,8 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.destroy()
     
         def content = controller.response.contentAsString
+        assertEquals 1, controller.invokedRenderCallbacks.size()
+        assertTrue controller.invokedRenderCallbacks.any { it == 'destroy' } 
         assertNotNull content
 
         def result = JSON.parse( content )
@@ -308,8 +338,8 @@ class FooRestfulControllerIntegrationTests extends BaseIntegrationTestCase {
  
     // NOTICE: Depends on seed data having pidm 1627 and having at least one medical condition and disability record each with surrogate key 1
     // Creates params appropriate for the controller
-    private Map newFooParams() {
-        [ code: "TT", description: "TT", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
+    private Map newFooParams( code = "TT" ) {
+        [ code: code, description: "Desc_$code", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
 		  addressState: "TT", addressCountry: "TT", addressZipCode: "TT", systemRequiredIndicator: "N", voiceResponseMessageNumber: 1, statisticsCanadianInstitution: "TT", 
 		  districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT" ]
     }

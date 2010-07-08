@@ -12,6 +12,8 @@ package com.sungardhe.banner.testing
 
 import com.sungardhe.banner.controllers.RestfulControllerMixin
 
+import org.apache.log4j.Logger
+
 /**
  * Controller supporting the Foo test model using injected RESTful CRUD methods.  
  * See 'FooOverriddenInjectedMethodsController' for usage of injected methods while having control
@@ -27,6 +29,8 @@ class FooRestfulController  {
     boolean hasRestMixin = true
 
     def fooService  // injected by Spring
+
+    def invokedRenderCallbacks = [] // this is used for testing the framework -- it is NOT something controllers would normally have
     
     
     public FooRestfulController() {
@@ -39,6 +43,9 @@ class FooRestfulController  {
         // In this case, since we do follow normal conventions for services (based on the domainSimpleName), we don't need to
         // explicitly set this here. 
         // serviceName = "fooService"
+
+        // Lastly, we can (optionally) set our own logger (otherwise, logging will be done using a default 'REST API' logger)
+        log = Logger.getLogger( this.class )
     }
     
     
@@ -62,6 +69,23 @@ class FooRestfulController  {
         // The other actions in this controller support RESTful clients. 
     }
                 
-                
+
+    // ------------------------------------ Custom Renderer --------------------------------------
+
+    // Developer note:
+    // Closures that are returned to perform custom rendering must be applicable to the current request format.
+    // The closure returned by this method may be able to support multiple formats or just a single format, but
+    // it is the responsiblity of this method to return an applicable renderer for the current request.
+    // The returned closures are also responsible for setting the appropriate format on the response. They need not
+    // set the HTTP status unless it needs to be overriden.
+    // If the getCustomRenderer() returns null, default rendering will be used. This method should return a
+    // closure only when custom rendering is needed and supported -- otherwise it should return null.
+    // If a controller does not require any custom rendering, this method may be removed completely.
+    public Closure getCustomRenderer( String actionName ) {
+        // While this method currently doesn't return any closures, it is implemented here just as an example. 
+        log.trace "getCustomRenderer() invoked with actionName $actionName and will return null"
+        invokedRenderCallbacks << actionName
+        null
+    }
         
 }

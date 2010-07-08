@@ -1,5 +1,4 @@
 /** *****************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -11,18 +10,9 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
-import com.sungardhe.banner.json.JsonHelper
-import com.sungardhe.banner.testing.BaseIntegrationTestCase
-
 import java.sql.Connection
 
 import groovy.sql.Sql
-
-import grails.converters.JSON
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-
-import org.springframework.security.core.context.SecurityContextHolder
 
 
 /**
@@ -57,14 +47,14 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     void testSave() { 
         def foo = fooService.create( newTestFooParams() )
         assertNotNull foo.id
-        assertEquals "Horizon Test Data", foo.description 
+        assertEquals "Horizon Test - TT", foo.description
     }
 
     
     void testUpdate() { 
         def foo = fooService.create( newTestFooParams() )
         assertNotNull foo.id
-        assertEquals "Horizon Test Data", foo.description 
+        assertEquals "Horizon Test - TT", foo.description
 
         assertFalse foo.isDirty()
         foo.description = "Updated"
@@ -84,7 +74,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     void testUpdateNotDirty() { 
         def foo = fooService.create( newTestFooParams() )
         assertNotNull foo.id
-        assertEquals "Horizon Test Data", foo.description 
+        assertEquals "Horizon Test - TT", foo.description
         
         def id = foo.id 
         def version = foo.version
@@ -95,7 +85,29 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals version, updatedFoo.version
         assertTrue lastModified == updatedFoo.lastModified
     }
-    
+
+
+    void testUpdateMultipleNotDirty() {
+        def foos = [ fooService.create( newTestFooParams(), false ),
+                     fooService.create( newTestFooParams( 'UU' ), false ),
+                     fooService.create( newTestFooParams( 'VV' ), false ) ]
+
+        def properties = []
+        foos.each {
+            properties << [ code: it.code, version: it.version, lastModified: it.lastModified ]
+        }
+
+        foos.find { it.code == "UU" }.description = "Updated"
+        def updatedFoos = fooService.createOrUpdate( foos )
+
+        assertEquals 3, updatedFoos.size()
+        assertEquals 1, updatedFoos.findAll { it.description == "Updated" }.size()
+        assertEquals 2, updatedFoos.findAll { it.description.contains( "Horizon Test -" ) }.size()
+        assertEquals properties.find { it.code == "TT" }.version, updatedFoos.find { it.code == "TT" }.version
+        assertEquals properties.find { it.code == "UU" }.version + 1, updatedFoos.find { it.code == "UU" }.version
+        assertEquals properties.find { it.code == "VV" }.version, updatedFoos.find { it.code == "VV" }.version
+    }
+
     
     // Note: This test is not effective, and thus only ensures we don't encounter exceptions etc.
     // There does not seem to be exposed callbacks to monitor when the flush actually occurs, 
@@ -106,8 +118,8 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     void testSaveWithoutFlush() { 
         Foo.withSession { session ->            
             def foos = [ fooService.create( newTestFooParams(), false ),
-                         fooService.create( newTestFooParams() + [code: 'UU'], false ),
-                         fooService.create( newTestFooParams() + [code: 'VV'], false ) ]
+                         fooService.create( newTestFooParams( 'UU' ), false ),
+                         fooService.create( newTestFooParams( 'VV' ), false ) ]
 /*
         // Note: This currently finds the record -- proving that the DDL has in fact been executed. 
         def sql = null
@@ -164,19 +176,19 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     // really only effective once we stop managing transactions within tests and truly use the declarative transaction boundaries.
     // This testing, once the @Transactional attribute is working, may need to be performed within a functional test...
     private def tearDownTestFoo( boolean warnIfFound = false ) {
-        def testFoos = Foo.findAllByDescription( "Horizon Test Data" )
+        def testFoos = Foo.findAllByDescriptionLike( "Horizon Test" )
         if (testFoos?.size() > 0) {
             if (warnIfFound) log.warn "Test data was found that should have been torn down!"
             Foo.withTransaction { 
                 testFoos.each { it.delete( failOnError:true, flush: true ) } 
             }
-            assertEquals 0, Foo.findAllByDescription( "Horizon Test Data" ).size()
+            assertEquals 0, Foo.findAllByDescriptionLike( "Horizon Test" )
         }
     }
     
 
-    private Map newTestFooParams() {
-        [ code: "TT", description: "Horizon Test Data", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
+    private Map newTestFooParams( code = "TT" ) {
+        [ code: code, description: "Horizon Test - $code", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
 		  addressState: "TT", addressCountry: "TT", addressZipCode: "TT", systemRequiredIndicator: "N", voiceResponseMessageNumber: 1, statisticsCanadianInstitution: "TT", 
 		  districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT" ]
     }
