@@ -42,27 +42,29 @@ class FooOverriddenRestfulController {
         // In this case, since we do follow normal conventions for services (based on the domainSimpleName), we don't need to
         // explicitly set this here.
         // serviceName = "fooService"
+
+        // Lastly, we can (optionally) set our own logger (otherwise, logging will be done using a default 'REST API' logger)
+        log = Logger.getLogger( this.class )
     }
-    
-    
-    // ------------------------------------- Controller Actions -------------------------------------
-    //   note: The normal RESTful 'actions' are provided by the base class. Here we simply add 'UI' action(s).
-    
-    
-    def index = {
-        redirect( action: "view", params: params )  
+
+// ------------------------------------ Custom Renderer --------------------------------------
+
+
+    // Developer note:
+    // Closures that are returned to perform custom rendering must be applicable to the current request format.
+    // The closure returned by this method may be able to support multiple formats or just a single format, but
+    // it is the responsiblity of this method to return an applicable renderer for the current request.
+    // The returned closures are also responsible for setting the appropriate format on the response. They need not
+    // set the HTTP status unless it needs to be overriden.
+    // If the getCustomRenderer() returns null, default rendering will be used. This method should return a
+    // closure only when custom rendering is needed and supported -- otherwise it should return null.
+    // If a controller does not require any custom rendering, this method may be removed completely.
+    public Closure getCustomRenderer(String actionName) {
+        log.trace "getCustomRenderer() invoked with actionName $actionName and will return null"
+        null
     }
-    
-    
-    // Render main User Interface page -- note that ALL other actions are injected :-)
-    def view = {
-        render "If I had a UI, I'd render it now!"
-        // Render the main ZUL page supporting this model.  All subsequent requests from this UI will be
-        // handled by the corresponding 'Composer'.  This is the +only+ action supporting the ZK based user interface.
-        // The other actions in this controller support RESTful clients. 
-    }
-    
-    
+
+
     // --------------------------- Special 'params' handling & Rendering ---------------------------
     
     
@@ -71,7 +73,7 @@ class FooOverriddenRestfulController {
     // the base class will check Spring for a registered handler class, and lastly will fall back to 
     // it's default param extraction. 
     //
-    def extractParams() {
+    public Closure getParamsExtractor() {
         switch (request.header[ "Content-Type" ]) {
             case "application/vnd.sungardhe.student.v0.01+xml" :
                 // we'll only add specific support for a custom MIME type

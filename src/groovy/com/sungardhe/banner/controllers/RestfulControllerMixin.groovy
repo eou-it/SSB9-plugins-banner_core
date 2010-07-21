@@ -121,7 +121,7 @@ class RestfulControllerMixin {
     }
 
     
-    // ------------------------------------------- Controller Actions -------------------------------------
+// ------------------------------------------- Controller Actions -------------------------------------
 
 
     def create = {
@@ -260,7 +260,7 @@ class RestfulControllerMixin {
         def entities
         def totalCount
         try {
-//          TODO if-else ... allow the delegate may substitute it's own implementation versus the default service.list (e.g., to use a query instead)
+            // TODO if-else ... allow the delegate may substitute it's own implementation versus the default service.list (e.g., to use a query instead)
             entities = this."$serviceName".list( params )
             totalCount = this."$serviceName".count( params )
             def successReturnMap = [ success: true, 
@@ -293,23 +293,43 @@ class RestfulControllerMixin {
 
 
     private Map extractParams() {
+        Closure extractor
+        if (this.class.metaClass.respondsTo( this.class, "getParamsExtractor" )) {
+            extractor = this.getParamsExtractor()
+        } else {
+        // TODO: Insert else-if to call an injected CustomRepresentationSupportService
+        //       to ask for an extractor. This would preclude the need for controllers to
+        //       implement a getParamsExtractor() if the developer instead registers the
+        //       custom extractors with this common registry service.  This service would
+        //       facilitate supporting new representations without having to modify the controller.
+
+            extractor = defaultParamsExtractor
+        }
+        params << extractor.call()
+        params
+    }
+
+
+    // A default params extractor that uses built-in Grails support for parsing JSON and XML.
+    private Closure defaultParamsExtractor = { ->
+        Map paramsContent = [:]
         if (request.format ==~ /.*html.*/) {
             log.debug "${this.class.simpleName} HTML request format will use pre-populated params $params"
-            params
+            paramsContent
         }
         else if (request.format ==~ /.*json.*/) {
             request.JSON.entrySet().each {
-                params.put it.key, it.value
+                paramsContent.put it.key, it.value
             }
-            log.debug "${this.class.simpleName} has extracted JSON content from the request and populated params $params"
-            params
+            log.debug "${this.class.simpleName} has extracted JSON content from the request and populated params $paramsContent"
+            paramsContent
         }
         else if (request.format ==~ /.*xml.*/) {
             request.XML.children().each {
-                params.put it.name(), it.text()
+                paramsContent.put it.name(), it.text()
             }
-            log.debug "${this.class.simpleName} has extracted XML content from the request and populated params $params"
-            params
+            log.debug "${this.class.simpleName} has extracted XML content from the request and populated params $paramsContent"
+            paramsContent
         }
         else {
             throw new RuntimeException( "@@r1:com.sungardhe.framework.unsupported_content_type:${request.format}" )
@@ -322,6 +342,12 @@ class RestfulControllerMixin {
         if (this.class.metaClass.respondsTo( this.class, "getCustomRenderer" )) {
             renderer = this.getCustomRenderer( rendererName )
         }
+        // TODO: Insert else-if to call an injected CustomRepresentationSupportService
+        //       to ask for a renderer. This would preclude the need for controllers to
+        //       implement a getCustomRenderer() if the developer instead registers the
+        //       custom renderer with this common registry service. This service would
+        //       facilitate supporting new representations without having to modify the controller.
+
         renderer ?: defaultRenderer
     }
                  
