@@ -170,7 +170,7 @@ public class BannerDS {
             def authoritiesForForm = grantedAuthorities.findAll { it.authority ==~ /\w+_${form}_\w+/ }
             authoritiesForForm.each { applicableAuthorities << it }
         }
-        log.debug "The user's applicable authorities are $applicableAuthorities" // TODO remove logging of authorities, or log only in Test environment
+        log.debug "Given FormContext of ${formContext?.join(',')}, the user's applicable authorities are $applicableAuthorities" // TODO remove logging of authorities, or log only in Test environment
         applicableAuthorities
     }
 

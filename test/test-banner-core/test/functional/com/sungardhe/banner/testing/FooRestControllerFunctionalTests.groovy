@@ -33,7 +33,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
     void testList_JSON() {
 
         def pageSize = 5
-        get( "/api/foo?max=$pageSize" ) {
+        get( "/api/foo1?max=$pageSize" ) {
             headers[ 'Content-Type' ] = 'application/json'
             headers[ 'Authorization' ] = authHeader()
         }
@@ -50,7 +50,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
 
     void testShow_JSON() {
 
-        get( "/api/foo/1" ) {
+        get( "/api/foo1/1" ) {
             headers[ 'Content-Type' ] = 'application/json'
             headers[ 'Authorization' ] = authHeader()
         }
@@ -68,7 +68,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
         def id
         try {
             // 'POST' /api/college => 'create'
-            post("/api/foo") {
+            post("/api/foo1") {
                 headers[ 'Content-Type' ] = 'application/json'
                 headers[ 'Authorization' ] = authHeader()
                 body { """
@@ -91,7 +91,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
             assertEquals "Expected code 'Z9' but got ${data.code}", 'Z9', data.code
 
             // 'PUT' /api/foo => 'update'
-            put( "/api/foo/$id" ) {
+            put( "/api/foo1/$id" ) {
                 headers[ 'Content-Type' ] = 'application/json'
                 headers[ 'Authorization' ] = authHeader()
                 body {
@@ -114,7 +114,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
         }
         finally {
 
-            delete( "/api/foo/$id" ) {
+            delete( "/api/foo1/$id" ) {
                 headers[ 'Content-Type' ] = 'application/json'
                 headers[ 'Authorization' ] = authHeader()
             }
@@ -125,7 +125,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
             def data = JSON.parse( stringContent )
             assertTrue "Response not as expected: ${data.success}", data.success
 
-            get( "/api/foo/$id" ) {  // 'GET' /api/college/id => 'show'
+            get( "/api/foo1/$id" ) {  // 'GET' /api/college/id => 'show'
                 headers[ 'Content-Type' ] = 'application/json'
                 headers[ 'Authorization' ] = authHeader()
             }
@@ -135,13 +135,13 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
 
 
     // -------------------------------- Test XML Representations ---------------------------------
-    // Note: This controller uses default XML rendering -- see FooOverriddenFunctionalTests for
-    //       an example of testing custom rendering.)
+    // Note: This controller uses default XML rendering -- see FooOverriddenRestfulControllerFunctionalTests 
+    //       for an example of testing custom rendering.)
 
 
     void testShow_XML() {
 
-        get( "/api/foo/1" ) {  // 'GET' /api/foo/id => 'show'
+        get( "/api/foo1/1" ) {  // 'GET' /api/foo/id => 'show'
             headers[ 'Content-Type' ] = 'text/xml'
             headers[ 'Authorization' ] = authHeader()
         }
@@ -158,7 +158,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
     void testList_XML() {
 
         def pageSize = 15
-        get( "/api/foo?max=$pageSize" ) {
+        get( "/api/foo1?max=$pageSize" ) {
             headers[ 'Content-Type' ] = 'text/xml'
             headers[ 'Authorization' ] = authHeader()
         }
@@ -184,7 +184,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
             def xmlBody = new Foo( code: code, description: 'Desc_Z8' ) as XML
 
             // 'POST' /api/foo => 'create'
-            post( "/api/foo" ) {
+            post( "/api/foo1" ) {
                 headers[ 'Content-Type' ] = 'text/xml'
                 headers[ 'Authorization' ] = authHeader()
                 body { xmlBody }
@@ -195,7 +195,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
             def xmlResultMap = new XmlSlurper().parseText( stringContent )
             def xmlFoos = xmlResultMap.entry.findAll { it.@key.text() == "data" }
             
-            // get the id first, so a subsequent failure won't prevent our catch block from deleting this...
+            // get the id first, so a subsequent failure won't prevent our finally block from deleting this...
             id = xmlFoos[0]?.@id?.text()?.toInteger()
             assertTrue id != null
             def version = xmlFoos[0]?.@version?.text()?.toInteger()
@@ -203,7 +203,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
             assertEquals code, xmlFoos[0].code.text()
 
             // 'PUT' /api/foo => 'update'
-            put( "/api/foo/$id" ) {
+            put( "/api/foo1/$id" ) {
                 headers[ 'Content-Type' ] = 'text/xml'
                 headers[ 'Authorization' ] = authHeader()
                 body { """
@@ -227,7 +227,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
 
         } finally {
 
-            delete( "/api/foo/$id" ) {
+            delete( "/api/foo1/$id" ) {
                 headers[ 'Content-Type' ] = 'text/xml'
                 headers[ 'Authorization' ] = authHeader()
             }
@@ -238,7 +238,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
 
             assertTrue "Response not as expected: ${xml}", "${xml}" ==~ /.*true.*/
 
-            get( "/api/foo/$id" ) {  // 'GET' /api/foo/id => 'show'
+            get( "/api/foo1/$id" ) {  // 'GET' /api/foo/id => 'show'
                 headers[ 'Content-Type' ] = 'text/xml'
                 headers[ 'Authorization' ] = authHeader()
             }

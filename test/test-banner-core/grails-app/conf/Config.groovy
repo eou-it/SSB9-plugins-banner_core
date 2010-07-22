@@ -161,7 +161,8 @@ log4j = {
 // for that user and Banner object. 
 formControllerMap = [
     'foo' : [ 'STVCOLL' ],
-    'foorestful' : [ 'STVCOLL' ]
+    'foorestful' : [ 'STVCOLL' ],
+    'foooverriddenrestful' : [ 'STVCOLL' ]
 ]
 
 
@@ -188,7 +189,8 @@ grails.plugins.springsecurity.interceptUrlMap = [
         '/plugins/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/errors/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/foo/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
-        '/api/foo/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
+        '/api/foo1/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
+        '/api/foo2/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
         '/**': ['ROLE_ANY_FORM_BAN_DEFAULT_M']
 ]
         

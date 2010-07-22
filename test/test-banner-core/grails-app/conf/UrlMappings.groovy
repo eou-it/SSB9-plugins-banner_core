@@ -6,15 +6,25 @@ class UrlMappings {
   	  
         // ----------------------- API End Points -----------------------
       
-        "/api/foo"( controller: "fooRestful" ) {
+        "/api/foo1"( controller: "fooRestful" ) {
             action = [ GET: "list", POST: "create" ]
         }
         
         
-        "/api/foo/$id"( controller: "fooRestful" ) {
+        "/api/foo1/$id"( controller: "fooRestful" ) {
             action = [ GET: "show", PUT: "update", DELETE: "destroy" ]
         }
-        
+
+
+        "/api/foo2"( controller: "fooOverriddenRestful" ) {
+            action = [ GET: "list", POST: "create" ]
+        }
+
+
+        "/api/foo2/$id"( controller: "fooOverriddenRestful" ) {
+            action = [ GET: "show", PUT: "update", DELETE: "destroy" ]
+        }
+
         // The following is 'normal' configuration, but since we are testing the framework we'll be more explicit
         // and map to specific controllers
 /*        

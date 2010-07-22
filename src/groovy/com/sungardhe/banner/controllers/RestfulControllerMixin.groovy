@@ -20,12 +20,12 @@ import org.apache.log4j.Logger
 
 
 /**
- * A mixin for controllers that provides them a full RESTful API
- * supporting XML and JSON representations. Specifically, 'create', 'update', 'destroy' 'list', and 'show'
- * actions are provided by this mixin.
+ * A mixin for controllers that provides them a full RESTful API supporting XML and JSON representations.
+ * Specifically, 'create', 'update', 'destroy' 'list', and 'show' actions are provided by this mixin.
  *
- * When a controller 'mixes in' this class, the BannerCoreGrailsPlugin will register these
- * mixed-in actions such that the Grails URI mapping recognizes these new actions.
+ * When a controller 'mixes in' this class AND includes a 'boolean hasRestMixin = true' property,
+ * the BannerCoreGrailsPlugin will register these mixed-in actions such that the Grails URI mapping
+ * recognizes these new actions.
  *
  * The standard REST API is:
  * http://the_host/the_app_name/the_controller       GET     --> 'list' action
@@ -36,7 +36,8 @@ import org.apache.log4j.Logger
  *
  * If this mixin is modified to add/remove/rename the actions, the BannerCoreGrailsPlugin
  * class will require a corresponding update (as it specifically registers these mixed in actions
- * so the URI mapping is successful). Since doing so is not likely, this is likely not a concern. 
+ * so the URI mapping is successful). Since doing so is not likely common, this coupling is
+ * likely not a concern.
  *
  * Controllers that also render GSP/Zul pages are responsible for implementing separate 
  * actions that do not conflict with the RESTful ones. (In general, this is expected 
@@ -45,10 +46,10 @@ import org.apache.log4j.Logger
  * NOTE: URI's containing 'api' will be directed to the appropriate controller 
  * action based upon HTTP method (see UriMappings.groovy).  These URIs will also 
  * be authenticated using BasicAuthentication. URIs that do not have 'api' in their name 
- * will be directed to the appropriate action using non-REST conventions 
+ * will be directed to the appropriate action using non-RESTful conventions
  * (i.e., the action name must be part of the URI). 
  * 
- * Any of the default RESTful API actions may be overriden by implementing the action 
+ * Any of the default RESTful API actions may be overridden by implementing the action
  * within the specific controller.
  *
  * When using the default RESTful API actions, additional information must be specified in the 
@@ -57,12 +58,15 @@ import org.apache.log4j.Logger
  * Specifically, controllers extending this class and using it's RESTful API methods may:
  *
  * 1) Provide a method that returns a Closure that implements custom rendering or null if no custom renderer is available.
- *    The returned closure must accept a map that would have been used for default rendering.
- *    The method must 'NOT' actually perform any rendering, but instead
- *    must simply return a Closure that 'can' perform the rendering if one is available that can  
- *    handle the current request (i.e., action, HTTP format - a custom MIME type specifying a particular XML Schema version, etc.).
+ *    The signature of this method must be:  public Closure getCustomRenderer( String actionName )
+ *
+ *    The method must 'NOT' actually perform any rendering, but instead must simply return a Closure that
+ *    'can' perform the rendering for the current request (i.e., a specific action and HTTP format).  The need
+ *    to support a custom MIME type specifying a particular XML Schema version, etc. is a primary need for having
+ *    such a method.
+ *
  *    The reason the method returns a closure is so that the controller is not forced to implement custom support
- *    across the board, but can indicate (i.e., by returning a closure) specific individual responses 
+ *    across the board, but can indicate (i.e., by returning a closure) specific individual rendering
  *    it supports (e.g., perhaps only a custom MIME type is supported, and everything else is handled by  
  *    the default rendering provided by the injected action).
  *
@@ -74,19 +78,20 @@ import org.apache.log4j.Logger
  *          when asking for a particular XML version (based upon a versioned XML Schema).  In this situation, 
  *          a renderAction method may check the 'request' and only return a Closure if the request.format was 
  *          a supported custom MIME type. Otherwise, it would return null and the injected action would use it's 
- *          own Grails Converter based rendering for XML. 
+ *          own Grails Converter based rendering for XML.
  *
- * It is important to note, the default JSON and XML rendering is simply based upon the Grails Converters, 
- * and the JSON and XML structure is subject to change as the domain model classes are modified over time. 
+ *    The returned closure must accept the map that would have been used for default rendering.
  *
- * Following are the possible method signatures that may be exposed by your controller:
- *         Closure getCustomRenderer( String actionName )
+ *    It is important to note, the default JSON and XML rendering is simply based upon the Grails Converters,
+ *    and the JSON and XML structure is subject to change as the domain model classes are modified over time.
+ * *
+ * 2) Expose a method that returns a closure that can extract request data into params for the specific request.
+ *    This method, like the method discussed above, should return null if it cannot handle the current request.
+ *    This method is not needed if the default params extraction suffices.  
  *
- * 2) Expose an 'extractParams' closure IF the default extraction of params does not suffice. If 
- * a controller provides an implementation, it should return an appropriate params map as extracted 
- * from the Grails Controller 'params' object (e.g., for a given request format, parsing may be required).
- * The 'default' params extraction implemented here simply parses the 'params' object with the normal XML 
- * and JSON Grails converters when supporting those requested formats. 
+ *    The signature of this method is: public Closure getParamsExtractor()
+ *
+ *    A controller will normally need to return a closure used to extract params from a custom XML format.
  **/ 
 class RestfulControllerMixin {
 
@@ -145,13 +150,7 @@ class RestfulControllerMixin {
         catch (e) { // CI logging
             this.response.setStatus( 500 ) 
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
-            getRenderer( "create" ).call(
-                          [ data: entity,
-                            success: false, 
-                            message: localizer( code: 'default.not.created.message', 
-                                                args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
-                            errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
-                            underlyingErrorMessage: e.message ]  )
+            getRenderer( "create" ).call( defaultErrorRenderMap( e, entity, 'default.not.created.message' ) )
         }               
     }             
     
@@ -178,14 +177,8 @@ class RestfulControllerMixin {
         catch (e) { // CI logging
             this.response.setStatus( 500 ) 
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
-            getRenderer( "update" ).call(
-                          [ data: entity,
-                            success: false, 
-                            message: localizer( code: 'default.not.updated.message', 
-                                                args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
-                            errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
-                            underlyingErrorMessage: e.message ]  )
-        }                    
+            getRenderer( "update" ).call( defaultErrorRenderMap( e, entity, 'default.not.updated.message' ) )
+        }
     } 
         
 
@@ -212,14 +205,8 @@ class RestfulControllerMixin {
         catch (e) { // CI logging
             this.response.setStatus( 500 ) 
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
-            getRenderer( "destroy" ).call(
-                          [ data: null,
-                            success: false, 
-                            message: localizer( code: 'default.not.deleted.message', 
-                                                       args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
-                            errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
-                            underlyingErrorMessage: e.message ] )
-        }               
+            getRenderer( "destroy" ).call( defaultErrorRenderMap( e, entity, 'default.not.deleted.message' ) )
+        }
     } 
         
         
@@ -243,14 +230,8 @@ class RestfulControllerMixin {
         catch (e) { // CI logging
             this.response.setStatus( 500 ) 
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
-            getRenderer( "show" ).call(
-                          [ data: entity,
-                            success: false, 
-                            message: localizer( code: 'default.not.shown.message', 
-                                                args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
-                            errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
-                            underlyingErrorMessage: e.message ]  )
-        }               
+            getRenderer( "show" ).call( defaultErrorRenderMap( e, entity, 'default.not.shown.message' ) )
+        }
     } 
         
         
@@ -278,19 +259,22 @@ class RestfulControllerMixin {
         catch (e) { // CI logging
             this.response.setStatus( 500 ) 
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
-            getRenderer( "list" ).call(
-                          [ data: entities,
-                            success: false, 
-                            message: localizer( code: 'default.not.listed.message', 
-                                                args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
-                            errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
-                            underlyingErrorMessage: e.message ]  )
-        }               
+            getRenderer( "list" ).call( defaultErrorRenderMap( e, entities, 'default.not.listed.message' ) )
+        }
     }
 
 
 // ----------------------------------- Helper Methods -----------------------------------    
 
+
+    private Map defaultErrorRenderMap( e, data, messageCode ) {
+        [ data: data,
+          success: false,
+          message: localizer( code: messageCode,
+                              args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
+          errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
+          underlyingErrorMessage: e.message ]
+    }
 
     private Map extractParams() {
         Closure extractor
@@ -363,7 +347,6 @@ class RestfulControllerMixin {
             render( json )
         } 
         else if (request.format ==~ /.*xml.*/) {
-            // TODO: Need to support multiple approaches / formats / versions / etc.
             response.setHeader( "Content-Type", "application/xml" ) 
             render( responseMap as XML )
         } 

@@ -12,14 +12,18 @@ package com.sungardhe.banner.testing
 
 import com.sungardhe.banner.controllers.RestfulControllerMixin
 
+import grails.util.GrailsNameUtils
+
+import org.apache.log4j.Logger
+
 /**
- * Controller supporting the Foo test model using injected RESTful CRUD methods and 
- * that overrides both request parsing (into the params map) and rendering.  This 
- * controller supports custom XML rendering, that adheres to an XML Schema. 
+ * Controller supporting the Foo test model using mixed-in RESTful CRUD methods and
+ * custom request parsing (into the params map) and rendering.  This
+ * controller supports custom XML rendering that adheres to an XML Schema. 
  * @See com.sungardhe.banner.controllers.RestfulControllerMixin comments for
  * a discussion on overriding rendering and params extraction.
  **/
-@Mixin(RestfulControllerMixin)
+@Mixin( RestfulControllerMixin ) // Note: Also needs 'hasRestMixin' property (see below)
 class FooOverriddenRestfulController {
 
     // HACK -- This property facilitates identifying this controller as having mixed-in REST actions.  It is needed since
@@ -46,6 +50,7 @@ class FooOverriddenRestfulController {
         // Lastly, we can (optionally) set our own logger (otherwise, logging will be done using a default 'REST API' logger)
         log = Logger.getLogger( this.class )
     }
+    
 
 // ------------------------------------ Custom Renderer --------------------------------------
 
@@ -53,17 +58,40 @@ class FooOverriddenRestfulController {
     // Developer note:
     // Closures that are returned to perform custom rendering must be applicable to the current request format.
     // The closure returned by this method may be able to support multiple formats or just a single format, but
-    // it is the responsiblity of this method to return an applicable renderer for the current request.
+    // it is the responsibility of this method to return an applicable renderer for the current request.
     // The returned closures are also responsible for setting the appropriate format on the response. They need not
-    // set the HTTP status unless it needs to be overriden.
+    // set the HTTP status unless it needs to be overridden.
     // If the getCustomRenderer() returns null, default rendering will be used. This method should return a
     // closure only when custom rendering is needed and supported -- otherwise it should return null.
     // If a controller does not require any custom rendering, this method may be removed completely.
-    public Closure getCustomRenderer(String actionName) {
-        log.trace "getCustomRenderer() invoked with actionName $actionName and will return null"
-        null
-    }
+    public Closure getCustomRenderer( String actionName ) {
+        log.trace "getCustomRenderer() invoked with actionName $actionName, and the request format is ${request.getHeader( 'Content-Type' )}"
 
+        // We'll only provide custom rendering for the application/vnd.sungardhe.student.v0.01+xml MIME type
+        if ("application/vnd.sungardhe.student.v0.01+xml" != request.getHeader( 'Content-Type' )) {
+            return null
+        }
+
+        response.setHeader( "Content-Type", "application/vnd.sungardhe.student.v0.01+xml" )
+
+        // refBase is used for the 'Ref' element, which provides a link within the rendered XML back to the RESTful endpoint
+        def refBase = "${request.scheme}://${request.serverName}:${request.serverPort}/${grailsApplication.metadata.'app.name'}/${GrailsNameUtils.getPropertyNameRepresentation( domainSimpleName )}"
+
+        switch (actionName) {
+            // TODO: Use a StreamingMarkupBuilder to build up the response, versus using GSP templates
+            case 'list'   : return { renderDataMap -> render( template:"/foo/list.v1.0.xml",
+                                                              model: [ fooList: renderDataMap.data, totalCount: renderDataMap.totalCount, refBase: refBase ] ) }
+            case 'show'   : return { renderDataMap -> render( template:"/foo/single.v1.0.xml",
+                                                              model: [ foo: renderDataMap.data, refBase: refBase ] ) }
+            case 'create' : return { renderDataMap -> render( template:"/foo/single.v1.0.xml",
+                                                              model: [ foo: renderDataMap.data, refBase: refBase ] ) }
+            case 'update' : return { renderDataMap -> render( template:"/foo/single.v1.0.xml",
+                                                              model: [ foo: renderDataMap.data, refBase: refBase ] ) }
+ 
+            default       : return null
+        }
+    }
+    
 
     // --------------------------- Special 'params' handling & Rendering ---------------------------
     
@@ -74,25 +102,11 @@ class FooOverriddenRestfulController {
     // it's default param extraction. 
     //
     public Closure getParamsExtractor() {
-        switch (request.header[ "Content-Type" ]) {
-            case "application/vnd.sungardhe.student.v0.01+xml" :
-                // we'll only add specific support for a custom MIME type
-                // TODO: This method won't have to handle content types that have closures registered 
-                //       in spring, as the base class will check Spring directly after calling this method. 
-                //       That is, only 'special' handling would have to be implemented here. 
-                return handleXmlVer0_01
-            default:
-                return null // the injected action should use rely on default extraction
+        switch (request.getHeader( 'Content-Type' )) {
+            case "application/vnd.sungardhe.student.v0.01+xml" : return handleXmlVer0_01
+            default                                            : return null
         }
     }
-    
-    
-    // We override rendering only for cases where it cannot be performed generically in the base class.
-    // This includes, for example, rendering XML that is constrained to a versioned XML Schema. 
-    //
-//  def renderUpdate() {
-//      ... any special 'update' rendering (success case and error cases) would go here...    
-//  }
     
                 
     // TODO: Attain this 'mapper' from a Spring 'ContentTypeHandlerRegistry' bean, using the Content-Type as the key. Base class
@@ -107,7 +121,8 @@ class FooOverriddenRestfulController {
     // For example, to update the foo description, the XML need only populate the description element. 
     // It is important that we do not add to the properties map any other properties (as doing so would set those  
     // property values to null when creating or updating a model instance.)
-    def handleXmlVer0_01 = { xml ->
+    def handleXmlVer0_01 = { ->
+        def xml = request.XML.Foo[0]
         def props = [:]
         if (xml.@id?.text())                           props.id                 = xml.@id.toInteger()
         if (xml.@systemRequiredIndicator?.text())      props.systemRequiredIndicator = xml.@systemRequiredIndicator?.text()
@@ -134,7 +149,6 @@ class FooOverriddenRestfulController {
         if (xml.StatisticsCanadianInstitution?.text()) props.statisticsCanadianInstitution = xml.StatisticsCanadianInstitution?.text()
         if (xml.DistrictDivision?.text())              props.districtDivision   = xml.DistrictDivision?.text()
         props
-    }
-                
+    }            
         
 }
