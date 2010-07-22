@@ -12,11 +12,12 @@ package com.sungardhe.banner.testing
 
 import grails.converters.JSON
 import grails.converters.XML
+import javax.xml.transform.stream.StreamSource
 
 /**
  * Functional tests of the Foo REST API.
  */
-class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
+class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
 
     protected void setUp() {
@@ -33,7 +34,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
     void testList_JSON() {
 
         def pageSize = 5
-        get( "/api/foo1?max=$pageSize" ) {
+        get( "/api/foobar?max=$pageSize" ) {
             headers[ 'Content-Type' ] = 'application/json'
             headers[ 'Authorization' ] = authHeader()
         }
@@ -48,9 +49,26 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
     }
 
 
+    // Test ability to use 'non RESTful' URL...
+    //  here we explicitly specify the 'action' ('list') and format (json) in the URI
+    void testListNonRestfully_JSON() {
+
+        def pageSize = 5
+        get( "/foobar/list.json?max=$pageSize" )
+
+        assertStatus 200
+        assertEquals 'application/json', page?.webResponse?.contentType
+
+        def stringContent = page?.webResponse?.contentAsString
+        def data = JSON.parse( stringContent )
+        assertTrue 45 <= data.totalCount
+        assertEquals 5, data.data.size()
+    }
+
+
     void testShow_JSON() {
 
-        get( "/api/foo1/1" ) {
+        get( "/api/foobar/1" ) {
             headers[ 'Content-Type' ] = 'application/json'
             headers[ 'Authorization' ] = authHeader()
         }
@@ -67,8 +85,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
     void testCreateUpdateAndDelete_JSON() {
         def id
         try {
-            // 'POST' /api/college => 'create'
-            post("/api/foo1") {
+            post("/api/foobar") {   // 'POST' /api/foobar => 'create'
                 headers[ 'Content-Type' ] = 'application/json'
                 headers[ 'Authorization' ] = authHeader()
                 body { """
@@ -90,8 +107,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
             assertNotNull "Expected new Foo with an id but got: ${data}", id
             assertEquals "Expected code 'Z9' but got ${data.code}", 'Z9', data.code
 
-            // 'PUT' /api/foo => 'update'
-            put( "/api/foo1/$id" ) {
+            put( "/api/foobar/$id" ) {  // 'PUT' /api/foobar => 'update'
                 headers[ 'Content-Type' ] = 'application/json'
                 headers[ 'Authorization' ] = authHeader()
                 body {
@@ -113,8 +129,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
             assertEquals "Expected description 'Updated' but got ${data.description}", 'Updated', data.description
         }
         finally {
-
-            delete( "/api/foo1/$id" ) {
+            delete( "/api/foobar/$id" ) {
                 headers[ 'Content-Type' ] = 'application/json'
                 headers[ 'Authorization' ] = authHeader()
             }
@@ -125,7 +140,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
             def data = JSON.parse( stringContent )
             assertTrue "Response not as expected: ${data.success}", data.success
 
-            get( "/api/foo1/$id" ) {  // 'GET' /api/college/id => 'show'
+            get( "/api/foobar/$id" ) {  // 'GET' /api/college/id => 'show'
                 headers[ 'Content-Type' ] = 'application/json'
                 headers[ 'Authorization' ] = authHeader()
             }
@@ -134,14 +149,13 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
     }
 
 
-    // -------------------------------- Test XML Representations ---------------------------------
-    // Note: This controller uses default XML rendering -- see FooOverriddenRestfulControllerFunctionalTests 
-    //       for an example of testing custom rendering.)
+    // -------------------------------- Test 'default' XML Representations ---------------------------------
+    //           Note: This controller uses default XML rendering for the text/xml content-type.
 
 
     void testShow_XML() {
 
-        get( "/api/foo1/1" ) {  // 'GET' /api/foo/id => 'show'
+        get( "/api/foobar/1" ) {  // 'GET' /api/foobar/id => 'show'
             headers[ 'Content-Type' ] = 'text/xml'
             headers[ 'Authorization' ] = authHeader()
         }
@@ -158,7 +172,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
     void testList_XML() {
 
         def pageSize = 15
-        get( "/api/foo1?max=$pageSize" ) {
+        get( "/api/foobar?max=$pageSize" ) {
             headers[ 'Content-Type' ] = 'text/xml'
             headers[ 'Authorization' ] = authHeader()
         }
@@ -183,8 +197,8 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
             def code = 'Z8'
             def xmlBody = new Foo( code: code, description: 'Desc_Z8' ) as XML
 
-            // 'POST' /api/foo => 'create'
-            post( "/api/foo1" ) {
+            // 'POST' /api/foobar => 'create'
+            post( "/api/foobar" ) {
                 headers[ 'Content-Type' ] = 'text/xml'
                 headers[ 'Authorization' ] = authHeader()
                 body { xmlBody }
@@ -202,8 +216,7 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
             assertTrue version != null
             assertEquals code, xmlFoos[0].code.text()
 
-            // 'PUT' /api/foo => 'update'
-            put( "/api/foo1/$id" ) {
+            put( "/api/foobar/$id" ) {  // 'PUT' /api/foobar => 'update'
                 headers[ 'Content-Type' ] = 'text/xml'
                 headers[ 'Authorization' ] = authHeader()
                 body { """
@@ -225,9 +238,9 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
             assertEquals code, xmlFoos[0].code.text()
             assertEquals 'Updated', xmlFoos[0].description.text()
 
-        } finally {
-
-            delete( "/api/foo1/$id" ) {
+        }
+        finally {
+            delete( "/api/foobar/$id" ) {
                 headers[ 'Content-Type' ] = 'text/xml'
                 headers[ 'Authorization' ] = authHeader()
             }
@@ -238,13 +251,142 @@ class FooRestControllerFunctionalTests extends BaseFunctionalTestCase {
 
             assertTrue "Response not as expected: ${xml}", "${xml}" ==~ /.*true.*/
 
-            get( "/api/foo1/$id" ) {  // 'GET' /api/foo/id => 'show'
+            get( "/api/foobar/$id" ) {  // 'GET' /api/foobar/id => 'show'
                 headers[ 'Content-Type' ] = 'text/xml'
                 headers[ 'Authorization' ] = authHeader()
             }
             assertStatus 404
         }
 
-   }
+    }
+
+
+    // -------------------------------- Test 'custom' XML Representations ---------------------------------
+    //       Note: This controller supports an application/vnd.sungardhe.student.v0.01+xml MIME type
+    //             that is used for specifying a versioned, XML Schema-contstrained body.
+
+
+    void testList_VND() {
+
+        def pageSize = 15
+        get("/api/foobar?max=$pageSize") {
+            headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
+            headers[ 'Authorization' ] = authHeader()
+        }
+
+        assertStatus 200
+        assertEquals 'application/vnd.sungardhe.student.v0.01+xml', page?.webResponse?.contentType
+        def stringContent = page?.webResponse?.contentAsString
+        def xmlList = new XmlSlurper().parseText(stringContent)
+
+        assertEquals 'FooList', xmlList.name()
+        assertEquals '1.0', xmlList.@apiVersion.text().toString()
+        assertTrue 45 <= xmlList.@totalCount.text().toInteger()
+        assertEquals "$pageSize", xmlList.@pageSize.text()
+        assertEquals '0', xmlList.@page.text()
+        assertEquals pageSize, xmlList.Foo.size()
+        assertEquals pageSize + 1, xmlList.children().size() // foo elements plus Ref element
+        assertEquals '1.0', xmlList.children()[ 0 ].@apiVersion.text().toString()
+        assertTrue "${xmlList.Ref}" ==~ /.*test-banner-core\/foo\/list/  // note this Ref is expected by convention, but in this contrived case wouldn't take us to the correct controller
+
+        // Now we'll ensure the xml complies it's XML Schema
+        // validate will throw exceptions, and the test will fail, if the stringContent doesn't comply with the schema
+        def xsdUrl = "file:///${grails.util.BuildSettingsHolder.settings?.baseDir}/grails-app/views/foo/list.foo.v1.0.xsd"
+        def validator = schemaValidatorFor(xsdUrl)
+
+        validator.validate( new StreamSource( new StringReader(stringContent) ) )
+    }
+
+
+    void testShow_VND() {
+
+        get( "/api/foobar/1" ) {  // 'GET' /api/foo2/id => 'show'
+            headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
+            headers[ 'Authorization' ] = authHeader()
+        }
+        assertStatus 200
+        assertEquals 'application/vnd.sungardhe.student.v0.01+xml', page?.webResponse?.contentType
+        def stringContent = page?.webResponse?.contentAsString
+        def xml = new XmlSlurper().parseText( stringContent )
+
+        assertEquals 'FooInstance', xml.name()
+        assertTrue "Ref element not as expected: ${xml.Ref}", "${xml.Ref}" ==~ /.*test-banner-core\/foo\/1/
+        assertEquals "Expected Foo id of '1' but got: ${xml.Foo[0]?.@id.text().toString()}", '1', xml.Foo[0]?.@id.text().toString()
+    }
+
+
+    // We'll test create, update, and delete within this single test to avoid overhead.
+    void testCreateUpdateAndDelete_VND() {
+        def id
+        try {
+            post( "/api/foobar" ) {   // 'POST' /api/foo2 => 'create'
+                headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
+                headers[ 'Authorization' ] = authHeader()
+                body { """
+                    <FooInstance apiVersion="1.0">
+                        <Foo systemRequiredIndicator="N">
+                            <Code>#Z</Code>
+                            <Description>Created via XML</Description>
+                        </Foo>
+                    </FooInstance>
+                    """
+                }
+            }
+            assertStatus 201
+            assertEquals 'application/vnd.sungardhe.student.v0.01+xml', page?.webResponse?.contentType
+            def stringContent = page?.webResponse?.contentAsString
+            def xml = new XmlSlurper().parseText( stringContent )
+
+            id = xml.Foo[0]?.@id.text().toInteger() // we'll grab this first so subsequent failures don't prevent our finally block from deleting this new foo
+            assertNotNull "Expected new foo with id but got: ${xml.Foo[0]?.toString()}", xml.Foo[0]?.@id?.text()?.toString()
+
+            assertEquals 'FooInstance', xml.name()
+            assertTrue "Ref element not as expected: ${xml.Ref}", "${xml.Ref}" ==~ /.*test-banner-core\/foo.*/
+            def ref = "${xml.Ref}"
+            assertEquals "Expected foo with code '#Z' but got: ${xml.Foo[0]?.Code[0].text()}", '#Z', xml.Foo[0]?.Code[0].text()
+
+            put( "/api/foobar/$id" ) {  // 'PUT' /api/foo2 => 'update'
+                headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
+                headers[ 'Authorization' ] = authHeader()
+                body { """
+                    <FooInstance apiVersion="1.0">
+                        <Foo id='$id' systemRequiredIndicator="N" optimisticLockVersion="0">
+                            <Description>Updated!</Description>
+                        </Foo>
+                    </FooInstance>
+                    """
+                }
+            }
+            assertStatus 200
+            assertEquals 'application/vnd.sungardhe.student.v0.01+xml', page?.webResponse?.contentType
+            stringContent = page?.webResponse?.contentAsString
+            xml = new XmlSlurper().parseText( stringContent )
+
+            assertEquals 'FooInstance', xml.name()
+            assertEquals "Ref element after 'update' not the same as that after 'create': ${xml.Ref}", ref, "${xml.Ref}"
+            assertEquals "Expected id $id but got: ${xml.Foo[0]?.@id.text()}", id, xml.Foo[0]?.@id.text().toInteger()
+            assertEquals "Expected foo with code '#Z' but got: ${xml.Foo[0]?.Code[0].text()}", '#Z', xml.Foo[0]?.Code[0].text()
+            assertEquals "Expected foo with description 'Updated!' but got: ${xml.Foo[0]?.Description[0].text()}", 'Updated!', xml.Foo[0]?.Description[0].text()
+
+        }
+        finally {
+            delete( "/api/foobar/$id" ) {
+                headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
+                headers[ 'Authorization' ] = authHeader()
+            }
+            assertStatus 200
+            assertEquals 'text/xml', page?.webResponse?.contentType // we do not currently have a 'custom' delete confirmation message, so no custom MIME type is used here
+            def stringContent = page?.webResponse?.contentAsString
+            def xml = new XmlSlurper().parseText( stringContent )
+
+            assertTrue "Response not as expected: ${xml}", "${xml}" ==~ /.*true.*/
+
+            get( "/api/foobar/$id" ) {  // 'GET' /api/foo2/id => 'show'
+                headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
+                headers[ 'Authorization' ] = authHeader()
+            }
+            assertStatus 404
+        }
+    }
 
 }

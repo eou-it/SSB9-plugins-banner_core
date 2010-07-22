@@ -91,7 +91,7 @@ import org.apache.log4j.Logger
  *
  *    The signature of this method is: public Closure getParamsExtractor()
  *
- *    A controller will normally need to return a closure used to extract params from a custom XML format.
+ *    A controller will likely need to return a closure used to extract params from a custom XML format.
  **/ 
 class RestfulControllerMixin {
 
@@ -122,7 +122,7 @@ class RestfulControllerMixin {
     
     // if we didn't explicitly set this, we'll determine the service name based upon normal naming conventions
     String getServiceName() {
-        serviceName ?: GrailsNameUtils.getPropertyNameRepresentation( "${domainSimpleName}Service" )
+        serviceName ?: GrailsNameUtils.getPropertyNameRepresentation( "${getDomainSimpleName()}Service" )
     }
 
     
@@ -185,6 +185,10 @@ class RestfulControllerMixin {
     def destroy = { 
 
         log.trace "${this.class.simpleName}.destroy invoked with params $params and request $request"
+        if (params?.size() < 1) {
+            extractParams()
+            log.warn "destroy() required explicit extraction of params -- this is normally not needed as the id is provided within the URI"
+        }
 
         // Note that a HTTP DELETE will not have a body, and we should not attempt to extract JSON out of the request.
         // Instead, we should expect the 'id' to be mapped for us, as it is provided as part of the URI.
@@ -214,6 +218,11 @@ class RestfulControllerMixin {
 
         log.trace "${this.class.simpleName}.show invoked with params $params and request $request"
         def entity
+
+        if (params?.size() < 1) {
+            extractParams()
+            log.warn "show() required explicit extraction of params -- this is normally not needed as the id is provided within the URI"
+        }
         try {
             entity = this."$serviceName".read( params.id )
             def successReturnMap = [ success: true, 
@@ -237,7 +246,12 @@ class RestfulControllerMixin {
         
     def list = { 
 
-        log.trace "${this.class.simpleName}.list invoked with params $params and request $request"
+        log.trace "${this.class.simpleName}.list invoked with params $params and format $request.format"
+        if (params?.size() < 1) {
+            extractParams()
+            log.warn "list() required explicit extraction of params -- this is normally not needed as the id is provided within the URI"
+        }
+
         def entities
         def totalCount
         try {
@@ -280,13 +294,13 @@ class RestfulControllerMixin {
         Closure extractor
         if (this.class.metaClass.respondsTo( this.class, "getParamsExtractor" )) {
             extractor = this.getParamsExtractor()
-        } else {
+        }
+        if (!extractor) {
         // TODO: Insert else-if to call an injected CustomRepresentationSupportService
         //       to ask for an extractor. This would preclude the need for controllers to
         //       implement a getParamsExtractor() if the developer instead registers the
         //       custom extractors with this common registry service.  This service would
         //       facilitate supporting new representations without having to modify the controller.
-
             extractor = defaultParamsExtractor
         }
         params << extractor.call()

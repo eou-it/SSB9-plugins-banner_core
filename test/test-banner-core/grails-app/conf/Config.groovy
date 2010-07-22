@@ -120,7 +120,8 @@ log4j = {
     //         tagLib     - For tag libraries
     //         service    - For service classes
     //         controller - For controllers
-    //         domain     - For domain entities 
+    //         domain     - For domain entities
+//  off  'com.sungardhe.banner.testing.FooController'
 //  off  'grails.app' // The artefact may be omitted to apply to all artefacts
         
     // Configure logging for other classes (e.g., in src/ or grails-app/utils/) here:
@@ -161,8 +162,6 @@ log4j = {
 // for that user and Banner object. 
 formControllerMap = [
     'foo' : [ 'STVCOLL' ],
-    'foorestful' : [ 'STVCOLL' ],
-    'foooverriddenrestful' : [ 'STVCOLL' ]
 ]
 
 
@@ -189,8 +188,9 @@ grails.plugins.springsecurity.interceptUrlMap = [
         '/plugins/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/errors/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/foo/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
-        '/api/foo1/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
-        '/api/foo2/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
+        '/foobar/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
+        '/api/foo/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
+        '/api/foobar/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
         '/**': ['ROLE_ANY_FORM_BAN_DEFAULT_M']
 ]
         

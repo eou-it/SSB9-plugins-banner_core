@@ -5,47 +5,44 @@ class UrlMappings {
         
   	  
         // ----------------------- API End Points -----------------------
-      
-        "/api/foo1"( controller: "fooRestful" ) {
+        // note we don't use ( parseRequest:true ) for APIs as we'll parse manually via 'request.XML' and 'request.JSON'
+
+
+        // The following entries are needed since foobar does not correspond to a controller
+
+        "/api/foobar"( controller: "foo" ) {
             action = [ GET: "list", POST: "create" ]
         }
-        
-        
-        "/api/foo1/$id"( controller: "fooRestful" ) {
+
+        "/api/foobar/$id"( controller: "foo" ) {
             action = [ GET: "show", PUT: "update", DELETE: "destroy" ]
         }
 
+        // The following are 'normal' mappings, for when the controller can be determined by the URI
 
-        "/api/foo2"( controller: "fooOverriddenRestful" ) {
-            action = [ GET: "list", POST: "create" ]
-        }
-
-
-        "/api/foo2/$id"( controller: "fooOverriddenRestful" ) {
-            action = [ GET: "show", PUT: "update", DELETE: "destroy" ]
-        }
-
-        // The following is 'normal' configuration, but since we are testing the framework we'll be more explicit
-        // and map to specific controllers
-/*        
-        "/api/$controller" { // note we don't use ( parseRequest:true ) as we'll parse manually via 'request.XML'
+        "/api/$controller" {
             action = [ GET: "list", POST: "create" ]
         }
         
-        "/api/$controller/$id" { // note we don't use ( parseRequest:true ) as we'll parse manually via 'request.XML'
+        "/api/$controller/$id" {
             action = [ GET: "show", PUT: "update", DELETE: "remove" ]
         }
-        
-        // -------------------- Default and Errors ---------------------
-        
+
+
+        // --------------------- Non-API End Points --------------------
+
+        // This entry only needed because foobar does not correspond to a controller
+        "/foobar/$action?/$id?"( controller: "foo" ) {
+         }
+
+        // The following is normal configuration, where the controller can be determined from the URI
         "/$controller/$action?/$id?" {
-            constraints {
-  			   // apply constraints here
-  		    }
         }
-        
+
+
+        // -------------------- Default and Errors ---------------------
+
         "/"( view: "/index" )
-*/
         "500"( view: '/error' )
 	}
 }
