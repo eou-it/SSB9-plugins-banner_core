@@ -20,12 +20,17 @@ import org.apache.log4j.Logger
 
 
 /**
- * A mixin for controllers that provides them a full RESTful API supporting XML and JSON representations.
+ * A mixin for controllers that provides actions needed for a full RESTful API supporting XML and JSON
+ * representations.
  * Specifically, 'create', 'update', 'destroy' 'list', and 'show' actions are provided by this mixin.
  *
- * When a controller 'mixes in' this class AND includes a 'boolean hasRestMixin = true' property,
- * the BannerCoreGrailsPlugin will register these mixed-in actions such that the Grails URI mapping
- * recognizes these new actions.
+ * This class is mixed into controllers that contain this line:
+ *     static List mixInRestActions = [ 'show', 'list', 'create', 'update', 'destroy' ]
+ * during bootstrap (see BannerCoreGrailsPlugin.groovy).
+ * The BannerCoreGrailsPlugin will also register the identified actions so that Grails URI mapping
+ * recognizes these actions. Actions not identified in the above line contained in this class
+ * will still be mixed-in to the controller, but they will not be accessible since they are
+ * not registered.
  *
  * The standard REST API is:
  * http://the_host/the_app_name/the_controller       GET     --> 'list' action
@@ -34,72 +39,60 @@ import org.apache.log4j.Logger
  * http://the_host/the_app_name/the_controller/id    PUT     --> 'update' action
  * http://the_host/the_app_name/the_controller/id    DELETE  --> 'destroy' action
  *
- * If this mixin is modified to add/remove/rename the actions, the BannerCoreGrailsPlugin
- * class will require a corresponding update (as it specifically registers these mixed in actions
- * so the URI mapping is successful). Since doing so is not likely common, this coupling is
- * likely not a concern.
- *
  * Controllers that also render GSP/Zul pages are responsible for implementing separate 
  * actions that do not conflict with the RESTful ones. (In general, this is expected 
  * to be limited to a 'view' action, as well as an index action that redirects to the view action.)
+ * It is possible, however, to use the mixed-in actions non-RESTfully (by identifying the action
+ * within the URL).
  *
  * NOTE: URI's containing 'api' will be directed to the appropriate controller 
- * action based upon HTTP method (see UriMappings.groovy).  These URIs will also 
- * be authenticated using BasicAuthentication. URIs that do not have 'api' in their name 
- * will be directed to the appropriate action using non-RESTful conventions
- * (i.e., the action name must be part of the URI). 
+ * action based upon HTTP method (see UriMappings.groovy).
+ * These URIs will also be authenticated using BasicAuthentication.
+ *
+ * URIs that do not have 'api' in their name will be directed to the appropriate action
+ * using non-RESTful conventions (i.e., the action name must be part of the URI).
  * 
  * Any of the default RESTful API actions may be overridden by implementing the action
- * within the specific controller.
+ * within the specific controller.  They will not be mixed-in if they are already present.
  *
- * When using the default RESTful API actions, additional information must be specified in the 
- * controller when conventions cannot sufficiently define the desired behavior.
+ * Controllers for which this class is mixed-in may implement methods that override the default
+ * behavior for request params extraction and rendering as follows:
  *
- * Specifically, controllers extending this class and using it's RESTful API methods may:
+ * "public Closure getCustomRenderer( String actionName )"
+ * If implemented, this method should return a Closure that provides custom rendering appropriate for the
+ * request.  If there is no Closure that provides appropriate rendering for the current request, the method
+ * should return null.
  *
- * 1) Provide a method that returns a Closure that implements custom rendering or null if no custom renderer is available.
- *    The signature of this method must be:  public Closure getCustomRenderer( String actionName )
+ * Pleae note, this method must 'NOT' actually perform any rendering, but simply return a Closure that
+ * 'can' perform appropriate rendering for the current request (i.e., a specific action and HTTP format).
+ * Controllers may need to provide closures that provide rendering for a custom MIME type (that indictaes
+ * that a particular XML Schema constrained body be rendered.
  *
- *    The method must 'NOT' actually perform any rendering, but instead must simply return a Closure that
- *    'can' perform the rendering for the current request (i.e., a specific action and HTTP format).  The need
- *    to support a custom MIME type specifying a particular XML Schema version, etc. is a primary need for having
- *    such a method.
+ * The reason this method returns a Closure is so the controller is not forced to implement custom support
+ * across the board, but instead can indicate (i.e., by returning a closure) specific individual rendering
+ * it supports (e.g., perhaps only a custom MIME type is supported, and everything else is handled by
+ * the default rendering provided by the injected action).
  *
- *    The reason the method returns a closure is so that the controller is not forced to implement custom support
- *    across the board, but can indicate (i.e., by returning a closure) specific individual rendering
- *    it supports (e.g., perhaps only a custom MIME type is supported, and everything else is handled by  
- *    the default rendering provided by the injected action).
+ * Custom renderers are needed primarily for two situations:
+ *    a) The default Grails Converters (for XML or JSON) cannot properly handle a particular complex object.
+ *    b) A custom MIME type and versioned XML Schema is employed to provide a stable representation, allowing for
+ *       simultaneous support of older and newer versions.
+ * It is important to note, the default JSON and XML rendering is simply based upon the Grails Converters,
+ * and the JSON and XML structure is subject to change as the domain model classes are modified over time.
  *
- *    Custom renderers are needed primarily for two situations: 
- *       a) Grails cannot parse or write the needed format (e.g., the default Grails Converters for XML or JSON 
- *          cannot properly handle a particular complex object correctly).  In this case, the renderAction methods
- *          would really have to provide full support (as none of the default rendering would be functional).  
- *       b) A Custom type is needed. For example, a custom MIME type may have been requested, as would be the case 
- *          when asking for a particular XML version (based upon a versioned XML Schema).  In this situation, 
- *          a renderAction method may check the 'request' and only return a Closure if the request.format was 
- *          a supported custom MIME type. Otherwise, it would return null and the injected action would use it's 
- *          own Grails Converter based rendering for XML.
+ * Note that the returned closure MUST accept a single argument, which is the map that would have been used for
+ * the default rendering.  Please see the actions contained in this class for examples.
  *
- *    The returned closure must accept the map that would have been used for default rendering.
- *
- *    It is important to note, the default JSON and XML rendering is simply based upon the Grails Converters,
- *    and the JSON and XML structure is subject to change as the domain model classes are modified over time.
- * *
- * 2) Expose a method that returns a closure that can extract request data into params for the specific request.
- *    This method, like the method discussed above, should return null if it cannot handle the current request.
- *    This method is not needed if the default params extraction suffices.  
- *
- *    The signature of this method is: public Closure getParamsExtractor()
- *
- *    A controller will likely need to return a closure used to extract params from a custom XML format.
- **/ 
+ * public Closure getParamsExtractor()
+ * If implemented, this method should return a closure that can extract request data into a map (that will be added
+ * to the Grails params map) for the specific request.
+ * This method, like the method discussed above, should return null if it cannot handle the current request.
+ * This method is not needed if the default params extraction suffices, and will usually be necessary when using
+ * a 'custom' representation (i.e., a new MIME type) or when the default converters simply cannot handle a complex model.
+ */
 class RestfulControllerMixin {
 
-    // DEVELOPER: Grails URI mapping must be made aware of the actions being mixed-in via this class.
-    // That is, we explicitly need to register these actions during bootstrap.
-    // Please update BannerCoreGrailsPlugin when adding, re-naming or removing mixed-in actions. 
-
-    static allowedMethods = [ show: "GET", list: "GET", create: "POST", update: "PUT", destroy: "DELETE" ]  // --> ensure RESTful
+    static allowedMethods = [ show: "GET", list: "GET", create: "POST", update: "PUT", destroy: "DELETE" ]  // ensure RESTful
 
     String domainSimpleName
     String serviceName
@@ -113,14 +106,14 @@ class RestfulControllerMixin {
     }
 
 
-    // if we didn't explicitly set this, we'll determine the domain name based upon normal naming conventions
+    // if a controller doesn't explicitly set this, we'll determine the domain name based upon normal naming conventions
     String getDomainSimpleName() {
         domainSimpleName = domainSimpleName ?: GrailsNameUtils.getLogicalName( this.class, "Controller" )
         domainSimpleName
     }
 
-    
-    // if we didn't explicitly set this, we'll determine the service name based upon normal naming conventions
+
+    // if a controller doesn't explicitly set this, we'll determine the service name based upon normal naming conventions
     String getServiceName() {
         serviceName ?: GrailsNameUtils.getPropertyNameRepresentation( "${getDomainSimpleName()}Service" )
     }
@@ -130,7 +123,8 @@ class RestfulControllerMixin {
 
 
     def create = {
-        log.trace "${this.class.simpleName}.save invoked with params $params and request $request"
+        
+        log.trace "${this.class.simpleName}.save invoked with params $params and format $request.format"
         def extractedParams = extractParams()
         def entity
         try {
@@ -157,7 +151,7 @@ class RestfulControllerMixin {
             
     def update = { 
         
-        log.trace "${this.class.simpleName}.update invoked with params $params and request $request"
+        log.trace "${this.class.simpleName}.update invoked with params $params and format $request.format"
         def extractedParams = extractParams()
         def entity
         try {
@@ -184,7 +178,7 @@ class RestfulControllerMixin {
 
     def destroy = { 
 
-        log.trace "${this.class.simpleName}.destroy invoked with params $params and request $request"
+        log.trace "${this.class.simpleName}.destroy invoked with params $params and format $request.format"
         if (params?.size() < 1) {
             extractParams()
             log.warn "destroy() required explicit extraction of params -- this is normally not needed as the id is provided within the URI"
@@ -216,7 +210,7 @@ class RestfulControllerMixin {
         
     def show = { 
 
-        log.trace "${this.class.simpleName}.show invoked with params $params and request $request"
+        log.trace "${this.class.simpleName}.show invoked with params $params and format $request.format"
         def entity
 
         if (params?.size() < 1) {
@@ -255,7 +249,6 @@ class RestfulControllerMixin {
         def entities
         def totalCount
         try {
-            // TODO if-else ... allow the delegate may substitute it's own implementation versus the default service.list (e.g., to use a query instead)
             entities = this."$serviceName".list( params )
             totalCount = this."$serviceName".count( params )
             def successReturnMap = [ success: true, 
@@ -289,6 +282,7 @@ class RestfulControllerMixin {
           errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
           underlyingErrorMessage: e.message ]
     }
+    
 
     private Map extractParams() {
         Closure extractor
@@ -310,6 +304,7 @@ class RestfulControllerMixin {
 
     // A default params extractor that uses built-in Grails support for parsing JSON and XML.
     private Closure defaultParamsExtractor = { ->
+        
         Map paramsContent = [:]
         if (request.format ==~ /.*html.*/) {
             log.debug "${this.class.simpleName} HTML request format will use pre-populated params $params"
@@ -341,8 +336,8 @@ class RestfulControllerMixin {
             renderer = this.getCustomRenderer( rendererName )
         }
         // TODO: Insert else-if to call an injected CustomRepresentationSupportService
-        //       to ask for a renderer. This would preclude the need for controllers to
-        //       implement a getCustomRenderer() if the developer instead registers the
+        //       that can be asked for an appropriate renderer. This would preclude the need for controllers
+        //       to implement a getCustomRenderer() if the developer instead registers the
         //       custom renderer with this common registry service. This service would
         //       facilitate supporting new representations without having to modify the controller.
 

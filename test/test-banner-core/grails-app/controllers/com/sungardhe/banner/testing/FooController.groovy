@@ -10,24 +10,20 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
-import com.sungardhe.banner.controllers.RestfulControllerMixin
-
 import org.apache.log4j.Logger
 import grails.util.GrailsNameUtils
 
 /**
- * Controller supporting the Foo test model using mixed-in RESTful CRUD methods.
- * See 'FooOverriddenInjectedMethodsController' for usage of the mixed-in methods while having control
- * over 'success' rendering and params map extraction.  Note that the actions used
- * to expose a RESTful interface are provided by the RestfulControllerMixin mixin.
+ * Controller supporting the 'Foo' model that relies on mixed-in RESTful CRUD methods.
+ * Note that the actions used to expose a RESTful interface are provided by the RestfulControllerMixin class,
+ * which is mixed in at runtime during bootstrap (see BannerCoreGrailsPlugin.groovy).
  **/
-@Mixin( RestfulControllerMixin ) // Note: Also needs 'hasRestMixin' property (see below)
 class FooController  {
 
-    // HACK -- This property facilitates identifying this controller as having mixed-in REST actions.  It is needed since
-    //         the Mixin annotation is not available at runtime, and we need to discover these controllers during bootstrap
-    //         in order to register these REST actions so the URI mapping to them succeeds.
-    boolean hasRestMixin = true
+    // The mixInRestActions lists actions that will be mixed into this class and that will be registered with the corresponding Grails 'artefact'.
+    // Note that all REST actions implemented by RestfulControllerMixin will be mixed-in, only those specified here will
+    // be registered with the artefact (so that URL mapping will be allowed only to these actions).
+    static List mixInRestActions = [ 'show', 'list', 'create', 'update', 'destroy' ]
 
     def fooService  // injected by Spring
 
@@ -35,9 +31,8 @@ class FooController  {
 
 
     public FooRestfulController() {
-        // NOTE: domainSimpleName and serviceName properties are provided by the mixin.  Since this controller follows
-        //       normal naming conventions, we don't need to set it here.
-        //       in order to explicitly set the domainSimpleName.
+        // Note: domainSimpleName and serviceName properties are provided by the mixin.  Since this controller follows
+        //       normal naming conventions, we don't need to set the domain simple name here.
         // domainSimpleName = "Foo"
 
         // Note: Similarly, we must explicitly set serviceName if it cannot be derived from the domainSimpleName using normal conventions.
@@ -53,7 +48,8 @@ class FooController  {
     // ---------------------------- User Interface Actions (non-RESTful) ----------------------------------
     // The following actions are here solely to illustrate that additional actions can be implemented here.
     // In general, our controllers will support only RESTful clients for integration purposes, and will
-    // not have non-RESTful actions like 'index' or 'view'.
+    // not have non-RESTful actions like 'index' or 'view'.  It IS possible to invoke the mixed-in actions
+    // non-restfully if necessary (i.e., by using a URL that specifies the action name).
 
 
     // in case someone uses a URI explicitly indicating 'index' or our URI mapping includes a non-RESTful mapping to 'index'

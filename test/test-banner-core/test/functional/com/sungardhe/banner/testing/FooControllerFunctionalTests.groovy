@@ -15,17 +15,35 @@ import grails.converters.XML
 import javax.xml.transform.stream.StreamSource
 
 /**
- * Functional tests of the Foo REST API.
+ * Functional tests of the Foo Controller.
  */
 class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
 
     protected void setUp() {
-        formContext = ['STVCOLL']
+        formContext = [ 'STVCOLL' ]
         super.setUp()
-
-        login()
     }
+
+
+    // --------------------- Test HTML Representation, non-RESTfully ------------------------
+
+
+     // Test ability to use a 'non RESTful' URL to access a mixed-in action.
+     // Here we explicitly specify the 'action' ('list') and format (json) in the URI
+     void testViewNonRestfully_HTML() {
+
+         login()
+
+         def pageSize = 5
+         get( "/foobar/view" )
+
+         assertStatus 200
+         assertEquals 'text/html', page?.webResponse?.contentType
+
+         def stringContent = page?.webResponse?.contentAsString
+         assertTrue stringContent ==~ /.*If I had a UI.*/
+     }
 
 
     // -------------------------------- Test JSON Representations ---------------------------------
@@ -38,7 +56,6 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             headers[ 'Content-Type' ] = 'application/json'
             headers[ 'Authorization' ] = authHeader()
         }
-
         assertStatus 200
         assertEquals 'application/json', page?.webResponse?.contentType
 
@@ -49,9 +66,11 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
     }
 
 
-    // Test ability to use 'non RESTful' URL...
-    //  here we explicitly specify the 'action' ('list') and format (json) in the URI
+    // Test ability to use a 'non RESTful' URL to access a mixed-in action.
+    // Here we explicitly specify the 'action' ('list') and format (json) in the URI
     void testListNonRestfully_JSON() {
+
+        login()
 
         def pageSize = 5
         get( "/foobar/list.json?max=$pageSize" )
@@ -72,7 +91,6 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             headers[ 'Content-Type' ] = 'application/json'
             headers[ 'Authorization' ] = authHeader()
         }
-
         assertStatus 200
         assertEquals 'application/json', page?.webResponse?.contentType
         def stringContent = page?.webResponse?.contentAsString
@@ -176,7 +194,6 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             headers[ 'Content-Type' ] = 'text/xml'
             headers[ 'Authorization' ] = authHeader()
         }
-
         assertStatus 200
         assertEquals 'text/xml', page?.webResponse?.contentType
         def stringContent = page?.webResponse?.contentAsString
@@ -273,7 +290,6 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
             headers[ 'Authorization' ] = authHeader()
         }
-
         assertStatus 200
         assertEquals 'application/vnd.sungardhe.student.v0.01+xml', page?.webResponse?.contentType
         def stringContent = page?.webResponse?.contentAsString

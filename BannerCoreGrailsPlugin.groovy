@@ -31,7 +31,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.jndi.JndiObjectFactoryBean
-
+import com.sungardhe.banner.controllers.RestfulControllerMixin
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access 
@@ -139,33 +139,14 @@ class BannerCoreGrailsPlugin {
         }
                 
         basicExceptionTranslationFilter( ExceptionTranslationFilter ) {
-          authenticationEntryPoint = ref( 'basicAuthenticationEntryPoint' )
-          accessDeniedHandler = ref( 'accessDeniedHandler' )
-//          portResolver = ref( 'portResolver' )
+            authenticationEntryPoint = ref( 'basicAuthenticationEntryPoint' )
+            accessDeniedHandler = ref( 'accessDeniedHandler' )
         }
          
         anonymousProcessingFilter( AnonymousAuthenticationFilter ) {
             key = 'horizon-anon'
             userAttribute = 'anonymousUser,ROLE_ANONYMOUS'
         }
-/*       
-        anonymousAuthenticationProvider( AnonymousAuthenticationProvider ) {
-            key = 'horizon-anon'
-        }
-        
-        httpSessionContextIntegrationFilter( HttpSessionContextIntegrationFilter ) {
-            forceEagerSessionCreation = true
-        }
-
-        springSecurityFilterChain( FilterChainProxy ) {
-          filterInvocationDefinitionSource = """
-               CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
-               PATTERN_TYPE_APACHE_ANT
-               /api/**=authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor
-               /**=httpSessionContextIntegrationFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor
-               """
-        }   
-*/     
     }
     
 
@@ -187,17 +168,19 @@ class BannerCoreGrailsPlugin {
             }
         }
 
+        // mix-in and register RESTful actions for any controller having this line:
+        //     static List mixInRestActions = [ 'show', 'list', 'create', 'update', 'destroy' ]
+        // Note that if any actions are omitted from this line, they will not be accessible (as they won't be registered)
+        // even though they will still be mixed-in.  
         application.controllerClasses.each { controllerArtefact ->
-            if (controllerArtefact.clazz.metaClass.properties.find { it.name.startsWith('hasRestMixin') }) {
-                controllerArtefact.registerMapping( 'list' )
-                controllerArtefact.registerMapping( 'show' )
-                controllerArtefact.registerMapping( 'create' )
-                controllerArtefact.registerMapping( 'update' )
-                controllerArtefact.registerMapping( 'destroy' )
-                println "${controllerArtefact} has been registered with REST API methods mixed-in to the controller"
+            def neededRestActions = GCU.getStaticPropertyValue( controllerArtefact.clazz, "mixInRestActions" )
+            if (neededRestActions?.size() > 0) {
+                for (it in neededRestActions) {
+                    controllerArtefact.registerMapping( it )
+                }
+                controllerArtefact.clazz.mixin RestfulControllerMixin
             }
         }
-
                 
         // inject the logger into every class (Grails only injects this into some artifacts)
         application.allClasses.each { ->

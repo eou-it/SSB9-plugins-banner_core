@@ -92,9 +92,9 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         // able to parse the date format. The Config.groovy sets grails.converters.json.date = "javascript", however when
         // unit tests are run this setting is apparently not effective.
         //
-// For now, this isn't integral to the framework plugin testing, so we'll comment out so all tests can run together.
-// This test exists within banner_on_grails (e.g., CollegeControllerIntegrationTests) which forces unit and integration tests to be
-// executed separately.
+        // For now, this isn't integral to the framework plugin testing, so we'll comment out so all tests can run together.
+        // This test exists within banner_on_grails (e.g., CollegeControllerIntegrationTests) which forces unit and integration tests to be
+        // executed separately.
         result.data.each {
             JsonHelper.replaceJSONObjectNULL( it ) // Minimal workaround for Jira Grails-5585
             def foo = new Foo( it )
