@@ -316,7 +316,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
     void testShow_VND() {
 
-        get( "/api/foobar/1" ) {  // 'GET' /api/foo2/id => 'show'
+        get( "/api/foobar/1" ) {  // 'GET' /api/foobar/id => 'show'
             headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
             headers[ 'Authorization' ] = authHeader()
         }
@@ -335,13 +335,13 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
     void testCreateUpdateAndDelete_VND() {
         def id
         try {
-            post( "/api/foobar" ) {   // 'POST' /api/foo2 => 'create'
+            post( "/api/foobar" ) {   // 'POST' /api/foobar => 'create'
                 headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
                 headers[ 'Authorization' ] = authHeader()
                 body { """
                     <FooInstance apiVersion="1.0">
                         <Foo systemRequiredIndicator="N">
-                            <Code>#Z</Code>
+                            <Code>#W</Code>
                             <Description>Created via XML</Description>
                         </Foo>
                     </FooInstance>
@@ -359,9 +359,9 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             assertEquals 'FooInstance', xml.name()
             assertTrue "Ref element not as expected: ${xml.Ref}", "${xml.Ref}" ==~ /.*test-banner-core\/foo.*/
             def ref = "${xml.Ref}"
-            assertEquals "Expected foo with code '#Z' but got: ${xml.Foo[0]?.Code[0].text()}", '#Z', xml.Foo[0]?.Code[0].text()
+            assertEquals "Expected foo with code '#W' but got: ${xml.Foo[0]?.Code[0].text()}", '#W', xml.Foo[0]?.Code[0].text()
 
-            put( "/api/foobar/$id" ) {  // 'PUT' /api/foo2 => 'update'
+            put( "/api/foobar/$id" ) {  // 'PUT' /api/foobar => 'update'
                 headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
                 headers[ 'Authorization' ] = authHeader()
                 body { """
@@ -381,7 +381,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             assertEquals 'FooInstance', xml.name()
             assertEquals "Ref element after 'update' not the same as that after 'create': ${xml.Ref}", ref, "${xml.Ref}"
             assertEquals "Expected id $id but got: ${xml.Foo[0]?.@id.text()}", id, xml.Foo[0]?.@id.text().toInteger()
-            assertEquals "Expected foo with code '#Z' but got: ${xml.Foo[0]?.Code[0].text()}", '#Z', xml.Foo[0]?.Code[0].text()
+            assertEquals "Expected foo with code '#W' but got: ${xml.Foo[0]?.Code[0].text()}", '#W', xml.Foo[0]?.Code[0].text()
             assertEquals "Expected foo with description 'Updated!' but got: ${xml.Foo[0]?.Description[0].text()}", 'Updated!', xml.Foo[0]?.Description[0].text()
 
         }
@@ -397,7 +397,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
             assertTrue "Response not as expected: ${xml}", "${xml}" ==~ /.*true.*/
 
-            get( "/api/foobar/$id" ) {  // 'GET' /api/foo2/id => 'show'
+            get( "/api/foobar/$id" ) {  // 'GET' /api/foobar/id => 'show'
                 headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
                 headers[ 'Authorization' ] = authHeader()
             }
