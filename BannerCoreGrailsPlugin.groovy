@@ -32,6 +32,10 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.jndi.JndiObjectFactoryBean
 import com.sungardhe.banner.controllers.RestfulControllerMixin
+import com.sungardhe.banner.supplemental.SupplementalDataSupportMixin
+import com.sungardhe.banner.supplemental.SupplementalDataHibernateListener
+import com.sungardhe.banner.supplemental.SupplementalDataService
+import com.sungardhe.banner.supplemental.SupplementalDataPersistenceManager
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access 
@@ -118,6 +122,16 @@ class BannerCoreGrailsPlugin {
             dataSource = ref( dataSource )
         }
 
+        supplementalDataPersistenceManager( SupplementalDataPersistenceManager ) {
+            dataSource = ref( dataSource )    
+        }
+
+        supplementalDataService( SupplementalDataService ) { bean ->
+            sessionFactory = ref( sessionFactory )
+            supplementalDataPersistenceManager = ref( supplementalDataPersistenceManager )
+            bean.initMethod = 'init'
+        }
+
         authenticationDataSource( OracleDataSource )
 
         bannerAuthenticationProvider( BannerAuthenticationProvider ) {
@@ -176,23 +190,39 @@ class BannerCoreGrailsPlugin {
             def neededRestActions = GCU.getStaticPropertyValue( controllerArtefact.clazz, "mixInRestActions" )
             if (neededRestActions?.size() > 0) {
                 for (it in neededRestActions) {
-                    controllerArtefact.registerMapping( it )
+                    controllerArtefact.registerMapping it
                 }
                 controllerArtefact.clazz.mixin RestfulControllerMixin
             }
         }
-                
+
+        // mix-in supplemental data support into all models
+        application.domainClasses.each { modelArtefact ->
+            try {
+//                SupplementalDataSupport.injectSupplementalDataSupport modelArtefact.clazz
+                modelArtefact.clazz.mixin SupplementalDataSupportMixin
+            } catch (e) {
+                e.printStackTrace()
+                throw e
+            }
+        }
+
         // inject the logger into every class (Grails only injects this into some artifacts)
         application.allClasses.each { ->
             it.metaClass.getLog = { ->
-                LogFactory.getLog( it )
+                LogFactory.getLog it
             }
         }
     }
     
 
     def doWithApplicationContext = { applicationContext ->
-        // no-op
+        def listeners = applicationContext.sessionFactory.eventListeners
+        def listener = new SupplementalDataHibernateListener()
+
+        [ 'preDelete', 'postInsert', 'postUpdate', 'postLoad' ].each {
+            addEventTypeListener( listeners, listener, it )
+        }
     }
     
 
@@ -204,5 +234,17 @@ class BannerCoreGrailsPlugin {
     def onConfigChange = { event ->
         // no-op
     }
-    
+
+
+    def addEventTypeListener( listeners, listener, type ) {
+        println "Adding event listener - $type"
+        def typeProperty = "${type}EventListeners"
+        def typeListeners = listeners."${typeProperty}"
+
+        def expandedTypeListeners = new Object[ typeListeners.length + 1 ]
+        System.arraycopy( typeListeners, 0, expandedTypeListeners, 0, typeListeners.length )
+        expandedTypeListeners[ -1 ] = listener
+
+        listeners."${typeProperty}" = expandedTypeListeners
+    }
 }

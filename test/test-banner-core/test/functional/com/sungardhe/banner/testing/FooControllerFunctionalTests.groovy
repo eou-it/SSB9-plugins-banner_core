@@ -34,8 +34,6 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
      void testViewNonRestfully_HTML() {
 
          login()
-
-         def pageSize = 5
          get( "/foobar/view" )
 
          assertStatus 200

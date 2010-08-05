@@ -22,9 +22,9 @@ import groovy.sql.Sql
  **/
 class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 
-    def fooService   // injected by Spring
-    
-    def sessionContext  // injected by Spring
+    def fooService                     // injected by Spring
+    def supplementalDataService // injected by Spring
+    def sessionContext                 // injected by Spring
     
     
     protected void setUp() {
@@ -194,3 +194,4 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
 }
+
