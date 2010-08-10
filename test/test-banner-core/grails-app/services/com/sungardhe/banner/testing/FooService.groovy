@@ -10,14 +10,27 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
-import org.springframework.transaction.annotation.*
+import org.springframework.transaction.interceptor.TransactionAspectSupport
+import com.sungardhe.banner.service.ServiceBase
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.annotation.Propagation
 
-
-// NOTE:
-// This service is injected with create, update, and delete methods.
-// These injected CRUD methods may throw a runtime ApplicationException that should
+// DEVELOPER NOTE:
+// Basic CRUD methods (create, update, delete, list, count) methods are provided by the ServiceBase
+// service.  Services may either extend ServiceBase or may mixin ServiceBzse (using the Mixin annotation).
+// For backward compatibility with a previous 'method injection based appraoch', the mixin
+// will also be mixed in if there is a 'static defaultCrudMethds = true' line.
+//
+// When 'mixing in' ServiceBase versus extending from it, @Transactional annotations are not effective.
+// Consequently, if using @Mixin or including 'static defaultCrudMethods = false' (which will cause the ServiceBase
+// to be mixed in dynamically during bootstrap), you must also include 'static transactional = true' to ensure
+// your service is transactional.  If you extend ServiceBase, you should omit 'static transactional = true' as
+// the @Transactional annotations in the ServiceBase are effective. @Transactional annotations provide more
+// control as each method may be annotated, and each annotation may specify it's own transaction attributes.
+//
+// The ServiceBase CRUD methods may throw a runtime ApplicationException that should
 // be caught (e.g., by a controller using this service). In addition to handling
-// ApplicationException, controllers should also catch Exception to ensure a desirable
+// ApplicationException, controllers/composers should also catch Exception to ensure a desirable
 // response is still provided to the user. Exceptions other than ApplicationException 
 // are likely programming errors (as they were not wrapped in an ApplicationException).
 
@@ -25,29 +38,39 @@ import org.springframework.transaction.annotation.*
 // exceptions. The FooController in this project illustrates use of ApplicationException 
 // functionality.   
 
-// NOTE: Spring @Transactional currently not supported (it results in classpath exceptions
-//       attempting to cast a Spring proxy to this service. Needs more investigation.)
-
 /**
- * A transactional service supporting persistence of the College model. 
+ * A transactional service supporting persistence of the Foo model.
  **/
-//@Transactional
-class FooService {
+// @Mixin( ServiceBase ) // Commented out, as we'll extend from ServiceBase in order to use @Transactional methods
+class FooService extends ServiceBase {
 
-    boolean transactional = true
-    def transactionManager // injected by spring, used for testing purposes -- not normally needed in a service
+    // There are THREE ways to mixin ServiceBase -- either by extending it (the preferred approach), mixing it
+    // in using the @Mixin annotation or mixing it in dynamically by including the following
+    // 'static defaultCrudMethods = true' line.  (As discussed above, mixing in ServiceBase precludes use of
+    // @Transactianal annotations, and is thus not preferred.)
+    //
+    // static defaultCrudMethods = true
 
-    // Note: The defaultCrudMethods injected into this class will be transactional
-    // based upon the class-level @Transactional annotation specified above. 
-    static defaultCrudMethods = true
-    
-    
-    // When creating your own access methods, you should specify a 'read-only' 
-    // transaction, as follows. This will be slightly more performent than the 
-    // accessors provided by the injected methods. (You may even want to override the 
-    // the accessors that would be injected, so readOnly can be specified.)
-//    @Transactional(readOnly = true)
+    // The following line would be required if we were mixing in ServiceBase. In this case we are extending from it
+    // and thus it's @Transactional annotations are effective (precluding the need for using this static boolean)
+    //
+    // static transactional = true
+
+    // Note: You MUST set the domainClass IF you are not following normal naming conventions where the
+    // domain name is the same as the service name (minus the trailing 'Service' portion).  Since in this case,
+    // our domain name is 'Foo' and our service is 'FooService', the domainClass can be determined.
+    //
+    // Class domainClass = Foo 
+
+    // When creating your own access/query methods, if you are extending ServiceBase you should specify a 'read-only'
+    // transaction, as in the following annotation. This will be slightly more performant than using the static transactional = true
+    // approach (where all methods would not be read-only, increasing Hibernate overhead.
+    //
+    // Note that for a simple service, with no additional methods like the one below, the body of the class would be completely empty.
+    //
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED )
     public Foo fetch( long id ) {
+        println "In FooService.fetch - transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
         Foo.get( id )
     }
     

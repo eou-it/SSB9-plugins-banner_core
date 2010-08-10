@@ -22,8 +22,9 @@ import groovy.sql.Sql
  **/
 class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 
+    
     def fooService                     // injected by Spring
-    def supplementalDataService // injected by Spring
+    def supplementalDataService        // injected by Spring
     def sessionContext                 // injected by Spring
     
     
@@ -42,6 +43,12 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         tearDownTestFoo()
         super.tearDown()
     }
+
+
+    void testFetch() {
+        def foo = fooService.fetch( 1L )
+        assertNotNull foo.id
+    }     
     
     
     void testSave() { 

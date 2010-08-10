@@ -39,11 +39,12 @@ class SupplementalDataService {
         Map x = sessionFactory.getAllClassMetadata()
         for (Iterator i = x.values().iterator(); i.hasNext(); ) {
             SingleTableEntityPersister y = (SingleTableEntityPersister)i.next();
-            println( y.getName() + " -> " + y.getTableName() )
+//            println( y.getName() + " -> " + y.getTableName() )
             for (int j = 0; j < y.getPropertyNames().length; j++) {
-                println( " " + y.getPropertyNames()[j] + " -> " + (y.getPropertyColumnNames( j ).length > 0 ? y.getPropertyColumnNames( j )[ 0 ] : ""))
+//                println( " " + y.getPropertyNames()[j] + " -> " + (y.getPropertyColumnNames( j ).length > 0 ? y.getPropertyColumnNames( j )[ 0 ] : ""))
             } 
         }
+        println "SupplementalDataService initialization complete."
     }
 
     

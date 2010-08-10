@@ -9,9 +9,14 @@
  WITHOUT THE WRITTEN PERMISSION OF THE SAID COMPANY
  ****************************************************************************** */
 
+import com.sungardhe.banner.controllers.RestfulControllerMixin
 import com.sungardhe.banner.db.BannerDS as BannerDataSource
 import com.sungardhe.banner.security.BannerAuthenticationProvider
-import com.sungardhe.banner.service.DomainManagementMethodsInjector
+import com.sungardhe.banner.service.ServiceBase
+import com.sungardhe.banner.supplemental.SupplementalDataSupportMixin
+import com.sungardhe.banner.supplemental.SupplementalDataHibernateListener
+import com.sungardhe.banner.supplemental.SupplementalDataService
+import com.sungardhe.banner.supplemental.SupplementalDataPersistenceManager
 
 import grails.util.GrailsUtil
 
@@ -25,22 +30,20 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
+import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.security.authentication.ProviderManager
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.access.ExceptionTranslationFilter
-import org.springframework.jndi.JndiObjectFactoryBean
-import com.sungardhe.banner.controllers.RestfulControllerMixin
-import com.sungardhe.banner.supplemental.SupplementalDataSupportMixin
-import com.sungardhe.banner.supplemental.SupplementalDataHibernateListener
-import com.sungardhe.banner.supplemental.SupplementalDataService
-import com.sungardhe.banner.supplemental.SupplementalDataPersistenceManager
+import org.springframework.transaction.annotation.Transactional
+
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access 
  * for Banner web applications. 
  **/
+@Transactional( )
 class BannerCoreGrailsPlugin {
     
     // Note: the groupId 'should' be used when deploying this plugin via the 'grails maven-deploy --repository=snapshots' command,
@@ -166,19 +169,17 @@ class BannerCoreGrailsPlugin {
 
     def doWithDynamicMethods = { ctx ->
         
-        // inject CRUD methods into all services that have a this line: static defaultCrudMethods = true
+        // Deprecated -- the following mixes in the ServiceBase class that provides default CRUD methods,
+        // into all services having a 'static boolean defaultCrudMethods = true' property.
+        // This approach is deprecated in favor of extending from the ServiceBase base class.
+        // Extending from ServiceBase enables declarative Transaction demarcation using annotations.
+        // Mixing in the base class requires the 'boolean transactional = true' line, and does not provide
+        // the more granular control of transaction attributes possible with annotations.
+        //
         application.serviceClasses.each { serviceArtefact ->
-            
-            def needsCRUD = GCU.getStaticPropertyValue( serviceArtefact.clazz, "defaultCrudMethods" )  
-            
+            def needsCRUD = GCU.getStaticPropertyValue( serviceArtefact.clazz, "defaultCrudMethods" )
             if (needsCRUD) {
-                String serviceSimpleName = serviceArtefact.clazz.simpleName
-                String domainSimpleName = serviceSimpleName.substring( 0, serviceSimpleName.indexOf( "Service" ) )
-
-                def domainArtefact = application.domainClasses.find {
-                    it.clazz.simpleName.toLowerCase() == domainSimpleName.toLowerCase()
-                }
-                DomainManagementMethodsInjector.injectDataManagement( serviceArtefact.clazz, domainArtefact.clazz )
+                serviceArtefact.clazz.mixin ServiceBase
             }
         }
 
@@ -199,7 +200,6 @@ class BannerCoreGrailsPlugin {
         // mix-in supplemental data support into all models
         application.domainClasses.each { modelArtefact ->
             try {
-//                SupplementalDataSupport.injectSupplementalDataSupport modelArtefact.clazz
                 modelArtefact.clazz.mixin SupplementalDataSupportMixin
             } catch (e) {
                 e.printStackTrace()
@@ -216,6 +216,7 @@ class BannerCoreGrailsPlugin {
     }
     
 
+    // Register Hibernate event listeners used by supplemental data support.
     def doWithApplicationContext = { applicationContext ->
         def listeners = applicationContext.sessionFactory.eventListeners
         def listener = new SupplementalDataHibernateListener()
@@ -237,7 +238,6 @@ class BannerCoreGrailsPlugin {
 
 
     def addEventTypeListener( listeners, listener, type ) {
-        println "Adding event listener - $type"
         def typeProperty = "${type}EventListeners"
         def typeListeners = listeners."${typeProperty}"
 
