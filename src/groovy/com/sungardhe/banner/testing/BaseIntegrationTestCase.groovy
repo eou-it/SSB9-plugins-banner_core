@@ -192,7 +192,7 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     }
     
     
-    protected boolean assertErrorsFor( model, errorName, fieldList ) {
+    protected void assertErrorsFor( model, errorName, fieldList ) {
         fieldList.each { field ->
             def fieldError = model.errors.getFieldError( field )
             assertNotNull "Did not find expected '$errorName' error for ${model?.class.simpleName}.$field", 
@@ -201,7 +201,7 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     }
     
     
-    protected boolean assertNoErrorsFor( model, fieldList ) {
+    protected void assertNoErrorsFor( model, fieldList ) {
         fieldList.each { 
             assertNull "Found unexpected error for ${model?.class.simpleName}.$it", model.errors.getFieldError( it )
         }

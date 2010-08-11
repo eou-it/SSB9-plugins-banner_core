@@ -13,7 +13,8 @@ package com.sungardhe.banner.testing
 import java.sql.Connection
 
 import groovy.sql.Sql
-
+import org.springframework.security.core.context.SecurityContextHolder
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 /**
  * Integration test for the Foo service.  This test is 'not transactional'
@@ -48,13 +49,30 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     void testFetch() {
         def foo = fooService.fetch( 1L )
         assertNotNull foo.id
-    }     
+    }
+
+
+    void testSaveOutsideService() {
+        def foo = new Foo( newTestFooParams() )
+        save foo
+        
+        assertNotNull foo.id
+        assertEquals "Horizon Test - TT", foo.description
+
+        assertEquals ConfigurationHolder.config?.dataOrigin, foo.dataOrigin
+        assertEquals SecurityContextHolder.context?.authentication?.principal?.username, foo.lastModifiedBy
+        assertNotNull foo.lastModified
+    }
     
     
     void testSave() { 
         def foo = fooService.create( newTestFooParams() )
         assertNotNull foo.id
         assertEquals "Horizon Test - TT", foo.description
+
+        assertEquals ConfigurationHolder.config?.dataOrigin, foo.dataOrigin
+        assertEquals SecurityContextHolder.context?.authentication?.principal?.username, foo.lastModifiedBy
+        assertNotNull foo.lastModified
     }
 
     

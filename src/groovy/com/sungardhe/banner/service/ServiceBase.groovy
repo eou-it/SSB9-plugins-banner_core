@@ -72,12 +72,12 @@ class ServiceBase {
 
                 def domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap )
                 assert domainObject.id == null
-                updateSystemFields( domainObject )
+                // updateSystemFields( domainObject ) // Note: No longer needed as audit trail is set via AuditTrailPropertySupportHibernateListener
                 log.trace "${this.class.simpleName}.create will save $domainObject"
 
                 def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
 
-                log.trace "${this.class.simpleName}.update will now invoke the postCreate callback if it exists"
+                log.trace "${this.class.simpleName}.create will now invoke the postCreate callback if it exists"
                 if (this.respondsTo( 'postCreate' )) this.postCreate( [  before: domainModelOrMap, after: createdModel ] )
 
                 createdModel
@@ -120,12 +120,11 @@ class ServiceBase {
 
                 def updatedModel
                 if (domainObject.isDirty()) {
+                    log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
 
                     log.trace "${this.class.simpleName}.update will now invoke the preUpdate callback if it exists"
                     if (this.respondsTo( 'preUpdate' )) this.preUpdate( domainModelOrMap )
-
-                    log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
-                    updateSystemFields( domainObject )
+                    // updateSystemFields( domainObject ) // Note: No longer needed as audit trail is set via AuditTrailPropertySupportHibernateListener
 
                     log.trace "${this.class.simpleName}.update applied updates and will save $domainObject"
                     updatedModel = domainObject.save( failOnError: true, flush: flushImmediately )
@@ -448,6 +447,8 @@ class ServiceBase {
     }
 
 
+    // TODO: Remove this method (while it is no longer used by ServiceBase methods, it is being called (now unnecessarily) by other services)
+    @Deprecated // No longer needed as audit trail properties are set via the AuditTrailPropertySupportHibernateListener
     public static def updateSystemFields( entity ) {
         if (entity.hasProperty( 'dataOrigin' )) {
             def dataOrigin = CH.config?.dataOrigin ?: "Banner" // protect from missing configuration
@@ -500,9 +501,6 @@ class ServiceBase {
                   but this object doesn't support optimistic locking!"
         }
     }
-
-
-
 
     
 }

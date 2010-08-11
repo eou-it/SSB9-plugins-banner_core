@@ -17,6 +17,7 @@
     <resource>com.sungardhe.banner.security.AccessControlFilters</resource>
     <resource>LoginController</resource>
     <resource>LogoutController</resource>
+    <resource>com.sungardhe.banner.supplemental.SupplementalDataService</resource>
     <resource>com.sungardhe.banner.constraints.ValidPropertyConstraint</resource>
   </resources>
   <dependencies>

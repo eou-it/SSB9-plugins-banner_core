@@ -79,13 +79,13 @@ class Foo implements Serializable { // Currently based on 'College'; may replace
 	@Column(name="STVCOLL_VERSION", nullable = false, length=19)
 	Long version
 
-	@Column(name="STVCOLL_ACTIVITY_DATE", nullable = false)
+	@Column(name="STVCOLL_ACTIVITY_DATE", nullable = true)
 	Date lastModified
 
-	@Column(name="STVCOLL_USER_ID", length=30, nullable = false)
+	@Column(name="STVCOLL_USER_ID", length=30, nullable = true)
 	String lastModifiedBy 
 
-	@Column(name="STVCOLL_DATA_ORIGIN", length=30, nullable = false)
+	@Column(name="STVCOLL_DATA_ORIGIN", length=30, nullable = true)
 	String dataOrigin
 
     @Transient
@@ -118,7 +118,7 @@ class Foo implements Serializable { // Currently based on 'College'; may replace
 		districtDivision(nullable: true, maxSize: 3)
 		houseNumber(nullable: true, maxSize:10)
 		addressStreetLine4(nullable: true, maxSize: 75)
-	    lastModified(nullable: false)
+	    lastModified(nullable: true)
 		lastModifiedBy(nullable: true, maxSize: 30)
 		dataOrigin(nullable: true, maxSize: 30)
         childByDefault(nullable: true, validProperty: true)

@@ -37,7 +37,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.transaction.annotation.Transactional
-
+import com.sungardhe.banner.service.AuditTrailPropertySupportHibernateListener
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access 
@@ -216,13 +216,18 @@ class BannerCoreGrailsPlugin {
     }
     
 
-    // Register Hibernate event listeners used by supplemental data support.
+    // Register Hibernate event listeners.
     def doWithApplicationContext = { applicationContext ->
         def listeners = applicationContext.sessionFactory.eventListeners
-        def listener = new SupplementalDataHibernateListener()
 
+        def supplementalDataSupportListener = new SupplementalDataHibernateListener()
         [ 'preDelete', 'postInsert', 'postUpdate', 'postLoad' ].each {
-            addEventTypeListener( listeners, listener, it )
+            addEventTypeListener( listeners, supplementalDataSupportListener, it )
+        }
+
+        def auditTrailSupportListener = new AuditTrailPropertySupportHibernateListener()
+        [ 'preInsert', 'preUpdate' ].each {
+            addEventTypeListener( listeners, auditTrailSupportListener, it )
         }
     }
     
