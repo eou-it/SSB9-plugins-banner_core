@@ -1,6 +1,5 @@
 /** *****************************************************************************
-
- Â© 2010 SunGard Higher Education.  All Rights Reserved.
+ © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -23,92 +22,85 @@ import org.springframework.security.core.context.SecurityContextHolder
 /**
  * Integration test for the DomainManagementMethodsInjector.
  **/
-class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
-    
+class ServiceBaseUnitTests extends GrailsUnitTestCase {
+
     def myService           // assigned in setUp method
     List serviceCallbacks   // assigned in setUp method
-    
-    
+
+
     protected void setUp() {
         super.setUp()
-        DomainManagementMethodsInjector.injectDataManagement( NonOverridingTestService, MyMock )        
-        myService = new NonOverridingTestService() // all methods are the injected ones
-        
-        // This test injects 'test' callback handlers to test a service's ability to receive pre/post create/update/delete 
-        // callbacks from it's injected CRUD method implementations. Services may implement these callbacks to provide 
-        // additional behavior to be executed before and after the 'normal' injected CRUD implementations.                                                                         
-        // Since 'these' specific callbacks are only for testing purposes versus 'real' behavior needed to support College, 
-        // they are injected here by this test.                              
-        serviceCallbacks = new ArrayList().asSynchronized() 
-        injectTestCallbacks( myService )  
+        myService = new NonOverridingTestService()
+
+        // This test injects 'test' callback handlers to test a service's ability to receive pre/post create/update/delete
+        // callbacks from it's injected CRUD method implementations. Services may implement these callbacks to provide
+        // additional behavior to be executed before and after the 'normal' injected CRUD implementations.
+        // Since 'these' specific callbacks are only for testing purposes versus 'real' behavior needed to support College,
+        // they are injected here by this test.
+        serviceCallbacks = new ArrayList().asSynchronized()
+        injectTestCallbacks( myService )
 
         def myMockedModels = []
         (0..4).each { myMockedModels << new MyMock( name: "Mocked_$it" ) }
         mockDomain( MyMock, myMockedModels )
-        
-        // We'll mock the session and just return the number of times we've called a method on it...                      
-        MyMock.metaClass.static.withSession = { Closure closure ->
+
+        // We'll mock the session and just return the number of times we've called a method on it...
+        MyMock.class.metaClass.static.withSession = { Closure closure ->
             def sessionMock = [:].asType( Session )
-            sessionMock.metaClass.invokeMethod { String name, args -> } 
+            sessionMock.metaClass.invokeMethod { String name, args -> }
             closure( sessionMock )
         }
     }
-    
-    
+
+
     // --------------------------- Test 'create' method ----------------------------
-    
-    
+
+
     void testCreateUsingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         def createdDomain = svc.create( new MyMock( newMyMockParams() ) )
-        assertNotNull createdDomain?.id 
+        assertNotNull createdDomain?.id
     }
-    
-    
-    void testCreateUsingModelProperties() { 
+
+
+    void testCreateUsingModelProperties() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         def createdDomain = svc.create( new MyMock( newMyMockParams() ).properties ) // map will have a 'class' key, that can be confused with model.class
-        assertNotNull createdDomain?.id 
+        assertNotNull createdDomain?.id
     }
-    
-    
+
+
     void testCreateUsingParamsMap() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         def createdDomain = svc.create( newMyMockParams() ) // map doesn't contain the 'class' key -- it is a 'params' map
-        assertNotNull createdDomain?.id 
+        assertNotNull createdDomain?.id
     }
-    
-    
-    void testCreateUsingMapHavingDomainModelKeyHoldingModelInstance() { 
+
+
+    void testCreateUsingMapHavingDomainModelKeyHoldingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         def createdDomain = svc.create( [ domainModel: new MyMock( newMyMockParams() ), otherJunk: 'Some validation stuff maybe?' ] )
-        assertNotNull createdDomain?.id 
+        assertNotNull createdDomain?.id
     }
 
 
     void testCreateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {  // how's that for a name ;-)
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
         def createdDomain = svc.create( [ myMock: new MyMock( newMyMockParams() ), otherJunk: 'Some validation stuff maybe?' ] )
         assertNotNull createdDomain?.id
     }
 
-    
-    void testCreateUsingModelInstanceAndNotFlushingSession() { 
-        // actually, can't really test that via mocking, but we'll at least test signatures here and 
-        // implement 'real' testing to the FooServiceIntegrationTests. The below is more or less, documentation. 
+
+    void testCreateUsingModelInstanceAndNotFlushingSession() {
+        // actually, can't really test that via mocking, but we'll at least test signatures here and
+        // implement 'real' testing to the FooServiceIntegrationTests. The below is more or less, documentation.
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         def createdDomains = [ svc.create( new MyMock( newMyMockParams() ), false ), // yup, looks like we can pass a boolean
                                svc.create( new MyMock( newMyMockParams() ), false ), // without getting a methodMissing exception
                                svc.create( new MyMock( newMyMockParams() ), false ) ]
         // since the mocking library won't delegate to the session (as it isn't even mocked normally),
-        // all we'll really be able to do here is ensure we don't get a method missing exception... 
-        // Ideally, the mocking will become more sophisticated to handle flush: true. 
+        // all we'll really be able to do here is ensure we don't get a method missing exception...
+        // Ideally, the mocking will become more sophisticated to handle flush: true.
         svc.flush()
     }
 
@@ -118,7 +110,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchCreateUsingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
         List models = []
         (0..4).each{ models << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
         def createdDomains = svc.create( models )
@@ -129,7 +120,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchCreateUsingModelProperties() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
         List models = []
         (0..4).each{ models << new MyMock( newMyMockParams( it ) ).properties }
         def createdDomains = svc.create( models )
@@ -140,7 +130,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchCreateUsingParamsMap() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
         List models = []
         (0..4).each { models << newMyMockParams( it ) + [ someExtraInfoNeededForValidation: "I need this in my callback!" ] }
 
@@ -152,7 +141,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchCreateUsingMapHavingDomainModelKeyHoldingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         List models = []
         (0..4).each { models << [ domainModel: new MyMock( newMyMockParams( it ) ), otherJunk: 'Some validation stuff maybe?' ] }
@@ -165,7 +153,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchCreateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         List models = []
         (0..4).each { models << [ myMock: new MyMock( newMyMockParams( it) ), otherJunk: 'Some validation stuff maybe?' ] }
@@ -175,50 +162,46 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         assertTrue  createdDomains.every { it.id }
     }
 
-    
+
     // --------------------------- Test 'update' method ----------------------------
-    
-    
+
+
     void testUpdateUsingModelInstance() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         existingModel.description = "Updated"
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         def updatedDomain = svc.update( existingModel )
-        assertNotNull updatedDomain.id 
+        assertNotNull updatedDomain.id
         assertEquals "Updated", updatedDomain.description
     }
-    
-    
+
+
     void testUpdateUsingModelProperties() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         existingModel.description = "Updated"
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         def updatedDomain = svc.update( existingModel.properties )
-        assertNotNull updatedDomain.id 
+        assertNotNull updatedDomain.id
         assertEquals "Updated", updatedDomain.description
     }
-    
-    
+
+
     void testUpdateUsingParamsMap() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
-        def updatedDomain = svc.update( [ id: existingModel.id, name: existingModel.name, 
+        def updatedDomain = svc.update( [ id: existingModel.id, name: existingModel.name,
                                           description: "Updated", version: existingModel.version ] )
-        assertNotNull updatedDomain.id 
+        assertNotNull updatedDomain.id
         assertEquals "Updated", updatedDomain.description
     }
-    
-    
+
+
     void testUpdateUsingMapHavingDomainModelKeyHoldingModelInstance() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         existingModel.description = "Updated"
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         def updatedDomain = svc.update( [ domainModel: existingModel, otherJunk: 'Some validation stuff maybe?' ] )
-        assertNotNull updatedDomain.id 
+        assertNotNull updatedDomain.id
         assertEquals "Updated", updatedDomain.description
     }
 
@@ -227,7 +210,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         existingModel.description = "Updated"
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
         def updatedDomain = svc.update( [ myMock: existingModel, otherJunk: 'Some validation stuff maybe?' ] )
         assertNotNull updatedDomain.id
         assertEquals "Updated", updatedDomain.description
@@ -239,7 +221,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchUpdateUsingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         existingModels.eachWithIndex { model, i -> model.description = "Updated_$i" }
@@ -253,7 +234,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchUpdateUsingModelProperties() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         def existingProperties = []
@@ -268,7 +248,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchUpdateUsingParamsMap() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         def existingParams = []
@@ -283,7 +262,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchUpdateUsingMapHavingDomainModelKeyHoldingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         def existingModelsInMapValues = []
@@ -301,13 +279,12 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchUpdateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         def existingModelsInMap = []
         existingModels.eachWithIndex { model, i ->
             model.description = "Updated_$i"
-            existingModelsInMap << [ myMock: model, otherJunk: 'Some validation stuff maybe?' ]  
+            existingModelsInMap << [ myMock: model, otherJunk: 'Some validation stuff maybe?' ]
         }
 
         def createdDomains = svc.update( existingModelsInMap )
@@ -322,7 +299,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchCreateOrUpdateUsingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def requestList = []
         (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
@@ -339,7 +315,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchCreateOrUpdateUsingModelProperties() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def requestList = []
         (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
@@ -356,7 +331,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchCreateOrUpdateUsingParamsMap() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def requestList = []
         (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
@@ -374,7 +348,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchCreateOrUpdateUsingMapHavingDomainModelKeyHoldingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def requestList = []
         (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
@@ -394,7 +367,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchCreateOrUpdateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def requestList = []
         (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
@@ -411,77 +383,69 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         assertEquals 5, result.findAll { it.description.contains( "Updated" ) }.size()
     }
 
-    
+
     // --------------------------- Test 'delete' method ----------------------------
-    
-    
+
+
     void testDeleteUsingModelInstance() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         assertTrue svc.delete( existingModel )
         assertNull MyMock.findByName( 'Mocked_1' )
     }
-    
-    
-    void testDeleteUsingModelProperties() { 
+
+
+    void testDeleteUsingModelProperties() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
         assertTrue svc.delete( existingModel.properties )
         assertNull MyMock.findByName( 'Mocked_1' )
     }
-    
-    
+
+
     void testDeleteUsingParamsMap() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
-        assertTrue svc.delete( [ id: existingModel.id, name: existingModel.name, 
-                                 description: existingModel.description, version: existingModel.version ] )
+        assertNotNull svc.delete( [ id: existingModel.id, name: existingModel.name,
+                                    description: existingModel.description, version: existingModel.version ] )
         assertNull MyMock.findByName( 'Mocked_1' )
     }
-    
-    
+
+
     void testDeleteUsingMapHavingDomainModelKeyHoldingModelInstance() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
-        assertTrue svc.delete( [ domainModel: existingModel, otherJunk: 'Some validation stuff maybe?' ] )
+        assertNotNull svc.delete( [ domainModel: existingModel, otherJunk: 'Some validation stuff maybe?' ] )
         assertNull MyMock.findByName( 'Mocked_1' )
     }
-    
-    
+
+
     void testDeleteUsingLongId() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
-        assertTrue svc.delete( (Long) existingModel.id )
+        assertNotNull svc.delete( (Long) existingModel.id )
         assertNull MyMock.findByName( 'Mocked_1' )
     }
-    
-    
+
+
     void testDeleteUsingNumber() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
-        assertTrue svc.delete( 1 )
+        assertNotNull svc.delete( 1 )
         assertNull MyMock.get( 1 )
     }
-    
-    
+
+
     void testDeleteUsingPrimativeId() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
-        assertTrue svc.delete( (long) existingModel.id )
+        assertNotNull svc.delete( (long) existingModel.id )
         assertNull MyMock.findByName( 'Mocked_1' )
     }
-    
-    
+
+
     void testDeleteUsingString() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
-        assertTrue svc.delete( '1' )
+        assertNotNull svc.delete( '1' )
         assertNull MyMock.get( 1 )
     }
 
@@ -491,7 +455,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchDeleteUsingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         svc.delete( existingModels )
@@ -502,7 +465,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchDeleteUsingModelProperties() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         def existingProperties = []
@@ -515,7 +477,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchDeleteUsingParamsMap() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         def existingParams = []
@@ -529,7 +490,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchDeleteUsingMapHavingDomainModelKeyHoldingModelInstance() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         def existingModelsInMapValues = []
@@ -544,7 +504,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchDeleteUsingLongIds() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         def existingIds = []
@@ -557,7 +516,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchDeleteUsingPrimativeId() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         def existingIds = []
@@ -570,7 +528,6 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
     void testBatchDeleteUsingStrings() {
         def svc = new AnotherTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )
 
         def existingModels = MyMock.list()
         def existingStringIds = []
@@ -580,98 +537,94 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
         assertTrue MyMock.list()?.size() == 0
     }
 
-    
+
     // --------------------------- Test method callbacks ----------------------------
-    
-    
-    void testCreateCallbacks() { 
+
+
+    void testCreateCallbacks() {
         assertTrue serviceCallbacks.size() == 0
         myService.create( newMyMockParams() )
         assertTrue serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
     }
-    
-    
-    void testCreateExplicitMethodCallback() { 
+
+
+    void testCreateExplicitMethodCallback() {
         def svc = new AnotherWithCallbacksTestService()
-        DomainManagementMethodsInjector.injectDataManagement( svc, MyMock )        
-        svc.create( newMyMockParams() )        
+        svc.create( newMyMockParams() )
         assertTrue svc.preCreateCalled
     }
-    
-        
-    void testUpdateCallbacks() { 
+
+
+    void testUpdateCallbacks() {
         assertTrue serviceCallbacks.size() == 0
         myService.update( newMyMockParams() + [ id: 1, description: "Updated", version: 0 ] )
         assertTrue serviceCallbacks.containsAll( [ 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 2
     }
-    
-    
-    void testCreateOrUpdateWithCallbacks() { 
+
+
+    void testCreateOrUpdateWithCallbacks() {
         assertTrue serviceCallbacks.size() == 0
         def createdDomain = myService.create( newMyMockParams() )
         assertNotNull createdDomain?.id
         assertTrue serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
-        
+
         // now we'll issue the same and expect an update
         createdDomain.description = "Updated" // note the update callback handler asserts this specific content
         assertTrue serviceCallbacks?.size() == 2
-        def updatedDomain = myService.update( createdDomain ) 
+        def updatedDomain = myService.update( createdDomain )
         assertEquals createdDomain.id, updatedDomain?.id
         assertTrue serviceCallbacks.containsAll( [ 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 4
     }
-    
-    
-    void testDeleteCallbacks() { 
+
+
+    void testDeleteCallbacks() {
         assertTrue serviceCallbacks.size() == 0
         myService.delete( 1 )
         assertTrue serviceCallbacks.containsAll( [ 'preDelete', 'postDelete' ] ) && serviceCallbacks.size() == 2
     }
-    
-    
-    void testCreateOverride() { 
-        DomainManagementMethodsInjector.injectDataManagement( OverridingCreateTestService, MyMock )
+
+
+    void testCreateOverride() {
         def testService = new OverridingCreateTestService()
         assertFalse testService.createInvoked
         testService.create( newMyMockParams() )
         assertTrue testService.createInvoked
-        
+
         // now we'll test again, this time ensuring we can pass a domain instance versus a map
         testService = new OverridingCreateTestService()
         assertFalse testService.createInvoked
         testService.create( new MyMock( newMyMockParams() ) )
         assertTrue testService.createInvoked
     }
-    
-    
-    void testUpdateOverride() { 
-        DomainManagementMethodsInjector.injectDataManagement( OverridingUpdateTestService, MyMock )
+
+
+    void testUpdateOverride() {
         def testService = new OverridingUpdateTestService()
-        
+
         def entity = testService.create( newMyMockParams() )
         assertTrue entity.id > 0  // this tests that a create method was successfully injected
         assertNotNull MyMock.get( entity.id )
-        
+
         assertFalse testService.updateInvoked
         testService.update( newMyMockParams() + [ id: entity.id, version: entity.version, name: "This won't be updated" ] )
         assertTrue testService.updateInvoked  // this tests that we were able to implement the update, but not the create
         assertEquals "Test", entity.name      // and further tests that the injected update was not used
-        
+
         testService.delete( entity.id )
         assertNull MyMock.get( entity.id )
     }
-    
-    
-    void testDeleteOverride() { 
-        DomainManagementMethodsInjector.injectDataManagement( OverridingDeleteTestService, MyMock )
+
+
+    void testDeleteOverride() {
         def testService = new OverridingDeleteTestService()
-        
+
         def entity = testService.create( newMyMockParams() )
         assertTrue entity.id > 0  // this tests that the create method was injected
         assertNotNull MyMock.get( entity.id )
-        
+
         testService.update( newMyMockParams() + [ id: entity.id, version: entity.version, name: "Update Me" ] )
         assertEquals "Update Me", entity.name // this tests that the update method was injected
-        
+
         assertFalse testService.deleteInvoked
         testService.delete( entity.id )
         assertTrue testService.deleteInvoked  // this tests that the delete method was 'not' injected
@@ -680,54 +633,54 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 
 
     // ------------------------------ Helper Methods ---------------------------------
-    
-    
+
+
     private Map newMyMockParams( index = null ) {
         def name = index ? "Test_$index" : "Test"
         def desc = index ? "Desc_$index" : "Description"
         [ name: name, description: desc ]  + [ someExtraInfoNeededForValidation: "I need this in my callback!" ]
     }
-        
-    
+
+
     // This injects 'test' callbacks into the service, so that the injected CRUD methods of that service can provide callbacks.
-    // The specific callback handlers simply track the callbacks for testing purposes. Normally, these would be implemented 
+    // The specific callback handlers simply track the callbacks for testing purposes. Normally, these would be implemented
     // within the service directly (but since these are 'test only' callbacks, they are injected here).
     //
     private def injectTestCallbacks( service ) {
         // We'll inject some pre and post CRUD behavior into our service to test service callbacks (this test is NOT College specific)
-        service.metaClass.preCreate = { domainObjectOrParams -> 
+        service.metaClass.preCreate = { domainObjectOrParams ->
             registerCallback 'preCreate'
             assertNull domainObjectOrParams.id
             assertEquals "Test", domainObjectOrParams.name
             assertEquals "I need this in my callback!", domainObjectOrParams['someExtraInfoNeededForValidation']
         }
-        service.metaClass.postCreate = { results -> 
+        service.metaClass.postCreate = { results ->
             registerCallback 'postCreate'
             assertNotNull results.before
             assertNull results.before.id
             assertNotNull results.after.id
         }
-        service.metaClass.preUpdate = { domainObjectOrParams -> 
+        service.metaClass.preUpdate = { domainObjectOrParams ->
             registerCallback 'preUpdate'
             assertNotNull domainObjectOrParams
         }
-        service.metaClass.postUpdate = { results -> 
+        service.metaClass.postUpdate = { results ->
             registerCallback 'postUpdate'
             assertNotNull results.before
             assertEquals "Updated", results.after.description
         }
-        service.metaClass.preDelete = { domainObjectOrParams -> 
+        service.metaClass.preDelete = { domainObjectOrParams ->
             registerCallback 'preDelete'
             assertNotNull domainObjectOrParams
         }
-        service.metaClass.postDelete = { results -> 
+        service.metaClass.postDelete = { results ->
             registerCallback 'postDelete'
             assertNotNull results.before
             assertNull results.after
-        }        
+        }
     }
-    
-    
+
+
     private registerCallback( String callBackName ) {
         serviceCallbacks << callBackName
     }
@@ -738,14 +691,14 @@ class DomainManagementMethodsInjectorUnitTests extends GrailsUnitTestCase {
 class MyMock {
     Long id
     long version
-    
+
     def name
     def description
     def dataOrigin
     def lastModifiedBy
     def lastModified
 
-    
+
     public static MyMock get( id ) {
         new MyMock( id: id, name: 'Mocked' )
     }
@@ -759,63 +712,56 @@ class MyMock {
 }
 
 
-class NonOverridingTestService {
-    
-    boolean transactional = true       // Grails won't find this service, so this is here 'just because services should have this'
-    static defaultCrudMethods = true   // we'll need to inject this explicitly here, so this is 'just to follow our convention'    
+class NonOverridingTestService extends ServiceBase {
+    Class domainClass = MyMock
+    boolean transactional = true
 }
 
 
-class OverridingCreateTestService {
-    
-    boolean transactional = true       // Grails won't find this service, so this is here 'just because services should have this'
-    static defaultCrudMethods = true   // we'll need to inject this explicitly here, so this is 'just to follow our convention'    
+class OverridingCreateTestService extends ServiceBase {
+    Class domainClass = MyMock
+    boolean transactional = true
     boolean createInvoked
-    
-    
+
     def create( college ) {
         createInvoked = true
     }
 }
 
 
-class OverridingUpdateTestService {
-    
-    boolean transactional = true       // Grails won't find this service, so this is here 'just because services should have this'
-    static defaultCrudMethods = true   // we'll need to inject this explicitly here, so this is 'just to follow our convention'    
+class OverridingUpdateTestService extends ServiceBase {
+    Class domainClass = MyMock
+    boolean transactional = true
     boolean updateInvoked
-    
+
     def update( college ) {
         updateInvoked = true
-    }    
+    }
 }
 
 
-class OverridingDeleteTestService {
-    
-    boolean transactional = true       // Grails won't find this service, so this is here 'just because services should have this'
-    static defaultCrudMethods = true   // we'll need to inject this explicitly here, so this is 'just to follow our convention'    
+class OverridingDeleteTestService extends ServiceBase {
+    Class domainClass = MyMock
+    boolean transactional = true     
     boolean deleteInvoked
-    
+
     def delete( long id ) {
         deleteInvoked = true
     }
 }
 
 
-class AnotherTestService {
-
-    boolean transactional = true       // Grails won't find this service, so this is here 'just because services should have this'
-    static defaultCrudMethods = true   // we'll need to inject this explicitly here, so this is 'just to follow our convention'    
+class AnotherTestService extends ServiceBase {
+    Class domainClass = MyMock
+    boolean transactional = true
 }
 
 
-class AnotherWithCallbacksTestService {
-
-    boolean transactional = true       // Grails won't find this service, so this is here 'just because services should have this'
-    static defaultCrudMethods = true   // we'll need to inject this explicitly here, so this is 'just to follow our convention'    
+class AnotherWithCallbacksTestService extends ServiceBase {
+    Class domainClass = MyMock
+    boolean transactional = true
     boolean preCreateCalled = false
-    
+
     def preCreate( map ) {
         preCreateCalled = true
     }
