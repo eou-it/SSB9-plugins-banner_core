@@ -39,9 +39,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 
     void testWrappedValidationException() {
         
-        def foo = new Foo( code: "TTTTTTTTT", description: "TT", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
-		             addressState: "TT", addressCountry: "TT", addressZipCode: "TT", systemRequiredIndicator: "N", voiceResponseMessageNumber: 1, statisticsCanadianInstitution: "TT",
-		             districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT" ) 
+        def foo = new Foo( newTestFooParams( "TTTTTTTTT" ) )
 		try {
 		    foo.save( failOnError:true, flush: true )
 		    fail( "Invalid foo was successfully saved!" )
@@ -69,10 +67,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     // within an ApplicationException, so it can be handled normally (i.e., have localization applied).  
     void testWrappedMultiModelValidationException() {
         
-        def foo = new Foo( code: "TT", description: "TT", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
-		                           addressState: "TT", addressCountry: "TT", addressZipCode: "TT", systemRequiredIndicator: "N", voiceResponseMessageNumber: 1, statisticsCanadianInstitution: "TT",
-		                           districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT",
-		                           lastModified: new Date(), lastModifiedBy: 'horizon', dataOrigin: 'horizon' ) // audit trail normally set in service
+        def foo = new Foo( newTestFooParamsWithAuditTrail() )
         
         def expectedNull = MultiModelValidationException.validate( [ foo ] ) // foo is valid, so this should return null
         assertNull "Expected null, but got $expectedNull", expectedNull
@@ -147,11 +142,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 
     void testWrappedOptimisticLockException() {
         
-        def foo = new Foo( code: "TT", description: "TT", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
-		             addressState: "TT", addressCountry: "TT", addressZipCode: "TT", systemRequiredIndicator: "N", voiceResponseMessageNumber: 1, statisticsCanadianInstitution: "TT",
-		             districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT",
-		             lastModified: new Date(), lastModifiedBy: 'horizon', dataOrigin: 'horizon' ) // audit trail normally set in service ) 
-		             
+        def foo = new Foo( newTestFooParamsWithAuditTrail() ) 
         save foo
 		    
 		def sql
@@ -386,5 +377,17 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 	    assertNull returnMap.errors 
 	    assertTrue returnMap.underlyingErrorMessage ==~ /.*@@r1:runtime.you.wont.find.me:FooController:.SomeMissingAction@@.*/					
     }
-    
+
+
+    private Map newTestFooParams( code = "TT" ) {
+        [ code: code, description: "Horizon Test - $code", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
+          addressState: "TT", addressCountry: "TT", addressZipCode: "TT", systemRequiredIndicator: "N", voiceResponseMessageNumber: 1, statisticsCanadianInstitution: "TT",
+          districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT" ]
+    }
+
+
+    private Map newTestFooParamsWithAuditTrail( code = "TT" ) {
+         newTestFooParams( code ) << [ lastModified: new Date(), lastModifiedBy: 'horizon', dataOrigin: 'horizon' ]
+    }
+
 }

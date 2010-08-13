@@ -1,5 +1,4 @@
 /** *****************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -14,78 +13,77 @@ package com.sungardhe.banner.testing
 import javax.persistence.*
 
 import org.hibernate.annotations.GenericGenerator
-import org.hibernate.annotations.Type
 
 
 /**
  * A model used for testing the Banner framework.
  */
 @Entity
-@Table(name="STVCOLL")  
+@Table( name="STVCOLL" )
 class Foo implements Serializable { // Currently based on 'College'; may replace with another model implementation if needed
 
 	@Id
-	@Column(name="STVCOLL_SURROGATE_ID")
-	@GeneratedValue(generator ="triggerAssigned")
-	@GenericGenerator(name = "triggerAssigned", strategy = "com.sungardhe.banner.framework.persistence.util.TriggerAssignedIdentityGenerator")
+	@Column( name="STVCOLL_SURROGATE_ID" )
+	@GeneratedValue( generator ="triggerAssigned" )
+	@GenericGenerator( name = "triggerAssigned", strategy = "com.sungardhe.banner.framework.persistence.util.TriggerAssignedIdentityGenerator" )
 	Long id
 
-	@Column(name="STVCOLL_CODE", nullable = false) // , length=2
+	@Column( name="STVCOLL_CODE", nullable = false ) // , length=2
 	String code
 
-	@Column(name="STVCOLL_DESC", nullable = false, length=30)
+	@Column( name="STVCOLL_DESC", nullable = false, length=30 )
 	String description
 
-	@Column(name="STVCOLL_ADDR_STREET_LINE1", length=75)
+	@Column( name="STVCOLL_ADDR_STREET_LINE1", length=75 )
 	String addressStreetLine1
 
-	@Column(name="STVCOLL_ADDR_STREET_LINE2", length=75)
+	@Column( name="STVCOLL_ADDR_STREET_LINE2", length=75 )
 	String addressStreetLine2
 
-	@Column(name="STVCOLL_ADDR_STREET_LINE3", length=75)
+	@Column( name="STVCOLL_ADDR_STREET_LINE3", length=75 )
 	String addressStreetLine3
 
-	@Column(name="STVCOLL_ADDR_CITY", length=50)
+	@Column( name="STVCOLL_ADDR_CITY", length=50 )
 	String addressCity
 
-	@Column(name="STVCOLL_ADDR_STATE", length=2)
+	@Column( name="STVCOLL_ADDR_STATE", length=2 )
 	String addressState
 
-	@Column(name="STVCOLL_ADDR_COUNTRY", length=28)
+	@Column( name="STVCOLL_ADDR_COUNTRY", length=28 )
 	String addressCountry
 
-	@Column(name="STVCOLL_ADDR_ZIP_CODE", length=10)
+	@Column( name="STVCOLL_ADDR_ZIP_CODE", length=10 )
 	String addressZipCode
 
-	@Column (name="STVCOLL_SYSTEM_REQ_IND", nullable = true, length = 1)
+	@Column ( name="STVCOLL_SYSTEM_REQ_IND", nullable = true, length = 1 )
 	String systemRequiredIndicator
 
-	@Column(name="STVCOLL_VR_MSG_NO", length=22)
+	@Column( name="STVCOLL_VR_MSG_NO", length=22 )
 	BigDecimal voiceResponseMessageNumber
 
-	@Column(name="STVCOLL_STATSCAN_CDE3", length=6)
+	@Column( name="STVCOLL_STATSCAN_CDE3", length=6 )
 	String statisticsCanadianInstitution
 
-	@Column(name="STVCOLL_DICD_CODE", length=3)
+	@Column( name="STVCOLL_DICD_CODE", length=3 )
 	String districtDivision
 
-	@Column(name="STVCOLL_HOUSE_NUMBER", length=10)
+	@Column( name="STVCOLL_HOUSE_NUMBER", length=10 )
 	String houseNumber
 
-	@Column(name="STVCOLL_ADDR_STREET_LINE4", length=75)
+	@Column( name="STVCOLL_ADDR_STREET_LINE4", length=75 )
 	String addressStreetLine4
 
 	@Version
-	@Column(name="STVCOLL_VERSION", nullable = false, length=19)
+	@Column( name="STVCOLL_VERSION", nullable = false, length=19 )
 	Long version
 
-	@Column(name="STVCOLL_ACTIVITY_DATE", nullable = true)
+	@Column( name="STVCOLL_ACTIVITY_DATE", nullable = true )
 	Date lastModified
 
-	@Column(name="STVCOLL_USER_ID", length=30, nullable = true)
+	@Column( name="STVCOLL_USER_ID", length=30, nullable = true )
 	String lastModifiedBy 
 
-	@Column(name="STVCOLL_DATA_ORIGIN", length=30, nullable = true)
+	@Column( name="STVCOLL_DATA_ORIGIN", length=30, nullable = true )
 	String dataOrigin
 
     @Transient
@@ -103,26 +101,26 @@ class Foo implements Serializable { // Currently based on 'College'; may replace
 	
 
 	static constraints = {
-		code(nullable: false, maxSize: 2) 
-		description(nullable: false, maxSize: 30)
-		addressStreetLine1(nullable: true, maxSize: 75)
-		addressStreetLine2(nullable: true, maxSize: 75)
-		addressStreetLine3(nullable: true, maxSize: 75)
-		addressCity(nullable: true, maxSize: 50)
-		addressState(nullable: true, maxSize: 2)
-		addressCountry(nullable: true, maxSize: 28)
-		addressZipCode(nullable: true, maxSize: 10)
-		systemRequiredIndicator(nullable: true, maxSize: 1, inList:['Y','N'])
-		voiceResponseMessageNumber(nullable: true, maxSize: 22)
-		statisticsCanadianInstitution(nullable: true, maxSize: 6)
-		districtDivision(nullable: true, maxSize: 3)
-		houseNumber(nullable: true, maxSize:10)
-		addressStreetLine4(nullable: true, maxSize: 75)
-	    lastModified(nullable: true)
-		lastModifiedBy(nullable: true, maxSize: 30)
-		dataOrigin(nullable: true, maxSize: 30)
-        childByDefault(nullable: true, validProperty: true)
-        childByCode(nullable: true, validProperty: "code")
-        childById(nullable: true, validProperty: "id")
+		code                          ( nullable: false, maxSize: 2  )
+		description                   ( nullable: false, maxSize: 30 )
+		addressStreetLine1            ( nullable: true,  maxSize: 75 )
+		addressStreetLine2            ( nullable: true,  maxSize: 75 )
+		addressStreetLine3            ( nullable: true,  maxSize: 75 )
+		addressCity                   ( nullable: true,  maxSize: 50 )
+		addressState                  ( nullable: true,  maxSize: 2  )
+		addressCountry                ( nullable: true,  maxSize: 28 )
+		addressZipCode                ( nullable: true,  maxSize: 10 )
+		systemRequiredIndicator       ( nullable: true,  maxSize: 1, inList:['Y','N'] )
+		voiceResponseMessageNumber    ( nullable: true,  maxSize: 22 )
+		statisticsCanadianInstitution ( nullable: true,  maxSize: 6  )
+		districtDivision              ( nullable: true,  maxSize: 3  )
+		houseNumber                   ( nullable: true,  maxSize:10  )
+		addressStreetLine4            ( nullable: true,  maxSize: 75 )
+	    lastModified                  ( nullable: true )
+		lastModifiedBy                ( nullable: true,  maxSize: 30 )
+		dataOrigin                    ( nullable: true,  maxSize: 30 )
+        childByDefault                ( nullable: true,  validProperty: true   )
+        childByCode                   ( nullable: true,  validProperty: "code" )
+        childById                     ( nullable: true,  validProperty: "id"   )
 	}
 }

@@ -201,7 +201,7 @@ class RestfulControllerMixin {
                                      message:  localizer( code: 'default.updated.message',
                                                           args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ),
                                                                   entity.id ] ) ]
-            this.response.status = 200 // the 'created' code
+            this.response.status = 200
             def result = representationiBuilderFor( "update" ).call( successReturnMap )
             log.debug "${this.class.simpleName}.update will render $result"
             render result
@@ -237,7 +237,7 @@ class RestfulControllerMixin {
                                      message:  localizer( code: 'default.deleted.message',
                                                           args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
                                                                   params.id ] ) ]
-            this.response.status = 200 // the 'created' code
+            this.response.status = 200 
             def result = representationiBuilderFor( "destroy" ).call( successReturnMap )
             log.debug "${this.class.simpleName}.destroy will render $result"
             render result
@@ -271,7 +271,7 @@ class RestfulControllerMixin {
                                      refBase: refBase( request ),
                                      message:  localizer( code: 'default.show.message',
                                                           args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
-            this.response.status = 200 // the 'created' code
+            this.response.status = 200
             def result = representationiBuilderFor( "show" ).call( successReturnMap )
             log.debug "${this.class.simpleName}.show will render $result"
             render result
@@ -309,7 +309,7 @@ class RestfulControllerMixin {
                                      refBase: refBase( request ),
                                      message: localizer( code: 'default.list.message',
                                                          args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
-            this.response.status = 200 // the 'created' code
+            this.response.status = 200
             def result = representationiBuilderFor( "list" ).call( successReturnMap )
             log.debug "${this.class.simpleName}.list will render $result"
             render result

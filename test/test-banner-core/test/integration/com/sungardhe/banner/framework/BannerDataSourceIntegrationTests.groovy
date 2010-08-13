@@ -1,5 +1,4 @@
 /** *****************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -22,14 +21,11 @@ import java.sql.Connection
 
 import oracle.jdbc.OracleConnection
 
-import org.apache.commons.dbcp.BasicDataSource
-
 
 /**
- * Integration tests exercising the BannerDataSource data source implementation.
+ * Integration tests exercising the BannerDS (formerly named BannerDataSource) data source implementation.
  */
 public class BannerDataSourceIntegrationTests extends GrailsUnitTestCase {
-
 
     def dataSource
 
@@ -47,7 +43,7 @@ public class BannerDataSourceIntegrationTests extends GrailsUnitTestCase {
         BannerConnection conn
         Sql sql
         try {
-            conn = (dataSource as BannerDataSource).getUnproxiedConnection()
+            conn = (dataSource as BannerDataSource).getUnproxiedConnection() as BannerConnection
             conn = (dataSource as BannerDataSource).proxyConnection( conn, "grails_user" ) as BannerConnection
 
             assertEquals( "grails_user", conn.getProxyUserName() )
@@ -69,7 +65,7 @@ public class BannerDataSourceIntegrationTests extends GrailsUnitTestCase {
         BannerConnection conn
         Sql sql
         try {
-            conn = (dataSource as BannerDataSource).getUnproxiedConnection()
+            conn = (dataSource as BannerDataSource).getUnproxiedConnection() as BannerConnection
             sql = new Sql( conn.extractOracleConnection() )
             
             // Retrieve the database role name and password for object STVINTS

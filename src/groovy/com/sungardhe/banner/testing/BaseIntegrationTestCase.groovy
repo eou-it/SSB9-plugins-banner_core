@@ -11,7 +11,7 @@
 package com.sungardhe.banner.testing
 
 import com.sungardhe.banner.exceptions.*
-import com.sungardhe.banner.security.FormContext
+import com.sungardhe.banner.security.FormContext // this IS used - damn you IntelliJ ;-)
 
 import grails.util.GrailsNameUtils
 
@@ -93,10 +93,12 @@ class BaseIntegrationTestCase extends GroovyTestCase {
         loginIfNecessary() 
         
         if (useTransactions) {
-            sessionFactory.currentSession.connection().rollback()                 // needed to protect from other tests
-            sessionFactory.currentSession.clear()                                 // needed to protect from other tests
-            sessionFactory.currentSession.disconnect()                            // needed to release the old database connection
-            sessionFactory.currentSession.reconnect( dataSource.getConnection() ) // get a new connection that has unlocked the needed roles
+            sessionFactory.currentSession.with {
+                connection().rollback()                 // needed to protect from other tests
+                clear()                                 // needed to protect from other tests
+                disconnect()                            // needed to release the old database connection
+                reconnect( dataSource.getConnection() ) // get a new connection that has unlocked the needed roles
+            }
             transactionManager.getTransaction().setRollbackOnly()                 // and make sure we don't commit to the database
         }
     }

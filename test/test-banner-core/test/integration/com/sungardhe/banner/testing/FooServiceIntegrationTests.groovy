@@ -15,6 +15,7 @@ import java.sql.Connection
 import groovy.sql.Sql
 import org.springframework.security.core.context.SecurityContextHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.junit.Ignore
 
 /**
  * Integration test for the Foo service.  This test is 'not transactional'
@@ -43,12 +44,6 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     protected void tearDown() {
         tearDownTestFoo()
         super.tearDown()
-    }
-
-
-    void testFetch() {
-        def foo = fooService.fetch( 1L )
-        assertNotNull foo.id
     }
 
 
@@ -159,14 +154,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
             assertEquals 3, foos.findAll { it.id > 0 }.size()
         }
     }
-    
-    
-    void testReadOnlyMethod() { 
-        def foo = fooService.create( newTestFooParams() )
-        assertNotNull foo.id
-        assertNotNull fooService.fetch( foo.id ) // note that additional assertions will be made by this 'fetch' test method
-    }
-    
+
 
     // This is a 'framework' test -- please do not copy it into your normal service integration tests.
     // This tests that we can see pending creates in the current transaction and that we cannot see 
@@ -195,6 +183,29 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     
         otherThread.join()
         assertNull found
+    }
+
+
+    void testUsingReadOnlyTransaction() {
+        assertTrue fooService.useReadOnlyRequiredTransaction()
+    }
+
+
+    void testUsingRequiredTransaction() {
+        assertTrue fooService.useRequiredTransaction()
+    }
+
+
+    void testUsingSupportsTransaction() {
+        assertTrue fooService.useSupportsTransaction()
+    }
+
+
+    @Ignore // Results in an exception:  No value for key [org.hibernate.impl.SessionFactoryImpl@cb8a0c8] bound to thread [main]
+    void testUsingRequiresNewTransaction() {
+        Foo.withTransaction {
+            assertTrue fooService.useRequiresNewTransaction()
+        }
     }
                        
     

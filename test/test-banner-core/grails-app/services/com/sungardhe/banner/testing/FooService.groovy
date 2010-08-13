@@ -14,6 +14,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport
 import com.sungardhe.banner.service.ServiceBase
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.interceptor.TransactionAttribute
 
 // DEVELOPER NOTE:
 // Basic CRUD methods (create, update, delete, list, count) methods are provided by the ServiceBase
@@ -54,7 +55,7 @@ class FooService extends ServiceBase {
     // The following line would be required if we were mixing in ServiceBase. In this case we are extending from it
     // and thus it's @Transactional annotations are effective (precluding the need for using this static boolean)
     //
-    // static transactional = true
+    //  
 
     // Note: You MUST set the domainClass IF you are not following normal naming conventions where the
     // domain name is the same as the service name (minus the trailing 'Service' portion).  Since in this case,
@@ -66,13 +67,38 @@ class FooService extends ServiceBase {
     // transaction, as in the following annotation. This will be slightly more performant than using the static transactional = true
     // approach (where all methods would not be read-only, increasing Hibernate overhead.
     //
-    // Note that for a simple service, with no additional methods like the one below, the body of the class would be completely empty.
+    // Note that for a simple service, with no additional methods like the test ones below, the body of the class would be completely empty.
     //
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRED )
-    public Foo fetch( long id ) {
-        println "In FooService.fetch - transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
-        Foo.get( id )
+
+
+    // ----------------------------------------- Test Methods ------------------------------------------
+
+    
+    @Transactional( readOnly = true, propagation = Propagation.REQUIRED )
+    public boolean useReadOnlyRequiredTransaction() {
+        def transAttributes = TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()
+        TransactionAttribute.PROPAGATION_REQUIRED == transAttributes.propagationBehavior && transAttributes.readOnly
     }
+
     
-    
+    @Transactional( propagation = Propagation.REQUIRED )
+    public boolean useRequiredTransaction() {
+        def transAttributes = TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()
+        TransactionAttribute.PROPAGATION_REQUIRED == transAttributes.propagationBehavior && !transAttributes.readOnly
+    }
+
+
+    @Transactional( propagation = Propagation.SUPPORTS )
+    public boolean useSupportsTransaction() {
+        def transAttributes = TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()
+        TransactionAttribute.PROPAGATION_SUPPORTS == transAttributes.propagationBehavior && !transAttributes.readOnly
+    }
+
+
+    @Transactional( propagation = Propagation.REQUIRES_NEW )
+    public boolean useRequiresNewTransaction() {
+        def transAttributes = TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()
+        TransactionAttribute.PROPAGATION_REQUIRES_NEW == transAttributes.propagationBehavior && !transAttributes.readOnly
+    }
+
 }

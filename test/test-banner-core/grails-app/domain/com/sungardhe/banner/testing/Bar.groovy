@@ -1,5 +1,4 @@
 /*******************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -39,7 +38,7 @@ class Bar  {  // Based on the Banner 'Interest' model
     // FYI: Evidently we need to use the get/set naming convention to allow property access to virtual attributes from gsp templates
     def setSystemRequired( boolean reqd ) {
 	      if (reqd) system_required_indicator = "Y"
-	      else system_required_indicator = "N"
+	      else      system_required_indicator = "N"
     }
 
 
@@ -51,9 +50,9 @@ class Bar  {  // Based on the Banner 'Interest' model
     static transients = ['code', 'systemRequired'] 
 
 		static constraints = {
-        id(unique:true, blank:false, nullable:false, maxSize:2, minSize:2)
-        code(blank:false, nullable:false, maxSize:2, minSize:2) // we can still define some constraints, just not those that expect 'code' to be persisted (e.g., unique)
-		description(unique:true, blank:false, maxSize:30)
+        id          ( unique:true, blank:false, nullable:false, maxSize:2, minSize:2 )
+        code        ( blank:false, nullable:false, maxSize:2, minSize:2 ) // we can still define some constraints, just not those that expect 'code' to be persisted (e.g., unique)
+		description ( unique:true, blank:false, maxSize:30 )
 	}
 	
 	
