@@ -22,7 +22,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken as UPAT
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-
+import com.sungardhe.banner.configuration.ConfigurationUtils
 
 /**
  * Base class for integration tests, that sets the FormContext and logs in 'GRAILS_USER' if necessary 
@@ -221,8 +221,8 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     /** 
      * Convenience method to assert an expected error is found, and that it's localized message matches the supplied matchString.
      **/
-    protected boolean assertLocalizedError( model, errorName, matchString, prop ) {
-        assertTrue "Did not find expected '$errorName' property error for ${model?.class.simpleName}.$prop, but got ${model.errors.getFieldError( prop )}", 
+    protected assertLocalizedError( model, errorName, matchString, prop ) {
+        assertTrue "Did not find expected '$errorName' property error for ${model?.class?.simpleName}.$prop, but got ${model.errors.getFieldError( prop )}",
                     model.errors.getFieldError( prop ).toString() ==~ /.*nullable.*/
         assertTrue "Did not find expected field error ${getErrorMessage( model.errors.getFieldError( prop ) )}", 
                     getErrorMessage( model.errors.getFieldError( prop ) ) ==~ matchString
@@ -230,7 +230,7 @@ class BaseIntegrationTestCase extends GroovyTestCase {
 
    
     /**
-     * Convience method to assert that there are no errors upon validation.  This will fail with the
+     * Convenience method to assert that there are no errors upon validation.  This will fail with the
      * localized message for easier debugging
      **/
     protected void assertNoErrorsUponValidation( domainObj ) {
@@ -239,15 +239,7 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     
 
     private getFormControllerMap() {
-        if (CH && CH.config) {
-            CH?.config?.formControllerMap
-        } else {
-            // Grails bug GRAILS-4687, and http://n4.nabble.com/Grails-Unit-Integration-Testing-apparent-Random-Failures-td1315936.html#a1315936
-            // result in the configuration holder being null when running all, or all integration, tests. The holder is available 
-            // when running tests individually. To workaround this, we'll use the ConfigSlurper to read the formControllerMap.
-            def config = new ConfigSlurper().parse( new File( 'grails-app/conf/Config.groovy' ).toURL() )
-            config?.formControllerMap
-        }
+        ConfigurationUtils.getConfiguration()?.formControllerMap
     }
 
 }

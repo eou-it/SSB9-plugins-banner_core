@@ -20,7 +20,7 @@ import grails.util.GrailsNameUtils
 import org.apache.log4j.Logger
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
-
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 /**
  * A mixin for controllers that provides actions needed for a full RESTful API supporting XML and JSON
@@ -111,6 +111,7 @@ class RestfulControllerMixin {
 
     static allowedMethods = [ show: "GET", list: "GET", create: "POST", update: "PUT", destroy: "DELETE" ]  // ensure RESTful
 
+    Class  domainClass
     String domainSimpleName
     String serviceName
 
@@ -123,6 +124,12 @@ class RestfulControllerMixin {
     // wrap the 'message' invocation within a closure, so it can be passed into an ApplicationException to localize error messages
     def localizer = { mapToLocalize -> 
         this.message( mapToLocalize ) 
+    }
+
+
+    Class getDomainClass() {
+        domainClass = domainClass ?: ApplicationHolder.getApplication().getClassForName( this.class.name.substring( 0, this.class.name.length() - "Controller".length() ) )
+        domainClass
     }
 
 
@@ -153,6 +160,39 @@ class RestfulControllerMixin {
     }
 
 
+    /**
+     * Retrieves a params extraction Closure from the ResourceRegistrationRegistry, or null if none is found.
+     * @param representationName the name of the representation, preferrably a custom MIME type
+     * @param modelClass the Class of the model (aka 'resource')
+     * @return Closure a closure that can perform the necessary params extraction
+     */
+    public def retrieveParamsExtractorFromRegistry( String representationName, modelClass ) {
+        def handler = getResourceRepresentationRegistry().get( representationName, modelClass )
+        (Closure) handler?.paramsParser
+    }
+
+
+    /**
+     * Retrieves a Representation handler from the ResourceRegistrationRegistry, or null if none is found.
+     * @param representatinName the name of the representation, preferably a custom MIME type
+     * @param actionName the string name of the action (one of 'list', 'show', 'create', or 'update'
+     * @param modelClass the Class of the model (aka 'resource')
+     * @return Closure a closure that can perform the necessary formatting
+     */
+    public def retrieveRepresentationBuilderFromRegistry( String representationName, String actionName, modelClass ) { // note: this method cannot be found if the 3rd argument is typed 'Class'
+        log.debug "RestfulControllerMixin.representationBuilderFor will try to find a custom representationBuilder within the registry"
+        def handler = getResourceRepresentationRegistry().get( representationName, modelClass )
+        switch( actionName ) {
+            case 'list'   : return (Closure) handler?.listRenderer
+            case 'show'   : return (Closure) handler?.singleRenderer
+            case 'create' : return (Closure) handler?.singleRenderer
+            case 'update' : return (Closure) handler?.singleRenderer
+            default       : return null
+            // note: currently 'delete' is not supported with custom rendering..
+        }
+    }
+
+
 // ------------------------------------------- Controller Actions -------------------------------------
 
 
@@ -166,11 +206,12 @@ class RestfulControllerMixin {
             def successReturnMap = [ success: true, 
                                      data: entity,
                                      refBase: refBase( request ),
+                                     supplementalData: entity.hasSupplementalProperties() ? entity.supplementalProperties : null,
                                      message:  localizer( code: 'default.created.message',
                                                           args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
                                                                   entity.id ] ) ]
             this.response.status = 201 // the 'created' code
-            def result = representationiBuilderFor( "create" ).call( successReturnMap )
+            def result = representationBuilderFor( "create" ).call( successReturnMap )
             log.debug  "${this.class.simpleName}.create will render $result"
             render result
         }
@@ -198,11 +239,12 @@ class RestfulControllerMixin {
             def successReturnMap = [ success: true, 
                                      data: entity, 
                                      refBase: refBase( request ),
+                                     supplementalData: entity.hasSupplementalProperties() ? entity.supplementalProperties : null,
                                      message:  localizer( code: 'default.updated.message',
                                                           args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ),
                                                                   entity.id ] ) ]
             this.response.status = 200
-            def result = representationiBuilderFor( "update" ).call( successReturnMap )
+            def result = representationBuilderFor( "update" ).call( successReturnMap )
             log.debug "${this.class.simpleName}.update will render $result"
             render result
         }
@@ -238,7 +280,7 @@ class RestfulControllerMixin {
                                                           args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
                                                                   params.id ] ) ]
             this.response.status = 200 
-            def result = representationiBuilderFor( "destroy" ).call( successReturnMap )
+            def result = representationBuilderFor( "destroy" ).call( successReturnMap )
             log.debug "${this.class.simpleName}.destroy will render $result"
             render result
         }
@@ -269,10 +311,11 @@ class RestfulControllerMixin {
             def successReturnMap = [ success: true, 
                                      data: entity, 
                                      refBase: refBase( request ),
+                                     supplementalData: entity.hasSupplementalProperties() ? entity.supplementalProperties : null,
                                      message:  localizer( code: 'default.show.message',
                                                           args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
             this.response.status = 200
-            def result = representationiBuilderFor( "show" ).call( successReturnMap )
+            def result = representationBuilderFor( "show" ).call( successReturnMap )
             log.debug "${this.class.simpleName}.show will render $result"
             render result
         }
@@ -289,7 +332,8 @@ class RestfulControllerMixin {
         }
     } 
         
-        
+
+    // TODO: Add support for supplemental data when returning lists of entities
     def list = { 
 
         log.trace "${this.class.simpleName}.list invoked with params $params and format $request.format"
@@ -310,7 +354,7 @@ class RestfulControllerMixin {
                                      message: localizer( code: 'default.list.message',
                                                          args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
             this.response.status = 200
-            def result = representationiBuilderFor( "list" ).call( successReturnMap )
+            def result = representationBuilderFor( "list" ).call( successReturnMap )
             log.debug "${this.class.simpleName}.list will render $result"
             render result
         }
@@ -348,16 +392,14 @@ class RestfulControllerMixin {
      * @return Map a populated params map
      */
     private Map extractParams() {
-        Closure extractor
-        if (this.class.metaClass.respondsTo( this.class, "getParamsExtractor" )) {
+
+        log.debug "extractParams() will now try to find an extractor within the registry"
+        Closure extractor = retrieveParamsExtractorFromRegistry( request?.getHeader( 'Content-Type' ), getDomainClass() )
+        log.debug "extractParams() found an extractor within the registry"
+
+        if (!extractor && this.class.metaClass.respondsTo( this.class, "getParamsExtractor" )) {
             log.debug "extractParams() will first try to use ${this.class}.getParamsExtractor()"
             extractor = this.getParamsExtractor()
-        }
-        if (!extractor) {
-            log.debug "extractParams() will now try to find an extractor within the registry"
-            def handler = getResourceRepresentationRegistry().get( request?.getHeader( 'Content-Type' ), getDomainSimpleName() )
-            extractor = (Closure) handler?.paramsParser
-            log.debug "extractParams() found an extractor within the registry"
         }
         if (!extractor) {
             log.debug "extractParams() will use a default extractor"
@@ -396,27 +438,21 @@ class RestfulControllerMixin {
     }
 
 
-    private Closure representationiBuilderFor( String actionName ) {
-        Closure representationBuilder
-        if (this.class.metaClass.respondsTo( this.class, "getCustomRepresentationBuilder" )) {
-            representationBuilder = this.getCustomRepresentationBuilder( actionName )
-        }
-        if (!representationBuilder) {
-            log.debug "formatForRendering will now try to find an representationBuilder within the registry"
-            def handler = getResourceRepresentationRegistry().get( request?.getHeader( 'Content-Type' ), getDomainSimpleName() )
-            switch( actionName ) {
-                case 'list'   : representationBuilder = (Closure) handler?.listRenderer; break
-                case 'show'   : representationBuilder = (Closure) handler?.singleRenderer; break
-                case 'create' : representationBuilder = (Closure) handler?.singleRenderer; break
-                case 'update' : representationBuilder = (Closure) handler?.singleRenderer; break
-                // note: currently 'delete' is not supported with custom rendering..
+    private Closure representationBuilderFor( String actionName ) {
+        Closure representationBuilder = (Closure) retrieveRepresentationBuilderFromRegistry( request?.getHeader( 'Content-Type' ), actionName, getDomainClass() )
+        if (representationBuilder) {
+            log.debug "RestfulControllerMixin.representationBuilderFor found a custom representationBuilder within the registry"
+        } else {
+            log.debug "RestfulControllerMixin.representationBuilderFor will try to find a custom representationBuilder within the controller itself"
+            if (this.class.metaClass.respondsTo( this.class, "getCustomRepresentationBuilder" )) {
+                representationBuilder = this.getCustomRepresentationBuilder( actionName )
             }
         }
         if (representationBuilder) {
             // we found support for the current request, so we'll set the response content type before returning the representationBuilder
             response.setHeader( "Content-Type", request?.getHeader( 'Content-Type' ) )
         } else {
-            log.debug "formatForRendering() will use a default representationBuilder"
+            log.debug "RestfulControllerMixin.representationBuilderFor did not find any custom representation support, and will use a default representationBuilder"
             // note the defaultrepresentationBuilder will set the appropriate content type
             representationBuilder = defaultRepresentationBuilder
         }

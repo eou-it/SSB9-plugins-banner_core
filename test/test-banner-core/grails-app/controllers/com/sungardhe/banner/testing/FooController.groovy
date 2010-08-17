@@ -37,9 +37,8 @@ class FooController  {
 
 
     public FooRestfulController() {
-        // domainSimpleName = "Foo"   // explicitly set only when not following normal naming conventions for your controller
+        // domainClass = "Foo"        // explicitly set only when not following normal naming conventions for your controller
         // serviceName = "fooService" // explicitly set only when not following normal grails naming conventions
-        log = Logger.getLogger( this.class ) // if we don't set this, logging will be done using a default 'REST API' logger)
     }
 
 
@@ -59,7 +58,7 @@ class FooController  {
     // Render main User Interface page -- note that ALL other actions are provided by the base class. :-)
     def view = {
         render "If I had a UI, I'd render it now!"
-        // Render the main ZUL page supporting this model.  All subseqent requests from this UI will be
+        // Render a UI supporting this model.  All subsequent requests from this UI will be
         // handled by the corresponding 'Composer'.  This is the +only+ action supporting the ZK based user interface.
         // The other actions in this controller support RESTful clients.
     }
@@ -68,14 +67,25 @@ class FooController  {
     // ------------------------------------ Custom Representation Support Methods --------------------------------------
 
 
-    /**
-     * Returns a Closure that can create an appropriate representation for a resource, or null if no support for a needed
-     * representation is available.
-     * @param actionName the controller action for which a custom representation is needed for rendering
-     * @return Closure a closure that can create an appropriate representation of a resource, so that it can be subsequently rendered
-     */
     // Developer note:
+    //
+    // Support for custom resources may be implemented explicitly within your controller by implementing 'getCustomRepresentationBuilder'
+    // and 'getParamsExtractor' methods that return Closures, as shown below.
+    //
+    // Note that generally, it will be best to implement custom representation support outside of this controller, by specifying
+    // the custom handling within the Config.groovy representationHandlerMap map.  The representationHandlerMap map allows for support
+    // to be implemented using either in-line groovy or separate classes.
+    //
+    // The ResourceRepresentationRegistry is used by the mixed-in RESTful actions to attain custom representation support, and
+    // only if it cannot be found will this controller be given the opportunity to provide the support. This allows externalized
+    // configuration to 'override' any hardcoded implementation contained in a controller.
+    //
+    // The following discusses how to expose custom representation support within a controller.  The 'getCustomRepresentationBuilder'
+    // and 'getParamsExtractor' methods must each return a Closure when one is available that can be subsequently used to provide
+    // the needed handling. 
+    //
     // Closures that are returned which can create a custom representation must be applicable for the current request content type.
+    //
     // The closure returned by this method may be able to support multiple content types or just a single content type, but
     // it is the responsibility of this method to return a closure that can create a representation applicable for the current request.
     //
@@ -88,6 +98,12 @@ class FooController  {
     // If neither the registry nor this controller can provide support for a needed representation, the mixed-in action will
     // use default Grails rendering.
     //
+    /**
+     * Returns a Closure that can create an appropriate representation for a resource, or null if no support for a needed
+     * representation is available.
+     * @param actionName the controller action for which a custom representation is needed for rendering
+     * @return Closure a closure that can create an appropriate representation of a resource, so that it can be subsequently rendered
+     */
     public Closure getCustomRepresentationBuilder( String actionName ) {
         log.trace "getCustomRepresentationBuilder() invoked with actionName $actionName, and the request format is ${request.getHeader( 'Content-Type' )}"
 
@@ -95,11 +111,20 @@ class FooController  {
         // in the ResourceRepresentationRegistry instead of here, so this method will return null.  If we didn't need
         // the 'invokedRenderCallbacks' list for testing, we would have ommitted this method completely.
         invokedRenderCallbacks << actionName
-        return null
+
+        // Now we'll return a custom representation builder directly from this class. We'll simply reuse the
+        // support within the ResourceRepresentationRegistry, but that'll be our secret -- as far as the mixed-in RESTful
+        // actions know, we've implemented the support here. (We'll 'support' v0_01 but return support for v0_02)
+        Closure handler = null
+        if (request.getHeader( 'Content-Type' ) == "application/vnd.sungardhe.student.v0.01+xml") {
+            // 'retrieveRendererFromRegistry' method is provided by the RestfulControllerMixin class
+            handler = retrieveRepresentationBuilderFromRegistry( "application/vnd.sungardhe.student.v0.02+xml", actionName, Foo )
+        }
+        handler
     }
 
 
-    // --------------------------- Special 'params' handling & Rendering ---------------------------
+    // --------------------------- Special 'params' handling  ---------------------------
 
 
     // We'll return a closure for any specific content type formats that we explicitly support.
@@ -108,7 +133,14 @@ class FooController  {
     // it's default param extraction.
     //
     public Closure getParamsExtractor() {
-        return null  // we'll return null -- alternatively, we could have ommitted this method completely
+        // For demonstration and testing purposes, we'll hardcode support for 'application/vnd.sungardhe.student.v0.01+xml'
+        // (but this will really leverage the support for v01_02 from the registry, as a convenience)
+        Closure extractor = null
+        if (request.getHeader( 'Content-Type' ) == "application/vnd.sungardhe.student.v0.01+xml") {
+            // 'retrieveParamsExtractorFromRegistry' method is provided by the RestfulControllerMixin class
+            extractor = retrieveParamsExtractorFromRegistry( "application/vnd.sungardhe.student.v0.02+xml", Foo )
+        }
+        extractor
     }
 
 }

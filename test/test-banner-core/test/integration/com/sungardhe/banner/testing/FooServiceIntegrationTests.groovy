@@ -32,8 +32,6 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     
     protected void setUp() {
         formContext = ['STVCOLL'] 
-// Transactional testing is not yet functional -- TODO: Resolve proxy issues preventing use of @Transactional annotation
-//        useTransactions = false   // this is what most tests should do, to ensure declarative transactions        
         assert fooService != null            
         super.setUp()
         tearDownTestFoo( true ) // tearDown should take care of this -- will really only be effective once we stop managing
@@ -201,6 +199,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
+    // TODO: Enable this test (or employ an alternate means to verify support for 'REQUIRES_NEW' transaction propagation)
     @Ignore // Results in an exception:  No value for key [org.hibernate.impl.SessionFactoryImpl@cb8a0c8] bound to thread [main]
     void testUsingRequiresNewTransaction() {
         Foo.withTransaction {

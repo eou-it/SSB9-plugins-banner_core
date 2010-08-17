@@ -38,6 +38,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.transaction.annotation.Transactional
 import com.sungardhe.banner.service.AuditTrailPropertySupportHibernateListener
+import com.sungardhe.banner.representations.ResourceRepresentationRegistry
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access 
@@ -123,6 +124,10 @@ class BannerCoreGrailsPlugin {
 
         sqlExceptionTranslator( org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator, 'Oracle' ) {
             dataSource = ref( dataSource )
+        }
+
+        resourceRepresentationRegistry( ResourceRepresentationRegistry ) { bean ->
+            bean.initMethod = 'init'            
         }
 
         supplementalDataPersistenceManager( SupplementalDataPersistenceManager ) {

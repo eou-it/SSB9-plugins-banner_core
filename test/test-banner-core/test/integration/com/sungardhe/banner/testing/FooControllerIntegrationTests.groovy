@@ -21,16 +21,17 @@ import java.sql.Connection
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 import org.springframework.security.core.context.SecurityContextHolder
-
+import com.sungardhe.banner.supplemental.SupplementalDataPersistenceTestManager
 
 /**
  * Integration test for the Foo controller.
  **/
 class FooControllerIntegrationTests extends BaseIntegrationTestCase {
 
-    def fooService   // injected by Spring
+    def fooService               // injected by Spring
+    def supplementalDataService  // injected by Spring
 
-
+    
     protected void setUp() {
 
         // For testing RESTful APIs, we don't want the default 'controller support' added by our base class.
@@ -48,7 +49,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    void testShowWithJson() {
+    void testShow_Json() {
 
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
@@ -64,15 +65,48 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 1, controller.invokedRenderCallbacks.size()
         assertTrue controller.invokedRenderCallbacks.any { it == 'show' }
         def result = JSON.parse( controller.response.contentAsString )
-        JsonHelper.replaceJSONObjectNULL( result?.data ) // Minimal workaround for Jira Grails-5585; TODO: Remove when Jira is resolved.
-
+        JsonHelper.replaceJSONObjectNULL( result ) // Minimal workaround for Jira Grails-5585; TODO: Remove when Jira is resolved.
         assertEquals "Found id ${result?.data?.id} but expected ${entity.id}", entity.id, result?.data?.id
         assertEquals "Found code ${result?.data?.code} but expected ${entity.code}", entity.code, result?.data?.code
         assertEquals "Found description ${result?.data?.description} but expected ${entity.description}", entity.description, result?.data?.description
+        assertNull result?.supplementalData
     }
 
 
-    void testListWithJson() {
+    void testShowWithSupplementalData_Json() {
+
+        supplementalDataService.appendSupplementalDataConfiguration( [ "com.sungardhe.banner.testing.Foo":
+                                                                            [ testSuppA: [ required: false, dataType: String ],
+                                                                              testSuppB: [ required: false, dataType: boolean ]
+                                                                            ]
+                                                                      ] )
+
+        supplementalDataService.supplementalDataPersistenceManager = new SupplementalDataPersistenceTestManager()
+
+        def entity = new Foo( newFooParamsWithAuditTrailProperties() )
+        entity.testSuppA = "Supplemental property A"
+        save entity
+
+        controller.request.with {
+            method = 'GET'
+            content = "{'id': ${entity.id} }".getBytes()
+            contentType = "application/json"
+            getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
+        }
+        controller.show()
+
+        assertEquals 1, controller.invokedRenderCallbacks.size()
+        assertTrue controller.invokedRenderCallbacks.any { it == 'show' }
+        def result = JSON.parse( controller.response.contentAsString )
+        JsonHelper.replaceJSONObjectNULL( result?.data ) // Minimal workaround for Jira Grails-5585; TODO: Remove when Jira is resolved.
+        assertEquals "Found id ${result?.data?.id} but expected ${entity.id}", entity.id, result?.data?.id
+        assertEquals "Found code ${result?.data?.code} but expected ${entity.code}", entity.code, result?.data?.code
+        assertEquals "Found description ${result?.data?.description} but expected ${entity.description}", entity.description, result?.data?.description
+        assertEquals "Supplemental property A", result?.supplementalData?.testSuppA
+    }
+
+
+    void testList_Json() {
 
         def MAX = 15
         controller.request.with {
@@ -112,7 +146,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    void testInsertWithJson() {
+    void testInsert_Json() {
 
         controller.request.with {
             method = 'POST'
@@ -139,7 +173,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    void testAttemptInsertInvalidEntityWithJson() {
+    void testAttemptInsertInvalidEntity_Json() {
 
         def paramMap = newFooParams()
         paramMap.code = "TOO_LONG"
@@ -166,7 +200,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    void testUpdateWithJson() {
+    void testUpdate_Json() {
 
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
@@ -196,7 +230,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    void testUpdateNotFoundWithJson() {
+    void testUpdateNotFound_Json() {
 
         controller.request.with {
             method = 'PUT'
@@ -215,7 +249,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    void testOptimisticLockWithJson() {
+    void testOptimisticLock_Json() {
 
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
@@ -251,7 +285,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    void testOptimisticLockFailuresTrumpValidationFailuresWithJson() {
+    void testOptimisticLockFailuresTrumpValidationFailures_Json() {
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
         int version = entity.version
@@ -284,7 +318,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    void testUpdateOnlyWhenDirtyWithJson() {
+    void testUpdateOnlyWhenDirty_Json() {
 
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity
@@ -313,7 +347,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    void testDeleteWithJson() {
+    void testDelete_Json() {
 
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
         save entity

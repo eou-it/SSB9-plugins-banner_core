@@ -11,6 +11,7 @@
 package com.sungardhe.banner.representations
 
 import org.apache.log4j.Logger
+import com.sungardhe.banner.configuration.ConfigurationUtils
 
 /**
  * A registry that contains 'handlers' that support specific representations of resources.
@@ -21,19 +22,24 @@ class ResourceRepresentationRegistry {
 
     private final Logger log = Logger.getLogger( getClass() )
 
-    def registryMap // injected by Spring (and subsequently added to during init()), this map contains representation support
-                    // The key must be a MIME type and the value must be a Map, which in turn has a key of the fully qualified
-                    // class name of the model (or other business object that requires support).  Since a MIME type 'may' support
-                    // multiple models, a second map is needed to resolve specific support for a model.
-                    // e.g., [ "application/vnd.sungardhe.student.v0.01+xml": [ "com.sungardhe.banner.testing.Foo": support ]
-                    // where support may be either:
-                    //     a) a Map with 'paramsParser', 'singleRenderer', and 'listRenderer' keys, with in-line Closures as the values
-                    //     b) a string that resolves a Class, which when instantiated will expose the same 'keys' as if it were the map discussed above
+    // Loaded from configuration during initialization, this map contains representation support
+    // The key must be a MIME type and the value must be a Map, which in turn has a key of the fully qualified
+    // class name of the model (or other business object that requires support).  Since a MIME type 'may' support
+    // multiple models, a second map is needed to resolve specific support for a model.
+    // e.g., [ "application/vnd.sungardhe.student.v0.01+xml": [ "com.sungardhe.banner.testing.Foo": support ]
+    // where support may be either:
+    //     a) a Map with 'paramsParser', 'singleRenderer', and 'listRenderer' keys, with in-line Closures as the values
+    //     b) a string that resolves a Class, which when instantiated will expose the same 'keys' as if it were the map discussed above
+    def representationHandlerMap 
 
 
     public void init() {
-        println "ResourceRepresentationRegistry.init() will initialize the internal registryMap of representation parsers and renderers"
-        // TODO: Query the database for additional representation support (i.e., that was registered in the database versus spring configuration)
+        println "ResourceRepresentationRegistry.init() will initialize the internal representationHandlerMap of representation parsers and renderers"
+        representationHandlerMap = ConfigurationUtils.getConfiguration().representationHandlerMap
+        if (!representationHandlerMap) {
+            log.warn "ResourceRepresentationRegistry is empty, thus custom resource representations are not being supported."
+        }
+        log.info  "ResourceRepresentationRegistry initialization is complete."
     }
 
 
@@ -60,16 +66,18 @@ class ResourceRepresentationRegistry {
      * @param modelClass the class of the model, as the key (MIME type) may not be model-specific but a general indicator of 'api version' across many models
      * @return a map containing a paramsParser, singleRenderer, and listRenderer if available
      */
-    def get( String key, String modelClassSimpleName ) {
-        assert registryMap != null
-        def supportForKey = registryMap.get( key )
+    def get( String key, Class modelClass ) {
+        def supportForKey = representationHandlerMap?.get( key )
         if (supportForKey) {
-            def modelSupport = supportForKey.get( modelClassSimpleName )
+            def modelSupport = supportForKey.get( modelClass.name )
+            if (!modelSupport) {
+                modelSupport = supportForKey.get( modelClass.simpleName )                
+            }
             if (modelSupport) {
-                log.debug "Found support for model $modelClassSimpleName and MIME type $key:  $modelSupport"
+                log.debug "Found support for model $modelClass.simpleName and MIME type $key:  $modelSupport"
                 if (modelSupport instanceof Map) {
-                    modelSupport.put("mimeType", key)
-                    modelSupport.put("modelClassSimpleName", modelClassSimpleName)
+                    modelSupport.put( "mimeType", key )
+                    modelSupport.put( "modelClassSimpleName", modelClass.simpleName )
                 }
                 else if (modelSupport instanceof String) {
                     log.warn "Have support but it's a String and I'm not yet implemented to support that!"
@@ -78,7 +86,7 @@ class ResourceRepresentationRegistry {
                 return modelSupport
             }
         }
-        log.debug "No custom representation support found for model ${modelClassSimpleName} and MIME type $key:"
+        log.debug "No custom representation support found for model ${modelClass.simpleName} and MIME type $key:"
         null
     }
 

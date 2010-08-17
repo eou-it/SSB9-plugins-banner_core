@@ -122,6 +122,7 @@ log4j = {
     //         controller - For controllers
     //         domain     - For domain entities
 //  off  'com.sungardhe.banner.testing.FooController'
+    grails.app.controller.FooController
 //  off  'grails.app' // The artefact may be omitted to apply to all artefacts
         
     // Configure logging for other classes (e.g., in src/ or grails-app/utils/) here:
@@ -194,3 +195,53 @@ grails.plugins.springsecurity.interceptUrlMap = [
         '/**': ['ROLE_ANY_FORM_BAN_DEFAULT_M']
 ]
         
+representationHandlerMap =
+    // Note: 'application/vnd.sungardhe.student.v0.01+xml' is supported directly within FooController and is consequently not registered here.
+    //       (although it actually uses the the 'application/vnd.sungardhe.student.v0.02+xml' support found below, for convenience). 
+    [ "application/vnd.sungardhe.student.v0.02+xml":
+        [ "Foo": // prefer to use fully qualified class names, but short names are also handled 
+            [ paramsParser:  { request ->
+                                def xml = request.XML.Foo[0]
+                                def props = [:]
+                                if (xml.@id?.text())                           props.id                 = xml.@id.toInteger()
+                                if (xml.@systemRequiredIndicator?.text())      props.systemRequiredIndicator = xml.@systemRequiredIndicator?.text()
+                                if (xml.@lastModifiedBy?.text())               props.lastModifiedBy     = "${xml.@lastModifiedBy.text()}"
+                                if (xml.@lastModified?.text())                 props.lastModified       = xml.@lastModified.text()
+                                if (xml.@dataOrigin?.text())                   props.dataOrigin         = "${xml.@dataOrigin.text()}"
+                                if (xml.@optimisticLockVersion?.text())        props.version            = xml.@optimisticLockVersion.toInteger()
+
+                                if (xml.Code?.text())                          props.code               = "${xml.Code.text()}"
+                                if (xml.Description?.text())                   props.description        = "${xml.Description.text()}"
+
+                                if (xml.AddressStreetLine1?.text())            props.addressStreetLine1 = xml.AddressStreetLine1?.text()
+                                if (xml.AddressStreetLine2?.text())            props.addressStreetLine2 = xml.AddressStreetLine2?.text()
+                                if (xml.AddressStreetLine3?.text())            props.addressStreetLine3 = xml.AddressStreetLine3?.text()
+                                if (xml.AddressStreetLine4?.text())            props.addressStreetLine4 = xml.AddressStreetLine4?.text()
+                                if (xml.HouseNumber?.text())                   props.houseNumber        = xml.HouseNumber?.text()
+
+                                if (xml.AddressCity?.text())                   props.addressCity        = xml.AddressCity?.text()
+                                if (xml.AddressState?.text())                  props.addressState       = xml.AddressState?.text()
+                                if (xml.AddressCountry?.text())                props.addressCountry     = xml.AddressCountry?.text()
+                                if (xml.AddressZipCode?.text())                props.addressZipCode     = xml.AddressZipCode?.text()
+
+                                if (xml.VoiceResponseMessageNumber?.text())    props.voiceResponseMessageNumber    = xml.VoiceResponseMessageNumber?.text()
+                                if (xml.StatisticsCanadianInstitution?.text()) props.statisticsCanadianInstitution = xml.StatisticsCanadianInstitution?.text()
+                                if (xml.DistrictDivision?.text())              props.districtDivision   = xml.DistrictDivision?.text()
+                                props
+                            },
+              singleRenderer: { renderDataMap -> [ template: "/foo/single.v1.0.xml",
+                                                   model: [ foo: renderDataMap.data, refBase: renderDataMap.refBase ] ] },
+              listRenderer:   { renderDataMap -> [ template: "/foo/list.v1.0.xml",
+                                                   model: [ fooList: renderDataMap.data, totalCount: renderDataMap.totalCount,
+                                                            refBase: renderDataMap.refBase ] ] }
+            ], // end Foo support
+
+            // next model supported by this same MIME type should go here...
+         ],
+
+      // This second example to support v0.02 for Foo use an external groovy file -- please make sure the groovy file is available on the classpath
+      //"application/vnd.sungardhe.student.v0.02+xml":
+      //    [ "Foo": "com.sungardhe.banner.testing.Foo.xml.v0_02" ],  TODO: Implement groovy class that provides support for version 0.02
+
+      // next MIME type would go here
+]

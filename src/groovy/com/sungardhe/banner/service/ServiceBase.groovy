@@ -365,7 +365,7 @@ class ServiceBase {
      * 4) be a map that contains a model instance as the value for a key named 'domainModel'
      * This static method is public so that it may be used within any services that implement their own CRUD methods.
      **/
-    public static def extractParams(domainClass, domainObjectOrMap) {
+    public static def extractParams( domainClass, domainObjectOrMap ) {
         if (isDomainModelInstance( domainClass, domainObjectOrMap )) {
             def paramsMap = domainObjectOrMap.properties
             if (domainObjectOrMap.version) {
@@ -444,22 +444,6 @@ class ServiceBase {
             throw new ApplicationException( domainClass, new NotFoundException( id: id, entityClassName: domainClass.simpleName ) )
         }
         persistentEntity
-    }
-
-
-    // TODO: Remove this method (while it is no longer used by ServiceBase methods, it is being called (now unnecessarily) by other services)
-    @Deprecated // No longer needed as audit trail properties are set via the AuditTrailPropertySupportHibernateListener
-    public static def updateSystemFields( entity ) {
-        if (entity.hasProperty( 'dataOrigin' )) {
-            def dataOrigin = CH.config?.dataOrigin ?: "Banner" // protect from missing configuration
-            entity.dataOrigin = dataOrigin
-        }
-        if (entity.hasProperty( 'lastModifiedBy' )) {
-            entity.lastModifiedBy = SCH.context?.authentication?.principal?.username
-        }
-        if (entity.hasProperty( 'lastModified' )) {
-            entity.lastModified = new Date()
-        }
     }
 
 
