@@ -113,25 +113,17 @@ log4j = {
         additivity = true
     }
 
-    // Configure logging for our grails 'artefacts' aka artifacts -- models, controllers, etc. -- here:
-    // Note: You may use 'grails.app.<artefactType>.ClassName where artefactType is in:
-    //         bootstrap  - For bootstrap classes
-    //         dataSource - For data sources
-    //         tagLib     - For tag libraries
-    //         service    - For service classes
-    //         controller - For controllers
-    //         domain     - For domain entities
-//  off  'com.sungardhe.banner.testing.FooController'
-    grails.app.controller.FooController
-//  off  'grails.app' // The artefact may be omitted to apply to all artefacts
-        
+
     // Configure logging for other classes (e.g., in src/ or grails-app/utils/) here:
 //  off  'com.sungardhe.banner.security'
 //  off  'com.sungardhe.banner.db'
 //  off  'REST API' // a generic logger for controllers if they don't have specific loggers
 //  off  'com.sungardhe.banner.testing' // a specific logger for our test controllers
 //  off  'com.sungardhe.banner.student'
-    
+//    all 'com.sungardhe.banner.testing.FooController'
+    info 'com.sungardhe.banner.representations'
+    info 'com.sungardhe.banner.supplemental.SupplementalDataService'
+
     // Grails framework classes
 //  off    'org.codehaus.groovy.grails.web.servlet'        // controllers
 //  off    'org.codehaus.groovy.grails.web.pages'          // GSP
@@ -146,6 +138,22 @@ log4j = {
 	
 //	off    'grails.plugins.springsecurity'
 //	off    'org.springframework.security'
+
+// Grails provides a convenience for enabling logging within artefacts, using 'grails.app.XXX'.
+// Unfortunately, this configuration is not effective when 'mixing in' methods that perform logging.
+// Therefore, for controllers and services it is recommended that you enable logging using the controller
+// or service class name (see above 'class name' based configurations).  For example:
+//     all  'com.sungardhe.banner.testing.FooController' // turns on all logging for the FooController
+//
+// off 'grails.app' // apply to all artefacts
+// off 'grails.app.<artefactType>.ClassName // where artefactType is in:
+        //  bootstrap  - For bootstrap classes
+        //  dataSource - For data sources
+        //  tagLib     - For tag libraries
+        //  service    // Not effective with mixins -- see comment above
+        //  controller // Not effective with mixins -- see comment above
+        //  domain     - For domain entities
+    
 }
 
 
@@ -200,7 +208,7 @@ representationHandlerMap =
     //       (although it actually uses the the 'application/vnd.sungardhe.student.v0.02+xml' support found below, for convenience). 
     [ "application/vnd.sungardhe.student.v0.02+xml":
         [ "Foo": // prefer to use fully qualified class names, but short names are also handled 
-            [ paramsParser:  { request ->
+            [ paramsExtractor:  { request ->
                                 def xml = request.XML.Foo[0]
                                 def props = [:]
                                 if (xml.@id?.text())                           props.id                 = xml.@id.toInteger()
@@ -229,9 +237,9 @@ representationHandlerMap =
                                 if (xml.DistrictDivision?.text())              props.districtDivision   = xml.DistrictDivision?.text()
                                 props
                             },
-              singleRenderer: { renderDataMap -> [ template: "/foo/single.v1.0.xml",
+              singleBuilder: { renderDataMap -> [ template: "/foo/single.v1.0.xml",
                                                    model: [ foo: renderDataMap.data, refBase: renderDataMap.refBase ] ] },
-              listRenderer:   { renderDataMap -> [ template: "/foo/list.v1.0.xml",
+              collectionBuilder: { renderDataMap -> [ template: "/foo/list.v1.0.xml",
                                                    model: [ fooList: renderDataMap.data, totalCount: renderDataMap.totalCount,
                                                             refBase: renderDataMap.refBase ] ] }
             ], // end Foo support

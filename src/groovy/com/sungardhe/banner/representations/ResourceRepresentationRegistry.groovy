@@ -12,11 +12,17 @@ package com.sungardhe.banner.representations
 
 import org.apache.log4j.Logger
 import com.sungardhe.banner.configuration.ConfigurationUtils
+import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
+import com.sungardhe.banner.exceptions.ApplicationException
 
 /**
  * A registry that contains 'handlers' that support specific representations of resources.
  * When available, a MIME type should be used as the key to the map of handlers supporting
- * a specific representation.
+ * a specific representation. It's configuration must be found in the Grails configuration
+ * (i.e., either in Config.groovy or another configuration file imported into Config.groovy).
+ *
+ * The configuration must look like:
+ * 
  */
 class ResourceRepresentationRegistry {
 
@@ -34,7 +40,6 @@ class ResourceRepresentationRegistry {
 
 
     public void init() {
-        println "ResourceRepresentationRegistry.init() will initialize the internal representationHandlerMap of representation parsers and renderers"
         representationHandlerMap = ConfigurationUtils.getConfiguration().representationHandlerMap
         if (!representationHandlerMap) {
             log.warn "ResourceRepresentationRegistry is empty, thus custom resource representations are not being supported."
@@ -49,7 +54,7 @@ class ResourceRepresentationRegistry {
      *     [ paramsParser: myParamsParserClosure,
      *       singleRenderer: mySingleRendererClosure,
      *       listRenderer: myListRendererClosure,
-     *       mimeType: String,
+     *       representationName: String,
      *       modelClass: Class ]
      * 
      * Here is an example of rendering a single model (e.g., from a 'show' action). Note that
@@ -66,7 +71,7 @@ class ResourceRepresentationRegistry {
      * @param modelClass the class of the model, as the key (MIME type) may not be model-specific but a general indicator of 'api version' across many models
      * @return a map containing a paramsParser, singleRenderer, and listRenderer if available
      */
-    def get( String key, Class modelClass ) {
+    ResourceRepresentationHandler get( String key, Class modelClass ) {
         def supportForKey = representationHandlerMap?.get( key )
         if (supportForKey) {
             def modelSupport = supportForKey.get( modelClass.name )
@@ -76,14 +81,20 @@ class ResourceRepresentationRegistry {
             if (modelSupport) {
                 log.debug "Found support for model $modelClass.simpleName and MIME type $key:  $modelSupport"
                 if (modelSupport instanceof Map) {
-                    modelSupport.put( "mimeType", key )
-                    modelSupport.put( "modelClassSimpleName", modelClass.simpleName )
+                    def handler = [
+                            paramsExtractor:     modelSupport.paramsExtractor,
+                            singleBuilder:       modelSupport.singleBuilder,
+                            collectionBuilder:   modelSupport.collectionBuilder,
+                            representationName:  key,
+                            modelClass:          modelClass
+                        ]
+                    return new ResourceRepresentationHandlerImpl( handler )
                 }
                 else if (modelSupport instanceof String) {
-                    log.warn "Have support but it's a String and I'm not yet implemented to support that!"
-                    return null // TODO: Instantiate class and return closure
+                    log.debug "Will load a handler named $modelSupport from the class loader..."
+                    return handlerNamed( modelClass, modelSupport )
                 }
-                return modelSupport
+                return null
             }
         }
         log.debug "No custom representation support found for model ${modelClass.simpleName} and MIME type $key:"
@@ -91,4 +102,53 @@ class ResourceRepresentationRegistry {
     }
 
 
+    // TODO: Cache the handler for later use, so we don't keep loading the class and instantiating a new object each time...
+    ResourceRepresentationHandler handlerNamed( Class modelClass, String name ) {
+        try {
+            Class handler = AH.getApplication().getClassForName( name )
+            handler.newInstance()
+        } catch (e) {
+            log.error "Could not create a RepresentationHandler named $name due to exception $e"
+            // user's should see a generic 'Ooops, a server error occurred' type message...
+            throw new ApplicationException( modelClass, "@@r1:unknown.banner.api.exception" )
+        }
+    }
+
+}
+
+
+// We need an explicit class versus using groovy ability to 'implement' an interface using a map or closure,
+// as our methods need to return closures that implement other interfaces.  This does not seem to work, so
+// we'll use this concrete implementation instead.
+class ResourceRepresentationHandlerImpl implements ResourceRepresentationHandler  {
+
+    private Closure paramsExtractor
+    private Closure singleBuilder
+    private Closure collectionBuilder
+    private String  representationName
+    private Class   modelClass
+
+    public String getRepresentationName() {
+        representationName
+    }
+
+
+    public Class getModelClass() {
+        modelClass
+    }
+
+
+    public ParamsExtractor paramsExtractor() {
+        paramsExtractor as ParamsExtractor
+    }
+
+
+    public RepresentationBuilder singleBuilder() {
+        singleBuilder as RepresentationBuilder
+    }
+
+
+    public RepresentationBuilder collectionBuilder() {
+        collectionBuilder as RepresentationBuilder
+    }
 }

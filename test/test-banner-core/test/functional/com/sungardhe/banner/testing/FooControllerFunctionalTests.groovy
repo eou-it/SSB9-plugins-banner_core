@@ -176,7 +176,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             headers[ 'Authorization' ] = authHeader()
         }
         assertStatus 200
-        assertEquals 'text/xml', page?.webResponse?.contentType
+        assertEquals 'application/xml', page?.webResponse?.contentType
         def stringContent = page?.webResponse?.contentAsString
         
         def xmlResultMap = new XmlSlurper().parseText( stringContent )
@@ -193,7 +193,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             headers[ 'Authorization' ] = authHeader()
         }
         assertStatus 200
-        assertEquals 'text/xml', page?.webResponse?.contentType
+        assertEquals 'application/xml', page?.webResponse?.contentType
         def stringContent = page?.webResponse?.contentAsString
 
         def xmlResultMap = new XmlSlurper().parseText( stringContent )
@@ -219,7 +219,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                 body { xmlBody }
             }
             assertStatus 201
-            assertEquals 'text/xml', page?.webResponse?.contentType
+            assertEquals 'application/xml', page?.webResponse?.contentType
             def stringContent = page?.webResponse?.contentAsString
             def xmlResultMap = new XmlSlurper().parseText( stringContent )
             def xmlFoos = xmlResultMap.entry.findAll { it.@key.text() == "data" }
@@ -241,7 +241,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                 }
             }
             assertStatus 200
-            assertEquals 'text/xml', page?.webResponse?.contentType
+            assertEquals 'application/xml', page?.webResponse?.contentType
             stringContent = page?.webResponse?.contentAsString
             xmlResultMap = new XmlSlurper().parseText( stringContent )
             xmlFoos = xmlResultMap.entry.findAll { it.@key.text() == "data" }
@@ -260,7 +260,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                 headers[ 'Authorization' ] = authHeader()
             }
             assertStatus 200
-            assertEquals 'text/xml', page?.webResponse?.contentType
+            assertEquals 'application/xml', page?.webResponse?.contentType
             def stringContent = page?.webResponse?.contentAsString
             def xml = new XmlSlurper().parseText( stringContent )
 
@@ -399,7 +399,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                     headers[ 'Authorization' ] = authHeader()
                 }
                 assertStatus 200
-                assertEquals 'text/xml', page?.webResponse?.contentType // we do not currently have a 'custom' delete confirmation message, so no custom MIME type is used here
+                assertEquals 'application/xml', page?.webResponse?.contentType // we do not currently have a 'custom' delete confirmation message, so no custom MIME type is used here
                 def stringContent = page?.webResponse?.contentAsString
                 def xml = new XmlSlurper().parseText( stringContent )
 

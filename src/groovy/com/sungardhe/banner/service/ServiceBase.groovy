@@ -39,7 +39,8 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport
 @Transactional(readOnly = false, propagation = Propagation.REQUIRED )
 class ServiceBase {
 
-    def log = Logger.getLogger( this.class.name )
+    @Lazy // note: Lazy needed here to ensure 'this' refers to the service we're mixed into (if we're mixed in)
+    def log = Logger.getLogger( this.getClass() )
     Class domainClass
 
     Class getDomainClass() {

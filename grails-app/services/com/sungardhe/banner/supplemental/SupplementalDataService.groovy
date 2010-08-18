@@ -11,6 +11,7 @@
 package com.sungardhe.banner.supplemental
 
 import org.hibernate.persister.entity.SingleTableEntityPersister
+import org.apache.log4j.Logger
 
 /**
  * A service used to support persistence of supplemental data.
@@ -18,6 +19,7 @@ import org.hibernate.persister.entity.SingleTableEntityPersister
 class SupplementalDataService { 
 
     static transactional = true
+    private final Logger log = Logger.getLogger( getClass() )
 
     def sessionFactory                     // injected by Spring
     def supplementalDataPersistenceManager // injected by Spring
@@ -44,7 +46,7 @@ class SupplementalDataService {
 //                println( " " + y.getPropertyNames()[j] + " -> " + (y.getPropertyColumnNames( j ).length > 0 ? y.getPropertyColumnNames( j )[ 0 ] : ""))
             } 
         }
-        println "SupplementalDataService initialization complete."
+        log.info "SupplementalDataService initialization complete."
     }
 
     

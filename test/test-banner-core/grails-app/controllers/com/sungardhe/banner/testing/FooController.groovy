@@ -12,6 +12,8 @@ package com.sungardhe.banner.testing
 
 import org.apache.log4j.Logger
 import grails.util.GrailsNameUtils
+import com.sungardhe.banner.representations.RepresentationBuilder
+import com.sungardhe.banner.representations.ParamsExtractor
 
 /**
  * Controller supporting the 'Foo' model that relies on mixed-in RESTful CRUD methods.
@@ -104,7 +106,7 @@ class FooController  {
      * @param actionName the controller action for which a custom representation is needed for rendering
      * @return Closure a closure that can create an appropriate representation of a resource, so that it can be subsequently rendered
      */
-    public Closure getCustomRepresentationBuilder( String actionName ) {
+    public RepresentationBuilder getCustomRepresentationBuilder( String actionName ) {
         log.trace "getCustomRepresentationBuilder() invoked with actionName $actionName, and the request format is ${request.getHeader( 'Content-Type' )}"
 
         // not normally present, this is used solely for testing the framework.  Custom renderers for Foo are registered
@@ -115,12 +117,12 @@ class FooController  {
         // Now we'll return a custom representation builder directly from this class. We'll simply reuse the
         // support within the ResourceRepresentationRegistry, but that'll be our secret -- as far as the mixed-in RESTful
         // actions know, we've implemented the support here. (We'll 'support' v0_01 but return support for v0_02)
-        Closure handler = null
+        RepresentationBuilder builder = null
         if (request.getHeader( 'Content-Type' ) == "application/vnd.sungardhe.student.v0.01+xml") {
             // 'retrieveRendererFromRegistry' method is provided by the RestfulControllerMixin class
-            handler = retrieveRepresentationBuilderFromRegistry( "application/vnd.sungardhe.student.v0.02+xml", actionName, Foo )
+            builder = retrieveRepresentationBuilderFromRegistry( "application/vnd.sungardhe.student.v0.02+xml", actionName, Foo )
         }
-        handler
+        builder
     }
 
 
@@ -132,10 +134,10 @@ class FooController  {
     // the base class will check Spring for a registered handler class, and lastly will fall back to
     // it's default param extraction.
     //
-    public Closure getParamsExtractor() {
+    public ParamsExtractor getParamsExtractor() {
         // For demonstration and testing purposes, we'll hardcode support for 'application/vnd.sungardhe.student.v0.01+xml'
         // (but this will really leverage the support for v01_02 from the registry, as a convenience)
-        Closure extractor = null
+        ParamsExtractor extractor = null
         if (request.getHeader( 'Content-Type' ) == "application/vnd.sungardhe.student.v0.01+xml") {
             // 'retrieveParamsExtractorFromRegistry' method is provided by the RestfulControllerMixin class
             extractor = retrieveParamsExtractorFromRegistry( "application/vnd.sungardhe.student.v0.02+xml", Foo )
