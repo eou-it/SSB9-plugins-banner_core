@@ -9,13 +9,25 @@
  WITHOUT THE WRITTEN PERMISSION OF THE SAID COMPANY
  ****************************************************************************** */
 
+import com.sungardhe.banner.configuration.ApplicationConfigurationUtils as ConfigFinder
+
 import grails.plugins.springsecurity.SecurityConfigType
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
-// You must create a small configuration file that contains your own specific
-// configuration (e.g., URIs, usernames, etc.) and that resides at the location specified here:
+grails.config.locations = [] // leave this initialized to an empty list, and add your locations
+                             // in the APPLICATION CONFIGURATION section below.
+def locationAdder = ConfigFinder.&addLocation.curry( grails.config.locations )
+
+
+// ******************************************************************************
 //
-grails.config.locations = [ "file:${userHome}/.grails/banner_on_grails-local-config.groovy" ]
+//                       +++ APPLICATION CONFIGURATION +++
+//
+// ******************************************************************************
+
+// Developers: You should create a small configuration file that contains your own specific
+// configuration (e.g., URIs, usernames, etc.) and that resides at the location specified here:
+//     ${userHome}/.grails/banner_on_grails-local-config.groovy
 
 /* ***************************** EXAMPLE local file ******************************
 def username = "banproxy"
@@ -39,6 +51,23 @@ myDataSource.url = url
 // myDataSource.url = "jdbc:elvyx://localhost:4448/?elvyx.real_driver=$driver&elvyx.real_jdbc=$url&user=$username&password=$password"
 ********************************************************************************* */
 
+
+// ******************************************************************************
+//
+//                       +++ EXTERNALIZED CONFIGURATION +++
+//
+// ******************************************************************************
+// config locations should be added to the following map. They will be loaded based upon this search order:
+// 1. Load the configuration file if its location was specified on the command line using -DmyEnvName=myConfigLocation
+// 2. Load the configuration file if it exists within the user's .grails directory (i.e., convenient for developers)
+// 3. Load the configuration file if its location was specified as a system environment variable
+//
+// Map [ environment variable or -D command line argument name : file path ]
+[ bannerGrailsAppConfig: "${userHome}/.grails/banner_on_grails-local-config.groovy",
+  customRepresentationConfig: "grails-app/conf/CustomRepresentationConfig.groovy",
+].each { envName, defaultFileName -> locationAdder( envName, defaultFileName ) }
+
+
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
 grails.mime.use.accept.header = false
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
@@ -54,6 +83,8 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       form: 'application/x-www-form-urlencoded',
                       multipartForm: 'multipart/form-data'
                     ]
+
+
 
 // The default codec used to encode data with ${}
 grails.views.default.codec = "html" // none, html, base64  **** Setting this to html will ensure html is escaped, to prevent XSS attack ****
@@ -202,8 +233,11 @@ grails.plugins.springsecurity.interceptUrlMap = [
         '/api/foobar/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
         '/**': ['ROLE_ANY_FORM_BAN_DEFAULT_M']
 ]
-        
-representationHandlerMap =
+
+// Representations officially supported within Banner. Custom representations should not be added to this map,
+// but should instead be added to the 'CustomRepresentationConfig.groovy' file, within a 'customRepresentationHandlerMap'
+// that follows the same structure as the map below.
+bannerRepresentationHandlerMap =
     // Note: 'application/vnd.sungardhe.student.v0.01+xml' is supported directly within FooController and is consequently not registered here.
     //       (although it actually uses the the 'application/vnd.sungardhe.student.v0.02+xml' support found below, for convenience). 
     [ "application/vnd.sungardhe.student.v0.02+xml":
@@ -247,9 +281,9 @@ representationHandlerMap =
             // next model supported by this same MIME type should go here...
          ],
 
-      // This second example to support v0.02 for Foo use an external groovy file -- please make sure the groovy file is available on the classpath
-      //"application/vnd.sungardhe.student.v0.02+xml":
-      //    [ "Foo": "com.sungardhe.banner.testing.Foo.xml.v0_02" ],  TODO: Implement groovy class that provides support for version 0.02
+      // This second example to support v0.03 for Foo use an external groovy file -- please make sure the groovy file is available on the classpath
+      //"application/vnd.sungardhe.student.v0.03+xml":
+      //    [ "Foo": "com.sungardhe.banner.testing.Foo.xml.v0_03" ], 
 
       // next MIME type would go here
 ]

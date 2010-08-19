@@ -18,11 +18,12 @@ import com.sungardhe.banner.exceptions.ApplicationException
 /**
  * A registry that contains 'handlers' that support specific representations of resources.
  * When available, a MIME type should be used as the key to the map of handlers supporting
- * a specific representation. It's configuration must be found in the Grails configuration
- * (i.e., either in Config.groovy or another configuration file imported into Config.groovy).
+ * a specific representation.
  *
- * The configuration must look like:
- * 
+ * Resource representation support may be configured within the bannerRepresentationHandlerMap map
+ * within Config.groovy (for SunGardHE 'standard' representations) and within a customRepresentationHandlerMap
+ * map contained within a specified configuration file. Please see Config.groovy with respect
+ * to support of externalized configuration.
  */
 class ResourceRepresentationRegistry {
 
@@ -35,41 +36,33 @@ class ResourceRepresentationRegistry {
     // e.g., [ "application/vnd.sungardhe.student.v0.01+xml": [ "com.sungardhe.banner.testing.Foo": support ]
     // where support may be either:
     //     a) a Map with 'paramsParser', 'singleRenderer', and 'listRenderer' keys, with in-line Closures as the values
-    //     b) a string that resolves a Class, which when instantiated will expose the same 'keys' as if it were the map discussed above
-    def representationHandlerMap 
+    //     b) a string that is the fully qualified class name of a Class that implements the ResourceRepresentationHandler interface
+    def representationHandlerMap = [:]
 
 
     public void init() {
-        representationHandlerMap = ConfigurationUtils.getConfiguration().representationHandlerMap
-        if (!representationHandlerMap) {
-            log.warn "ResourceRepresentationRegistry is empty, thus custom resource representations are not being supported."
+        def bannerRepresentationHandlerMap = ConfigurationUtils.getConfiguration().bannerRepresentationHandlerMap
+        if (bannerRepresentationHandlerMap) {
+            representationHandlerMap << bannerRepresentationHandlerMap
+        } else {
+            log.error "No externalized Banner resource representations are specified."
+        }
+
+        def customRepresentationHandlerMap = ConfigurationUtils.getConfiguration().customRepresentationHandlerMap
+        if (customRepresentationHandlerMap) {
+            representationHandlerMap << customRepresentationHandlerMap
+        } else {
+            log.warn "No custom resource representations are specified."
         }
         log.info  "ResourceRepresentationRegistry initialization is complete."
     }
 
 
     /**
-     * Returns a Map or object that contains the following handlers if registered.  Keys will only be populated when an appropriate value
-     * needs to be returned.  Note that the return value may be either a Map or an object, but the programming model is the same.
-     *     [ paramsParser: myParamsParserClosure,
-     *       singleRenderer: mySingleRendererClosure,
-     *       listRenderer: myListRendererClosure,
-     *       representationName: String,
-     *       modelClass: Class ]
-     * 
-     * Here is an example of rendering a single model (e.g., from a 'show' action). Note that
-     *     def renderer = registry.get( "application/vnd.sungardhe.student.v0.01+xml" )?.singleRenderer
-     *     if (renderer) {
-     *         // Note that we pass both the MIME type (in case this renderer was implemented to support multiple representations) as
-     *         // well as the 'renderMap' that would have been renderered using the default rendering. See RestfulControllerMixin for
-     *         // details regarding the 'renderMap' convention.
-     *         renderer?.call( "application/vnd.sungardhe.student.v0.01+xml", myRenderMap )
-     *     } else {
-     *         // use another renderer or try default rendering
-     *     }
+     * Returns ResourceRepresentationHandler that can provide a ParamsExtractor and a RepresentationBuilder.
      * @param key the key used to register the handlers, preferably a MIME type
      * @param modelClass the class of the model, as the key (MIME type) may not be model-specific but a general indicator of 'api version' across many models
-     * @return a map containing a paramsParser, singleRenderer, and listRenderer if available
+     * @return ResourceRepresentationHandler a handler that is able to provide a ParamsExtractor and a RepresentationBuilder
      */
     ResourceRepresentationHandler get( String key, Class modelClass ) {
         def supportForKey = representationHandlerMap?.get( key )
@@ -105,15 +98,15 @@ class ResourceRepresentationRegistry {
     // TODO: Cache the handler for later use, so we don't keep loading the class and instantiating a new object each time...
     ResourceRepresentationHandler handlerNamed( Class modelClass, String name ) {
         try {
-            Class handler = AH.getApplication().getClassForName( name )
-            handler.newInstance()
+            Class handler = AH.getApplication().classLoader.loadClass( name )
+            handler.newInstance() as ResourceRepresentationHandler
         } catch (e) {
             log.error "Could not create a RepresentationHandler named $name due to exception $e"
             // user's should see a generic 'Ooops, a server error occurred' type message...
-            throw new ApplicationException( modelClass, "@@r1:unknown.banner.api.exception" )
+            throw new ApplicationException( modelClass, "@@r1:unknown.banner.api.exception@@" )
         }
     }
-
+    
 }
 
 

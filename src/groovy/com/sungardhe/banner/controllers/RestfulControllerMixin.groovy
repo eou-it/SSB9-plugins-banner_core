@@ -46,13 +46,12 @@ import com.sungardhe.banner.representations.ParamsExtractor
  * http://the_host/the_app_name/the_controller/id    DELETE  --> 'destroy' action
  *
  * Controllers that also render GSP/Zul pages are responsible for implementing separate 
- * actions that do not conflict with the RESTful ones. (In general, this is expected 
- * to be limited to a 'view' action, as well as an index action that redirects to the view action.)
- * It is possible, however, to use the mixed-in actions non-RESTfully (by identifying the action
- * within the URL).
+ * actions that do not conflict with the RESTful ones.
+ * Note that it is also possible to use the mixed-in actions non-RESTfully (by identifying the action
+ * within the URL), although that is not a recommend usage.
  *
- * NOTE: URI's containing 'api' will be directed to the appropriate controller 
- * action based upon HTTP method (see UriMappings.groovy).
+ * URI's containing 'api' will be directed to the appropriate controller
+ * action based upon HTTP method (as specified in UriMappings.groovy).
  * These URIs will also be authenticated using BasicAuthentication.
  *
  * URIs that do not have 'api' in their name will be directed to the appropriate action
@@ -61,65 +60,58 @@ import com.sungardhe.banner.representations.ParamsExtractor
  * Any of the default RESTful API actions may be overridden by implementing the action
  * within the specific controller.  They will not be mixed-in if they are already present.
  *
- * Controllers for which this class is mixed-in may implement methods that override the default
- * behavior for request params extraction and rendering as follows:
- *
- *      **** Optional Method: "public Closure getCustomRepresentationBuilder( String actionName )"****
- *
- * If implemented, this method should return a Closure that can create an appropriate representation for the
- * current request.  If there is no Closure that can create an appropriate representation for the current request,
- * the method should return null.
- *
- * Please note, this method must 'NOT' actually perform any rendering, but simply return a Closure that
- * 'can' return an appropriate representation when called, which is ready for rendering.
- *
- * Controllers will usually need to provide closures that are able to return representations that correspond to a
- * a custom MIME type identified in the request. That is, clients may indicate they need a specific representation
- * by using a custom MIME type.
- *
- * The reason this method returns a Closure is so the controller is not forced to implement custom support
- * across the board, but instead can indicate (i.e., by returning a closure) specific individual representations
- * it supports (e.g., perhaps only one custom MIME type is supported, and everything else is handled by
- * the default rendering provided by the injected action).
+ * Custom representations and custom 'params extraction' may be implemented within the controller,
+ * although this custom support may be configured separately (to avoid having to touch the controller
+ * when changing representation support).
  *
  * Custom representations are needed primarily for two situations:
  *    a) The default Grails Converters (for XML or JSON) cannot properly handle a particular complex object.
- *    b) A custom MIME type and versioned XML Schema is employed to provide a stable representation, allowing for
- *       simultaneous support of older and newer versions.
- * It is important to note, the default JSON and XML rendering is simply based upon the Grails Converters,
- * and the JSON and XML structure is subject to change as the domain model classes are modified over time.
+ *       This mixin will use default Grails converters by default.
+ *    b) A custom MIME type and corresponding XML Schema is employed to provide a stable representation, allowing
+ *       for simultaneous support of older and newer representations (versions).
  *
- * Note that the returned closure MUST accept a single argument, which is the map that would have been used for
- * the default rendering.  Please see the actions contained in this class for examples.
+ * The ResourceRepresentationRegistry is used to externalize custom representation support from controllers.
+ * The resource representation support may be configured via the bannerRepresentationHandlerMap contained
+ * within Config.groovy (for SunGardHE built-in representations) and via the customRepresentationHandlerMap
+ * contained within an external configuration (see CustomRepresentationConfig.groovy).
  *
- * IF the controller does not return a closure for a needed representation, the ResourceRepresentationRegistry will
- * be asked for one.  Registering builders within this registry may preclude the need for a controller to implement
- * the 'getCustomRepresentationBuilder' method.  Using the registry is recommended particularly for on-going support,
- * by allowing additional representations to be added without requiring code changes to the controller.
+ * Registering custom representation support within this registry should preclude the need for implementing
+ * custom representation support directly within a controller.  However, custom representation support may
+ * be 'hardcoded' within a controller if that controller exposes the following two methods:
  *
- *                 **** Optional Method: "public Closure getParamsExtractor()" ****
+ *  1)    public RepresentationBuilder getCustomRepresentationBuilder( String actionName ) {...}
  *
- * If implemented, this method should return a closure that can extract request data into a map (that will subsequently be added
- * to the Grails params map) for the specific request.
+ * If implemented, this method should return a RepresentationBuilder that can create an appropriate representation
+ * for the current request.  If there is no RepresentationBuilder that can create an appropriate representation
+ * for the current request, the method should return null.  Returning 'null' indicates that the controller doesn't
+ * explicitly support the representation needed to satisfy the current request.
+ *
+ *  2)   "public ParamsExtractor getParamsExtractor() {...}
+ *
+ * If implemented, this method should return a ParamsExtractor that can extract request data into a map (that will
+ * subsequently be added to the Grails params map by this mixin) for the specific request.
+ *
  * This method, like the method discussed above, should return null if it cannot handle the current request.
  * This method is not needed if the default params extraction suffices, and will usually be necessary when using
  * a 'custom' representation (i.e., a new MIME type) or when the default converters simply cannot handle a complex model.
  *
- * Closures to perform custom params extraction may be registered within the ResourceRepresentationRegistry along with the
- * closures that perform custom rendering.
+ * It is recommended that both the getParamsExtractor() and getCustomRepresentationBuilder(actionName) methods be
+ * thought of as a 'pair' when implementing custom representation support.  That is, it is recommended that if rendering
+ * is configured within the ResourceRepresentationRegistry for a specific representation, the corresponding params
+ * extraction would also be configured within the ResourceRepresentationRegistry.
  *
- * Using the registry is recommended over implementing these methods in your controller.
+ * Using the ResourceRepresentationRegistry is recommended over implementing these two methods in your controller.
  */
 class RestfulControllerMixin {
 
     static allowedMethods = [ show: "GET", list: "GET", create: "POST", update: "PUT", destroy: "DELETE" ]  // ensure RESTful
 
-    Class  domainClass
-    String domainSimpleName
-    String serviceName
+    Class  domainClass      // controllers may explicitly set, otherwise we'll derive based on naming conventions
+    String domainSimpleName // determined from the domainClass, simply cached here for convenience
+    String serviceName      // controllers may explicitly set, otherwise we'll derive based on naming conventions
 
-    def ctx = AH.application.mainContext
-    def resourceRepresentationRegistry // note: the 'get' method will retrieve this when needed, as we cannot inject directly into a mixin
+    def ctx = AH.application.mainContext // The Spring ApplicationContext
+    def resourceRepresentationRegistry   // note: the actions will set this when needed, as we cannot inject directly into a mixin
 
     @Lazy // note: Lazy needed here to ensure 'this' refers to the controller we're mixed into
     def log = Logger.getLogger( this.getClass() ) // This may be overridden by controllers, so the logger is specific to that controller.
@@ -330,10 +322,9 @@ class RestfulControllerMixin {
             render result
         } 
         catch (e) { // CI logging
-            println "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX caught $e"
+            log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
             e.printStackTrace()
             this.response.setStatus( 500 ) 
-            log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
             render( defaultErrorRenderMap( e, entity, 'default.not.shown.message' ) )
         }
     } 
@@ -465,17 +456,20 @@ class RestfulControllerMixin {
         representationBuilder
     }
                  
-    
+
+    // Note that since custom content-types may not have been registered in Config.groovy as an 'xml' format,
+    // we cannot rely on solely on 'request.format' (as the format is 'html' by default, and must be set to
+    // another type).
     private RepresentationBuilder defaultRepresentationBuilder = { Map responseMap ->
-        if (request.format ==~ /.*html.*/) {
+        if (request.getHeader( 'Content-Type' ) ==~ /.*html.*/) {
             response.setHeader( "Content-Type", "application/html" ) 
             return responseMap.toString()
         } 
-        else if (request.format ==~ /.*json.*/) {
+        else if (request.format  ==~ /.*json.*/ || request.getHeader( 'Content-Type' ) ==~ /.*json.*/) {
             response.setHeader( "Content-Type", "application/json" )
             return (responseMap as JSON).toString()
         }
-        else if (request.format ==~ /.*xml.*/) {
+        else if (request.format ==~ /.*xml.*/ || request.getHeader( 'Content-Type' ) ==~ /.*xml.*/) {
             response.setHeader( "Content-Type", "application/xml" ) 
             return (responseMap as XML).toString()
         } 

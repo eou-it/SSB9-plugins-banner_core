@@ -283,8 +283,12 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
     void testList_VND() {
 
-        // we'll test multiple representations within this test method
-        [ 'application/vnd.sungardhe.student.v0.01+xml', 'application/vnd.sungardhe.student.v0.02+xml' ].each { contentType ->
+        // Note this test repeats its assertions for multiple representations.
+        [ 'application/vnd.sungardhe.student.v0.01+xml',
+          'application/vnd.sungardhe.student.v0.02+xml',
+          'application/vnd.whatsamattau.student.v0.01+xml',
+          'application/vnd.whatsamattau.student.v0.02+xml' ].each { contentType ->
+
             def pageSize = 15
             get("/api/foobar?max=$pageSize") {
                 headers[ 'Content-Type' ]  = contentType
@@ -318,8 +322,12 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
     void testShow_VND() {
 
-        // we'll test multiple representations within this test method
-        [ 'application/vnd.sungardhe.student.v0.01+xml', 'application/vnd.sungardhe.student.v0.02+xml' ].each { contentType ->
+        // Note this test repeats its assertions for multiple representations.
+        [ 'application/vnd.sungardhe.student.v0.01+xml',
+          'application/vnd.sungardhe.student.v0.02+xml',
+          'application/vnd.whatsamattau.student.v0.01+xml',
+          'application/vnd.whatsamattau.student.v0.02+xml' ].each { contentType ->
+
             get( "/api/foobar/1" ) {  // 'GET' /api/foobar/id => 'show'
                 headers[ 'Content-Type' ]  = contentType
                 headers[ 'Authorization' ] = authHeader()
@@ -337,14 +345,19 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
 
     // We'll test create, update, and delete within this single test to avoid overhead.
+    // Note this test repeats its assertions for multiple representations.
     void testCreateUpdateAndDelete_VND() {
         def id
 
         // we'll test multiple representations within this test method
-        [ 'application/vnd.sungardhe.student.v0.01+xml', 'application/vnd.sungardhe.student.v0.02+xml' ].each { contentType ->
+        [ 'application/vnd.sungardhe.student.v0.01+xml',
+          'application/vnd.sungardhe.student.v0.02+xml',
+          'application/vnd.whatsamattau.student.v0.01+xml',
+          'application/vnd.whatsamattau.student.v0.02+xml' ].each { contentType ->
+            
             try {
                 post( "/api/foobar" ) {   // 'POST' /api/foobar => 'create'
-                    headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
+                    headers[ 'Content-Type' ] = contentType
                     headers[ 'Authorization' ] = authHeader()
                     body { """
                         <FooInstance apiVersion="1.0">
@@ -357,7 +370,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                     }
                 }
                 assertStatus 201
-                assertEquals 'application/vnd.sungardhe.student.v0.01+xml', page?.webResponse?.contentType
+                assertEquals contentType, page?.webResponse?.contentType
                 def stringContent = page?.webResponse?.contentAsString
                 def xml = new XmlSlurper().parseText( stringContent )
 
@@ -370,7 +383,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                 assertEquals "Expected foo with code '#W' but got: ${xml.Foo[0]?.Code[0].text()}", '#W', xml.Foo[0]?.Code[0].text()
 
                 put( "/api/foobar/$id" ) {  // 'PUT' /api/foobar => 'update'
-                    headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
+                    headers[ 'Content-Type' ] = contentType
                     headers[ 'Authorization' ] = authHeader()
                     body { """
                         <FooInstance apiVersion="1.0">
@@ -382,7 +395,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                     }
                 }
                 assertStatus 200
-                assertEquals 'application/vnd.sungardhe.student.v0.01+xml', page?.webResponse?.contentType
+                assertEquals contentType, page?.webResponse?.contentType
                 stringContent = page?.webResponse?.contentAsString
                 xml = new XmlSlurper().parseText( stringContent )
 
@@ -395,7 +408,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             }
             finally {
                 delete( "/api/foobar/$id" ) {
-                    headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
+                    headers[ 'Content-Type' ] = contentType
                     headers[ 'Authorization' ] = authHeader()
                 }
                 assertStatus 200
@@ -406,7 +419,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                 assertTrue "Response not as expected: ${xml}", "${xml}" ==~ /.*true.*/
 
                 get( "/api/foobar/$id" ) {  // 'GET' /api/foobar/id => 'show'
-                    headers[ 'Content-Type' ] = 'application/vnd.sungardhe.student.v0.01+xml'
+                    headers[ 'Content-Type' ] = contentType
                     headers[ 'Authorization' ] = authHeader()
                 }
                 assertStatus 404

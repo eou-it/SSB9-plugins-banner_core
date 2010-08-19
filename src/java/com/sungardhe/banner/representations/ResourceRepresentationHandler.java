@@ -10,8 +10,6 @@
  ****************************************************************************** */
 package com.sungardhe.banner.representations;
 
-import java.util.Map;
-
 
 /**
  * A resource representation handler is responsible for both 'params extraction' and representation formatting
