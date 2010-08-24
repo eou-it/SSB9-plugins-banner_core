@@ -13,4 +13,5 @@
     <g:if test="${foo?.voiceResponseMessageNumber}"><VoiceResponseMessageNumber>${foo?.voiceResponseMessageNumber}</VoiceResponseMessageNumber></g:if>
     <g:if test="${foo?.statisticsCanadianInstitution}"><StatisticsCanadianInstitution>${foo?.statisticsCanadianInstitution}</StatisticsCanadianInstitution></g:if>
     <g:if test="${foo?.districtDivision}"><DistrictDivision>${foo?.districtDivision}</DistrictDivision></g:if>
+    <Ref>${refBase}/${foo?.id}</Ref>
 </Foo>

@@ -14,6 +14,7 @@ import grails.converters.JSON
 import grails.converters.XML
 import javax.xml.transform.stream.StreamSource
 
+
 /**
  * Functional tests of the Foo Controller.
  */
@@ -25,7 +26,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
         super.setUp()
     }
 
-
+    
     // --------------------- Test HTML Representation, non-RESTfully ------------------------
 
 
@@ -289,10 +290,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
     }
 
     void testList_sghe_03() {
-        println "TODO: XML created with StreamingMarkupBuilder needs to be validated against a schema!"
-        // We'll exclude schema validation as we are not yet able to correctly set the namespace of the FooList element...
-        // TODO: Handle namespaces in XML so that we can validate it against our schema
-        runTestList_VND( 'application/vnd.sungardhe.student.v0.03+xml', false ) // false = no validation
+        runTestList_VND( 'application/vnd.sungardhe.student.v0.03+xml' )
     }
 
     void testList_whatsamattau_01() {
@@ -394,7 +392,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
         def xml = new XmlSlurper().parseText( stringContent )
 
         assertEquals 'FooInstance', xml.name()
-        assertTrue "Ref element not as expected: ${xml.Ref}", "${xml.Ref}" ==~ /.*test-banner-core\/foo\/1/
+        assertTrue "Ref element not as expected: ${xml.Foo[0]?.Ref}", "${xml.Foo[0]?.Ref}" ==~ /.*test-banner-core\/foo\/1/
         assertEquals "Expected Foo id of '1' but got: ${xml.Foo[0]?.@id.text().toString()}", '1', xml.Foo[0]?.@id.text().toString()
     }
 
@@ -427,8 +425,8 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             assertNotNull "Expected new foo with id but got: ${xml.Foo[0]?.toString()}", xml.Foo[0]?.@id?.text()?.toString()
 
             assertEquals 'FooInstance', xml.name()
-            assertTrue "Ref element not as expected: ${xml.Ref}", "${xml.Ref}" ==~ /.*test-banner-core\/foo.*/
-            def ref = "${xml.Ref}"
+            assertTrue "Ref element not as expected: ${xml.Foo[0]?.Ref}", "${xml.Foo[0]?.Ref}" ==~ /.*test-banner-core\/foo.*/
+            def ref = "${xml.Foo[0]?.Ref}"
             assertEquals "Expected foo with code '#W' but got: ${xml.Foo[0]?.Code[0].text()}", '#W', xml.Foo[0]?.Code[0].text()
 
             put( "/api/foobar/$id" ) {  // 'PUT' /api/foobar => 'update'
@@ -449,7 +447,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             xml = new XmlSlurper().parseText( stringContent )
 
             assertEquals 'FooInstance', xml.name()
-            assertEquals "Ref element after 'update' not the same as that after 'create': ${xml.Ref}", ref, "${xml.Ref}"
+            assertEquals "Ref element after 'update' not the same as that after 'create': ${xml.Foo[0]?.Ref}", ref, "${xml.Foo[0]?.Ref}"
             assertEquals "Expected id $id but got: ${xml.Foo[0]?.@id.text()}", id, xml.Foo[0]?.@id.text().toInteger()
             assertEquals "Expected foo with code '#W' but got: ${xml.Foo[0]?.Code[0].text()}", '#W', xml.Foo[0]?.Code[0].text()
             assertEquals "Expected foo with description 'Updated!' but got: ${xml.Foo[0]?.Description[0].text()}", 'Updated!', xml.Foo[0]?.Description[0].text()

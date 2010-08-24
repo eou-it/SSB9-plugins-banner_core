@@ -36,6 +36,7 @@
            <xs:element name="VoiceResponseMessageNumber" minOccurs="0" maxOccurs="1" type="xs:integer" />
            <xs:element name="StatisticsCanadianInstitution" minOccurs="0" maxOccurs="1" type="xs:string" />
            <xs:element name="DistrictDivision" minOccurs="0" maxOccurs="1" type="xs:string" />
+           <xs:element name="Ref" minOccurs="0" maxOccurs="1" type="xs:string" />
          </xs:sequence>
          <xs:attribute name="id" use="required" type="xs:integer" />
          <xs:attribute name="apiVersion" use="required" type="xs:string" />
