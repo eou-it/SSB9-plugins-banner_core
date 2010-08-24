@@ -346,7 +346,9 @@ class RestfulControllerMixin {
             totalCount = this."$serviceName".count( params )
             def successReturnMap = [ success: true, 
                                      data: entities,
-                                     totalCount: totalCount, 
+                                     totalCount: totalCount,
+                                     pageOffset: params.offset ? params?.offset : 0,
+                                     pageMaxSize: params.max ? params?.max : totalCount,
                                      refBase: refBase( request ),
                                      message: localizer( code: 'default.list.message',
                                                          args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]

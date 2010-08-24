@@ -282,8 +282,8 @@ bannerRepresentationHandlerMap =
          ],
 
       // This second example to support v0.03 for Foo use an external groovy file -- please make sure the groovy file is available on the classpath
-      //"application/vnd.sungardhe.student.v0.03+xml":
-      //    [ "Foo": "com.sungardhe.banner.testing.Foo.xml.v0_03" ], 
+      "application/vnd.sungardhe.student.v0.03+xml":
+          [ "Foo": "com.sungardhe.banner.testing.FooMarkupBuilderBasedRepresentationHandler" ],
 
       // next MIME type would go here
 ]
