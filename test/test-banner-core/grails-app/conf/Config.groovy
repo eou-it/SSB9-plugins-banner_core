@@ -148,8 +148,6 @@ log4j = {
     // Configure logging for other classes (e.g., in src/ or grails-app/utils/) here:
 //  off  'com.sungardhe.banner.security'
 //  off  'com.sungardhe.banner.db'
-//  off  'REST API' // a generic logger for controllers if they don't have specific loggers
-//  off  'com.sungardhe.banner.testing' // a specific logger for our test controllers
 //  off  'com.sungardhe.banner.student'
 //    all 'com.sungardhe.banner.testing.FooController'
     info 'com.sungardhe.banner.representations'
