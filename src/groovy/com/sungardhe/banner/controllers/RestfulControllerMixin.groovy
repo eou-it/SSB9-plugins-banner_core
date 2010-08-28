@@ -194,11 +194,13 @@ class RestfulControllerMixin {
 
     def create = {
         
-        log.trace "${this.class.simpleName}.save invoked with params $params and format $request.format"
+        log.trace "${this.class.simpleName}.create invoked with params $params and format $request.format"
         def extractedParams = extractParams()
         def entity
+        log.trace "${this.class.simpleName}.create will invoke ${serviceName}.create( $extractedParams ) - service"
         try {
-            entity = this."$serviceName".create( extractedParams )
+            entity = this."${getServiceName()}".create( extractedParams )
+	        log.trace "${this.class.simpleName}.create has created entity $entity?.class (id - $entity?.id) and will prepare the response"
             def successReturnMap = [ success: true, 
                                      data: entity,
                                      refBase: refBase( request ),
@@ -206,6 +208,7 @@ class RestfulControllerMixin {
                                      message:  localizer( code: 'default.created.message',
                                                           args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
                                                                   entity.id ] ) ]
+			log.debug  "${this.class.simpleName}.create will create response from map: $successReturnMap"
             this.response.status = 201 // the 'created' code
             def result = representationBuilderFor( "create" ).buildRepresentation( successReturnMap )
             log.debug  "${this.class.simpleName}.create will render $result"
@@ -231,7 +234,7 @@ class RestfulControllerMixin {
         def extractedParams = extractParams()
         def entity
         try {
-            entity = this."$serviceName".update( extractedParams )
+            entity = this."${getServiceName()}".update( extractedParams )
             def successReturnMap = [ success: true, 
                                      data: entity, 
                                      refBase: refBase( request ),
@@ -269,7 +272,7 @@ class RestfulControllerMixin {
         // Note that a HTTP DELETE will not have a body, and we should not attempt to extract JSON out of the request.
         // Instead, we should expect the 'id' to be mapped for us, as it is provided as part of the URI.
         try {
-            this."$serviceName".delete( params )
+            this."${getServiceName()}".delete( params )
             def successReturnMap = [ success: true, 
                                      data: null, 
                                      message:  localizer( code: 'default.deleted.message',
@@ -303,7 +306,7 @@ class RestfulControllerMixin {
             log.warn "show() required explicit extraction of params -- this is normally not needed as the id is provided within the URI"
         }
         try {
-            entity = this."$serviceName".read( params.id )
+            entity = this."${getServiceName()}".read( params.id )
             def successReturnMap = [ success: true, 
                                      data: entity, 
                                      refBase: refBase( request ),
@@ -342,8 +345,8 @@ class RestfulControllerMixin {
         def entities
         def totalCount
         try {
-            entities = this."$serviceName".list( params )
-            totalCount = this."$serviceName".count( params )
+            entities = this."${getServiceName()}".list( params )
+            totalCount = this."${getServiceName()}".count( params )
             def successReturnMap = [ success: true, 
                                      data: entities,
                                      totalCount: totalCount,
@@ -392,16 +395,20 @@ class RestfulControllerMixin {
      */
     private Map extractParams() {
 
-        log.debug "extractParams() will now try to find an extractor within the registry"
+        log.debug "extractParams() will ask the registry for a params extractor supporting content-type ${request?.getHeader( 'Content-Type' )} and domain class ${getDomainClass()}"
         ParamsExtractor extractor = retrieveParamsExtractorFromRegistry( request?.getHeader( 'Content-Type' ), getDomainClass() )
-        log.debug "extractParams() found an extractor within the registry"
-
-        if (!extractor && this.class.metaClass.respondsTo( this.class, "getParamsExtractor" )) {
-            log.debug "extractParams() will first try to use ${this.class}.getParamsExtractor()"
-            extractor = this.getParamsExtractor()
+        
+        if (extractor) {
+	        log.debug "extractParams() found an extractor within the registry"
+        } else {
+            if (this.class.metaClass.respondsTo( this.class, "getParamsExtractor" )) {
+                log.debug "extractParams() will now see if the controller provides support, by calling ${this.class}.getParamsExtractor()"
+                extractor = this.getParamsExtractor()
+            }
         }
+
         if (!extractor) {
-            log.debug "extractParams() will use a default extractor"
+            log.debug "extractParams() did not find a custom params extractor and will attempt to use a default extractor"
             extractor = defaultParamsExtractor
         }
         params << extractor?.extractParams( request )
@@ -418,7 +425,8 @@ class RestfulControllerMixin {
             paramsContent
         }
         else if (request.format ==~ /.*json.*/) {
-            request.JSON.entrySet().each {
+            request.JSON.entrySet()?.each {
+	            log.trace "${this.class.simpleName} has extracted property $it.key with value ${it.value}"
                 paramsContent.put it.key, it.value
             }
             log.debug "${this.class.simpleName} has extracted JSON content from the request and populated params $paramsContent"
@@ -426,6 +434,7 @@ class RestfulControllerMixin {
         }
         else if (request.format ==~ /.*xml.*/) {
             request.XML.children().each {
+	            log.trace "${this.class.simpleName} has extracted property $it.name with value ${it.text()}"
                 paramsContent.put it.name(), it.text()
             }
             log.debug "${this.class.simpleName} has extracted XML content from the request and populated params $paramsContent"
