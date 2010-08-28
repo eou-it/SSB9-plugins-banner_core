@@ -144,7 +144,7 @@ class RestfulControllerMixin {
 
     // refBase is a URL embedded in responses that can be used to access the resource
     String refBase( request ) {
-        "${request.scheme}://${request.serverName}:${request.serverPort}/${grailsApplication.metadata.'app.name'}/${GrailsNameUtils.getPropertyNameRepresentation( domainSimpleName )}"
+        "${request.scheme}://${request.serverName}:${request.serverPort}/${grailsApplication.metadata.'app.name'}/api/${GrailsNameUtils.getPropertyNameRepresentation( domainSimpleName )}"
     }
 
 
