@@ -367,7 +367,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
         assertEquals pageSize, xmlList.Foo.size()
 
         assertEquals '1.0', xmlList.children()[ 0 ].@apiVersion.text().toString()
-        assertTrue "${xmlList.Ref}" ==~ /.*test-banner-core\/foo.*/
+        assertTrue "${xmlList.Ref}" ==~ /.*test-banner-core\/api\/foo.*/
 
         // Now we'll ensure the xml complies it's XML Schema
         // validate will throw exceptions, and the test will fail, if the stringContent doesn't comply with the schema.
@@ -392,7 +392,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
         def xml = new XmlSlurper().parseText( stringContent )
 
         assertEquals 'FooInstance', xml.name()
-        assertTrue "Ref element not as expected: ${xml.Foo[0]?.Ref}", "${xml.Foo[0]?.Ref}" ==~ /.*test-banner-core\/foo\/1/
+        assertTrue "Ref element not as expected: ${xml.Foo[0]?.Ref}", "${xml.Foo[0]?.Ref}" ==~ /.*test-banner-core\/api\/foo\/1/
         assertEquals "Expected Foo id of '1' but got: ${xml.Foo[0]?.@id.text().toString()}", '1', xml.Foo[0]?.@id.text().toString()
     }
 
@@ -425,7 +425,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             assertNotNull "Expected new foo with id but got: ${xml.Foo[0]?.toString()}", xml.Foo[0]?.@id?.text()?.toString()
 
             assertEquals 'FooInstance', xml.name()
-            assertTrue "Ref element not as expected: ${xml.Foo[0]?.Ref}", "${xml.Foo[0]?.Ref}" ==~ /.*test-banner-core\/foo.*/
+            assertTrue "Ref element not as expected: ${xml.Foo[0]?.Ref}", "${xml.Foo[0]?.Ref}" ==~ /.*test-banner-core\/api\/foo.*/
             def ref = "${xml.Foo[0]?.Ref}"
             assertEquals "Expected foo with code '#W' but got: ${xml.Foo[0]?.Code[0].text()}", '#W', xml.Foo[0]?.Code[0].text()
 
