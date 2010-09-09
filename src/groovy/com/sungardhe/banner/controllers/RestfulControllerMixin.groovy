@@ -45,7 +45,7 @@ import com.sungardhe.banner.representations.ParamsExtractor
  * http://the_host/the_app_name/the_controller/id    PUT     --> 'update' action
  * http://the_host/the_app_name/the_controller/id    DELETE  --> 'destroy' action
  *
- * Controllers that also render GSP/Zul pages are responsible for implementing separate 
+ * Controllers that also render GSP/Zul pages are responsible for implementing separate
  * actions that do not conflict with the RESTful ones.
  * Note that it is also possible to use the mixed-in actions non-RESTfully (by identifying the action
  * within the URL), although that is not a recommend usage.
@@ -56,7 +56,7 @@ import com.sungardhe.banner.representations.ParamsExtractor
  *
  * URIs that do not have 'api' in their name will be directed to the appropriate action
  * using non-RESTful conventions (i.e., the action name must be part of the URI).
- * 
+ *
  * Any of the default RESTful API actions may be overridden by implementing the action
  * within the specific controller.  They will not be mixed-in if they are already present.
  *
@@ -114,12 +114,12 @@ class RestfulControllerMixin {
     def resourceRepresentationRegistry   // note: the actions will set this when needed, as we cannot inject directly into a mixin
 
     @Lazy // note: Lazy needed here to ensure 'this' refers to the controller we're mixed into
-    def log = Logger.getLogger( this.getClass() ) // This may be overridden by controllers, so the logger is specific to that controller.
+    def log = Logger.getLogger( this.getClass() ) 
 
 
     // wrap the 'message' invocation within a closure, so it can be passed into an ApplicationException to localize error messages
-    def localizer = { mapToLocalize -> 
-        this.message( mapToLocalize ) 
+    def localizer = { mapToLocalize ->
+        this.message( mapToLocalize )
     }
 
 
@@ -193,7 +193,7 @@ class RestfulControllerMixin {
 
 
     def create = {
-        
+
         log.trace "${this.class.simpleName}.create invoked with params $params and format $request.format"
         def extractedParams = extractParams()
         def entity
@@ -201,12 +201,12 @@ class RestfulControllerMixin {
         try {
             entity = this."${getServiceName()}".create( extractedParams )
 	        log.trace "${this.class.simpleName}.create has created entity $entity?.class (id - $entity?.id) and will prepare the response"
-            def successReturnMap = [ success: true, 
+            def successReturnMap = [ success: true,
                                      data: entity,
                                      refBase: refBase( request ),
                                      supplementalData: entity.hasSupplementalProperties() ? entity.supplementalProperties : null,
                                      message:  localizer( code: 'default.created.message',
-                                                          args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
+                                                          args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ),
                                                                   entity.id ] ) ]
 			log.debug  "${this.class.simpleName}.create will create response from map: $successReturnMap"
             this.response.status = 201 // the 'created' code
@@ -221,22 +221,22 @@ class RestfulControllerMixin {
             render result
         }
         catch (e) { // CI logging
-            this.response.setStatus( 500 ) 
+            this.response.setStatus( 500 )
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
             render( defaultErrorRenderMap( e, entity, 'default.not.created.message' ) )
-        }               
-    }             
-    
-            
-    def update = { 
-        
+        }
+    }
+
+
+    def update = {
+
         log.trace "${this.class.simpleName}.update invoked with params $params and format $request.format"
         def extractedParams = extractParams()
         def entity
         try {
             entity = this."${getServiceName()}".update( extractedParams )
-            def successReturnMap = [ success: true, 
-                                     data: entity, 
+            def successReturnMap = [ success: true,
+                                     data: entity,
                                      refBase: refBase( request ),
                                      supplementalData: entity.hasSupplementalProperties() ? entity.supplementalProperties : null,
                                      message:  localizer( code: 'default.updated.message',
@@ -248,20 +248,20 @@ class RestfulControllerMixin {
             render result
         }
         catch (ApplicationException e) {
-            this.response.setStatus( e.httpStatusCode ) 
+            this.response.setStatus( e.httpStatusCode )
             def result = defaultRepresentationBuilder.buildRepresentation( e.returnMap( localizer ) + [ data: entity ] )
             log.debug "${this.class.simpleName}.update caught ApplicationException and will render $result"
             render result
         }
         catch (e) { // CI logging
-            this.response.setStatus( 500 ) 
+            this.response.setStatus( 500 )
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
             render( defaultErrorRenderMap( e, entity, 'default.not.updated.message' ) )
         }
-    } 
-        
+    }
 
-    def destroy = { 
+
+    def destroy = {
 
         log.trace "${this.class.simpleName}.destroy invoked with params $params and format $request.format"
         if (params?.size() < 1) {
@@ -273,31 +273,31 @@ class RestfulControllerMixin {
         // Instead, we should expect the 'id' to be mapped for us, as it is provided as part of the URI.
         try {
             this."${getServiceName()}".delete( params )
-            def successReturnMap = [ success: true, 
-                                     data: null, 
+            def successReturnMap = [ success: true,
+                                     data: null,
                                      message:  localizer( code: 'default.deleted.message',
-                                                          args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ), 
+                                                          args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ),
                                                                   params.id ] ) ]
-            this.response.status = 200 
+            this.response.status = 200
             def result = representationBuilderFor( "destroy" ).buildRepresentation( successReturnMap )
             log.debug "${this.class.simpleName}.destroy will render $result"
             render result
         }
         catch (ApplicationException e) {
-            this.response.setStatus( e.httpStatusCode ) 
+            this.response.setStatus( e.httpStatusCode )
             def result = defaultRepresentationBuilder.buildRepresentation( e.returnMap( localizer ) )
             log.debug "${this.class.simpleName}.destroy caught ApplicationException and will render $result"
             render result
-        } 
+        }
         catch (e) { // CI logging
-            this.response.setStatus( 500 ) 
+            this.response.setStatus( 500 )
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
             render( defaultErrorRenderMap( e, entity, 'default.not.deleted.message' ) )
         }
-    } 
-        
-        
-    def show = { 
+    }
+
+
+    def show = {
         log.trace "${this.class.simpleName}.show invoked with params $params and format $request.format"
         def entity
 
@@ -307,8 +307,8 @@ class RestfulControllerMixin {
         }
         try {
             entity = this."${getServiceName()}".read( params.id )
-            def successReturnMap = [ success: true, 
-                                     data: entity, 
+            def successReturnMap = [ success: true,
+                                     data: entity,
                                      refBase: refBase( request ),
                                      supplementalData: entity.hasSupplementalProperties() ? entity.supplementalProperties : null,
                                      message:  localizer( code: 'default.show.message',
@@ -323,18 +323,18 @@ class RestfulControllerMixin {
             def result = defaultRepresentationBuilder.buildRepresentation( e.returnMap( localizer ) + [ data: params ] )
             log.debug "${this.class.simpleName}.show caught ApplicationException and will render $result"
             render result
-        } 
+        }
         catch (e) { // CI logging
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
             e.printStackTrace()
-            this.response.setStatus( 500 ) 
+            this.response.setStatus( 500 )
             render( defaultErrorRenderMap( e, entity, 'default.not.shown.message' ) )
         }
-    } 
-        
+    }
+
 
     // TODO: Add support for supplemental data when returning lists of entities
-    def list = { 
+    def list = {
 
         log.trace "${this.class.simpleName}.list invoked with params $params and format $request.format"
         if (params?.size() < 1) {
@@ -347,7 +347,7 @@ class RestfulControllerMixin {
         try {
             entities = this."${getServiceName()}".list( params )
             totalCount = this."${getServiceName()}".count( params )
-            def successReturnMap = [ success: true, 
+            def successReturnMap = [ success: true,
                                      data: entities,
                                      totalCount: totalCount,
                                      pageOffset: params.offset ? params?.offset : 0,
@@ -365,7 +365,7 @@ class RestfulControllerMixin {
             def result = defaultRepresentationBuilder.buildRepresentation( e.returnMap( localizer ) + [ data: params ] )
             log.debug "${this.class.simpleName}.list caught ApplicationException and will render $result"
             render result
-        } 
+        }
         catch (e) { // CI logging
             this.response.setStatus( 500 )
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
@@ -374,7 +374,7 @@ class RestfulControllerMixin {
     }
 
 
-// ----------------------------------- Helper Methods -----------------------------------    
+// ----------------------------------- Helper Methods -----------------------------------
 
 
     private Map defaultErrorRenderMap( e, data, messageCode ) {
@@ -386,7 +386,7 @@ class RestfulControllerMixin {
           underlyingErrorMessage: e.message ]
     }
 
-    
+
     /**
      * Returns a populated params map.
      * If the controller has a 'getParamsExtractor()' method, that extractor will be used. If not,
@@ -397,7 +397,7 @@ class RestfulControllerMixin {
 
         log.debug "extractParams() will ask the registry for a params extractor supporting content-type ${request?.getHeader( 'Content-Type' )} and domain class ${getDomainClass()}"
         ParamsExtractor extractor = retrieveParamsExtractorFromRegistry( request?.getHeader( 'Content-Type' ), getDomainClass() )
-        
+
         if (extractor) {
 	        log.debug "extractParams() found an extractor within the registry"
         } else {
@@ -418,7 +418,7 @@ class RestfulControllerMixin {
 
     // A default params extractor that uses built-in Grails support for parsing JSON and XML.
     private ParamsExtractor defaultParamsExtractor = { request ->
-        
+
         Map paramsContent = [:]
         if (request.format ==~ /.*html.*/) {
             log.debug "${this.class.simpleName} HTML request format will use pre-populated params $params"
@@ -466,27 +466,27 @@ class RestfulControllerMixin {
         }
         representationBuilder
     }
-                 
+
 
     // Note that since custom content-types may not have been registered in Config.groovy as an 'xml' format,
     // we cannot rely on solely on 'request.format' (as the format is 'html' by default, and must be set to
     // another type).
     private RepresentationBuilder defaultRepresentationBuilder = { Map responseMap ->
         if (request.getHeader( 'Content-Type' ) ==~ /.*html.*/) {
-            response.setHeader( "Content-Type", "application/html" ) 
+            response.setHeader( "Content-Type", "application/html" )
             return responseMap.toString()
-        } 
+        }
         else if (request.format  ==~ /.*json.*/ || request.getHeader( 'Content-Type' ) ==~ /.*json.*/) {
             response.setHeader( "Content-Type", "application/json" )
             return (responseMap as JSON).toString()
         }
         else if (request.format ==~ /.*xml.*/ || request.getHeader( 'Content-Type' ) ==~ /.*xml.*/) {
-            response.setHeader( "Content-Type", "application/xml" ) 
+            response.setHeader( "Content-Type", "application/xml" )
             return (responseMap as XML).toString()
-        } 
+        }
         else {
             throw new RuntimeException( "@@r1:com.sungardhe.framework.unsupported_content_type:${request.format}" )
-        }        
+        }
     } as RepresentationBuilder
 
 }

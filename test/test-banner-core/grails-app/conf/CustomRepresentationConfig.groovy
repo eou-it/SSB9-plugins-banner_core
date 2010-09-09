@@ -28,13 +28,13 @@ customRepresentationHandlerMap =
                                 def props = [:]
                                 if (xml.@id?.text())                           props.id                 = xml.@id.toInteger()
                                 if (xml.@systemRequiredIndicator?.text())      props.systemRequiredIndicator = xml.@systemRequiredIndicator?.text()
-                                if (xml.@lastModifiedBy?.text())               props.lastModifiedBy     = "${xml.@lastModifiedBy.text()}"
+                                if (xml.@lastModifiedBy?.text())               props.lastModifiedBy     = xml.@lastModifiedBy.text()
                                 if (xml.@lastModified?.text())                 props.lastModified       = xml.@lastModified.text()
-                                if (xml.@dataOrigin?.text())                   props.dataOrigin         = "${xml.@dataOrigin.text()}"
+                                if (xml.@dataOrigin?.text())                   props.dataOrigin         = xml.@dataOrigin.text()
                                 if (xml.@optimisticLockVersion?.text())        props.version            = xml.@optimisticLockVersion.toInteger()
 
-                                if (xml.Code?.text())                          props.code               = "${xml.Code.text()}"
-                                if (xml.Description?.text())                   props.description        = "${xml.Description.text()}"
+                                if (xml.Code?.text())                          props.code               =  xml.Code.text()
+                                if (xml.Description?.text())                   props.description        = xml.Description.text()
 
                                 if (xml.AddressStreetLine1?.text())            props.addressStreetLine1 = xml.AddressStreetLine1?.text()
                                 if (xml.AddressStreetLine2?.text())            props.addressStreetLine2 = xml.AddressStreetLine2?.text()

@@ -34,7 +34,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport
  * @Transactional annotations are not effective. Consequently, services that mix in this class must
  * ensure they include 'static transactional = true' to ensure they are transactional. For details
  * on how to use this class (by extending from it or by mixing it in), please see 'FooService' developer comments.
- * The FooService, and Foo model, are 'test' artifacts used to test the framework. 
+ * The FooService, and Foo model, are 'test' artifacts used to test the framework.
  */
 @Transactional(readOnly = false, propagation = Propagation.REQUIRED )
 class ServiceBase {
@@ -437,10 +437,17 @@ class ServiceBase {
 
 
     public static def fetch( domainClass, id, log ) {
+        log.debug "Going to fetch a $domainClass using id $id"
         if (id == null) {
             throw new NotFoundException( id: id, entityClassName: domainClass.simpleName )
         }
-        def persistentEntity = domainClass.get(id)
+
+        if (id instanceof String && id.isNumber()) {
+            log.debug "Have a String id of '$id', and will convert it to a long"
+            id = id.toLong()
+        }
+
+        def persistentEntity = domainClass.get( id )
         if (!persistentEntity) {
             throw new ApplicationException( domainClass, new NotFoundException( id: id, entityClassName: domainClass.simpleName ) )
         }
@@ -487,5 +494,5 @@ class ServiceBase {
         }
     }
 
-    
+
 }

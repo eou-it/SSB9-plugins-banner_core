@@ -22,7 +22,7 @@ import com.sungardhe.banner.representations.ParamsExtractor
  *     static List mixInRestActions = [ 'show', 'list', 'create', 'update', 'destroy' ]
  *     def xyzService // injected by Spring
  * These two lines will provide a functioning RESTful controller using default Grails converters
- * for parsing and rendering.  
+ * for parsing and rendering.
  **/
 class FooController  {
 

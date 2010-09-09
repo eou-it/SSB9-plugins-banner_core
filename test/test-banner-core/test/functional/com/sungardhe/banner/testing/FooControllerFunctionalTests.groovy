@@ -26,7 +26,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
         super.setUp()
     }
 
-    
+
     // --------------------- Test HTML Representation, non-RESTfully ------------------------
 
 
@@ -108,7 +108,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                 body { """
                     {
                         "class": "com.sungardhe.banner.testing.Foo",
-                        "description": "No College Designated",
+                        "description": "No Foo Designated",
                         "code": "Z9",
                         "systemRequiredIndicator": "Y",
                     }
@@ -179,7 +179,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
         assertStatus 200
         assertEquals 'application/xml', page?.webResponse?.contentType
         def stringContent = page?.webResponse?.contentAsString
-        
+
         def xmlResultMap = new XmlSlurper().parseText( stringContent )
         def xmlFoo = xmlResultMap.entry.findAll { it.@key.text() == "data" }
         assertEquals "Expected Foo id of '1' but got: ${xmlFoo[0].@id.text().toString()}", '1', xmlFoo[0]?.@id.text().toString()
@@ -224,7 +224,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             def stringContent = page?.webResponse?.contentAsString
             def xmlResultMap = new XmlSlurper().parseText( stringContent )
             def xmlFoos = xmlResultMap.entry.findAll { it.@key.text() == "data" }
-            
+
             // get the id first, so a subsequent failure won't prevent our finally block from deleting this...
             id = xmlFoos[0]?.@id?.text()?.toInteger()
             assertTrue id != null

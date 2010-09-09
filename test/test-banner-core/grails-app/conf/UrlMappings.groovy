@@ -1,9 +1,9 @@
 class UrlMappings {
-    
-    
+
+
     static mappings = {
-        
-  	  
+
+
         // ----------------------- API End Points -----------------------
         // note we don't use ( parseRequest:true ) for APIs as we'll parse manually via 'request.XML' and 'request.JSON'
 
@@ -23,9 +23,9 @@ class UrlMappings {
         "/api/$controller" {
             action = [ GET: "list", POST: "create" ]
         }
-        
+
         "/api/$controller/$id" {
-            action = [ GET: "show", PUT: "update", DELETE: "remove" ]
+            action = [ GET: "show", PUT: "update", DELETE: "destroy" ]
         }
 
 

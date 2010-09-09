@@ -29,26 +29,24 @@ grails.project.dependency.resolution = {
         // uncomment to disable ehcache
         // excludes 'ehcache'
     }
+
     log "error" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
-    repositories {        
+    repositories {
+
+        mavenRepo "http://m038083.sungardhe.com:8081/nexus/content/repositories/releases/"
+        mavenRepo "http://m038083.sungardhe.com:8081/nexus/content/repositories/snapshots/"
+        mavenRepo "http://m038083.sungardhe.com:8081/nexus/content/repositories/thirdparty/"
+
         grailsPlugins()
         grailsHome()
-        grailsCentral() 
-        
-        mavenLocal()
+        grailsCentral()
         mavenCentral()
-	    mavenRepo "http://repository.jboss.org/maven2/"
-	    mavenRepo "http://repository.codehaus.org"
-
-        //mavenRepo "http://snapshots.repository.codehaus.org"
-        //mavenRepo "http://repository.codehaus.org"
-        //mavenRepo "http://download.java.net/maven/2/"
-        //mavenRepo "http://repository.jboss.com/maven2/"
+        mavenRepo "http://repository.jboss.org/maven2/"
+        mavenRepo "http://repository.codehaus.org"
     }
-    dependencies {
-        // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
 
-        // runtime 'mysql:mysql-connector-java:5.1.5'
+    dependencies {
+         build 'org.codehaus.groovy:http-builder:0.5.0'  // needed for FooClient, a script that interacts with the Foo resource
     }
 
 }

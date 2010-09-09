@@ -125,7 +125,7 @@ environments {
 // These properties are populated automatically before an entity is inserted or updated
 // within the database. The lastModifiedBy uses the username of the logged in user,
 // the lastModified uses the current timestamp, and the dataOrigin uses the value
-// specified here:                     
+// specified here:
 dataOrigin = "Banner"
 
 // ******************************************************************************
@@ -150,21 +150,26 @@ log4j = {
 //  off  'com.sungardhe.banner.db'
 //  off  'com.sungardhe.banner.student'
 //    all 'com.sungardhe.banner.testing.FooController'
+//    all 'com.sungardhe.banner.testing.FooService'
+
     info 'com.sungardhe.banner.representations'
     info 'com.sungardhe.banner.supplemental.SupplementalDataService'
+
+//    debug 'org.apache.http.headers'
+//    debug 'org.apache.http.wire'
 
     // Grails framework classes
 //  off    'org.codehaus.groovy.grails.web.servlet'        // controllers
 //  off    'org.codehaus.groovy.grails.web.pages'          // GSP
 //  off    'org.codehaus.groovy.grails.web.sitemesh'       // layouts
-//  off    'org.codehaus.groovy.grails.web.mapping.filter' // URL mapping
-//  off    'org.codehaus.groovy.grails.web.mapping'        // URL mapping
+//  all    'org.codehaus.groovy.grails.web.mapping.filter' // URL mapping
+//  all    'org.codehaus.groovy.grails.web.mapping'        // URL mapping
 //	off    'org.codehaus.groovy.grails.commons'            // core / classloading
 //	off    'org.codehaus.groovy.grails.plugins'            // plugins
 //	off    'org.codehaus.groovy.grails.orm.hibernate'      // hibernate integration
 //	off    'org.springframework'                           // Spring IoC
 //	off    'org.hibernate'                                 // hibernate ORM
-	
+
 //	off    'grails.plugins.springsecurity'
 //	off    'org.springframework.security'
 
@@ -182,7 +187,7 @@ log4j = {
         //  service    // Not effective with mixins -- see comment above
         //  controller // Not effective with mixins -- see comment above
         //  domain     - For domain entities
-    
+
 }
 
 
@@ -191,13 +196,13 @@ log4j = {
 //                       +++ FORM-CONTROLLER MAP +++
 //
 // ******************************************************************************
-// This map relates controllers to the Banner forms that it replaces.  This map 
-// supports 1:1 and 1:M (where a controller supports the functionality of more than 
-// one Banner form.  This map is critical, as it is used by the security framework to 
-// set appropriate Banner security role(s) on a database connection. For example, if a 
-// logged in user navigates to the 'medicalInformation' controller, when a database 
-// connection is attained and the user has the necessary role, the role is enabled 
-// for that user and Banner object. 
+// This map relates controllers to the Banner forms that it replaces.  This map
+// supports 1:1 and 1:M (where a controller supports the functionality of more than
+// one Banner form.  This map is critical, as it is used by the security framework to
+// set appropriate Banner security role(s) on a database connection. For example, if a
+// logged in user navigates to the 'medicalInformation' controller, when a database
+// connection is attained and the user has the necessary role, the role is enabled
+// for that user and Banner object.
 formControllerMap = [
     'foo' : [ 'STVCOLL' ],
 ]
@@ -213,9 +218,9 @@ grails.plugins.springsecurity.filterChain.chainMap = [
 ]
 
 grails.plugins.springsecurity.securityConfigType = SecurityConfigType.InterceptUrlMap
- 
+
 grails.plugins.springsecurity.interceptUrlMap = [
-        '/': ['IS_AUTHENTICATED_ANONYMOUSLY'],      
+        '/': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/zkau/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/zkau**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/login/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
@@ -237,21 +242,21 @@ grails.plugins.springsecurity.interceptUrlMap = [
 // that follows the same structure as the map below.
 bannerRepresentationHandlerMap =
     // Note: 'application/vnd.sungardhe.student.v0.01+xml' is supported directly within FooController and is consequently not registered here.
-    //       (although it actually uses the the 'application/vnd.sungardhe.student.v0.02+xml' support found below, for convenience). 
+    //       (although it actually uses the the 'application/vnd.sungardhe.student.v0.02+xml' support found below, for convenience).
     [ "application/vnd.sungardhe.student.v0.02+xml":
-        [ "Foo": // prefer to use fully qualified class names, but short names are also handled 
+        [ "Foo": // prefer to use fully qualified class names, but short names are also handled
             [ paramsExtractor:  { request ->
                                 def xml = request.XML.Foo[0]
                                 def props = [:]
                                 if (xml.@id?.text())                           props.id                 = xml.@id.toInteger()
                                 if (xml.@systemRequiredIndicator?.text())      props.systemRequiredIndicator = xml.@systemRequiredIndicator?.text()
-                                if (xml.@lastModifiedBy?.text())               props.lastModifiedBy     = "${xml.@lastModifiedBy.text()}"
+                                if (xml.@lastModifiedBy?.text())               props.lastModifiedBy     = xml.@lastModifiedBy.text()
                                 if (xml.@lastModified?.text())                 props.lastModified       = xml.@lastModified.text()
-                                if (xml.@dataOrigin?.text())                   props.dataOrigin         = "${xml.@dataOrigin.text()}"
+                                if (xml.@dataOrigin?.text())                   props.dataOrigin         = xml.@dataOrigin.text()
                                 if (xml.@optimisticLockVersion?.text())        props.version            = xml.@optimisticLockVersion.toInteger()
 
-                                if (xml.Code?.text())                          props.code               = "${xml.Code.text()}"
-                                if (xml.Description?.text())                   props.description        = "${xml.Description.text()}"
+                                if (xml.Code?.text())                          props.code               = xml.Code.text()
+                                if (xml.Description?.text())                   props.description        = xml.Description.text()
 
                                 if (xml.AddressStreetLine1?.text())            props.addressStreetLine1 = xml.AddressStreetLine1?.text()
                                 if (xml.AddressStreetLine2?.text())            props.addressStreetLine2 = xml.AddressStreetLine2?.text()
@@ -272,8 +277,8 @@ bannerRepresentationHandlerMap =
               singleBuilder: { renderDataMap -> [ template: "/foo/single.v1.0.xml",
                                                    model: [ foo: renderDataMap.data, refBase: renderDataMap.refBase ] ] },
               collectionBuilder: { renderDataMap -> [ template: "/foo/list.v1.0.xml",
-                                                   model: [ fooList: renderDataMap.data, totalCount: renderDataMap.totalCount,
-                                                            refBase: renderDataMap.refBase ] ] }
+                                                      model: [ fooList: renderDataMap.data, totalCount: renderDataMap.totalCount,
+                                                               refBase: renderDataMap.refBase ] ] }
             ], // end Foo support
 
             // next model supported by this same MIME type should go here...
