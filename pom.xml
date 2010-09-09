@@ -10,9 +10,9 @@
  NOR USED FOR ANY PURPOSE OTHER THAN THAT WHICH IT IS SPECIFICALLY PROVIDED
  WITHOUT THE WRITTEN PERMISSION OF THE SAID COMPANY
  ****************************************************************************** */
- 
- NOTICE:  This pom file is currently used as the maven-publisher is not picking 
-          up the correct groupId from the *Plugin file. When this is corrected, 
+
+ NOTICE:  This pom file is currently used as the maven-publisher is not picking
+          up the correct groupId from the *Plugin file. When this is corrected,
           this pom will be removed (as it will be auto-generated).
 -->
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.sungardhe</groupId>
   <artifactId>banner-core</artifactId>
-  <version>0.1.14</version>
+  <version>0.1-SNAPSHOT</version>
   <packaging>zip</packaging>
   <description>Common Framework for Banner Modules</description>
   <distributionManagement>
