@@ -20,7 +20,7 @@ environments {
 	}
 	test {
 		dataSource {
-			url = "jdbc:oracle:thin:@winxp-50174ccec:1521:ban83"
+			url = "jdbc:oracle:thin:@localhost:1521:ban83"
 		}
 	}
 	production {

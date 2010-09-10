@@ -131,10 +131,14 @@ class BannerCoreGrailsPlugin {
         }
 
         supplementalDataPersistenceManager( SupplementalDataPersistenceManager ) {
-            dataSource = ref( dataSource )
+            dataSource = ref( dataSource ) 
+		    sessionFactory = ref( sessionFactory ) 
+            supplementalDataService = ref( supplementalDataService )
+
         }
 
         supplementalDataService( SupplementalDataService ) { bean ->
+            dataSource = ref( dataSource )
             sessionFactory = ref( sessionFactory )
             supplementalDataPersistenceManager = ref( supplementalDataPersistenceManager )
             bean.initMethod = 'init'
