@@ -23,6 +23,7 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
     def fooService                     // injected by Spring
     def supplementalDataService        // injected by Spring
     def sessionContext                 // injected by Spring
+	def supplementalDataPersistenceManager // injected by Spring
 
 
     protected void setUp() {
@@ -32,6 +33,7 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
 
 
     protected void tearDown() {
+		supplementalDataService.supplementalDataPersistenceManager = supplementalDataPersistenceManager
         super.tearDown()
     }
 

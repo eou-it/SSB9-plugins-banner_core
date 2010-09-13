@@ -30,6 +30,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
 
     def fooService               // injected by Spring
     def supplementalDataService  // injected by Spring
+	def supplementalDataPersistenceManager // injected by Spring
 
     
     protected void setUp() {
@@ -47,6 +48,12 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.fooService = fooService
         super.setUp()
     }
+	
+	
+	protected void tearDown() {
+		supplementalDataService.supplementalDataPersistenceManager = supplementalDataPersistenceManager
+		super.tearDown()
+	}
 
 
     void testShow_Json() {
@@ -107,6 +114,8 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
 
 
     void testList_Json() {
+		
+		supplementalDataService.supplementalDataPersistenceManager = new SupplementalDataPersistenceTestManager()
 
         def MAX = 15
         controller.request.with {
