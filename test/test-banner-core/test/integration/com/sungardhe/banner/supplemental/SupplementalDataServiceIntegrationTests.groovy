@@ -33,8 +33,11 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
 
 
     protected void tearDown() {
+		//clean up spring-injected persistence manager 
+		supplementalDataService.supplementalDataConfiguration.remove("com.sungardhe.banner.testing.Foo")
 		supplementalDataService.supplementalDataPersistenceManager = supplementalDataPersistenceManager
-        super.tearDown()
+		
+		super.tearDown()
     }
 
 

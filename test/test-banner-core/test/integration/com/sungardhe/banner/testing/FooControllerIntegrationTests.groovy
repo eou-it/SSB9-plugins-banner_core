@@ -51,6 +51,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
 	
 	
 	protected void tearDown() {
+		supplementalDataService.supplementalDataConfiguration.remove("com.sungardhe.banner.testing.Foo")
 		supplementalDataService.supplementalDataPersistenceManager = supplementalDataPersistenceManager
 		super.tearDown()
 	}
