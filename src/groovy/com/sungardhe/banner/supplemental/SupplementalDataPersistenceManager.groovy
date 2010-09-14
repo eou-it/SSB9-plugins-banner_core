@@ -32,9 +32,9 @@ class SupplementalDataPersistenceManager {
 	private final Logger log = Logger.getLogger( getClass() )
 	
 	public def loadSupplementalDataFor( model ) {
-		println "In load: ${model}"
+		    log.info "In load: ${model}"
 		if (!supplementalDataService.supportsSupplementalProperties(model.getClass())) {
-		println "Found No SDE properties for: ${model}"
+			log.info "Found No SDE properties for: ${model}"
 			return		
 		}else{			
 			try {
@@ -83,7 +83,7 @@ class SupplementalDataPersistenceManager {
 					def attrName = "${it[0]}"	
 					myModel."${attrName}" = properties
 					
-					println "Properties: ${properties}"
+					log.info "Properties: ${properties}"
 				}
 				
 				sde."${model.class.name}-${model.id}" = myModel
@@ -92,11 +92,11 @@ class SupplementalDataPersistenceManager {
 				
 				def modelKey = "${model.class.name}-${model.id}"
 				
-				println "Model Key: ${modelKey}"
+				log.info "Model Key: ${modelKey}"
 				
 				if (persistentStore."$modelKey") {
 					model.supplementalProperties = persistentStore."$modelKey".clone()
-					println "Model Key: ${model.supplementalProperties}"
+					log.info "Model Key: ${model.supplementalProperties}"
 				}				
 			}catch (e) {
 				log.error "Failed to load SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
@@ -107,7 +107,7 @@ class SupplementalDataPersistenceManager {
 	
 		
 	public def persistSupplementalDataFor( model ) {
-		println "In persist: ${model}"
+		log.info "In persist: ${model}"
 		def isNumeric = {    
 			def formatter = java.text.NumberFormat.instance    
 			def pos = [0] as java.text.ParsePosition   
@@ -117,12 +117,12 @@ class SupplementalDataPersistenceManager {
 		}
 		
 		if (!supplementalDataService.supportsSupplementalProperties(model.getClass())) {
-			println "Found No SDE properties for: ${model}"
+			log.info "Found No SDE properties for: ${model}"
 			return		
 		}else{			
 			try {
 				
-				println "SDE Properties for model: ${model.supplementalProperties}"
+				log.info "SDE Properties for model: ${model.supplementalProperties}"
 				
 				sql = new Sql(sessionFactory.getCurrentSession().connection())
 				
