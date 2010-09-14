@@ -15,7 +15,6 @@ SendFailures.txt
 .idea
 .idea/**/*
 out/
-grails-banner-core*.zip
 *.sha1
 
 
