@@ -40,6 +40,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     protected void setUp() {
         formContext = ['STVCOLL']
         super.setUp()
+		updateGORSDAVTable()
+		
     }
 
     protected void tearDown() {
@@ -357,5 +359,18 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 				fail( "Did not find expected Invalid Date message, found: ${e.wrappedException.message}") 
 			}			
 		}		
+	}
+	
+	private def updateGORSDAVTable(){
+		def sql
+		try {
+			sql = new Sql( sessionFactory.getCurrentSession().connection() )
+			def rowCount = sql.executeUpdate( """delete gorsdav
+					                             where gorsdav_table_name = 'GTVZIPC'
+					                             and gorsdav_disc > 1
+					                          """)
+		} finally {
+			sql?.close() // note that the test will close the connection, since it's our current session's connection
+		}
 	}
   }
