@@ -32,7 +32,7 @@ class SupplementalDataPersistenceManager {
 	private final Logger log = Logger.getLogger( getClass() )
 	
 	public def loadSupplementalDataFor( model ) {
-		    log.info "In load: ${model}"
+		log.info "In load: ${model}"
 		if (!supplementalDataService.supportsSupplementalProperties(model.getClass())) {
 			log.info "Found No SDE properties for: ${model}"
 			return		
@@ -43,6 +43,7 @@ class SupplementalDataPersistenceManager {
 				def session = sessionFactory.getCurrentSession() 
 				
 				def tableName = sessionFactory.getClassMetadata(model.getClass()).tableName
+				def attributeName
 				
 				def id = model.id
 				
@@ -60,30 +61,60 @@ class SupplementalDataPersistenceManager {
 	                 """
 						)
 				
-				def resultSet = session.createSQLQuery("""
-					SELECT govsdav_attr_name, 
-						   govsdav_attr_reqd_ind, 
-						   govsdav_value_as_char, 
-						   govsdav_disc, 
-						   govsdav_pk_parenttab, govsdav_surrogate_id, govsdav_attr_data_type FROM govsdav WHERE govsdav_table_name= :tableName
+				def resultSetAttributesList = session.createSQLQuery("""
+					SELECT DISTINCT govsdav_attr_name as attrName
+					FROM govsdav WHERE govsdav_table_name= :tableName
 								""").setString("tableName", tableName).list()
+				
 				
 				def myModel =[:]
 				def sde = [:]
-				resultSet.each(){	
-					def properties = [:]
+				
+				resultSetAttributesList.each(){
 					
-					properties.required = it[1]
-					properties.value = it[2]
-					properties.disc = it[3]
-					properties.pkParentTab = it[4]
-					properties.id = it[5]
-					properties.dataType = it[6]
+					attributeName = it
+					def modelProperties = [:]
 					
-					def attrName = "${it[0]}"	
-					myModel."${attrName}" = properties
+					def resultSet = session.createSQLQuery(
+					 """
+					   	SELECT govsdav_attr_name, 
+					   		   govsdav_attr_reqd_ind, 
+					   		   govsdav_value_as_char, 
+					   		   govsdav_disc, 
+					   		   govsdav_pk_parenttab, 
+							   govsdav_surrogate_id, 
+							   govsdav_attr_data_type
+					    FROM govsdav 
+					   	WHERE govsdav_table_name = :tableName
+					   	  AND govsdav_attr_name = :attributeName
+					   	"""
+					     ).setString("tableName", tableName).
+					       setString("attributeName", attributeName).
+						   list()
 					
-					log.info "Properties: ${properties}"
+					resultSet.each(){
+						
+						def properties = [:]
+						
+						properties.required = it[1]
+						properties.value = it[2]
+						
+						if(it[3] == null){
+							properties.disc = 1
+						}else{
+							properties.disc = it[3]
+						}
+						
+						properties.pkParentTab = it[4]
+						properties.id = it[5]
+						properties.dataType = it[6]
+						
+						modelProperties."${properties.disc}" = properties
+						
+						log.info  "Properties: ${modelProperties}"						
+					}
+					
+					myModel."${attributeName}" = modelProperties					
 				}
 				
 				sde."${model.class.name}-${model.id}" = myModel
@@ -105,7 +136,7 @@ class SupplementalDataPersistenceManager {
 		}
 	}
 	
-		
+	
 	public def persistSupplementalDataFor( model ) {
 		log.info "In persist: ${model}"
 		def isNumeric = {    
@@ -134,48 +165,89 @@ class SupplementalDataPersistenceManager {
 				
 				def id
 				def attributeName
-				def disc
+				String disc
 				def parentTab
 				def dataType
 				def value
 				
+				log.info "IN SAVE: "
+				log.info model.supplementalProperties
+				
 				model.supplementalProperties.each{ 
 					
-					def paramMap = it.value
+					log.info "KEY: " + it.key
+					log.info "VALUE: " + it.value
 					
-					id = paramMap.id
+					def map = it.value
 					attributeName = it.key
-					value = paramMap.value
-					disc = paramMap.disc
-					parentTab = paramMap.pkParentTab
 					
-					if (parentTab == null){
-						parentTab = getPk(tableName,model.id)
-					}
-					
-					dataType = paramMap.dataType
-					
-					if (value == null){
-						value = ""
-					}
-					
-					if (disc == null){
-						disc = '1'
-					}
-					
-					// Validation Logic						
-					if (dataType.equals("NUMBER") && !isNumeric(value)){
-						throw new RuntimeException( "Invalid Number" )
-					}else if (dataType.equals("DATE") && !isDateValid(value)){
-						throw new RuntimeException( "Invalid Date" )						
-					}
-					
-					sql.call ("""
+					map.each{
+						
+						def paramMap = it.value						
+						log.info "VALUE: " + it.value
+						
+						id = paramMap.id
+						
+						value = paramMap.value
+						disc = paramMap.disc
+						parentTab = paramMap.pkParentTab
+						
+						if (parentTab == null){
+							parentTab = getPk(tableName,model.id)
+						}
+						
+						dataType = paramMap.dataType
+						
+						if (value == null){
+							value = ""
+						}
+						
+						if (disc == null){
+							disc = "1"
+						}
+						
+						// Validation Logic						
+						if (dataType.equals("NUMBER") && !isNumeric(value)){
+							throw new RuntimeException( "Invalid Number" )
+						}else if (dataType.equals("DATE") && !isDateValid(value)){
+							throw new RuntimeException( "Invalid Date" )						
+						}
+						
+						
+						log.info "*****************************"
+						log.info "id: " + id
+						log.info "tableName:" + tableName
+						log.info "attributeName:" + attributeName
+						log.info "disc: " + disc
+						log.info "parentTab: " + parentTab
+						log.info "dataType: " + dataType
+						log.info "value: " + value
+						log.info "*****************************"
+						
+						
+						/*******************************************************
+						 * This code needs to be disabled. To debug Oracle ROWID
+						 * 
+						 * *****************************************************
+						 sql = new Sql(sessionFactory.getCurrentSession().connection())
+						 sql.call ("""   
+						 declare
+						 l_pkey 	GORSDAV.GORSDAV_PK_PARENTTAB%TYPE;
+						 l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${sdeTableName},${id});
+						 begin
+						 ${Sql.VARCHAR} := l_rowid;
+						 end ;
+						 """
+						 ){key ->						  
+                            log.info "ROWID:" +	key
+						 }
+						 ***************************************************************/
+						
+						sql.call ("""
 						declare
 						   l_pkey 	GORSDAV.GORSDAV_PK_PARENTTAB%TYPE;
 						   l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${sdeTableName},${id});
 						begin
-
 						gp_goksdif.p_set_attribute(
 								   ${tableName}
 								  ,${attributeName}
@@ -188,8 +260,9 @@ class SupplementalDataPersistenceManager {
 
 						end;
 	                          """
-							)
-				}				
+								)
+					}	
+				}
 			}catch (e) {
 				log.error "Failed to save SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
 				throw e
@@ -220,7 +293,7 @@ class SupplementalDataPersistenceManager {
 
 			        end ;
 		    """
-					){key ->						  
+					){key ->						   
 						pk = key	
 						}
 			
@@ -232,7 +305,7 @@ class SupplementalDataPersistenceManager {
 	}
 	
 	
-// ---------------------------- Helper Methods -----------------------------------	
+	// ---------------------------- Helper Methods -----------------------------------	
 	
 	// Number Validation
 	private boolean isValidDateFormats(String dateStr, String...formats){      

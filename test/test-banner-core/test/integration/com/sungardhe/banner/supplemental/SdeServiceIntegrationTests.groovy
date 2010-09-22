@@ -35,13 +35,12 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
     def zipService                     // injected by Spring
     def supplementalDataService        // injected by Spring
     def sessionContext                 // injected by Spring
+	
 
 
     protected void setUp() {
         formContext = ['STVCOLL']
-        super.setUp()
-		updateGORSDAVTable()
-		
+        super.setUp()		
     }
 
     protected void tearDown() {
@@ -119,7 +118,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 			                value:"${it[1]}"])
 		}
 		
-		assertEquals 3, returnList.size()
+		assertEquals 7, returnList.size()
 		
         returnList.each { sdeEntry ->			
 			println sdeEntry.attributeName
@@ -136,9 +135,24 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 	
         def found = Zip.findByCodeAndCity("00001","newcity")
 	    assertTrue found?.hasSupplementalProperties()
-	    assertEquals "comment 1", found.COMMENTS.value
-	    assertEquals "comment 1", found.TEST.value
-	    assertNull    found.NUMBER.value	
+	    assertEquals "comment 1", found.COMMENTS."1".value
+		assertEquals "comment 2", found.COMMENTS."2".value
+		assertEquals "cmment 3", found.COMMENTS."3".value
+		
+	    assertEquals "comment 1", found.TEST."1".value
+		assertEquals "comment 2", found.TEST."2".value
+		assertEquals "comment 3", found.TEST."3".value
+		
+	    assertNull    found.NUMBER."1".value	
+		
+		assertEquals 3, found.supplementalPropertyNames().size()
+		assertTrue 'TEST' in found.supplementalPropertyNames()
+		assertTrue 'NUMBER' in found.supplementalPropertyNames()
+        assertTrue 'COMMENTS' in found.supplementalPropertyNames()
+	
+        assertEquals 3, found.getSupplementalProperties()."TEST".size()
+        assertEquals 3, found.getSupplementalProperties()."COMMENTS".size()
+        assertEquals 1, found.getSupplementalProperties()."NUMBER".size()
       }
 
 
@@ -151,9 +165,9 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 		def found = Zip.findByCodeAndCity("02186","Milton")
 
         assertTrue found?.hasSupplementalProperties()
-		assertNull found.COMMENTS.value
-		assertNull found.TEST.value
-		assertNull found.NUMBER.value	
+		assertNull found.COMMENTS."1".value
+		assertNull found.TEST."1".value
+		assertNull found.NUMBER."1".value	
 	}
 	
 	
@@ -178,21 +192,21 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 		
 		def found = Zip.findByCodeAndCity("00001","newcity")
 		assertTrue found?.hasSupplementalProperties()
-		assertEquals "comment 1", found.COMMENTS.value
-		assertEquals "comment 1", found.TEST.value
-		assertNull    found.NUMBER.value	
+		assertEquals "comment 1", found.COMMENTS."1".value
+		assertEquals "comment 1", found.TEST."1".value
+		assertNull    found.NUMBER."1".value	
 		
 		found.dataOrigin = "test"
-		found.COMMENTS.value = "my comments"
-		found.TEST.value = "my test"
-		found.NUMBER.value = "10"
+		found.COMMENTS."1".value = "my comments"
+		found.TEST."1".value = "my test"
+		found.NUMBER."1".value = "10"
 		
 		save found
 				
 		def updatedSde = Zip.findByCodeAndCity("00001","newcity")
-		assertEquals "my comments", updatedSde.COMMENTS.value
-		assertEquals "my test", updatedSde.TEST.value
-		assertEquals "10", updatedSde.NUMBER.value
+		assertEquals "my comments", updatedSde.COMMENTS."1".value
+		assertEquals "my test", updatedSde.TEST."1".value
+		assertEquals "10", updatedSde.NUMBER."1".value
 		
 	}
 	
@@ -206,18 +220,18 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 		
 		def found = Zip.findByCodeAndCity("00001","newcity")
 		assertTrue found?.hasSupplementalProperties()
-		assertEquals "comment 1", found.COMMENTS.value
-		assertEquals "comment 1", found.TEST.value
-		assertNull    found.NUMBER.value	
+		assertEquals "comment 1", found.COMMENTS."1".value
+		assertEquals "comment 1", found.TEST."1".value
+		assertNull    found.NUMBER."1".value	
 		
 		found.dataOrigin = "foo"
 		
-		found.COMMENTS.value = null
+		found.COMMENTS."1".value = null
 		
 		save found
 		
 		def updatedSde = Zip.findByCodeAndCity("00001","newcity")
-		assertNull "my comments", updatedSde.COMMENTS.value	
+		assertNull "my comments", updatedSde.COMMENTS."1".value	
 	}
 	
 	/**
@@ -229,22 +243,22 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 		assertTrue supplementalDataService.supportsSupplementalProperties( Zip )
 		
 		def found = Zip.findByCodeAndCity("02186","Milton")
-		assertNull found.COMMENTS.value
-		assertNull found.TEST.value
-		assertNull found.NUMBER.value	
+		assertNull found.COMMENTS."1".value
+		assertNull found.TEST."1".value
+		assertNull found.NUMBER."1".value	
 		
 		found.dataOrigin = "foo"
 		
-		found.COMMENTS.value = "my comments"
-		found.TEST.value = "my test"
-		found.NUMBER.value = "10"
+		found.COMMENTS."1".value = "my comments"
+		found.TEST."1".value = "my test"
+		found.NUMBER."1".value = "10"
 		
 		save found
 		
 		def updatedSde = Zip.findByCodeAndCity("02186","Milton")
-		assertEquals "my comments", updatedSde.COMMENTS.value
-		assertEquals "my test", updatedSde.TEST.value
-		assertEquals "10", updatedSde.NUMBER.value
+		assertEquals "my comments", updatedSde.COMMENTS."1".value
+		assertEquals "my test", updatedSde.TEST."1".value
+		assertEquals "10", updatedSde.NUMBER."1".value
 	}
 	
 	/**
@@ -272,16 +286,59 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 		
 		zipFound.dataOrigin = "foo"
 		
-		zipFound.COMMENTS.value = "my comments"
-		zipFound.TEST.value = "my test"
-		zipFound.NUMBER.value = "10"
+		zipFound.COMMENTS."1".value = "my comments"
+		zipFound.TEST."1".value = "my test"
+		zipFound.NUMBER."1".value = "10"
 		
-		save zipFound
+		// crteate new value --> Copy 
+		
+		def propertiesFor2 = [:]
+		
+		propertiesFor2.required = zipFound.TEST."1".required
+		propertiesFor2.value = null
+		propertiesFor2.disc = null
+		
+		propertiesFor2.pkParentTab = zipFound.TEST."1".pkParentTab
+		propertiesFor2.id = zipFound.TEST."1".id
+		propertiesFor2.dataType = zipFound.TEST."1".dataType
+				
+		zipFound.TEST."2" = propertiesFor2
+		
+		// assign values
+		zipFound.TEST."2".disc = "2"
+		zipFound.TEST."2".value = "my test1"
+		
+		
+		def propertiesFor3 = [:]
+		
+		propertiesFor3.required = zipFound.TEST."1".required
+		propertiesFor3.value = null
+		propertiesFor3.disc = null
+		
+		propertiesFor3.pkParentTab = zipFound.TEST."1".pkParentTab
+		propertiesFor3.id = zipFound.TEST."1".id
+		propertiesFor3.dataType = zipFound.TEST."1".dataType
+		
+		// assign values
+		zipFound.TEST."3" = propertiesFor3
+		zipFound.TEST."3".disc = "3"
+		zipFound.TEST."3".value = "my test3"
+		
+        // end 
+		
+		zipService.update( zipFound )		
+        zipService.flush()
+        zipFound.refresh()
 		
 		def updatedSde = Zip.findByCodeAndCity("TT","TT")
-		assertEquals "my comments", updatedSde.COMMENTS.value
-		assertEquals "my test", updatedSde.TEST.value
-		assertEquals "10", updatedSde.NUMBER.value
+		
+		assertEquals "my comments", updatedSde.COMMENTS."1".value
+		
+		assertEquals "my test", updatedSde.TEST."1".value
+		assertEquals "my test1", updatedSde.TEST."2".value
+		assertEquals "my test3", updatedSde.TEST."3".value
+		
+		assertEquals "10", updatedSde.NUMBER."1".value
 	}
 	
 	/**
@@ -306,9 +363,9 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 		assertTrue zipFound?.hasSupplementalProperties()
 				
 		zipFound.dataOrigin = "foo"
-		zipFound.COMMENTS.value = "my comments"
-		zipFound.TEST.value = "my test"
-		zipFound.NUMBER.value = "test"
+		zipFound.COMMENTS."1".value = "my comments"
+		zipFound.TEST."1".value = "my test"
+		zipFound.NUMBER."1".value = "test"
 		
 		zipService.update( zip )			
 		fail("Should have received an error: Invalid Number" )
@@ -343,11 +400,11 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 			assertTrue zipFound?.hasSupplementalProperties()
 				
 			zipFound.dataOrigin = "foo"
-			zipFound.COMMENTS.value = "my comments"
-			zipFound.TEST.value = "my test"
+			zipFound.COMMENTS."1".value = "my comments"
+			zipFound.TEST."1".value = "my test"
 			
-			zipFound.NUMBER.dataType = "DATE" // forced Date
-			zipFound.NUMBER.value = "15-Apr2010" // wrong format
+			zipFound.NUMBER."1".dataType = "DATE" // forced Date
+			zipFound.NUMBER."1".value = "15-Apr2010" // wrong format
 			
 			zipService.update( zip )			
 			fail("Should have received an error: Invalid Date" )
