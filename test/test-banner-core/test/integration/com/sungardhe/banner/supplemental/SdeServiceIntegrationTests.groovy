@@ -139,11 +139,21 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 		assertEquals "comment 2", found.COMMENTS."2".value
 		assertEquals "cmment 3", found.COMMENTS."3".value
 		
+		assertEquals "Enter a comment", found.COMMENTS."1".prompt
+		assertEquals "Enter a comment", found.COMMENTS."2".prompt
+		assertEquals "Enter a comment", found.COMMENTS."3".prompt
+		
+		
 	    assertEquals "comment 1", found.TEST."1".value
 		assertEquals "comment 2", found.TEST."2".value
 		assertEquals "comment 3", found.TEST."3".value
 		
-	    assertNull    found.NUMBER."1".value	
+		assertEquals "Comment 1", found.TEST."1".prompt
+		assertEquals "Comment 2", found.TEST."2".prompt
+		assertEquals "Comment 3", found.TEST."3".prompt
+				
+	    assertNull    found.NUMBER."1".value
+		assertEquals "enter a numbere", found.NUMBER."1".prompt
 		
 		assertEquals 3, found.supplementalPropertyNames().size()
 		assertTrue 'TEST' in found.supplementalPropertyNames()

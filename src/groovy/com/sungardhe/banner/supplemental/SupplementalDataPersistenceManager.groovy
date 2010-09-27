@@ -83,7 +83,8 @@ class SupplementalDataPersistenceManager {
 					   		   govsdav_disc, 
 					   		   govsdav_pk_parenttab, 
 							   govsdav_surrogate_id, 
-							   govsdav_attr_data_type
+							   govsdav_attr_data_type,
+							   REPLACE(govsdav_attr_prompt_disp,'%DISC%',govsdav_disc)
 					    FROM govsdav 
 					   	WHERE govsdav_table_name = :tableName
 					   	  AND govsdav_attr_name = :attributeName
@@ -108,6 +109,7 @@ class SupplementalDataPersistenceManager {
 						properties.pkParentTab = it[4]
 						properties.id = it[5]
 						properties.dataType = it[6]
+						properties.prompt = it[7]
 						
 						modelProperties."${properties.disc}" = properties
 						
@@ -245,7 +247,6 @@ class SupplementalDataPersistenceManager {
 						
 						sql.call ("""
 						declare
-						   l_pkey 	GORSDAV.GORSDAV_PK_PARENTTAB%TYPE;
 						   l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${sdeTableName},${id});
 						begin
 						gp_goksdif.p_set_attribute(
