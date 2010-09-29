@@ -16,13 +16,17 @@ import com.sungardhe.banner.testing.AreaLibrary
 import com.sungardhe.banner.testing.Bar
 
 /**
- * Integration tests of the supplemental data service.
+ * Integration tests of the supplemental data service.  Note that this test contains
+ * tests of the framework that uses a mocked out persistence manager (that simply holds
+ * supplemental data values in memeory.  Please see SdeServiceIntegrationTests that
+ * test the end-to-end supplemental data engine support.
+ * @see SdeServiceIntegrationTests
  */
 class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
 
-    def fooService                     // injected by Spring
-    def supplementalDataService        // injected by Spring
-    def sessionContext                 // injected by Spring
+    def fooService                         // injected by Spring
+    def supplementalDataService            // injected by Spring
+    def sessionContext                     // injected by Spring
 	def supplementalDataPersistenceManager // injected by Spring
 
 
@@ -33,10 +37,10 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
 
 
     protected void tearDown() {
-		//clean up spring-injected persistence manager 
+		//clean up spring-injected persistence manager
 		supplementalDataService.supplementalDataConfiguration.remove("com.sungardhe.banner.testing.Foo")
 		supplementalDataService.supplementalDataPersistenceManager = supplementalDataPersistenceManager
-		
+
 		super.tearDown()
     }
 
@@ -62,7 +66,7 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "I'm supplemental!", foo.suppPropA
 
         def fooToo = new Foo( newTestFooParams() )
-        assertNull fooToo.suppPropA
+        shouldFail( MissingPropertyException ) { fooToo.suppPropA }
         assertFalse fooToo.hasSupplementalProperty( 'suppPropA' )
         assertFalse fooToo.hasSupplementalProperties()
         fooToo.suppPropA = null
@@ -122,7 +126,7 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
 
         foo.supplementalDataContent = [:] // force reset
         foo.refresh()
-        
+
         def found = Foo.get( foo.id )
         assertTrue found?.hasSupplementalProperties()
         assertEquals "Supplemental property A", found.testSuppA
@@ -180,14 +184,14 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
         bar.save()
 
         assertEquals 2, Foo.get( bar.id ).supplementalProperties?.size()
-        
-        assertNull Foo.get( bar.id ).testSuppA
+
+        shouldFail( MissingPropertyException ) { Foo.get( bar.id ).testSuppA }
         assertEquals "My different value!", Foo.get( bar.id ).testSuppB
         assertEquals "Supplemental property C", Foo.get( bar.id ).testSuppC
 
         assertEquals "Supplemental property A", Foo.get( foo.id ).testSuppA
         assertEquals "Supplemental property B", Foo.get( foo.id ).testSuppB
-        assertNull Foo.get( foo.id ).testSuppC
+        shouldFail( MissingPropertyException ) { Foo.get( foo.id ).testSuppC }
     }
 
 
@@ -246,13 +250,13 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
 
         assertEquals 2, Bar.get( bar.id ).supplementalProperties?.size()
 
-        assertNull Bar.get( bar.id ).testSuppA
+        shouldFail( MissingPropertyException ) { Bar.get( bar.id ).testSuppA }
         assertEquals "My different value!", Bar.get( bar.id ).testSuppB
         assertEquals "Supplemental property C", Bar.get( bar.id ).testSuppC
 
         assertEquals "Supplemental property A", Foo.get( foo.id ).testSuppA
         assertEquals "Supplemental property B", Foo.get( foo.id ).testSuppB
-        assertNull Foo.get( foo.id ).testSuppC
+        shouldFail( MissingPropertyException ) { Foo.get( foo.id ).testSuppC }
     }
 
 
@@ -291,7 +295,7 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
           addressState: "TT", addressCountry: "TT", addressZipCode: "TT", systemRequiredIndicator: "N", voiceResponseMessageNumber: 1, statisticsCanadianInstitution: "TT",
           districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT" ]
     }
-    
+
 }
 
 

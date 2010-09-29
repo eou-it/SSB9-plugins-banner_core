@@ -12,16 +12,32 @@
 import com.sungardhe.banner.configuration.ApplicationConfigurationUtils as ConfigFinder
 
 import grails.plugins.springsecurity.SecurityConfigType
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+
 
 grails.config.locations = [] // leave this initialized to an empty list, and add your locations
-                             // in the APPLICATION CONFIGURATION section below.
+                             // in the EXTERNALIZED CONFIGURATION section below.
 def locationAdder = ConfigFinder.&addLocation.curry( grails.config.locations )
 
 
 // ******************************************************************************
 //
-//                       +++ APPLICATION CONFIGURATION +++
+//                       +++ EXTERNALIZED CONFIGURATION +++
+//
+// ******************************************************************************
+// config locations should be added to the following map. They will be loaded based upon this search order:
+// 1. Load the configuration file if its location was specified on the command line using -DmyEnvName=myConfigLocation
+// 2. Load the configuration file if it exists within the user's .grails directory (i.e., convenient for developers)
+// 3. Load the configuration file if its location was specified as a system environment variable
+//
+// Map [ environment variable or -D command line argument name : file path ]
+[ bannerGrailsAppConfig: "${userHome}/.grails/banner_on_grails-local-config.groovy",
+  customRepresentationConfig: "grails-app/conf/CustomRepresentationConfig.groovy",
+].each { envName, defaultFileName -> locationAdder( envName, defaultFileName ) }
+
+
+// ******************************************************************************
+//
+//                    +++ INSTANCE-SPECIFIC CONFIGURATION +++
 //
 // ******************************************************************************
 
@@ -50,22 +66,6 @@ myDataSource.driver = driver
 myDataSource.url = url
 // myDataSource.url = "jdbc:elvyx://localhost:4448/?elvyx.real_driver=$driver&elvyx.real_jdbc=$url&user=$username&password=$password"
 ********************************************************************************* */
-
-
-// ******************************************************************************
-//
-//                       +++ EXTERNALIZED CONFIGURATION +++
-//
-// ******************************************************************************
-// config locations should be added to the following map. They will be loaded based upon this search order:
-// 1. Load the configuration file if its location was specified on the command line using -DmyEnvName=myConfigLocation
-// 2. Load the configuration file if it exists within the user's .grails directory (i.e., convenient for developers)
-// 3. Load the configuration file if its location was specified as a system environment variable
-//
-// Map [ environment variable or -D command line argument name : file path ]
-[ bannerGrailsAppConfig: "${userHome}/.grails/banner_on_grails-local-config.groovy",
-  customRepresentationConfig: "grails-app/conf/CustomRepresentationConfig.groovy",
-].each { envName, defaultFileName -> locationAdder( envName, defaultFileName ) }
 
 
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
@@ -170,8 +170,8 @@ log4j = {
 //	off    'org.springframework'                           // Spring IoC
 //	off    'org.hibernate'                                 // hibernate ORM
 
-//	off    'grails.plugins.springsecurity'
-//	off    'org.springframework.security'
+//	all    'grails.plugins.springsecurity'
+//	all    'org.springframework.security'
 
 // Grails provides a convenience for enabling logging within artefacts, using 'grails.app.XXX'.
 // Unfortunately, this configuration is not effective when 'mixing in' methods that perform logging.
@@ -187,7 +187,6 @@ log4j = {
         //  service    // Not effective with mixins -- see comment above
         //  controller // Not effective with mixins -- see comment above
         //  domain     - For domain entities
-
 }
 
 

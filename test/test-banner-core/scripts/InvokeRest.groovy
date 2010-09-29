@@ -18,37 +18,49 @@ def authString() {
 
 // ************* NOTICE: WORK IN PROCESS -- NOT FULLY FUNCTIONAL **************
 //
-// This script currently supports only 'list', by using GET against a URL without an id.
-// Supplying an id currently results in an exception, as the id isn't mapped correctly.
-// Other methods (POST/PUT/DELETE) are not yet implemented.
+// usage:
+// grails invoke-rest -model=<lower case model name> -httpMethod=<get|post|put|delete> -format=<mime type> -id: 123 -host=<host:port> -body=<file path name>
+// example:
+// grails invoke-rest -model=foo -httpMethod=GET -format=application/vnd.sungardhe.student.v0.03+xml -id=31
+//                                (note http method can be capitalized if desired)
 //
-target( main: "Programmatically interact with a resource, usage: ModelClient model: foo, httpMethod: GET, mimeType: XML, id: 123") {
+target( main: "Programmatically interact with a resource") {
     depends( parseArguments )
 
-    def input = argsMap
-    def modelUriName = input.model ?: 'foo'
-    def httpMethod = input.httpMethod ?: 'GET'
-    def mimeType = input.mimeType ?: 'XML'
-    def id = input.key
+    def host = argsMap.host ?: 'localhost:8080'
+    def modelUriName = argsMap.model ?: 'foo'
+    def httpMethod = argsMap.httpMethod?.toLowerCase() ?: 'get'
+    def format = argsMap.format ?: 'application/xml'
+    def id = argsMap.id
+    def url = "http://$host/test-banner-core/api"
+    def bodyContent
 
-    def url
-    if (id) {
-        url = "http://localhost:8080/test-banner-core/api/$modelUriName/$id"
-    } else {
-        url = "http://localhost:8080/test-banner-core/api/$modelUriName"
+    if (httpMethod == 'post' || httpMethod == 'put') {
+        if (argsMap.body) {
+            bodyContent = new File( argsMap.body ).getText()
+            println "Going to submit body content of: $bodyContent"
+        }
+        else {
+            println "***ERROR: Cannot use $httpMethod without specifying a body"
+            exit( 1 )
+        }
     }
 
     println "Now invoking $httpMethod  $url"
-    println "(requesting content-type $mimeType)"
+    println "(requesting content-type $format)"
 
-    def fooClient = new groovyx.net.http.RESTClient( url )
-    fooClient.contentType = mimeType //'application/vnd.sungardhe.student.v0.01+xml'
-    fooClient.headers = [ Accept: "$mimeType",
-                          'Content-Type': "$mimeType",
-                          Authorization: "${authString()}" ]
+    def restClient = new groovyx.net.http.RESTClient()
+    restClient.uri = url
+    restClient.client.params.setBooleanParameter 'http.protocol.expect-continue', false
+    restClient.contentType = "text/plain"// prevent automatic parsing (we pass what the server will use in the header)
 
-    def response = fooClient.get( path: modelUriName )
+    restClient.auth.basic "grails_user", "u_pick_it"
+    restClient.headers = [ 'Accept': "$format",
+                           'Content-Type': "$format" ]
 
+    // note the 'api' portion must be in both the uri AND the path.  Strange, but it needs to be this way...
+    def path = id ? "api/$modelUriName/$id" : "api/$modelUriName"
+    def response = restClient."${httpMethod.toLowerCase()}"( path: path )
     println "Response from $httpMethod: $response.data"
 }
 
