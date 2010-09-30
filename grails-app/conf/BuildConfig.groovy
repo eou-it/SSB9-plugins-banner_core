@@ -24,7 +24,10 @@ grails.project.dependency.resolution = {
     
     
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
-    
+
+     plugins {
+        compile 'com.sungardhe:spring-security-cas:1.0.2' // Note: Also update version within 'application.properties'=
+    }
     
     distribution = {
          localRepository = ""
@@ -37,7 +40,11 @@ grails.project.dependency.resolution = {
     }  
       
     
-    repositories {        
+    repositories {
+        mavenRepo "http://m038083.sungardhe.com:8081/nexus/content/repositories/releases/"
+        mavenRepo "http://m038083.sungardhe.com:8081/nexus/content/repositories/snapshots/"
+        mavenRepo "http://m038083.sungardhe.com:8081/nexus/content/repositories/thirdparty/"
+        
         grailsPlugins()
         grailsHome()
         grailsCentral() 
