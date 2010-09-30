@@ -39,12 +39,14 @@ import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.transaction.annotation.Transactional
 import com.sungardhe.banner.service.AuditTrailPropertySupportHibernateListener
 import com.sungardhe.banner.representations.ResourceRepresentationRegistry
+import com.sungardhe.banner.security.BannerPreAuthenticatedFilter
+import javax.servlet.Filter
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access
  * for Banner web applications.
- **/
-@Transactional( )
+ * */
+@Transactional()
 class BannerCoreGrailsPlugin {
 
     // Note: the groupId 'should' be used when deploying this plugin via the 'grails maven-deploy --repository=snapshots' command,
@@ -66,11 +68,11 @@ class BannerCoreGrailsPlugin {
     def grailsVersion = "1.3.0 > *"
 
     // the other plugins this plugin depends on
-    def dependsOn = [ 'springSecurityCore': "0.3.1" ]
+    def dependsOn = ['springSecurityCore': '1.0.1']
 
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-        "grails-app/views/error.gsp"
+            "grails-app/views/error.gsp"
     ]
 
     def author = "SunGard Higher Education"
@@ -97,13 +99,13 @@ class BannerCoreGrailsPlugin {
         switch (GrailsUtil.environment) {
             case GrailsApplication.ENV_PRODUCTION:
                 log.info "Will use a dataSource configured via JNDI"
-                underlyingDataSource( JndiObjectFactoryBean ) {
-                   jndiName = "java:comp/env/${ConfigurationHolder.config.myDataSource.jndiName}"
+                underlyingDataSource(JndiObjectFactoryBean) {
+                    jndiName = "java:comp/env/${ConfigurationHolder.config.myDataSource.jndiName}"
                 }
                 break
             default: // we'll use our locally configured dataSource for development and test environments
                 log.info "Using development/test datasource"
-                underlyingDataSource( BasicDataSource ) {
+                underlyingDataSource(BasicDataSource) {
                     maxActive = 5
                     maxIdle = 2
                     defaultAutoCommit = "false"
@@ -115,61 +117,66 @@ class BannerCoreGrailsPlugin {
                 break
         }
 
-        nativeJdbcExtractor( NativeJdbcExtractor )
+        nativeJdbcExtractor(NativeJdbcExtractor)
 
-        dataSource( BannerDataSource ) {
-            underlyingDataSource = ref( underlyingDataSource )
-            nativeJdbcExtractor = ref( nativeJdbcExtractor )
+        dataSource(BannerDataSource) {
+            underlyingDataSource = ref(underlyingDataSource)
+            nativeJdbcExtractor = ref(nativeJdbcExtractor)
         }
 
-        sqlExceptionTranslator( org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator, 'Oracle' ) {
-            dataSource = ref( dataSource )
+        sqlExceptionTranslator(org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator, 'Oracle') {
+            dataSource = ref(dataSource)
         }
 
-        resourceRepresentationRegistry( ResourceRepresentationRegistry ) { bean ->
+        resourceRepresentationRegistry(ResourceRepresentationRegistry) { bean ->
             bean.initMethod = 'init'
         }
 
-        supplementalDataPersistenceManager( SupplementalDataPersistenceManager ) {
-            dataSource = ref( dataSource ) 
-		    sessionFactory = ref( sessionFactory ) 
-            supplementalDataService = ref( supplementalDataService )
+        supplementalDataPersistenceManager(SupplementalDataPersistenceManager) {
+            dataSource = ref(dataSource)
+            sessionFactory = ref(sessionFactory)
+            supplementalDataService = ref(supplementalDataService)
 
         }
 
-        supplementalDataService( SupplementalDataService ) { bean ->
-            dataSource = ref( dataSource )
-            sessionFactory = ref( sessionFactory )
-            supplementalDataPersistenceManager = ref( supplementalDataPersistenceManager )
+        supplementalDataService(SupplementalDataService) { bean ->
+            dataSource = ref(dataSource)
+            sessionFactory = ref(sessionFactory)
+            supplementalDataPersistenceManager = ref(supplementalDataPersistenceManager)
             bean.initMethod = 'init'
         }
 
-        authenticationDataSource( OracleDataSource )
+        authenticationDataSource(OracleDataSource)
 
-        bannerAuthenticationProvider( BannerAuthenticationProvider ) {
-            dataSource = ref( dataSource )
-            authenticationDataSource = ref( authenticationDataSource )
+        bannerAuthenticationProvider(BannerAuthenticationProvider) {
+            dataSource = ref(dataSource)
+            authenticationDataSource = ref(authenticationDataSource)
         }
 
-        authenticationManager( ProviderManager ) {
-            providers = [ bannerAuthenticationProvider ]
+        bannerPreAuthenticatedFilter(BannerPreAuthenticatedFilter) {
+            dataSource = ref(dataSource)
+            authenticationManager = ref(authenticationManager)
         }
 
-        basicAuthenticationEntryPoint( BasicAuthenticationEntryPoint ) {
+        authenticationManager(ProviderManager) {
+            providers = [bannerAuthenticationProvider]
+        }
+
+        basicAuthenticationEntryPoint(BasicAuthenticationEntryPoint) {
             realmName = 'Banner REST API Realm'
         }
 
-       basicAuthenticationFilter( BasicAuthenticationFilter ) {
-            authenticationManager = ref( authenticationManager )
-            authenticationEntryPoint = ref( basicAuthenticationEntryPoint )
+        basicAuthenticationFilter(BasicAuthenticationFilter) {
+            authenticationManager = ref(authenticationManager)
+            authenticationEntryPoint = ref(basicAuthenticationEntryPoint)
         }
 
-        basicExceptionTranslationFilter( ExceptionTranslationFilter ) {
-            authenticationEntryPoint = ref( 'basicAuthenticationEntryPoint' )
-            accessDeniedHandler = ref( 'accessDeniedHandler' )
+        basicExceptionTranslationFilter(ExceptionTranslationFilter) {
+            authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
+            accessDeniedHandler = ref('accessDeniedHandler')
         }
 
-        anonymousProcessingFilter( AnonymousAuthenticationFilter ) {
+        anonymousProcessingFilter(AnonymousAuthenticationFilter) {
             key = 'horizon-anon'
             userAttribute = 'anonymousUser,ROLE_ANONYMOUS'
         }
@@ -186,7 +193,7 @@ class BannerCoreGrailsPlugin {
         // the more granular control of transaction attributes possible with annotations.
         //
         application.serviceClasses.each { serviceArtefact ->
-            def needsCRUD = GCU.getStaticPropertyValue( serviceArtefact.clazz, "defaultCrudMethods" )
+            def needsCRUD = GCU.getStaticPropertyValue(serviceArtefact.clazz, "defaultCrudMethods")
             if (needsCRUD) {
                 serviceArtefact.clazz.mixin ServiceBase
             }
@@ -197,7 +204,7 @@ class BannerCoreGrailsPlugin {
         // Note that if any actions are omitted from this line, they will not be accessible (as they won't be registered)
         // even though they will still be mixed-in.
         application.controllerClasses.each { controllerArtefact ->
-            def neededRestActions = GCU.getStaticPropertyValue( controllerArtefact.clazz, "mixInRestActions" )
+            def neededRestActions = GCU.getStaticPropertyValue(controllerArtefact.clazz, "mixInRestActions")
             if (neededRestActions?.size() > 0) {
                 for (it in neededRestActions) {
                     controllerArtefact.registerMapping it
@@ -217,27 +224,53 @@ class BannerCoreGrailsPlugin {
         }
 
         // inject the logger into every class (Grails only injects this into some artifacts)
-        application.allClasses.each { ->
-            it.metaClass.getLog = { ->
+        application.allClasses.each {->
+            it.metaClass.getLog = {->
                 LogFactory.getLog it
             }
         }
     }
-
 
     // Register Hibernate event listeners.
     def doWithApplicationContext = { applicationContext ->
         def listeners = applicationContext.sessionFactory.eventListeners
 
         def supplementalDataSupportListener = new SupplementalDataHibernateListener()
-        [ 'preDelete', 'postInsert', 'postUpdate', 'postLoad' ].each {
-            addEventTypeListener( listeners, supplementalDataSupportListener, it )
+        ['preDelete', 'postInsert', 'postUpdate', 'postLoad'].each {
+            addEventTypeListener(listeners, supplementalDataSupportListener, it)
         }
 
         def auditTrailSupportListener = new AuditTrailPropertySupportHibernateListener()
-        [ 'preInsert', 'preUpdate' ].each {
-            addEventTypeListener( listeners, auditTrailSupportListener, it )
+        ['preInsert', 'preUpdate'].each {
+            addEventTypeListener(listeners, auditTrailSupportListener, it)
         }
+
+        // Define the spring security filters
+        def authenticationProvider = ConfigurationHolder?.config?.banner.sso.authenticationProvider
+        LinkedHashMap<String, String> filterChain = new LinkedHashMap();
+        switch (authenticationProvider) {
+            case 'cas':
+                filterChain['/api/**'] = 'authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,casAuthenticationFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
+                break
+            case 'external':
+                filterChain['/api/**'] = 'authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,bannerPreAuthenticatedFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
+                break
+            default:
+                filterChain['/api/**'] = 'authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
+                break
+        }
+
+        LinkedHashMap<String, List<Filter>> filterChainMap = new LinkedHashMap();
+        filterChain.each { key, value ->
+            def filters = value.toString().split(',').collect {
+                name -> applicationContext.getBean(name)
+            }
+            filterChainMap[key] = filters
+        }
+        applicationContext.springSecurityFilterChain.filterChainMap = filterChainMap
     }
 
 
@@ -251,13 +284,13 @@ class BannerCoreGrailsPlugin {
     }
 
 
-    def addEventTypeListener( listeners, listener, type ) {
+    def addEventTypeListener(listeners, listener, type) {
         def typeProperty = "${type}EventListeners"
         def typeListeners = listeners."${typeProperty}"
 
-        def expandedTypeListeners = new Object[ typeListeners.length + 1 ]
-        System.arraycopy( typeListeners, 0, expandedTypeListeners, 0, typeListeners.length )
-        expandedTypeListeners[ -1 ] = listener
+        def expandedTypeListeners = new Object[typeListeners.length + 1]
+        System.arraycopy(typeListeners, 0, expandedTypeListeners, 0, typeListeners.length)
+        expandedTypeListeners[-1] = listener
 
         listeners."${typeProperty}" = expandedTypeListeners
     }
