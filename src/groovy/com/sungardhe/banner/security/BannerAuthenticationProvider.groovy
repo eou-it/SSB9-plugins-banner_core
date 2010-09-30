@@ -29,14 +29,15 @@ import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
 import oracle.jdbc.pool.OracleDataSource
-
+import org.jasig.cas.client.util.AbstractCasFilter
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * An authentication provider which authenticates a user by logging into the Banner database.
  */
 public class BannerAuthenticationProvider implements AuthenticationProvider {
 
-    private final Logger log = Logger.getLogger( getClass() )
+    private static final Logger log = Logger.getLogger( getClass() )
 
     def dataSource // injected by Spring
     def authenticationDataSource	// injected by Spring
@@ -45,28 +46,30 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate( Authentication authentication ) {
         
         // Determine if database authentication is successful
-        def conn
-        try {
-            log.trace "BannerAuthenticationProvider jdbc url = ${dataSource.getUrl()}"
-            authenticationDataSource.setURL( dataSource.getUrl() )
-            conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
-            log.trace "BannerAuthenticationProvider successfully authenticated user ${authentication.name} against data source ${dataSource.getUrl()}"
-        } catch (SQLException e) {
-            log.error "BannerAuthenticationProvider not able to authenticate user ${authentication.name} against data source ${dataSource.getUrl()} due to exception $e.message"
-            return null
-        } finally {
-            conn?.close()
+         // Determine if database authentication is successful
+        def dbUser
+        def authenticationProvider = CH?.config.banner.sso.authenticationProvider
+        log.trace "authenticationProvider = $authenticationProvider"
+
+        if ('cas'.equalsIgnoreCase(authenticationProvider)) {
+            dbUser = casAuthentication()
+        } else {
+            dbUser = defaultAuthentication(authentication)
         }
-        
+
+        if (!dbUser) {
+            log.warn "BannerAuthenticationProvider was not able to authenticate user."
+            return null
+        }
+
         try {
-            Collection<GrantedAuthority> authorities = determineAuthorities( authentication.name.toUpperCase() )
+            Collection<GrantedAuthority> authorities = determineAuthorities( dbUser.toUpperCase(), dataSource )
 
             if (authorities) {
-                def user = new BannerUser( authentication.name, authentication.credentials as String,
-                                           true /*enabled*/, true /*accountNonExpired*/,
-                                           true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities as Collection )
-                def token = new BannerAuthenticationToken( user )
-
+                def user = new BannerUser(dbUser, authentication.credentials as String,
+                        true /*enabled*/, true /*accountNonExpired*/,
+                        true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities as Collection)
+                def token = new BannerAuthenticationToken(user)
                 log.trace "BannerAuthenticationProvider.authenticate authenticated user $user and is returning a token $token"
                 token
             }
@@ -81,13 +84,59 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         }
     }
 
+    private def defaultAuthentication(Authentication authentication) {
+        def conn
+
+        try {
+            log.trace "BannerAuthenticationProvider jdbc url = ${dataSource.url}"
+            authenticationDataSource.setURL(dataSource.url)
+            conn = authenticationDataSource.getConnection(authentication.name, authentication.credentials)
+            log.trace "BannerAuthenticationProvider successfully authenticated user ${authentication.name} against data source ${dataSource.url}"
+        } catch (SQLException e) {
+            println e
+            log.error "BannerAuthenticationProvider not able to authenticate user ${authentication.name} against data source ${dataSource.url} due to exception $e.message"
+            return null
+        } finally {
+            conn?.close()
+        }
+        authentication.name
+    }
+
+    private def casAuthentication() {
+        log.trace "BannerAuthenticationProvider doing a cas authentication"
+        def attributeMap = RequestContextHolder.currentRequestAttributes().request.session.getAttribute(AbstractCasFilter.CONST_CAS_ASSERTION).principal.attributes
+        def assertAttributeValue = attributeMap[CH?.config?.banner.sso.authenticationAssertionAttribute]
+        getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource)
+    }
+
+    public static def getMappedDatabaseUserForUdcId( String udcId, def dataSource) {
+        def conn
+        def dbUser
+        try {
+            log.trace "BannerAuthenticationProvider mapping for udcId = $udcId"
+            conn = dataSource.unproxiedConnection
+            Sql db = new Sql(conn)
+            def sqlStatement = '''SELECT gobeacc_username FROM gobumap, gobeacc
+                                WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
+            db.eachRow(sqlStatement, [udcId]) {row ->
+                dbUser = row.gobeacc_username
+            }
+        } catch (SQLException e) {
+            log.error "BannerAuthenticationProvider not able to map udcId $udcId to db user"
+            return null
+        } finally {
+            conn?.close()
+        }
+        dbUser
+    }
+
 
     public boolean supports( Class clazz ) {
         return clazz == UsernamePasswordAuthenticationToken
     }
 
 
-    private Collection<GrantedAuthority> determineAuthorities( String name ) {
+    public static Collection<GrantedAuthority> determineAuthorities( String name, def dataSource ) {
         def conn = null
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
         name = name.toUpperCase()
