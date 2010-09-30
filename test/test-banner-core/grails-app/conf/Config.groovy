@@ -290,3 +290,21 @@ bannerRepresentationHandlerMap =
 
       // next MIME type would go here
 ]
+
+// -------------------- CAS configurations ---------------------------------------------------------- //
+
+grails.plugins.springsecurity.cas.serverUrlPrefix = 'http://localhost:8080/cas'
+grails.plugins.springsecurity.cas.loginUri = '/login'
+grails.plugins.springsecurity.cas.serviceUrl = 'http://localhost:8090/banner_on_grails/j_spring_cas_security_check'
+grails.plugins.springsecurity.cas.serverName = 'http://localhost:8090'
+grails.plugins.springsecurity.cas.sendRenew = false
+grails.plugins.springsecurity.cas.proxyCallbackUrl = 'http://localhost:8090/banner_on_grails/secure/receptor'
+grails.plugins.springsecurity.cas.proxyReceptorUrl = '/secure/receptor'
+grails.plugins.springsecurity.cas.useSingleSignout = true
+
+banner {
+    sso {
+      authenticationProvider = 'default'
+      authenticationAssertionAttribute = 'udcId'
+    }
+}
