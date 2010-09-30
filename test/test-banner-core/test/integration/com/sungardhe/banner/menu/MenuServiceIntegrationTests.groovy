@@ -31,7 +31,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
     def mnu = new Menu()
     mnu = map["SCACRSE"]
     assertNotNull mnu.url
-    assertNotNull mnu.description
+    assertNotNull mnu.caption
     assert mnu.formName == "SCACRSE"
     assert mnu.pageName == "basicCourseInformation"
   }
@@ -39,8 +39,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
   void testBannerMenu() {
     String mnu = menuService.bannerMenu()
     assertNotNull mnu
-    def xmlMap = new XmlSlurper().parseText(mnu)
-    assertNotNull xmlMap.children().find {it.@name == "basicCourseInformation"}
+
   }
 
 
@@ -51,7 +50,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
     def mnu = new Menu()
     mnu = map["SCACRSE"]
     assertNotNull mnu.url
-    assertNotNull mnu.description
+    assertNotNull mnu.caption
     assert mnu.formName == "SCACRSE"
     assert mnu.pageName == "basicCourseInformation"
   }
@@ -72,7 +71,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
     def mnu = new Menu()
     mnu = map["SCACRSE"]
     assertNotNull mnu.url
-    assertNotNull mnu.description
+    assertNotNull mnu.caption
     assert mnu.formName == "SCACRSE"
     assert mnu.pageName == "basicCourseInformation"
   }
@@ -80,8 +79,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
   void testPersonalMenu() {
     String mnu = menuService.personalMenu()
     assertNotNull mnu
-    def xmlMap = new XmlSlurper().parseText(mnu)
-    assertNotNull xmlMap.children().find {it.@name == "basicCourseInformation"}
+
   }
 
 

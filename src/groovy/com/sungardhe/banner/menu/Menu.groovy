@@ -19,14 +19,14 @@ package com.sungardhe.banner.menu
  *    
  */
 class Menu {
+    def menu
     def pageName
     def formName
     def url
-    def description
+    def caption
     def level
     def module
     def parent
     def type
-    def role
-    def rolePassword
 }
+

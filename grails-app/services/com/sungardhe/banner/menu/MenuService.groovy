@@ -20,19 +20,30 @@ class MenuService {
 
   /**
    * This is returns map of all menu items based on user access
-   * @return XML representation of menu objects that a user has access
+   * @return List representation of menu objects that a user has access
    */
   def bannerMenu() {
     def map = bannerMenuMap()
-    return bannerMenuXML(map)
+    def ban =[]
+    map.each {
+      it.value.menu = getParent(map,it.value)
+      ban.add (it.value )
+    }
+    return ban
+
   }
   /**
-   * This is returns map of all menu items based on user access
-   * @return XML representation of personal menu objects that a user has access
+   * This is returns map of all personal menu items based on user access
+   * @return List representation of personal menu objects that a user has access
    */
   def personalMenu() {
     def map = personalMenuMap()
-    return bannerMenuXML(map)
+    def ban =[]
+    map.each {
+      it.value.menu = getParent(map,it.value)
+      ban.add (it.value )
+    }
+    return ban
   }
   /**
    * This is returns map of all menu items based on user access
@@ -57,7 +68,7 @@ class MenuService {
       def str = it.gutpmnu_value.split("\\|")
       mnu.formName = str[1]
       mnu.pageName = it.gubpage_name
-      mnu.description = it.gutpmnu_label
+      mnu.caption = it.gutpmnu_label
       mnu.level = it.gutpmnu_level
       mnu.type = str[0]
       mnu.module = it.gubmodu_name
@@ -82,26 +93,6 @@ class MenuService {
     return formName
   }
 
-  /**
-   * This is returns map of all menu items based on user access
-   * @return Map of menu objects that a user has access
-   */
-  private def bannerMenuXML(Map map) {
-
-    def s_xml = new StringWriter()
-
-    def xml = new groovy.xml.MarkupBuilder(s_xml)
-    def i = 0
-    def str
-    xml.NavigationEntries() {
-      map.each {
-        i += 1
-        str = getParent(map, it.value)
-        NavigationEntryValueObject(id: i, menu: str, name: it.value.pageName, path: it.value.pageName, caption: it.value.description, type: it.value.type, url: it.value.url, parent: it.value.parent)
-      }
-    }
-    return s_xml
-  }
 
 
   private def getParent(Map map, Menu mnu) {
@@ -126,14 +117,17 @@ class MenuService {
   private def processMenu(String menuSql) {
     def bannerMenu
     def dataMap = [:]
+    def i = 0
     sql = new Sql(sessionFactory.getCurrentSession().connection())
     sql.execute(menuSql)
     sql.eachRow("select * from gutmenu,gubmodu,gubpage where  gutmenu_value  = gubpage_code (+) AND " +
             " gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+)", {
       def mnu = new Menu()
+
       mnu.formName = it.gutmenu_value
       mnu.pageName = it.gubpage_name
-      mnu.description = it.gutmenu_desc
+      if (it.gutmenu_desc != null)
+      mnu.caption = it.gutmenu_desc.replaceAll(/\&/,"&amp;")
       mnu.level = it.gutmenu_level
       mnu.type = it.gutmenu_objt_code
       mnu.parent = it.gutmenu_prior_obj
