@@ -122,6 +122,13 @@ class BannerConnection {
         }
     }
 
+    boolean isWrapperFor(Class clazz) {
+        log.trace "isWrapperFor clazz = $clazz"
+    }
+
+    Object unwrap(Class clazz) {
+        log.trace "unwrap clazz = $clazz"
+    }
 
     public String toString() {
         "BannerConnection[instance=${super.toString()}, user='${proxyUserName}',conn='${underlyingConnection}']"
