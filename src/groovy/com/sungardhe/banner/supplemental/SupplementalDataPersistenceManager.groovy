@@ -191,7 +191,6 @@ println "XX----XXXXXXXXXXXXXXXX Set supplemental properties: ${model.supplementa
 
     // Loads the identified attribute into the supplied supplementalProperties map
     private def loadSupplementalProperty( String attributeName, Map supplementalProperties, String tableName ) {
-        def supplementalPropertyFieldValue = [:]
         def session = sessionFactory.getCurrentSession()
 
         def resultSet = session.createSQLQuery(
@@ -210,20 +209,22 @@ println "XX----XXXXXXXXXXXXXXXX Set supplemental properties: ${model.supplementa
              ).setString( "tableName", tableName ).
                setString( "attributeName", attributeName ).list()
 
+        if (!supplementalProperties."${attributeName}") supplementalProperties."${attributeName}" = [:]
         resultSet.each() {
-            SupplementalProperty prop = new SupplementalProperty( required: it[1],
-                                                                  value: it[2],
-                                                                  disc: (it[3] != null ? it[3] : 1),
-                                                                  pkParentTab: it[4],
-                                                                  id: it[5],
-                                                                  dataType: it[6],
-                                                                  prompt: it[7] )
+            SupplementalPropertyDiscriminatorContent discProp =
+                new SupplementalPropertyDiscriminatorContent( required: it[1],
+                                                              value: it[2],
+                                                              disc: (it[3] != null ? it[3] : 1),
+                                                              pkParentTab: it[4],
+                                                              id: it[5],
+                                                              dataType: it[6],
+                                                              prompt: it[7] )
 
-            // Each property is held as a map, with the discriminator as the key to the SupplementalProperty instance
-            supplementalPropertyFieldValue."${prop.disc}" = prop
-            log.debug  "Model Supplemental Property: ${supplementalPropertyFieldValue}"
+            SupplementalPropertyValue propValue = new SupplementalPropertyValue( [ (discProp.disc): discProp ] )
+println "XXXXXXXXXXXXXXXXXX ${attributeName} (before) = " + supplementalProperties."${attributeName}"
+            supplementalProperties."${attributeName}" << propValue
+println "XXXXXXXXXXXXXXXXXX ${attributeName} (after) = " + supplementalProperties."${attributeName}"
         }
-        supplementalProperties."${attributeName}" = supplementalPropertyFieldValue
     }
 
 

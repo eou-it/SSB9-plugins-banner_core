@@ -11,6 +11,7 @@
 package com.sungardhe.banner.supplemental
 
 import javax.persistence.Transient
+import org.apache.log4j.Logger
 
 /**
  * A mixin that provides supplemental data support to models.  Note that while this mixin
@@ -31,27 +32,25 @@ import javax.persistence.Transient
  */
 class SupplementalDataSupportMixin {
 
+
+    @Lazy // note: Lazy needed here to ensure 'this' refers to the service we're mixed into (if we're mixed in)
+    def log = Logger.getLogger( this.class )
+
     /**
      * Model instance-specific values for the supplemental data properties.
-     * The key is the name of the property and the value is a map, which in
-     * turn has a key that is the index and a value that is an instance of
-     * SupplementalProperty.  A 'normal' property would thus look like:
-     *     [ 'myProperty': [ 1: SupplementalProperty_Instance ] ]
-     * A multi-valued property would look like:
-     *     [ 'myIndexedProperty': [ 1: SupplementalProperty_Instance1,
-     *                              2: SupplementalProperty_Instance2, ] ]
-     * If a model instance is created via 'new' and does not yet have
-     * supplemental data information, extended attributes may still be populated
-     * and this map will (temporarily) contain a map of attribute names to
-     * attribute values. Once the model is persisted, the map will be
-     * fully populated with SupplementalProperty instances as appropriate.
-     * Once a model has been persisted, only those attributes 'supported by SDE'
-     * can have their values set.  Any unsupported attributes that were
-     * set on a 'new' model instance before it was saved are discarded.
+     * The key is the name of the property and the value is a SupplementalPropertyValue,
+     * which is in turn a statically typed map.  A property would thus look like:
+     *     [ 'myProperty': SupplementalPropertyValue_instance ]
+     * For a single-valued property, the SupplementalPropertyValue would look like:
+     *     [ 1: SupplementalPropertyDiscriminatorContent_instance ]
+     * and for a multi-valued property the SupplementalPropertyValue would look like:
+     *     [ 1: SupplementalPropertyDiscriminatorContent_instance1,
+     *       2: SupplementalPropertyDiscriminatorContent_instance2 ]
+     * where the key is the discriminator value.
      * Only SDE-configured attributes are persisted.
      */
     @Transient
-    Map supplementalDataContent = [:]
+    Map<String,SupplementalPropertyValue> supplementalDataContent = new HashMap()
 
 
     /**
@@ -81,6 +80,12 @@ class SupplementalDataSupportMixin {
      * Returns a List of supplemental property names, regardless of whether there are values for these properties.
      * @return List the list of supplemental data property names
      */
+    public List getSupplementalPropertyNames() {
+        return this.@supplementalDataContent?.keySet()?.asList()
+    }
+
+
+    @Deprecated // use myModel.getsupplementalPropertyNames() or direct access via myModel.supplementalPropertyNames
     public List supplementalPropertyNames() {
         return this.@supplementalDataContent?.keySet()?.asList()
     }
@@ -93,7 +98,7 @@ class SupplementalDataSupportMixin {
     public Map getSupplementalProperties() {
         def nameValues = [:]
         this.@supplementalDataContent?.each { k, v ->
-            nameValues << (v instanceof SupplementalProperty ? [ (k): v.value ] : [ (k): v ])
+            nameValues << (v instanceof SupplementalPropertyValue ? [ (k): v.value ] : [ (k): v ])
         }
     }
 
@@ -104,7 +109,7 @@ class SupplementalDataSupportMixin {
      * primarily by the framework, not by application code.
      * @param supplementalData the map of supplemental data property names to property values
      */
-    public void setSupplementalProperties( Map<String, SupplementalProperty> supplementalData ) {
+    public void setSupplementalProperties( Map<String, SupplementalPropertyValue> supplementalData ) {
         this.@supplementalDataContent = supplementalData
     }
 
@@ -124,27 +129,23 @@ class SupplementalDataSupportMixin {
     // supplemental data property. If it hasn't, then throw a MissingMethodException.
     def propertyMissing( name, value ) {
 println "ZZZZZOOOOOOOOOOOOOOOOOOOXXXXXXXXXXXXXX mixin setter will set property $name with value $value"
-        // if the model already holds SDE-configured properties
-        this.@supplementalDataContent.values().each { println "XXXXXXXXXXXXXXXXXXXXXXX value: $it" }
-        if (this.@supplementalDataContent.values()?.any { it instanceof SupplementalProperty } ) {
+println "XXXXXXXXXXXXXX before state: ${this.@supplementalDataContent}"
 
-printn "XXXXXXXXXXXXXXX model already HAS supp data"
-            if (this.@supplementalDataContent.containsKey( name ))  {
-                def currentValues = this.@supplementalDataContent."$name"
-
-                if (currentValues instanceof Map && currentValue?.values() )
-
-println "XXXXXXXXXXXXXX setting value to the predefined property"
-                this.@supplementalDataContent."$name".value = value
-            } else {
-println "XXXXXXXXXXXXXX model does not have property $name but has ${this.@supplementalDataContent.entrySet()*.toString()}"
-                throw new MissingPropertyException( name, String ) // we'll assume String when reporting missing exceptions
-            }
-        } else {
-            // model does not hold SDE-configured properties, so we'll use the map to hold the new property value
-            // temporarily until we try to save the model (at which time we'll know if this is a 'valid' SDE-configured property)
-            this.@supplementalDataContent."$name" = value
+        // We'll only support setting of pre-configured supplemental data properties for an existing
+        // model instance that was loaded from the database.  If the model is newly instantiated
+        // (and not loaded from the database), the setter for any supplemental property will throw a
+        // MissingPropertyException.
+        if (!this.@id || !this.@supplementalDataContent.containsKey( name )) {
+println "XXXXXXXXXXXXXX ${this.class} does not have property $name but only has supplemental properties ${this.@supplementalDataContent.entrySet()*.toString()}"
+            throw new MissingPropertyException( name, this.class )
         }
+
+        switch (value) {
+            case SupplementalPropertyValue:                updateSupplementalProperty( this.@supplementalDataContent."$name", value );                 break
+            case SupplementalPropertyDiscriminatorContent: updateSupplementalProperty( this.@supplementalDataContent."$name"."${value.disc}", value ); break
+            default: throw IllegalArgumentException( "Supplemental data must be of type SupplementalPropertyValue or SupplementalPropertyDiscriminatorContent" )
+        }
+println "XXXXXXXXXXXXXX After ${this.class}.$name = $value , the model now has supplemental properties:\n${this.@supplementalDataContent.entrySet()*.toString()}"
     }
 
 
@@ -155,8 +156,16 @@ println "XXXXXXXXXXXXXX model does not have property $name but has ${this.@suppl
         if (this.@supplementalDataContent.containsKey( name ))  {
             this.@supplementalDataContent."$name"
         } else {
-            throw new MissingPropertyException( name, String ) // we'll assume String when reporting missing exceptions
+            throw new MissingPropertyException( name, this.class )
         }
     }
 
+
+    private def updateSupplementalProperty( currentValue, newValue ) {
+println "XXXXXXXXXXXGoing to update $currentValue with $newValue"
+        if (currentValue != newValue) {
+            currentValue = newValue
+            currentValue.isDirty = true
+        }
+    }
 }

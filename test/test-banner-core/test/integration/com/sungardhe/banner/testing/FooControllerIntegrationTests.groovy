@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 import org.springframework.security.core.context.SecurityContextHolder
 import com.sungardhe.banner.supplemental.SupplementalDataPersistenceTestManager
+import com.sungardhe.banner.supplemental.SupplementalPropertyDiscriminatorContent
 
 /**
  * Integration test for the Foo controller.
@@ -32,7 +33,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
     def supplementalDataService  // injected by Spring
 	def supplementalDataPersistenceManager // injected by Spring
 
-    
+
     protected void setUp() {
 
         // For testing RESTful APIs, we don't want the default 'controller support' added by our base class.
@@ -48,8 +49,8 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.fooService = fooService
         super.setUp()
     }
-	
-	
+
+
 	protected void tearDown() {
 		supplementalDataService.supplementalDataConfiguration.remove("com.sungardhe.banner.testing.Foo")
 		supplementalDataService.supplementalDataPersistenceManager = supplementalDataPersistenceManager
@@ -69,7 +70,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
             getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
         }
         controller.show()
-        
+
         assertEquals 1, controller.invokedRenderCallbacks.size()
         assertTrue controller.invokedRenderCallbacks.any { it == 'show' }
         def result = JSON.parse( controller.response.contentAsString )
@@ -92,7 +93,11 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         supplementalDataService.supplementalDataPersistenceManager = new SupplementalDataPersistenceTestManager()
 
         def entity = new Foo( newFooParamsWithAuditTrailProperties() )
-        entity.testSuppA = "Supplemental property A"
+        save entity
+        entity.refresh()
+
+        // Note that we do NOT support using supplemental properties on model instances that have not yet been persisted to the database
+        entity.testSuppA = new SupplementalPropertyDiscriminatorContent( value: "Supplemental property A" )
         save entity
 
         controller.request.with {
@@ -110,12 +115,12 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "Found id ${result?.data?.id} but expected ${entity.id}", entity.id, result?.data?.id
         assertEquals "Found code ${result?.data?.code} but expected ${entity.code}", entity.code, result?.data?.code
         assertEquals "Found description ${result?.data?.description} but expected ${entity.description}", entity.description, result?.data?.description
-        assertEquals "Supplemental property A", result?.supplementalData?.testSuppA
+        assertEquals "Supplemental property A", result?.supplementalData?.testSuppA?.'1'?.value
     }
 
 
     void testList_Json() {
-		
+
 		supplementalDataService.supplementalDataPersistenceManager = new SupplementalDataPersistenceTestManager()
 
         def MAX = 15
