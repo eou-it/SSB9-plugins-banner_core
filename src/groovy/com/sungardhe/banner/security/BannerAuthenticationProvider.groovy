@@ -51,10 +51,10 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         def authenticationProvider = CH?.config.banner.sso.authenticationProvider
         log.trace "authenticationProvider = $authenticationProvider"
 
-        if ('cas'.equalsIgnoreCase(authenticationProvider)) {
+        if ('cas'.equalsIgnoreCase( authenticationProvider )) {
             dbUser = casAuthentication()
         } else {
-            dbUser = defaultAuthentication(authentication)
+            dbUser = defaultAuthentication( authentication )
         }
 
         if (!dbUser) {
@@ -66,10 +66,10 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             Collection<GrantedAuthority> authorities = determineAuthorities( dbUser.toUpperCase(), dataSource )
 
             if (authorities) {
-                def user = new BannerUser(dbUser, authentication.credentials as String,
+                def user = new BannerUser( dbUser, authentication.credentials as String,
                         true /*enabled*/, true /*accountNonExpired*/,
-                        true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities as Collection)
-                def token = new BannerAuthenticationToken(user)
+                        true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities as Collection )
+                def token = new BannerAuthenticationToken( user )
                 log.trace "BannerAuthenticationProvider.authenticate authenticated user $user and is returning a token $token"
                 token
             }
@@ -84,13 +84,13 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         }
     }
 
-    private def defaultAuthentication(Authentication authentication) {
+    private def defaultAuthentication( Authentication authentication ) {
         def conn
 
         try {
             log.trace "BannerAuthenticationProvider jdbc url = ${dataSource.url}"
-            authenticationDataSource.setURL(dataSource.url)
-            conn = authenticationDataSource.getConnection(authentication.name, authentication.credentials)
+            authenticationDataSource.setURL( dataSource.url )
+            conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
             log.trace "BannerAuthenticationProvider successfully authenticated user ${authentication.name} against data source ${dataSource.url}"
         } catch (SQLException e) {
             println e
@@ -104,21 +104,21 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     private def casAuthentication() {
         log.trace "BannerAuthenticationProvider doing a cas authentication"
-        def attributeMap = RequestContextHolder.currentRequestAttributes().request.session.getAttribute(AbstractCasFilter.CONST_CAS_ASSERTION).principal.attributes
+        def attributeMap = RequestContextHolder.currentRequestAttributes().request.session.getAttribute( AbstractCasFilter.CONST_CAS_ASSERTION ).principal.attributes
         def assertAttributeValue = attributeMap[CH?.config?.banner.sso.authenticationAssertionAttribute]
-        getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource)
+        getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource )
     }
 
-    public static def getMappedDatabaseUserForUdcId( String udcId, def dataSource) {
+    public static def getMappedDatabaseUserForUdcId( String udcId, def dataSource ) {
         def conn
         def dbUser
         try {
             log.trace "BannerAuthenticationProvider mapping for udcId = $udcId"
             conn = dataSource.unproxiedConnection
-            Sql db = new Sql(conn)
+            Sql db = new Sql( conn )
             def sqlStatement = '''SELECT gobeacc_username FROM gobumap, gobeacc
                                 WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
-            db.eachRow(sqlStatement, [udcId]) {row ->
+            db.eachRow( sqlStatement, [udcId] ) {row ->
                 dbUser = row.gobeacc_username
             }
         } catch (SQLException e) {

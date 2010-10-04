@@ -99,13 +99,13 @@ class BannerCoreGrailsPlugin {
         switch (GrailsUtil.environment) {
             case GrailsApplication.ENV_PRODUCTION:
                 log.info "Will use a dataSource configured via JNDI"
-                underlyingDataSource(JndiObjectFactoryBean) {
+                underlyingDataSource( JndiObjectFactoryBean ) {
                     jndiName = "java:comp/env/${ConfigurationHolder.config.myDataSource.jndiName}"
                 }
                 break
             default: // we'll use our locally configured dataSource for development and test environments
                 log.info "Using development/test datasource"
-                underlyingDataSource(BasicDataSource) {
+                underlyingDataSource( BasicDataSource ) {
                     maxActive = 5
                     maxIdle = 2
                     defaultAutoCommit = "false"
@@ -117,66 +117,66 @@ class BannerCoreGrailsPlugin {
                 break
         }
 
-        nativeJdbcExtractor(NativeJdbcExtractor)
+        nativeJdbcExtractor( NativeJdbcExtractor )
 
-        dataSource(BannerDataSource) {
-            underlyingDataSource = ref(underlyingDataSource)
-            nativeJdbcExtractor = ref(nativeJdbcExtractor)
+        dataSource( BannerDataSource ) {
+            underlyingDataSource = ref( underlyingDataSource )
+            nativeJdbcExtractor = ref( nativeJdbcExtractor )
         }
 
-        sqlExceptionTranslator(org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator, 'Oracle') {
-            dataSource = ref(dataSource)
+        sqlExceptionTranslator( org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator, 'Oracle' ) {
+            dataSource = ref( dataSource )
         }
 
-        resourceRepresentationRegistry(ResourceRepresentationRegistry) { bean ->
+        resourceRepresentationRegistry( ResourceRepresentationRegistry ) { bean ->
             bean.initMethod = 'init'
         }
 
-        supplementalDataPersistenceManager(SupplementalDataPersistenceManager) {
-            dataSource = ref(dataSource)
-            sessionFactory = ref(sessionFactory)
-            supplementalDataService = ref(supplementalDataService)
+        supplementalDataPersistenceManager( SupplementalDataPersistenceManager ) {
+            dataSource = ref( dataSource )
+            sessionFactory = ref( sessionFactory )
+            supplementalDataService = ref( supplementalDataService )
 
         }
 
-        supplementalDataService(SupplementalDataService) { bean ->
-            dataSource = ref(dataSource)
-            sessionFactory = ref(sessionFactory)
-            supplementalDataPersistenceManager = ref(supplementalDataPersistenceManager)
+        supplementalDataService( SupplementalDataService ) { bean ->
+            dataSource = ref( dataSource )
+            sessionFactory = ref( sessionFactory )
+            supplementalDataPersistenceManager = ref( supplementalDataPersistenceManager )
             bean.initMethod = 'init'
         }
 
-        authenticationDataSource(OracleDataSource)
+        authenticationDataSource( OracleDataSource )
 
-        bannerAuthenticationProvider(BannerAuthenticationProvider) {
-            dataSource = ref(dataSource)
-            authenticationDataSource = ref(authenticationDataSource)
+        bannerAuthenticationProvider( BannerAuthenticationProvider ) {
+            dataSource = ref( dataSource )
+            authenticationDataSource = ref( authenticationDataSource )
         }
 
-        bannerPreAuthenticatedFilter(BannerPreAuthenticatedFilter) {
-            dataSource = ref(dataSource)
-            authenticationManager = ref(authenticationManager)
+        bannerPreAuthenticatedFilter( BannerPreAuthenticatedFilter ) {
+            dataSource = ref( dataSource )
+            authenticationManager = ref( authenticationManager )
         }
 
-        authenticationManager(ProviderManager) {
+        authenticationManager( ProviderManager ) {
             providers = [bannerAuthenticationProvider]
         }
 
-        basicAuthenticationEntryPoint(BasicAuthenticationEntryPoint) {
+        basicAuthenticationEntryPoint( BasicAuthenticationEntryPoint ) {
             realmName = 'Banner REST API Realm'
         }
 
-        basicAuthenticationFilter(BasicAuthenticationFilter) {
-            authenticationManager = ref(authenticationManager)
-            authenticationEntryPoint = ref(basicAuthenticationEntryPoint)
+        basicAuthenticationFilter( BasicAuthenticationFilter ) {
+            authenticationManager = ref( authenticationManager )
+            authenticationEntryPoint = ref( basicAuthenticationEntryPoint )
         }
 
-        basicExceptionTranslationFilter(ExceptionTranslationFilter) {
-            authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
-            accessDeniedHandler = ref('accessDeniedHandler')
+        basicExceptionTranslationFilter( ExceptionTranslationFilter ) {
+            authenticationEntryPoint = ref( 'basicAuthenticationEntryPoint' )
+            accessDeniedHandler = ref( 'accessDeniedHandler' )
         }
 
-        anonymousProcessingFilter(AnonymousAuthenticationFilter) {
+        anonymousProcessingFilter( AnonymousAuthenticationFilter ) {
             key = 'horizon-anon'
             userAttribute = 'anonymousUser,ROLE_ANONYMOUS'
         }
@@ -193,7 +193,7 @@ class BannerCoreGrailsPlugin {
         // the more granular control of transaction attributes possible with annotations.
         //
         application.serviceClasses.each { serviceArtefact ->
-            def needsCRUD = GCU.getStaticPropertyValue(serviceArtefact.clazz, "defaultCrudMethods")
+            def needsCRUD = GCU.getStaticPropertyValue( serviceArtefact.clazz, "defaultCrudMethods" )
             if (needsCRUD) {
                 serviceArtefact.clazz.mixin ServiceBase
             }
@@ -204,7 +204,7 @@ class BannerCoreGrailsPlugin {
         // Note that if any actions are omitted from this line, they will not be accessible (as they won't be registered)
         // even though they will still be mixed-in.
         application.controllerClasses.each { controllerArtefact ->
-            def neededRestActions = GCU.getStaticPropertyValue(controllerArtefact.clazz, "mixInRestActions")
+            def neededRestActions = GCU.getStaticPropertyValue( controllerArtefact.clazz, "mixInRestActions" )
             if (neededRestActions?.size() > 0) {
                 for (it in neededRestActions) {
                     controllerArtefact.registerMapping it
@@ -237,12 +237,12 @@ class BannerCoreGrailsPlugin {
 
         def supplementalDataSupportListener = new SupplementalDataHibernateListener()
         ['preDelete', 'postInsert', 'postUpdate', 'postLoad'].each {
-            addEventTypeListener(listeners, supplementalDataSupportListener, it)
+            addEventTypeListener( listeners, supplementalDataSupportListener, it )
         }
 
         def auditTrailSupportListener = new AuditTrailPropertySupportHibernateListener()
         ['preInsert', 'preUpdate'].each {
-            addEventTypeListener(listeners, auditTrailSupportListener, it)
+            addEventTypeListener( listeners, auditTrailSupportListener, it )
         }
 
         // Define the spring security filters
@@ -266,7 +266,7 @@ class BannerCoreGrailsPlugin {
         LinkedHashMap<String, List<Filter>> filterChainMap = new LinkedHashMap();
         filterChain.each { key, value ->
             def filters = value.toString().split(',').collect {
-                name -> applicationContext.getBean(name)
+                name -> applicationContext.getBean( name )
             }
             filterChainMap[key] = filters
         }
@@ -284,12 +284,12 @@ class BannerCoreGrailsPlugin {
     }
 
 
-    def addEventTypeListener(listeners, listener, type) {
+    def addEventTypeListener( listeners, listener, type ) {
         def typeProperty = "${type}EventListeners"
         def typeListeners = listeners."${typeProperty}"
 
         def expandedTypeListeners = new Object[typeListeners.length + 1]
-        System.arraycopy(typeListeners, 0, expandedTypeListeners, 0, typeListeners.length)
+        System.arraycopy( typeListeners, 0, expandedTypeListeners, 0, typeListeners.length )
         expandedTypeListeners[-1] = listener
 
         listeners."${typeProperty}" = expandedTypeListeners

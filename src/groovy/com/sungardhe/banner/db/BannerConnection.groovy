@@ -99,7 +99,7 @@ class BannerConnection {
     }
 
 
-    public static closeProxySession(OracleConnection oracleConnection, String proxiedUserName) {
+    public static closeProxySession( OracleConnection oracleConnection, String proxiedUserName ) {
         if (oracleConnection.isProxySession()) {
             oracleConnection.close( OracleConnection.PROXY_SESSION )
         }
@@ -122,11 +122,11 @@ class BannerConnection {
         }
     }
 
-    boolean isWrapperFor(Class clazz) {
+    boolean isWrapperFor( Class clazz ) {
         log.trace "isWrapperFor clazz = $clazz"
     }
 
-    Object unwrap(Class clazz) {
+    Object unwrap( Class clazz ) {
         log.trace "unwrap clazz = $clazz"
     }
 

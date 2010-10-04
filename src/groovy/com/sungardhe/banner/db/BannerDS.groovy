@@ -48,7 +48,7 @@ public class BannerDS {
 
     def nativeJdbcExtractor
 
-    private final Logger log = Logger.getLogger(getClass())
+    private final Logger log = Logger.getLogger( getClass() )
 
     /**
      * Returns a proxied connection for the current logged in user, from the underlying connection pool.
@@ -59,7 +59,7 @@ public class BannerDS {
         log.trace "in BannerDS.getConnection() -- going to delegate to underlying dataSource"
 
         Connection conn = underlyingDataSource.getConnection()
-        OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
+        OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
 
         log.trace "in BannerDS.getConnection() -- have attained connection ${oconn} from underlying dataSource"
 
@@ -69,28 +69,28 @@ public class BannerDS {
         if (SecurityContextHolder?.context?.authentication) {
             user = SecurityContextHolder.context.authentication.principal
             if (user?.username) {
-                List applicableAuthorities = extractApplicableAuthorities(user?.authorities)
-                proxy(oconn, user?.username)
-                setRoles(oconn, user?.username, applicableAuthorities)
+                List applicableAuthorities = extractApplicableAuthorities( user?.authorities )
+                proxy( oconn, user?.username )
+                setRoles( oconn, user?.username, applicableAuthorities )
             }
         }
         // Reset Oracle session plsql package state.
-        def sql = new Sql(conn)
+        def sql = new Sql( conn )
         sql.call("{ call DBMS_SESSION.MODIFY_PACKAGE_STATE(2) }") // Constant DBMS_SESSION.REINITIALIZE = 2
-        return new BannerConnection(conn, user?.username, this)  // Note that while an IDE may not like this, the delegate supports this type coersion
+        return new BannerConnection( conn, user?.username, this )  // Note that while an IDE may not like this, the delegate supports this type coersion
     }
 
     // Note: This method is used for Integration Tests -- it is not intended to be used within production code.
     // TODO: Refactor - not DRY with other methods
 
-    public Connection proxyAndSetRolesFor(BannerConnection bconn, userName, password) {
+    public Connection proxyAndSetRolesFor( BannerConnection bconn, userName, password ) {
         def user
         if (SecurityContextHolder?.context?.authentication) {
             user = SecurityContextHolder.context.authentication.principal
             if (user?.username && user?.password) {
-                List applicableAuthorities = extractApplicableAuthorities(user?.authorities)
-                proxyConnection(bconn, userName)
-                setRoles(bconn.extractOracleConnection(), user?.username, applicableAuthorities)
+                List applicableAuthorities = extractApplicableAuthorities( user?.authorities )
+                proxyConnection( bconn, userName )
+                setRoles(bconn.extractOracleConnection(), user?.username, applicableAuthorities )
             }
         }
     }
@@ -107,8 +107,8 @@ public class BannerDS {
      * */
     public Connection getUnproxiedConnection() {
         Connection conn = underlyingDataSource.getConnection()
-        OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
-        return new BannerConnection(conn, null, this)  // Note that while an IDE may not like this, the delegate supports this type coersion
+        OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
+        return new BannerConnection( conn, null, this )  // Note that while an IDE may not like this, the delegate supports this type coersion
     }
 
     // Note: This method should be used only for initial authentication, and for testing purposes.
@@ -120,8 +120,8 @@ public class BannerDS {
      * Note that this method does NOT set password protected roles, as it is intended solely for authentication
      * and not authorization. Subsequent calls to getConnection() method will unlock roles as appropriate.
      * */
-    public Connection proxyConnection(BannerConnection bconn, userName) {
-        proxy(bconn.extractOracleConnection(), userName)
+    public Connection proxyConnection( BannerConnection bconn, userName ) {
+        proxy( bconn.extractOracleConnection(), userName )
         bconn.proxyUserName = userName
         return bconn
     }
@@ -136,7 +136,7 @@ public class BannerDS {
     // ------------- end of public methods ----------------
 
 
-    private proxy(OracleConnection oconn, userName) {
+    private proxy( OracleConnection oconn, userName ) {
         log.trace "BannerDS.proxyConnection invoked with $oconn, $userName"
 
         Properties properties = new Properties()
@@ -147,14 +147,14 @@ public class BannerDS {
         // properties.put(OracleConnection.PROXY_USER_NAME, ("${userName}/${password}" as String))
         // Changed approach to proxy connections without authenticating via password.  This will be required in a
         // claims based authentication approach and IdM integration.
-        properties.put(OracleConnection.PROXY_USER_NAME, ("${userName}" as String))
+        properties.put( OracleConnection.PROXY_USER_NAME, ("${userName}" as String) )
 
-        oconn.openProxySession(OracleConnection.PROXYTYPE_USER_NAME, properties)
+        oconn.openProxySession( OracleConnection.PROXYTYPE_USER_NAME, properties )
         log.trace "in BannerDS.proxyConnection - proxied connection for $userName and connection $oconn"
     }
 
 
-    private List extractApplicableAuthorities(grantedAuthorities) {
+    private List extractApplicableAuthorities( grantedAuthorities ) {
         if (!grantedAuthorities) return
 
         List formContext = FormContext.get()
@@ -171,7 +171,7 @@ public class BannerDS {
     }
 
 
-    private setRoles(OracleConnection oconn, String proxiedUserName, applicableAuthorities) {
+    private setRoles( OracleConnection oconn, String proxiedUserName, applicableAuthorities ) {
         log.debug "Applicable roles are ${applicableAuthorities*.authority}" // TODO remove logging of authorities, or log only in Test environment
 
         try {
@@ -182,13 +182,13 @@ public class BannerDS {
         catch (e) {
             //if we cannot unlock a role, abort the proxy session and rollback
             log.error "Failed to unlock role for proxy session for Oracle connection $oconn  Exception: $e "
-            BannerConnection.closeProxySession(oconn, proxiedUserName)
+            BannerConnection.closeProxySession( oconn, proxiedUserName )
             throw e
         }
     }
 
 
-    private unlockRole(Connection conn, BannerGrantedAuthority bannerAuth) throws SQLException {
+    private unlockRole( Connection conn, BannerGrantedAuthority bannerAuth ) throws SQLException {
         switch (bannerAuth.bannerPassword) {
             case null: println "No role to unlock -- the password was null"
                 return // nothing to do... no roles need to be set
@@ -198,7 +198,7 @@ public class BannerDS {
                 throw new RuntimeException("ABORT Banner Role encountered!")
         }
         // still here? We will try to unlock the role...
-        Sql db = new Sql(conn)
+        Sql db = new Sql( conn )
         try {
             String stmt = "set role \"${bannerAuth.roleName}\" identified by \"${bannerAuth.bannerPassword}\""
             log.debug "BannerDS.unlockRole will now execute $stmt"
@@ -210,7 +210,7 @@ public class BannerDS {
         }
     }
 
-    public void setLogWriter(PrintWriter printWriter) {
+    public void setLogWriter( PrintWriter printWriter ) {
         log.trace "setLogWriter printWriter = $printWriter"
     }
 
@@ -218,15 +218,15 @@ public class BannerDS {
         log.trace 'getLogWriter'
     }
 
-    boolean isWrapperFor(Class clazz) {
+    boolean isWrapperFor( Class clazz ) {
         log.trace "isWrapperFor clazz = $clazz"
     }
 
-    Object unwrap(Class clazz) {
+    Object unwrap( Class clazz ) {
         log.trace "unwrap clazz = $clazz"
     }
 
-    void setLoginTimeout(int i) {
+    void setLoginTimeout( int i ) {
         log.trace "setLoginTimeout i = $i"
     }
 

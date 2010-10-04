@@ -50,7 +50,7 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
                 SecurityContextHolder.context.setAuthentication( token )
             }
         }
-        chain.doFilter(request, response);
+        chain.doFilter( request, response );
     }
 
 
