@@ -14,13 +14,13 @@
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration
 
 
-// Note: Most of the dataSource configuration resides in resources.groovy and in the 
+// Note: Most of the dataSource configuration resides in resources.groovy and in the
 // installation-specific configuration file (see Config.groovy for the include).
 
 dataSource {
     configClass = GrailsAnnotationConfiguration.class
     dialect = "org.hibernate.dialect.Oracle10gDialect"
-    loggingSql = true       
+    loggingSql = false
 }
 
 
@@ -29,7 +29,7 @@ hibernate {
     cache.use_query_cache = true
     cache.provider_class = 'net.sf.ehcache.hibernate.EhCacheProvider'
    	hbm2ddl.auto = null
-   	show_sql = true
+   	show_sql = false
 //   	naming_strategy = "org.hibernate.cfg.ImprovedNamingStrategy"
    	dialect = "org.hibernate.dialect.Oracle10gDialect"
 }
