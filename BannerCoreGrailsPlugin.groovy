@@ -236,7 +236,7 @@ class BannerCoreGrailsPlugin {
         def listeners = applicationContext.sessionFactory.eventListeners
 
         def supplementalDataSupportListener = new SupplementalDataHibernateListener()
-        ['preDelete', 'postInsert', 'postUpdate', 'postLoad'].each {
+        ['preDelete', 'postInsert', 'preUpdate', 'postLoad'].each {
             addEventTypeListener( listeners, supplementalDataSupportListener, it )
         }
 

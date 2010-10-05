@@ -129,7 +129,7 @@ class SupplementalDataSupportMixin {
     // supplemental data property. If it hasn't, then throw a MissingMethodException.
     def propertyMissing( name, value ) {
 println "ZZZZZOOOOOOOOOOOOOOOOOOOXXXXXXXXXXXXXX mixin setter will set property $name with value $value"
-println "XXXXXXXXXXXXXX before state: ${this.@supplementalDataContent}"
+println "XXXXXXXXXXXXXX before state: \n${this.@supplementalDataContent}"
 
         // We'll only support setting of pre-configured supplemental data properties for an existing
         // model instance that was loaded from the database.  If the model is newly instantiated
@@ -141,11 +141,21 @@ println "XXXXXXXXXXXXXX ${this.class} does not have property $name but only has 
         }
 
         switch (value) {
-            case SupplementalPropertyValue:                updateSupplementalProperty( this.@supplementalDataContent."$name", value );                 break
-            case SupplementalPropertyDiscriminatorContent: updateSupplementalProperty( this.@supplementalDataContent."$name"."${value.disc}", value ); break
+            case SupplementalPropertyValue: // may have many discriminated values; will replace the property value entirely
+println "New value is a SupplementalPropertyValue and so the entire property value will be replaced"
+                this.@supplementalDataContent."$name" = value
+                this.@supplementalDataContent."$name"?.values()?.each { it.isDirty = true }
+                break
+            case SupplementalPropertyDiscriminatorContent: // will add or replace only the specific discriminated value
+println "New value is a SupplementalPropertyDiscriminatorContent, so only the affected discrimintor value will be affected"
+                value.isDirty = true
+                this.@supplementalDataContent."$name"["${value.disc}"] = value
+                break
             default: throw IllegalArgumentException( "Supplemental data must be of type SupplementalPropertyValue or SupplementalPropertyDiscriminatorContent" )
         }
-println "XXXXXXXXXXXXXX After ${this.class}.$name = $value , the model now has supplemental properties:\n${this.@supplementalDataContent.entrySet()*.toString()}"
+
+
+println "XXXXXXXXXXXXXX After state: \n${this.@supplementalDataContent}"
     }
 
 
@@ -160,12 +170,4 @@ println "XXXXXXXXXXXXXX After ${this.class}.$name = $value , the model now has s
         }
     }
 
-
-    private def updateSupplementalProperty( currentValue, newValue ) {
-println "XXXXXXXXXXXGoing to update $currentValue with $newValue"
-        if (currentValue != newValue) {
-            currentValue = newValue
-            currentValue.isDirty = true
-        }
-    }
 }

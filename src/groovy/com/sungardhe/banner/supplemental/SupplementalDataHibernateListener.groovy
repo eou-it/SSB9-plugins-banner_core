@@ -23,13 +23,14 @@ import org.hibernate.event.PostInsertEvent
 import org.hibernate.event.PostUpdateEvent
 import org.hibernate.event.PostInsertEventListener
 import org.hibernate.event.PostUpdateEventListener
-
+import org.hibernate.event.PreUpdateEvent
+import org.hibernate.event.PreUpdateEventListener
 
 /**
  * A listener that handles reading and writing of supplemental data properties into a model instance.
  */
 public class SupplementalDataHibernateListener implements PreDeleteEventListener, PostInsertEventListener,
-                                                          PostUpdateEventListener, PostLoadEventListener, Initializable {
+                                                          PreUpdateEventListener, PostLoadEventListener, Initializable {
 
     static detailed = false
     def supplementalDataService
@@ -68,7 +69,7 @@ public class SupplementalDataHibernateListener implements PreDeleteEventListener
             e.printStackTrace()
             throw e
         }
-        return false
+        false // don't veto
     }
 
 
@@ -84,7 +85,7 @@ public class SupplementalDataHibernateListener implements PreDeleteEventListener
     }
 
 
-    public void onPostUpdate( final PostUpdateEvent event ) {
+    public boolean onPreUpdate( final PreUpdateEvent event ) {
         try {
             if (supportsSupplementalData( event )) {
                 handleInsertOrUpdate( event.getEntity() )
@@ -93,6 +94,7 @@ public class SupplementalDataHibernateListener implements PreDeleteEventListener
             e.printStackTrace()
             throw e
         }
+        false // don't veto
     }
 
 
@@ -111,14 +113,14 @@ public class SupplementalDataHibernateListener implements PreDeleteEventListener
     def handleDelete( entity ) {
         if (entity.hasSupplementalProperties()) {
             getSupplementalDataService().removeSupplementalDataFor( entity )
-        } 
+        }
     }
 
 
     def handleInsertOrUpdate( entity ) {
         if (entity.hasSupplementalProperties()) {
             getSupplementalDataService().persistSupplementalDataFor( entity )
-        } 
+        }
     }
 
 

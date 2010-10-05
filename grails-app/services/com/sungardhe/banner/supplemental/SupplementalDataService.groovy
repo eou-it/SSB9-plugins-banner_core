@@ -36,17 +36,12 @@ class SupplementalDataService {
 
 
 	def init() {
-		// Groovy SQL invocation of view
-
-		// TODO refactor this to be more groovy !!!  -- also, revisit whether to do all at once during init() or do on a class-by-class basis as needed and cache?
-		// Until we define the structure, we'll just dump this out...
 		Map x = sessionFactory.getAllClassMetadata()
 		for (Iterator i = x.values().iterator(); i.hasNext(); ) {
-			SingleTableEntityPersister y = (SingleTableEntityPersister)i.next();
-			setSDE(y.getName(), y.getTableName())
-			// println( y.getName() + " -> " + y.getTableName() )
+			SingleTableEntityPersister y = (SingleTableEntityPersister) i.next();
+			setSDE( y.getName(), y.getTableName() )
 			// for (int j = 0; j < y.getPropertyNames().length; j++) {
-		    //                println( " " + y.getPropertyNames()[j] + " -> " + (y.getPropertyColumnNames( j ).length > 0 ? y.getPropertyColumnNames( j )[ 0 ] : ""))
+		    //     println( " " + y.getPropertyNames()[ j ] + " -> " + (y.getPropertyColumnNames( j ).length > 0 ? y.getPropertyColumnNames( j )[ 0 ] : ""))
 			// }
 		}
         log.info "SupplementalDataService initialization complete."
@@ -103,40 +98,37 @@ class SupplementalDataService {
 	private setSDE(entityName, tableName){
 
 		boolean found = false
-
 		Connection	conn = (dataSource as BannerDataSource).getUnproxiedConnection() as BannerConnection
-		Sql db = new Sql (conn)
+		Sql db = new Sql( conn )
 
 		String rolePswd = ""
 		try {
 			db.call("{$Sql.VARCHAR = call g\$_security.g\$_get_role_password_fnc('BAN_DEFAULT_M' ,'SEED-DATA')}") {role -> rolePswd = role }
 			String roleM = """SET ROLE "BAN_DEFAULT_M" IDENTIFIED BY "${rolePswd}" """
-			db.execute(roleM)
+			db.execute( roleM )
 			Connection sessionConnection = db.getConnection()
 
 			def session = sessionFactory.openSession(sessionConnection);
-
-			def resultSet = session.createSQLQuery("SELECT gorsdam_attr_name, gorsdam_attr_reqd_ind, gorsdam_attr_data_type FROM gorsdam WHERE gorsdam_table_name= :tableName").setString("tableName", tableName).list()
-
-			def model =[:]
+			def resultSet = session.createSQLQuery( "SELECT gorsdam_attr_name, gorsdam_attr_reqd_ind, gorsdam_attr_data_type FROM gorsdam WHERE gorsdam_table_name= :tableName" ).setString( "tableName", tableName ).list()
+			def model = [:]
 			def properties = [:]
 			def sde = [:]
 
-			resultSet.each(){
+			resultSet.each() {
 				found = true
 				properties.required = it[1]
 				def attrName = "${it[0]}"
 				model."${attrName}" = properties
 			}
 
-			if (found){
+			if (found) {
 				sde."${entityName}" = model
-				appendSupplementalDataConfiguration(sde)
-				log.info "Table: ${tableName}"
+				appendSupplementalDataConfiguration( sde )
+				log.debug "SDE Table: ${tableName}"
 			}
 		} catch (e) {
 			println "ERROR: Could not establish role set up to the database. ${e.message}"
-		}finally {
+		} finally {
 			db?.close()
 		}
 	}

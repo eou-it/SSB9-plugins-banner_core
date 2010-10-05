@@ -99,6 +99,6 @@ class SupplementalPropertyDiscriminatorContent {
 
 
     public String toString() {
-        super.toString() + "\n${this.properties.entrySet().flatten()}"
+        super.toString() + "disc=$disc, value=$value, id=$id, required=$required, dataType=$dataType, pkParentTab=$pkParentTab, prompt=$prompt"
     }
 }

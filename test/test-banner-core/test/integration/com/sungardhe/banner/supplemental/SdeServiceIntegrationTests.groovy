@@ -135,7 +135,6 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 
         def found = Zip.findByCodeAndCity("00001","newcity")
 	    assertTrue found?.hasSupplementalProperties()
-println "XXXXXXXXXXXXXXXXXXXXXXXX HAVE SUPP DATA:  ${found.supplementalProperties}"
 	    assertEquals "comment 1", found.COMMENTS."1".value
 		assertEquals "comment 2", found.COMMENTS."2".value
 		assertEquals "cmment 3", found.COMMENTS."3".value

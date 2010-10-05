@@ -36,13 +36,16 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
 
         configureSupplementalData( [ "com.sungardhe.banner.testing.Foo":
                                        [ testSuppA: [ required: false, dataType: String ],
-                                         testSuppB: [ required: false, dataType: boolean ] ] ] )
+                                         testSuppB: [ required: false, dataType: boolean ] ],
+                                     "com.sungardhe.banner.testing.Bar":
+                                       [ testSuppA: [ required: false, dataType: String ],
+                                         testSuppB: [ required: false, dataType: boolean ] ]] )
     }
 
 
     protected void tearDown() {
 		//clean up spring-injected persistence manager
-		supplementalDataService.supplementalDataConfiguration.remove("com.sungardhe.banner.testing.Foo")
+		supplementalDataService.supplementalDataConfiguration.remove( "com.sungardhe.banner.testing.Foo" )
 		supplementalDataService.supplementalDataPersistenceManager = supplementalDataPersistenceManager
         testSupplementalDataPersistenceTestManager = null
 
@@ -56,241 +59,139 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
      */
     void testLoadModelsWithSupplementalDataSupport() {
 
+        assertTrue supplementalDataService.supportsSupplementalProperties( Foo )
+        assertFalse supplementalDataService.supportsSupplementalProperties( AreaLibrary )
+
         def foo = fooService.create( newTestFooParams() )
         foo.refresh()
+
         assertTrue foo.hasSupplementalProperties()
         assertEquals 2, foo.supplementalProperties?.size()
         assertTrue foo.supplementalPropertyNames.containsAll( [ 'testSuppA', 'testSuppB' ] )
+        assertEquals 1, foo.testSuppA.size() // only a single value
+        assertEquals 1, foo.testSuppB.size() // only a single value
+        shouldFail( MissingPropertyException ) { foo.betterNotFindMe }
     }
 
 
-//    void testJunk() {
-//        foo.suppPropA = [ '1': [ value: "I'm supplemental!" ] ]
-//        assertTrue foo.hasSupplementalProperties()
-//        assertEquals "Expected 1 but have ${foo.supplementalPropertyNames().size()} properties: ${foo.supplementalPropertyNames().join(', ')}", 1, foo.supplementalPropertyNames().size()
-//        assertTrue foo.hasSupplementalProperty( 'suppPropA' )
-//        assertFalse foo.hasSupplementalProperty( 'nope' )
-//        assertEquals "I'm supplemental!", foo.suppPropA
-//
-//        def fooToo = new Foo( newTestFooParams() )
-//        shouldFail( MissingPropertyException ) { fooToo.suppPropA }
-//        assertFalse fooToo.hasSupplementalProperty( 'suppPropA' )
-//        assertFalse fooToo.hasSupplementalProperties()
-//        fooToo.suppPropA = null
-//        assertTrue fooToo.hasSupplementalProperties() // we've set a supplemental property to null
-//        assertTrue fooToo.hasSupplementalProperty( 'suppPropA' )
-//        fooToo.suppPropA = "fooToo has suppPropA too!"
-//        assertTrue fooToo.hasSupplementalProperties()
-//        assertTrue fooToo.hasSupplementalProperty( 'suppPropA' )
-//
-//        foo.bar = "A second supplemental property -- but it is not configured and thus would not be saved!"
-//        assertEquals 2, foo.supplementalPropertyNames().size()
-//        assertTrue foo.hasSupplementalProperty( 'bar' )
-//        assertEquals "A second supplemental property -- but it is not configured and thus would not be saved!", foo.bar
-//
-//        foo.suppPropA = "changed!"
-//        assertEquals "changed!", foo.suppPropA
-//        assertEquals "A second supplemental property -- but it is not configured and thus would not be saved!", foo.bar
-//        assertEquals 2, foo.supplementalPropertyNames().size()
-//        assertTrue 'suppPropA' in foo.supplementalPropertyNames()
-//        assertTrue 'bar' in foo.supplementalPropertyNames()
-//        assertTrue 'A second supplemental property -- but it is not configured and thus would not be saved!' in foo.supplementalProperties?.collect { k, v -> v }
-//        assertTrue 'changed!' in foo.supplementalProperties?.collect { k, v -> v }
-//
-//        assertTrue foo.hasSupplementalProperty( 'suppPropA' )
-//        assertTrue foo.hasSupplementalProperty( 'bar' )
-//        assertFalse foo.hasSupplementalProperty( 'nope' )
-//
-//        foo.bar = null
-//        assertTrue foo.hasSupplementalProperty( 'bar' )
-//    }
-//
-//
-//    /**
-//     * Tests that when a model is loaded by Hibernate, the 'SupplementalDataSupportListener' requests the
-//     * SupplementalDataService to load the supplemental data properties for the model.
-//     */
-//    void testSupplementalDataLoad() {
-//        // We'll slam configuration for Foo into the SupplementalDataService
-//        configureSupplementalData( [ "com.sungardhe.banner.testing.Foo":
-//                                       [ testSuppA: [ required: false, dataType: String ],
-//                                         testSuppB: [ required: false, dataType: boolean ]
-//                                       ] ] )
-//
-//        assertTrue supplementalDataService.supportsSupplementalProperties( Foo )
-//        assertFalse supplementalDataService.supportsSupplementalProperties( AreaLibrary )
-//
-//        def foo = new Foo( newTestFooParams() )
-//        foo.testSuppA = "Supplemental property A"
-//        foo.testSuppB = "Supplemental property B"
-//
-//        foo = fooService.create( foo )
-//        assertNotNull foo.id
-//        // test that when a foo is retrieved from the database, it has our supplemental data properties
-//
-//        foo.supplementalDataContent = [:] // force reset
-//        foo.refresh()
-//
-//        def found = Foo.get( foo.id )
-//        assertTrue found?.hasSupplementalProperties()
-//        assertEquals "Supplemental property A", found.testSuppA
-//        assertEquals "Supplemental property B", found.testSuppB
-//    }
-//
-//
-//    /**
-//     * Tests that a model's supplemental data has no effect on another model's supplemental data
-//     * when the other model is the same type.
-//     */
-//    void testSupplementalDataIsolationWithinModelType() {
-//        // We'll slam configuration for Foo into the SupplementalDataService
-//        supplementalDataService.appendSupplementalDataConfiguration( [ "com.sungardhe.banner.testing.Foo":
-//                                                                            [ testSuppA: [ required: false, dataType: String ],
-//                                                                              testSuppB: [ required: false, dataType: boolean ],
-//                                                                              testSuppC: [ required: false, dataType: boolean ]
-//                                                                            ],
-//                                                                      ] )
-//
-//        supplementalDataService.supplementalDataPersistenceManager = new SupplementalDataPersistenceTestManager()
-//        assertTrue supplementalDataService.supportsSupplementalProperties( Foo )
-//        assertFalse supplementalDataService.supportsSupplementalProperties( Bar ) // nope, in this test we've just configured Foo
-//        assertFalse supplementalDataService.supportsSupplementalProperties( AreaLibrary )
-//
-//        def foo = new Foo( newTestFooParams() )
-//        foo.testSuppA = "Supplemental property A"
-//        foo.testSuppB = "Supplemental property B"
-//
-//        def bar = new Foo( newTestFooParams( "#C" ) )
-//        assertTrue foo.hasSupplementalProperties()
-//        assertFalse bar.hasSupplementalProperties() // we haven't set any yet on the model instance
-//
-//        foo = fooService.create( foo )
-//        bar = fooService.create( bar )
-//
-//        assertTrue Foo.get( foo.id ).hasSupplementalProperties()
-//        assertFalse Foo.get( bar.id).hasSupplementalProperties() // we still haven't set any yet on the model instance
-//
-//        bar.testSuppC = "Supplemental property C"
-//        bar.save() // we'll use GORM directly, bypassing our service
-//
-//        foo.supplementalDataContent = [:] // not normally needed, but we'll do it here for this test
-//        foo.refresh() // force our hibernate listener will need to load the model
-//
-//        assertTrue Foo.get( bar.id).hasSupplementalProperties()
-//        assertTrue Foo.get( bar.id ).supplementalProperties?.keySet()?.contains( "testSuppC" )
-//        assertTrue Foo.get( bar.id ).hasSupplementalProperty( "testSuppC" )
-//        assertFalse Foo.get( bar.id ).hasSupplementalProperty( "testSuppD" )
-//        assertEquals 1, Foo.get( bar.id ).supplementalProperties?.size()
-//        assertEquals 2, Foo.get( foo.id ).supplementalProperties?.size()
-//
-//        // now we'll add a second supplemental data property (that is the same as
-//        bar.testSuppB = "My different value!"
-//        bar.save()
-//
-//        assertEquals 2, Foo.get( bar.id ).supplementalProperties?.size()
-//
-//        shouldFail( MissingPropertyException ) { Foo.get( bar.id ).testSuppA }
-//        assertEquals "My different value!", Foo.get( bar.id ).testSuppB
-//        assertEquals "Supplemental property C", Foo.get( bar.id ).testSuppC
-//
-//        assertEquals "Supplemental property A", Foo.get( foo.id ).testSuppA
-//        assertEquals "Supplemental property B", Foo.get( foo.id ).testSuppB
-//        shouldFail( MissingPropertyException ) { Foo.get( foo.id ).testSuppC }
-//    }
-//
-//
-//    /**
-//     * Tests that a model's supplemental data has no effect on another model's supplemental data when
-//     * the other model is a different type.
-//     */
-//    void testSupplementalDataIsolationAcrossModelTypes() {
-//        // We'll slam configuration for Foo into the SupplementalDataService
-//        supplementalDataService.appendSupplementalDataConfiguration( [ "com.sungardhe.banner.testing.Foo":
-//                                                                            [ testSuppA: [ required: false, dataType: String ],
-//                                                                              testSuppB: [ required: false, dataType: boolean ],
-//                                                                            ],
-//                                                                       "com.sungardhe.banner.testing.Bar":
-//                                                                           [ testSuppB: [ required: false, dataType: String ],
-//                                                                             testSuppC: [ required: false, dataType: boolean ]
-//                                                                           ],
-//                                                                      ] )
-//
-//        supplementalDataService.supplementalDataPersistenceManager = new SupplementalDataPersistenceTestManager()
-//        assertTrue supplementalDataService.supportsSupplementalProperties( Foo )
-//        assertTrue supplementalDataService.supportsSupplementalProperties( Bar )
-//        assertFalse supplementalDataService.supportsSupplementalProperties( AreaLibrary )
-//
-//        def foo = new Foo( newTestFooParams() )
-//        foo.testSuppA = "Supplemental property A"
-//        foo.testSuppB = "Supplemental property B"
-//
-//        def bar = new Bar( newTestFooParams( "#C" ) )
-//        assertTrue foo.hasSupplementalProperties()
-//        assertFalse bar.hasSupplementalProperties() // we haven't set any yet on the model instance
-//
-//        foo = fooService.create( foo )
-//        bar.save( flushImmediately: true )
-//        assertNotNull bar.id
-//
-//        assertTrue Foo.get( foo.id ).hasSupplementalProperties()
-//        assertFalse Bar.get( bar.id ).hasSupplementalProperties() // we still haven't set any yet on the model instance
-//
-//        bar.testSuppC = "Supplemental property C"
-//        bar.save( flushImmediately: true ) // we'll use GORM directly, bypassing our service
-//
-//        foo.supplementalDataContent = [:] // not normally needed, but we'll do it here for this test
-//        foo.refresh() // force our hibernate listener will need to load the model
-//
-//        assertTrue Bar.get( bar.id).hasSupplementalProperties()
-//        assertTrue Bar.get( bar.id ).supplementalProperties?.keySet()?.contains( "testSuppC" )
-//        assertTrue Bar.get( bar.id ).hasSupplementalProperty( "testSuppC" )
-//        assertFalse Bar.get( bar.id ).hasSupplementalProperty( "testSuppD" )
-//        assertEquals 1, Bar.get( bar.id ).supplementalProperties?.size()
-//        assertEquals 2, Foo.get( foo.id ).supplementalProperties?.size()
-//
-//        // now we'll add a second supplemental data property (that is the same as
-//        bar.testSuppB = "My different value!"
-//        bar.save( flushImmediately: true )
-//
-//        assertEquals 2, Bar.get( bar.id ).supplementalProperties?.size()
-//
-//        shouldFail( MissingPropertyException ) { Bar.get( bar.id ).testSuppA }
-//        assertEquals "My different value!", Bar.get( bar.id ).testSuppB
-//        assertEquals "Supplemental property C", Bar.get( bar.id ).testSuppC
-//
-//        assertEquals "Supplemental property A", Foo.get( foo.id ).testSuppA
-//        assertEquals "Supplemental property B", Foo.get( foo.id ).testSuppB
-//        shouldFail( MissingPropertyException ) { Foo.get( foo.id ).testSuppC }
-//    }
-//
-//
-//    /**
-//     * Tests that properties set on a model that are not configured as supplemental data are
-//     * dropped on the floor, and do not prevent saving the model (including 'pre-defined' supplemental data properties).
-//     */
-//    void testUnsupportedPropertiesAreDroppedOnFloor() {
-//        // We'll slam configuration for Foo into the SupplementalDataService
-//        supplementalDataService.appendSupplementalDataConfiguration( [ "com.sungardhe.banner.testing.Foo":
-//                                                                            [ testSuppA: [ required: false, dataType: String ],
-//                                                                              testSuppB: [ required: false, dataType: boolean ],
-//                                                                            ],
-//                                                                      ] )
-//
-//        supplementalDataService.supplementalDataPersistenceManager = new SupplementalDataPersistenceTestManager()
-//
-//        def foo = new Foo( newTestFooParams() )
-//        foo.testSuppA = "Supplemental property A"
-//        foo.testSuppB = "Supplemental property B"
-//        foo.testSuppC = "A not supported property C"
-//
-//        assertTrue foo.hasSupplementalProperties()
-//        assertEquals 3, foo.supplementalProperties.size() // as far as we care, we have 3 supplemental properties -- even though one won't be saved
-//
-//        foo = fooService.create( foo )
-//        assertNotNull foo.id
-//        assertEquals 2, foo.supplementalProperties.size() // our 'not supported' property is no longer here...
-//        assertFalse foo.supplementalProperties.keySet().contains( "testSuppC" )
-//    }
+    void testSetSupplementalPropertyValue() {
+
+        shouldFail( MissingPropertyException ) { new Foo( newTestFooParams() ).testSuppA }
+
+        def foo = fooService.create( newTestFooParams() )
+        foo.refresh()
+
+        foo.testSuppA = newPropertyValue( value: "I'm supplemental!" )
+        foo.description = "Updated" // TODO: Currently a core property of the model MUST be modified for supplemental properties to be persisted
+        save foo
+        foo.refresh()
+
+        assertTrue foo.hasSupplementalProperties()
+        assertEquals "Expected 2 but have ${foo.supplementalPropertyNames().size()} properties: ${foo.supplementalPropertyNames().join(', ')}", 2, foo.supplementalPropertyNames().size()
+        assertTrue foo.hasSupplementalProperty( 'testSuppA' )
+        assertEquals "I'm supplemental!", foo.testSuppA."1".value
+    }
+
+
+    void testCreateWithSupplementalPropertyValue() {
+        def foo = new Foo( newTestFooParams() )
+        shouldFail( MissingPropertyException ) { foo.testSuppA = newPropertyValue( value: "I'm not available yet!" ) }
+
+        // but we can still add supplemental properties directly...
+        foo.supplementalProperties = [ testSuppA: newPropertyValue( value: "I'm a new supplemental property!" ),
+                                       testSuppB: newPropertyValue( value: "Me too!" ) ]
+        save foo
+        foo.refresh()
+
+        assertTrue foo.hasSupplementalProperties()
+        assertEquals "Expected 2 but have ${foo.supplementalPropertyNames().size()} properties: ${foo.supplementalPropertyNames().join(', ')}", 2, foo.supplementalPropertyNames().size()
+        assertTrue foo.hasSupplementalProperty( 'testSuppA' )
+        assertTrue foo.hasSupplementalProperty( 'testSuppB' )
+        assertEquals "I'm a new supplemental property!", foo.testSuppA."1".value
+        assertEquals "Me too!", foo.testSuppB."1".value
+    }
+
+
+    /**
+     * Tests that a model's supplemental data has no effect on another model's supplemental data
+     * when the other model is the same type.
+     */
+    void testSupplementalDataIsolationWithinModelType() {
+        def foo = fooService.create( newTestFooParams() )
+        foo.refresh() // we need to force a reload so Foo 'has' the supplemental property 'setters'
+        def bar = fooService.create( newTestFooParams( "#C" ) )
+        bar.refresh() // we need to force a reload so Foo 'has' the supplemental property 'setters'
+
+        runTestSupplementalDataIsolation( foo, bar )
+    }
+
+
+    /**
+     *  Tests that a model's supplemental data doesn't conflict with that of another.
+     **/
+    void testSupplementalDataIsolationAcrossModels() {
+        supplementalDataService.appendSupplementalDataConfiguration(  "com.sungardhe.banner.testing.Bar":
+                                                                           [ testSuppA: [ required: false, dataType: String ],
+                                                                             testSuppB: [ required: false, dataType: boolean ]
+                                                                           ]
+                                                                     )
+        def foo = fooService.create( newTestFooParams() )
+        foo.refresh() // we need to force a reload so Foo 'has' the supplemental property 'setters'
+
+        def bar = new Bar( newTestFooParams( "#C" ) )
+        save bar
+        bar.refresh()
+
+        runTestSupplementalDataIsolation( foo, bar )
+    }
+
+
+    private runTestSupplementalDataIsolation( foo, bar ) {
+        assertTrue supplementalDataService.supportsSupplementalProperties( Foo )
+        assertFalse supplementalDataService.supportsSupplementalProperties( AreaLibrary )
+
+        foo.testSuppA = newPropertyValue( value: "Supplemental property A" )
+        foo.testSuppB = new SupplementalPropertyValue( [ '1': new SupplementalPropertyDiscriminatorContent( value: "Supplemental property B" ),
+                                                         '2': new SupplementalPropertyDiscriminatorContent( value: "Supplemental property B2" ) ] )
+foo.description = "changed" // temporarily required
+        save foo
+        foo.refresh()
+
+
+        bar.testSuppA = newPropertyValue( value: "Bar Supplemental property A" )
+        bar.testSuppB = newPropertyValue( value: "Bar Supplemental property B" )
+bar.description = "changed also" // temporarily required
+        save bar
+        bar.refresh()
+
+        assertTrue foo.hasSupplementalProperties()
+        assertTrue bar.hasSupplementalProperties()
+
+        assertTrue foo.hasSupplementalProperty( "testSuppA" )
+        assertTrue bar.hasSupplementalProperty( "testSuppA" )
+
+        assertTrue foo.hasSupplementalProperty( "testSuppB" )
+        assertTrue bar.hasSupplementalProperty( "testSuppB" )
+
+        assertEquals 2, foo.supplementalProperties?.size()
+        assertEquals 2, bar.supplementalProperties?.size()
+
+        assertEquals 1, foo.testSuppA.size()
+        assertEquals 1, bar.testSuppA.size()
+
+        assertEquals 2, foo.testSuppB?.size()
+        assertEquals 1, bar.testSuppB?.size()
+
+        assertEquals "Supplemental property A", foo.testSuppA.'1'.value
+        assertEquals "Bar Supplemental property A", bar.testSuppA.'1'.value
+
+        assertEquals "Supplemental property B", foo.testSuppB.'1'.value
+        assertEquals "Supplemental property B2", foo.testSuppB.'2'.value
+        assertEquals "Bar Supplemental property B", bar.testSuppB.'1'.value
+
+        shouldFail( MissingPropertyException ) { foo.testSuppX }
+        shouldFail( MissingPropertyException ) { bar.testSuppX }
+    }
 
 
     private Map newTestFooParams( code = "TT" ) {
@@ -306,6 +207,12 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
         supplementalDataService.supplementalDataPersistenceManager = testSupplementalDataPersistenceTestManager
     }
 
+
+    public SupplementalPropertyValue newPropertyValue( Map content ) {
+        SupplementalPropertyDiscriminatorContent discProp = new SupplementalPropertyDiscriminatorContent( content )
+        new SupplementalPropertyValue( [ (discProp.disc): discProp ] )
+    }
+
 }
 
 
@@ -316,13 +223,13 @@ class SupplementalDataPersistenceTestManager {
 
 
     public def loadSupplementalDataFor( model ) {
-println "XXXXXXXXXXXX load called"
+        println "SupplementalDataPersistenceTestManager.load called for model $model"
         def modelKey = "${model.class.name}-${model.id}"
         if (persistentStore."$modelKey") {
             model.supplementalProperties = persistentStore."$modelKey".clone()
         }
         else {
-println "XXXXXXXXXX and will load default definitions (since there is no existing supplemental data"
+            println "...and will load default definitions (since there is no existing supplemental data"
             // load in common specification of the supplemental data properties
             Map defaultSuppData = [ testSuppA: newDefaultPropertySpec( '1' ),
                                     testSuppB: newDefaultPropertySpec( '1', Boolean ) ]
@@ -332,29 +239,24 @@ println "XXXXXXXXXX and will load default definitions (since there is no existin
 
 
     public def persistSupplementalDataFor( model ) {
-println "XXXXXXXXXX persist called"
+        println "SupplementalDataPersistenceTestManager.persist called"
         def modelKey = "${model.class.name}-${model.id}"
-        if (!persistentStore."$modelKey" ) {
-           persistentStore."$modelKey" = new HashMap()
-        }
-        def storage = persistentStore."$modelKey"
+        persistentStore."$modelKey" = new HashMap()
 
         model.supplementalProperties?.each { k, v ->
-            storage.put( k, v )
+            persistentStore."$modelKey".put( k, v )
         }
     }
 
 
     public def removeSupplementalDataFor( model ) {
-        def modelKey = "${model.class.name}-${model.id}"
-        persistentStore."$modelKey" = null
+        // not needed in this test implementation
     }
 
 
-    public SupplementalPropertyValue newDefaultPropertySpec( disc, dataType = String ) {
+    private SupplementalPropertyValue newDefaultPropertySpec( discriminator = '1', dataType = String ) {
         SupplementalPropertyDiscriminatorContent discProp =
-            new SupplementalPropertyDiscriminatorContent( required: false, value: null, disc: disc, pkParentTab: null,
-                                                          id: null, dataType: dataType, prompt: "Default", isDirty: false )
+            new SupplementalPropertyDiscriminatorContent( disc: discriminator, dataType: dataType )
 
         new SupplementalPropertyValue( [ (discProp.disc): discProp ] )
     }
