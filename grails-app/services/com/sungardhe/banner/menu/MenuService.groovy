@@ -23,13 +23,8 @@ class MenuService {
    * @return List representation of menu objects that a user has access
    */
   def bannerMenu() {
-    def map = bannerMenuMap()
-    def ban =[]
-    map.each {
-      it.value.menu = getParent(map,it.value)
-      ban.add (it.value )
-    }
-    return ban
+    def map = processMenu()
+    return map
 
   }
   /**
@@ -38,19 +33,7 @@ class MenuService {
    */
   def personalMenu() {
     def map = personalMenuMap()
-    def ban =[]
-    map.each {
-      it.value.menu = getParent(map,it.value)
-      ban.add (it.value )
-    }
-    return ban
-  }
-  /**
-   * This is returns map of all menu items based on user access
-   * @return Map of menu objects that a user has access
-   */
-  def bannerMenuMap() {
-    return processMenu("Begin gukmenu.p_bld_prod_menu; End;")
+    return map
   }
 
   /**
@@ -59,7 +42,7 @@ class MenuService {
    */
   def personalMenuMap() {
     def bannerMenu
-    def dataMap = [:]
+    def dataMap = []
     sql = new Sql(sessionFactory.getCurrentSession().connection())
     sql.execute("Begin gukmenu.p_bld_pers_menu; End;")
     sql.eachRow("select * from gutpmnu,gubmodu,gubpage where  substr(gutpmnu_value,6,length(gutpmnu_value))  = gubpage_code (+) AND " +
@@ -73,7 +56,7 @@ class MenuService {
       mnu.type = str[0]
       mnu.module = it.gubmodu_name
       mnu.url = it.gubmodu_url
-      dataMap.put(str[1], mnu)
+      dataMap.add(mnu)
     });
 
     return dataMap
@@ -94,32 +77,12 @@ class MenuService {
   }
 
 
-
-  private def getParent(Map map, Menu mnu) {
-    def parentChain
-    def parentMnu
-    def menuFName = mnu.formName
-    if (mnu.type == "MENU")
-      parentChain = menuFName
-    for (i in 1..(mnu.level)) {
-      parentMnu = map.get(menuFName)
-      menuFName = parentMnu.parent
-      if (parentChain == null)
-        parentChain = menuFName
-      else
-      if (menuFName != null) parentChain = menuFName + "/" + parentChain
-    }
-    return "Banner" + "/" + parentChain
-
-  }
-
-
-  private def processMenu(String menuSql) {
+  private def processMenu() {
     def bannerMenu
-    def dataMap = [:]
+    def dataMap = []
     def i = 0
     sql = new Sql(sessionFactory.getCurrentSession().connection())
-    sql.execute(menuSql)
+    sql.execute("Begin gukmenu.p_bld_prod_menu; End;")
     sql.eachRow("select * from gutmenu,gubmodu,gubpage where  gutmenu_value  = gubpage_code (+) AND " +
             " gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+)", {
       def mnu = new Menu()
@@ -127,15 +90,15 @@ class MenuService {
       mnu.formName = it.gutmenu_value
       mnu.pageName = it.gubpage_name
       if (it.gutmenu_desc != null)
-      mnu.caption = it.gutmenu_desc.replaceAll(/\&/,"&amp;")
+        mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
       mnu.level = it.gutmenu_level
       mnu.type = it.gutmenu_objt_code
       mnu.parent = it.gutmenu_prior_obj
       mnu.module = it.gubmodu_name
       mnu.url = it.gubmodu_url
-      dataMap.put(it.gutmenu_value, mnu)}
+      dataMap.add(mnu)
+    }
     );
-
     return dataMap
   }
 

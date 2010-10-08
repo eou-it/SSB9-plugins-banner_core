@@ -24,44 +24,21 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
     dataSetup()
   }
 
-  void testBannerMenuMap() {
-    def map
-    map = menuService.bannerMenuMap()
-    assertNotNull map
-    def mnu = new Menu()
-    mnu = map["SCACRSE"]
-    assertNotNull mnu.url
-    assertNotNull mnu.caption
-    assert mnu.formName == "SCACRSE"
-    assert mnu.pageName == "basicCourseInformation"
-  }
-
   void testBannerMenu() {
-    String mnu = menuService.bannerMenu()
-    assertNotNull mnu
-
-  }
-
-
-  void testDirectAccess() {
     def map
-    map = menuService.bannerMenuMap()
+    map = menuService.bannerMenu()
     assertNotNull map
     def mnu = new Menu()
-    mnu = map["SCACRSE"]
+    for (i in 1..(map.size())) {
+      if (map.get(i).formName == "SCACRSE") {
+        mnu = map.get(i)
+        break;
+      }
+    }
     assertNotNull mnu.url
     assertNotNull mnu.caption
     assert mnu.formName == "SCACRSE"
     assert mnu.pageName == "basicCourseInformation"
-  }
-
-  void testDirectAccessFailure() {
-    def map
-    map = menuService.bannerMenuMap()
-    assertNotNull map
-    def mnu = new Menu()
-    mnu = map["NOTEXISTS"]
-    assertNull mnu
   }
 
   void testPersonalMenuMap() {
