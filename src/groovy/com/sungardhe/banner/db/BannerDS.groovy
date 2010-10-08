@@ -30,14 +30,14 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 
 // This class was renamed from the more desirable 'BannerDataSource' as doing so
-// circumvented 'can not resolve class' issues when running applications using this plugin. 
+// circumvented 'can not resolve class' issues when running applications using this plugin.
 // It is not currently understood why the BannerDataSource naming was problematic.
 // To reduce confusion, you may want to import this class using:
 //     import com.sungardhe.banner.db.BannerDS as BannerDataSource
 // TODO: Investigate why BannerDataSource naming causes 'can not resolve class' while BannerDS works.
 
 /**
- * A dataSource that proxies connections, sets roles needed for the current request, 
+ * A dataSource that proxies connections, sets roles needed for the current request,
  * and invokes p_commit and p_rollback.
  * */
 public class BannerDS {

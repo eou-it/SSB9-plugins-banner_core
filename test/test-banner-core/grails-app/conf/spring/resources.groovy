@@ -9,12 +9,14 @@
  WITHOUT THE WRITTEN PERMISSION OF THE SAID COMPANY
  ****************************************************************************** */
 
-import com.sungardhe.banner.representations.*
+import com.sungardhe.banner.security.BannerAccessDecisionVoter
 
 /**
- * Spring configuration for the test-banner-core test application. This file uses Groovy DSL versus Spring XML. 
+ * Spring configuration for the test-banner-core test application. This file uses Groovy DSL versus Spring XML.
  */
 beans = {
+    
+    roleVoter( BannerAccessDecisionVoter )
 
 }
 

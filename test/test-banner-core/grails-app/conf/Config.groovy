@@ -172,6 +172,7 @@ log4j = {
 
 //	all    'grails.plugins.springsecurity'
 //	all    'org.springframework.security'
+//    all    'com.sungardhe.banner.security.BannerAccessDecisionVoter'
 
 // Grails provides a convenience for enabling logging within artefacts, using 'grails.app.XXX'.
 // Unfortunately, this configuration is not effective when 'mixing in' methods that perform logging.
@@ -203,10 +204,16 @@ log4j = {
 // connection is attained and the user has the necessary role, the role is enabled
 // for that user and Banner object.
 formControllerMap = [
-    'foo' : [ 'STVCOLL' ],
+        'foo' : [ 'STVCOLL' ],
+        'foobar' : [ 'STVCOLL' ],
+        'nope' : [ 'NOPE' ], // not a real controller - but we'll never get that far...
 ]
 
-
+// The bannerAccessDecisionVoter is registered by the banner-core plugin, and needs to be used
+// before the normal 'roleVoter' (as we will grant access without requiring roles to be specified per URL
+// within the interceptUrlMap below.)
+////////////////////////////////////grails.plugins.springsecurity.voterNames = [ 'authenticatedVoter', 'bannerAccessDecisionVoter', 'roleVoter' ]
+//grails.plugins.springsecurity.voterNames = [ 'bannerAccessDecisionVoter', 'roleVoter', 'authenticatedVoter' ]
 grails.plugins.springsecurity.useRequestMapDomainClass = false
 grails.plugins.springsecurity.providerNames = ['bannerAuthenticationProvider']
 //grails.plugins.springsecurity.rejectIfNoRule = true
@@ -229,13 +236,45 @@ grails.plugins.springsecurity.interceptUrlMap = [
         '/images/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/plugins/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/errors/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-        '/foo/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
-        '/foobar/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
-        '/api/foo/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
-        '/api/foobar/**': ['ROLE_STVCOLL_BAN_DEFAULT_M'],
-        '/**': ['ROLE_ANY_FORM_BAN_DEFAULT_M']
+
+         // ALL protected URIs other than the 'anonymous' ones above, will be protected
+         // by the following single entry. The 'ROLE_' used does not matter (although some
+         // role that starts with 'ROLE_' is needed). The 'ROLE_WILL_BE DETERMINED_DYNAMICALLY'
+         // is used to be clear that this isn't a 'real' role defined in Banner.
+         // Note that authorization will be performed by the BannerAccessDecisionVoter bean.
+         //
+         // Only '/name_used_in_formControllerMap/' and '/api/name_used_in_formControllerMap/'
+         // URIs are supported.  That is, the name_used_in_formControllerMap must be first, or
+         // immediately after 'api' -- but it cannot be otherwise nested.
+         //
+        '/**': ['ROLE_WILL_BE_DETERMINED_DYNAMICALLY']
 ]
 
+
+// -------------------- CAS configurations ---------------------------------------------------------- //
+
+grails.plugins.springsecurity.cas.serverUrlPrefix = 'http://localhost:8080/cas'
+grails.plugins.springsecurity.cas.loginUri = '/login'
+grails.plugins.springsecurity.cas.serviceUrl = 'http://localhost:8090/banner_on_grails/j_spring_cas_security_check'
+grails.plugins.springsecurity.cas.serverName = 'http://localhost:8090'
+grails.plugins.springsecurity.cas.sendRenew = false
+grails.plugins.springsecurity.cas.proxyCallbackUrl = 'http://localhost:8090/banner_on_grails/secure/receptor'
+grails.plugins.springsecurity.cas.proxyReceptorUrl = '/secure/receptor'
+grails.plugins.springsecurity.cas.useSingleSignout = true
+
+banner {
+    sso {
+      authenticationProvider = 'default'
+      authenticationAssertionAttribute = 'udcId'
+    }
+}
+
+
+// ******************************************************************************
+//
+//                 +++ RESTful RESOURCE REPESENTATION SUPPORT +++
+//
+// ******************************************************************************
 // Representations officially supported within Banner. Custom representations should not be added to this map,
 // but should instead be added to the 'CustomRepresentationConfig.groovy' file, within a 'customRepresentationHandlerMap'
 // that follows the same structure as the map below.
@@ -288,22 +327,4 @@ bannerRepresentationHandlerMap =
           [ "Foo": "com.sungardhe.banner.testing.FooMarkupBuilderBasedRepresentationHandler" ],
 
       // next MIME type would go here
-]
-
-// -------------------- CAS configurations ---------------------------------------------------------- //
-
-grails.plugins.springsecurity.cas.serverUrlPrefix = 'http://localhost:8080/cas'
-grails.plugins.springsecurity.cas.loginUri = '/login'
-grails.plugins.springsecurity.cas.serviceUrl = 'http://localhost:8090/banner_on_grails/j_spring_cas_security_check'
-grails.plugins.springsecurity.cas.serverName = 'http://localhost:8090'
-grails.plugins.springsecurity.cas.sendRenew = false
-grails.plugins.springsecurity.cas.proxyCallbackUrl = 'http://localhost:8090/banner_on_grails/secure/receptor'
-grails.plugins.springsecurity.cas.proxyReceptorUrl = '/secure/receptor'
-grails.plugins.springsecurity.cas.useSingleSignout = true
-
-banner {
-    sso {
-      authenticationProvider = 'default'
-      authenticationAssertionAttribute = 'udcId'
-    }
-}
+] // end bannerRepresentationHandlerMap

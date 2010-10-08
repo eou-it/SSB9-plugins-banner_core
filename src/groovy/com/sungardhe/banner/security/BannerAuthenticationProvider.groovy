@@ -1,5 +1,4 @@
 /** *****************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -44,7 +43,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
 
     public Authentication authenticate( Authentication authentication ) {
-        
+
         // Determine if database authentication is successful
          // Determine if database authentication is successful
         def dbUser

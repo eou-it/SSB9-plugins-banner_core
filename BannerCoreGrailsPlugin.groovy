@@ -41,6 +41,7 @@ import com.sungardhe.banner.service.AuditTrailPropertySupportHibernateListener
 import com.sungardhe.banner.representations.ResourceRepresentationRegistry
 import com.sungardhe.banner.security.BannerPreAuthenticatedFilter
 import javax.servlet.Filter
+import com.sungardhe.banner.security.BannerAccessDecisionVoter
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access
@@ -145,6 +146,8 @@ class BannerCoreGrailsPlugin {
             supplementalDataPersistenceManager = ref( supplementalDataPersistenceManager )
             bean.initMethod = 'init'
         }
+
+        roleVoter( BannerAccessDecisionVoter )
 
         authenticationDataSource( OracleDataSource )
 

@@ -27,6 +27,21 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
     }
 
 
+    // --------------------- Test ROLE-based URL Authorization ----------------------
+    // (not really a 'Foo' test -- but including here for convenience. Candidate for relocation.)
+
+
+    void testNoAccessWithoutRole() {
+
+        login()
+        get( "/nope/view" ) // not a real endpoint, but we won't get there as the Config.formControllerMap
+                            // maps this 'controller' to the NOPE form. The logged in user will not have
+                            // any roles that pertain to this non-existent controller, and authorization
+                            // will fail.
+        assertTitle "Denied"
+    }
+
+
     // --------------------- Test HTML Representation, non-RESTfully ------------------------
 
 

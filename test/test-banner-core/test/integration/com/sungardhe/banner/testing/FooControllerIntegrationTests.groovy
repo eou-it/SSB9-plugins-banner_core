@@ -96,8 +96,9 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         save entity
         entity.refresh()
 
-        // Note that we do NOT support using supplemental properties on model instances that have not yet been persisted to the database
+        // Note that we do NOT support using supplemental property setters on model instances that have not yet been persisted to the database
         entity.testSuppA = new SupplementalPropertyDiscriminatorContent( value: "Supplemental property A" )
+        entity.testSuppA.'2' = [ value: "Supp A too!", disc: 2, required: false, pkParentTab: null, id: 42, dataType: String ]
         save entity
 
         controller.request.with {
@@ -116,6 +117,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "Found code ${result?.data?.code} but expected ${entity.code}", entity.code, result?.data?.code
         assertEquals "Found description ${result?.data?.description} but expected ${entity.description}", entity.description, result?.data?.description
         assertEquals "Supplemental property A", result?.supplementalData?.testSuppA?.'1'?.value
+        assertEquals "Supp A too!", result?.supplementalData?.testSuppA?.'2'?.value
     }
 
 

@@ -63,7 +63,6 @@ class SupplementalDataPersistenceManager {
 			}
 		    model.supplementalProperties = supplementalProperties.clone()
             log.debug "Set supplemental properties: ${model.supplementalProperties}"
-println "XX----XXXXXXXXXXXXXXXX Set supplemental properties: ${model.supplementalProperties}"
 		} catch (e) {
 			log.error "Failed to load SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
 			throw e
@@ -184,7 +183,7 @@ println "XX----XXXXXXXXXXXXXXXX Set supplemental properties: ${model.supplementa
 
 
 	public def removeSupplementalDataFor( model ) {
-		println "TO BE IMPLEMENTED: SupplementalDataPersistenceManager.removeSupplementalDataFor will remove supplementalProperties ${model.supplementalProperties()}"
+		log.warn "TO BE IMPLEMENTED: SupplementalDataPersistenceManager.removeSupplementalDataFor asked to remove supplementalProperties ${model.supplementalProperties()}"
 		throw new RuntimeException( "Not yet implemented!" )
 	}
 
@@ -221,9 +220,7 @@ println "XX----XXXXXXXXXXXXXXXX Set supplemental properties: ${model.supplementa
                                                               prompt: it[7] )
 
             SupplementalPropertyValue propValue = new SupplementalPropertyValue( [ (discProp.disc): discProp ] )
-println "XXXXXXXXXXXXXXXXXX ${attributeName} (before) = " + supplementalProperties."${attributeName}"
             supplementalProperties."${attributeName}" << propValue
-println "XXXXXXXXXXXXXXXXXX ${attributeName} (after) = " + supplementalProperties."${attributeName}"
         }
     }
 
