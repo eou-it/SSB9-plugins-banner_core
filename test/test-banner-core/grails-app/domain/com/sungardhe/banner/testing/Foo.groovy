@@ -81,7 +81,7 @@ class Foo implements Serializable { // Currently based on 'College'; may replace
 	Date lastModified
 
 	@Column( name="STVCOLL_USER_ID", length=30, nullable = true )
-	String lastModifiedBy 
+	String lastModifiedBy
 
 	@Column( name="STVCOLL_DATA_ORIGIN", length=30, nullable = true )
 	String dataOrigin
@@ -98,7 +98,8 @@ class Foo implements Serializable { // Currently based on 'College'; may replace
 	public String toString() {
 		"Foo[id=$id, code=$code, description=$description, addressStreetLine1=$addressStreetLine1, addressStreetLine2=$addressStreetLine2, addressStreetLine3=$addressStreetLine3, addressCity=$addressCity, addressState=$addressState, addressCountry=$addressCountry, addressZipCode=$addressZipCode, lastModified=$lastModified, systemRequiredIndicator=$systemRequiredIndicator, voiceResponseMessageNumber=$voiceResponseMessageNumber, statisticsCanadianInstitution=$statisticsCanadianInstitution, districtDivision=$districtDivision, houseNumber=$houseNumber, addressStreetLine4=$addressStreetLine4, lastModifiedBy=$lastModifiedBy, version=$version, dataOrigin=$dataOrigin]"
 	}
-	
+
+    public static readonlyProperties = [ 'addressCountry', 'addressZipCode', 'districtDivision' ]
 
 	static constraints = {
 		code                          ( nullable: false, maxSize: 2  )

@@ -58,7 +58,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 
 		    // note that validation exceptions, unlike most others, may hold many localized error messages that may be presented to a user
             assertEquals 2L, returnMap.errors?.size()
-		    assertTrue returnMap.errors ==~ /.*The foo code is too long, it must be no more than 2 characters.*/
+            assertTrue returnMap.errors ==~ /.*The foo code is too long, it must be no more than 2 characters.*/
 		    assertNotNull returnMap.underlyingErrorMessage // this is the underlying exception's message (which is not appropriate to display to a user)
 		}
     }

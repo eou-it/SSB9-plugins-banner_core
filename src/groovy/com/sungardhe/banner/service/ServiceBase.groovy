@@ -27,13 +27,32 @@ import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.interceptor.TransactionAspectSupport
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 /**
- * Base class for services that provides generic support for CRUD.  While this class is best used as a
+ * Base class for services that provides generic support for CRUD.
+ *
+ * While this class is best used as a
  * base class, it can also be 'mixed in' to a service. When mixing in this class, however, the
- * @Transactional annotations are not effective. Consequently, services that mix in this class must
- * ensure they include 'static transactional = true' to ensure they are transactional. For details
- * on how to use this class (by extending from it or by mixing it in), please see 'FooService' developer comments.
+ * @Transactional annotations are not effective. Consequently, services that mix-in this class must
+ * ensure they include 'static transactional = true' to ensure they are transactional.
+ *
+ * This service base can protect against modification of read-only properties when they are identified
+ * within the model via a static list, such as this example:
+ *     public static readonlyProperties = [ 'addressCountry', 'addressZipCode', 'districtDivision' ]
+ *
+ * This service base can invoke callback handlers if defined in the concrete service, before and after
+ * create, update, and delete.  These callback handlers should be implemented within the concrete service
+ * as follows:
+ *     void preCreate( domainModelOrMap )     // argument is: whatever was passed into the create method
+ *     void postCreate( map )                 // argument is: [  before: domainModelOrMap, after: createdModel ]
+ *     void preUpdate( domainModelOrMap )     // argument is: whatever was passed into the update method; only invoked if the model is 'dirty'
+ *     void postUpdate( map )                 // argument is: [ before: domainModelOrMap, after: updatedModel ]; only invoked if the model was 'dirty'
+ *     void preDelete( domainModelOrMapOrId ) // argument is: whatever was passed into the delete method
+ *     void postDelete( map )                 // argument is: [  before: domainModelOrMapOrId, after: null ]
+ *
+ * For additional details regarding how to use this class (by extending from it or by mixing it in), please
+ * see 'FooService' developer comments.
  * The FooService, and Foo model, are 'test' artifacts used to test the framework.
  */
 @Transactional(readOnly = false, propagation = Propagation.REQUIRED )
@@ -121,6 +140,9 @@ class ServiceBase {
 
                 def updatedModel
                 if (domainObject.isDirty()) {
+
+                    validateReadOnlyPropertiesNotDirty( domainObject ) // throws RuntimeException if readonly properties are dirty
+
                     log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
 
                     log.trace "${this.class.simpleName}.update will now invoke the preUpdate callback if it exists"
@@ -495,4 +517,17 @@ class ServiceBase {
     }
 
 
+    private def validateReadOnlyPropertiesNotDirty( domainObject ) {
+        def readonlyProperties = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue( domainObject, 'readonlyProperties' )
+        if (readonlyProperties) {
+            def dirtyProperties = domainObject.getDirtyPropertyNames()
+            def modifiedReadOnlyProperties = dirtyProperties?.findAll { it in readonlyProperties}
+            if (modifiedReadOnlyProperties.size() > 0) {
+                log.warn "Attempt to modify ${domainObject.class} read-only properties ${modifiedReadOnlyProperties}"
+                def cleanNames = modifiedReadOnlyProperties.collect { GrailsNameUtils.getNaturalName( it as String ) }
+                throw new RuntimeException( "@@r1:readonlyFieldsCannotBeModified:${cleanNames.join(', ')}@@" )
+            }
+        }
+
+    }
 }

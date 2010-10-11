@@ -49,7 +49,6 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
 
 
     public boolean onPreUpdate( final PreUpdateEvent event ) {
-println "XXXXXXXXXXXXXXXXX___________________________ audit trail listener onPreUpdate called"
         try {
             updateSystemFields( event )
         } catch (e) {
