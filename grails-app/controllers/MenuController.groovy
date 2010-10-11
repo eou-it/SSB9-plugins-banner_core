@@ -10,10 +10,15 @@ class MenuController {
 	def data = {
       def i =0
 
-      if (request.parameterMap["menuName"] != null)
-          list = getMenuList(request.parameterMap["menuName"][0])
+      if (request.parameterMap["pageName"] != null)
+          list = getCrumb((request.parameterMap["pageName"][0]))
       else
-          list = getFirstList()
+          if (request.parameterMap["menuName"] != null)
+             list = getMenuList(request.parameterMap["menuName"][0])
+          else
+             list = getFirstList()
+
+      
       render(contentType:"text/xml"){
           NavigationEntries{
             for(a in list){
@@ -24,7 +29,7 @@ class MenuController {
       }
     }
 
-      private def getMenu () {
+    private def getMenu () {
         if (session["menuList"] ==  null) {
           list = menuService.bannerMenu ()
           session["menuList"] = list
@@ -63,6 +68,20 @@ class MenuController {
       }
 
 
+      private def getCrumb(String pageName) {
+        def mnuList = getMenu ()
+        def childMenu =[]
+        for (a in mnuList){
+              if (a.pageName == pageName)  {
+                a.menu = getParent(mnuList,a)
+                childMenu.add(a)
+                break;
+              }
+            }
+        return childMenu
+      }
+
+
       private def getParent(List map, Menu mnu) {
         def parentChain
         def parentMnu
@@ -80,14 +99,7 @@ class MenuController {
               }
             }
           menuFName = parentMnu.parent
-          for (k in 1..(mnu.level)) {
-            for (b in map){
-              if (b.formName == menuFName)  {
-                caption = b.caption
-                break;
-              }
-		}
-	    }
+          caption = parentMnu.caption
           if (parentChain == null) parentChain = caption
           else
           if (menuFName != null) parentChain = caption + "/" + parentChain
