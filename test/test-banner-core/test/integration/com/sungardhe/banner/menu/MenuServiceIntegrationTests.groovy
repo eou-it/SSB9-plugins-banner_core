@@ -41,18 +41,6 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
     assert mnu.pageName == "basicCourseInformation"
   }
 
-  void testPersonalMenuMap() {
-    def map
-    map = menuService.personalMenuMap()
-    assertNotNull map
-    def mnu = new Menu()
-    mnu = map["SCACRSE"]
-    assertNotNull mnu.url
-    assertNotNull mnu.caption
-    assert mnu.formName == "SCACRSE"
-    assert mnu.pageName == "basicCourseInformation"
-  }
-
   void testPersonalMenu() {
     String mnu = menuService.personalMenu()
     assertNotNull mnu
