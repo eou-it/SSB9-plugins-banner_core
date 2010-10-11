@@ -99,7 +99,12 @@ class MenuController {
               }
             }
           menuFName = parentMnu.parent
-          caption = parentMnu.caption
+          for (b in map){
+             if (b.formName == menuFName)  {
+                caption = b.caption
+                break;
+		}
+          }
           if (parentChain == null) parentChain = caption
           else
           if (menuFName != null) parentChain = caption + "/" + parentChain
