@@ -34,6 +34,7 @@ import org.springframework.security.web.FilterInvocation
 class BannerAccessDecisionVoter extends RoleVoter {
 
     static final String ROLE_PREFIX = "ROLE_"
+    static final String ROLE_DETERMINED_DYNAMICALLY = 'ROLE_DETERMINED_DYNAMICALLY'
 
     private final Logger log = Logger.getLogger( getClass() )
 
@@ -65,8 +66,12 @@ class BannerAccessDecisionVoter extends RoleVoter {
         if (authentication.getDetails() == null) {
             return AccessDecisionVoter.ACCESS_DENIED
         }
+        
+        if (authentication.principal instanceof String) {
+            return AccessDecisionVoter.ACCESS_ABSTAIN
+        }
 
-        vote( url, authentication )
+        vote( authentication, url, configAttributes )
     }
 
 
@@ -102,27 +107,42 @@ class BannerAccessDecisionVoter extends RoleVoter {
     }
 
 
-    private int vote( String url, Authentication authentication ) {
+    private int vote( Authentication authentication, String url, Collection<ConfigAttribute> configAttributes ) {
+        
+        def useDynamicAuthorization = configAttributes.any { it.attribute == ROLE_DETERMINED_DYNAMICALLY } 
+        
+        // dynamic form-based authorization due to special ROLE_DETERMINED_DYNAMICALLY role mapped to the url
+        if (useDynamicAuthorization) {
+	        log.debug "BannerAccessDecisionVoter.vote() will perform dynamic form-based authorization"
+	
+	        def forms = getCorrespondingFormNamesFor( url )
+	        if (forms) {
+    	        log.debug "BannerAccessDecisionVoter.vote() found form(s) (${forms}) mapped for URL $url"
 
-        def forms = getCorrespondingFormNamesFor( url )
-        log.debug "BannerAccessDecisionVoter.vote() has found corresponding Forms: $forms"
+    	        List applicableAuthorities = getApplicableAuthorities( forms, authentication )
 
-        if (!forms) {
-            log.debug "BannerAccessDecisionVoter.vote() could not find Forms mapped within Config.formControllerMap -- and will ABSTAIN"
-            return AccessDecisionVoter.ACCESS_ABSTAIN
+    	        // Now we'll exclude the special '_CONNECT' roles, as we don't want to give access for those...
+    	        applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
+    	        
+    	        if (applicableAuthorities.size() > 0) {
+    	            log.debug "BannerAccessDecisionVoter.vote() has found an applicable authority and will grant access"
+    	            return AccessDecisionVoter.ACCESS_GRANTED
+    	        } 
+            }
+    	    log.debug "BannerAccessDecisionVoter.vote() did NOT find any applicable authorities, and will DENY access"
+    	    return AccessDecisionVoter.ACCESS_DENIED    	        
         }
-        log.debug "BannerAccessDecisionVoter.vote() found FORM(S) (${forms}) mapped for URL $url"
 
-        List applicableAuthorities = getApplicableAuthorities( forms, authentication )
-
-        // Now we'll exclude the special '_CONNECT' roles, as we don't want to give access for those...
-        applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
-        if (applicableAuthorities.size() > 0) {
-            log.debug "BannerAccessDecisionVoter.vote() has found APPLICABLE AUTHORITIES: $applicableAuthorities"
-            return AccessDecisionVoter.ACCESS_GRANTED
+        // explicit uri-role map based authorization
+        log.debug "BannerAccessDecisionVoter.vote() will base authorization on roles explicitly specified for the url"
+        def hasRole = configAttributes?.any { it in authentication.principal.authorities }
+        
+        if (hasRole) {
+	        log.debug "BannerAccessDecisionVoter.vote() found user has a role that was explicitly specified for the url, and will grant access"
+	        return AccessDecisionVoter.ACCESS_GRANTED
         } else {
-            log.debug "BannerAccessDecisionVoter.vote() did NOT find applicable authorities, and will DENY access!"
-            return AccessDecisionVoter.ACCESS_DENIED
+	        log.debug "BannerAccessDecisionVoter.vote() found user does not have a role that was explicitly specified for the url, and will ABSTAIN"
+	        return AccessDecisionVoter.ACCESS_ABSTAIN
         }
 
         // To allow based upon IP address...

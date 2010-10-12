@@ -212,8 +212,7 @@ formControllerMap = [
 // The bannerAccessDecisionVoter is registered by the banner-core plugin, and needs to be used
 // before the normal 'roleVoter' (as we will grant access without requiring roles to be specified per URL
 // within the interceptUrlMap below.)
-////////////////////////////////////grails.plugins.springsecurity.voterNames = [ 'authenticatedVoter', 'bannerAccessDecisionVoter', 'roleVoter' ]
-//grails.plugins.springsecurity.voterNames = [ 'bannerAccessDecisionVoter', 'roleVoter', 'authenticatedVoter' ]
+//grails.plugins.springsecurity.voterNames = [ 'authenticatedVoter', 'bannerAccessDecisionVoter', 'roleVoter' ]
 grails.plugins.springsecurity.useRequestMapDomainClass = false
 grails.plugins.springsecurity.providerNames = ['bannerAuthenticationProvider']
 //grails.plugins.springsecurity.rejectIfNoRule = true
@@ -237,17 +236,19 @@ grails.plugins.springsecurity.interceptUrlMap = [
         '/plugins/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/errors/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
 
-         // ALL protected URIs other than the 'anonymous' ones above, will be protected
-         // by the following single entry. The 'ROLE_' used does not matter (although some
-         // role that starts with 'ROLE_' is needed). The 'ROLE_WILL_BE DETERMINED_DYNAMICALLY'
-         // is used to be clear that this isn't a 'real' role defined in Banner.
-         // Note that authorization will be performed by the BannerAccessDecisionVoter bean.
+         // ALL URIs specified with the BannerAccessDecisionVoter.ROLE_DETERMINED_DYNAMICALLY
+         // 'role' (it's not a real role) will result in authorization being determined based 
+         // upon a user's role assignments to the corresponding form (see 'formControllerMap' above).
+         // Note: This 'dynamic form-based authorization' is performed by the BannerAccessDecisionVoter 
+         // registered as the 'roleVoter' within Spring Security.
          //
          // Only '/name_used_in_formControllerMap/' and '/api/name_used_in_formControllerMap/'
-         // URIs are supported.  That is, the name_used_in_formControllerMap must be first, or
-         // immediately after 'api' -- but it cannot be otherwise nested.
+         // URL formats are supported.  That is, the name_used_in_formControllerMap must be first, or
+         // immediately after 'api' -- but it cannot be otherwise nested. URIs may be protected 
+         // by explicitly specifying true roles instead -- as long as ROLE_DETERMINED_DYNAMICALLY
+         // is NOT specified. 
          //
-        '/**': ['ROLE_WILL_BE_DETERMINED_DYNAMICALLY']
+        '/**': [ 'ROLE_DETERMINED_DYNAMICALLY' ]
 ]
 
 
