@@ -135,7 +135,8 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
         // explicit uri-role map based authorization
         log.debug "BannerAccessDecisionVoter.vote() will base authorization on roles explicitly specified for the url"
-        def hasRole = configAttributes?.any { it in authentication.principal.authorities }
+        def authorityNames = authentication.principal.authorities*.authority
+        def hasRole = configAttributes?.any { it.attribute in authorityNames }
         
         if (hasRole) {
 	        log.debug "BannerAccessDecisionVoter.vote() found user has a role that was explicitly specified for the url, and will grant access"
