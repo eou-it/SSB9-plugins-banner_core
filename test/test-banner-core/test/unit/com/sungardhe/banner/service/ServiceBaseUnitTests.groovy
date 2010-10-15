@@ -17,7 +17,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.hibernate.Session // we mock this within this test
 
 import org.springframework.security.core.context.SecurityContextHolder
-
+import com.sungardhe.banner.supplemental.SupplementalDataService
 
 /**
  * Integration test for the DomainManagementMethodsInjector.
@@ -713,15 +713,23 @@ class MyMock {
 
 
 class NonOverridingTestService extends ServiceBase {
-    Class domainClass = MyMock
     boolean transactional = true
+
+    public NonOverridingTestService() {
+        domainClass = MyMock
+        supplementalDataService = new SupplementalDataService()
+    }
 }
 
 
 class OverridingCreateTestService extends ServiceBase {
-    Class domainClass = MyMock
     boolean transactional = true
     boolean createInvoked
+
+    public OverridingCreateTestService() {
+        domainClass = MyMock
+        supplementalDataService = new SupplementalDataService()
+    }
 
     def create( college ) {
         createInvoked = true
@@ -730,9 +738,13 @@ class OverridingCreateTestService extends ServiceBase {
 
 
 class OverridingUpdateTestService extends ServiceBase {
-    Class domainClass = MyMock
     boolean transactional = true
     boolean updateInvoked
+
+    public OverridingUpdateTestService() {
+        domainClass = MyMock
+        supplementalDataService = new SupplementalDataService()
+    }
 
     def update( college ) {
         updateInvoked = true
@@ -741,9 +753,13 @@ class OverridingUpdateTestService extends ServiceBase {
 
 
 class OverridingDeleteTestService extends ServiceBase {
-    Class domainClass = MyMock
-    boolean transactional = true     
+    boolean transactional = true
     boolean deleteInvoked
+
+    public OverridingDeleteTestService() {
+        domainClass = MyMock
+        supplementalDataService = new SupplementalDataService()
+    }
 
     def delete( long id ) {
         deleteInvoked = true
@@ -752,15 +768,23 @@ class OverridingDeleteTestService extends ServiceBase {
 
 
 class AnotherTestService extends ServiceBase {
-    Class domainClass = MyMock
     boolean transactional = true
+
+    public AnotherTestService() {
+        domainClass = MyMock
+        supplementalDataService = new SupplementalDataService()
+    }
 }
 
 
 class AnotherWithCallbacksTestService extends ServiceBase {
-    Class domainClass = MyMock
     boolean transactional = true
     boolean preCreateCalled = false
+
+    public AnotherWithCallbacksTestService() {
+        domainClass = MyMock
+        supplementalDataService = new SupplementalDataService()
+    }
 
     def preCreate( map ) {
         preCreateCalled = true

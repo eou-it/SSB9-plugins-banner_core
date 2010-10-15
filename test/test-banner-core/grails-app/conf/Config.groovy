@@ -193,7 +193,7 @@ log4j = {
 
 // ******************************************************************************
 //
-//                       +++ FORM-CONTROLLER MAP +++
+//          +++ SECURITY: FORM-CONTROLLER MAP & INTERCEPT URL MAP +++
 //
 // ******************************************************************************
 // This map relates controllers to the Banner forms that it replaces.  This map
@@ -209,21 +209,10 @@ formControllerMap = [
         'nope' : [ 'NOPE' ], // not a real controller - but we'll never get that far...
 ]
 
-// The bannerAccessDecisionVoter is registered by the banner-core plugin, and needs to be used
-// before the normal 'roleVoter' (as we will grant access without requiring roles to be specified per URL
-// within the interceptUrlMap below.)
-//grails.plugins.springsecurity.voterNames = [ 'authenticatedVoter', 'bannerAccessDecisionVoter', 'roleVoter' ]
-grails.plugins.springsecurity.useRequestMapDomainClass = false
-grails.plugins.springsecurity.providerNames = ['bannerAuthenticationProvider']
-//grails.plugins.springsecurity.rejectIfNoRule = true
-
-grails.plugins.springsecurity.filterChain.chainMap = [
-    '/api/**': 'authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor',
-    '/**': 'securityContextPersistenceFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
-]
-
-grails.plugins.springsecurity.securityConfigType = SecurityConfigType.InterceptUrlMap
-
+// The following map is used to secure URLs, based upon authentication or role-based authorization.
+// In general, users should be granted access to Banner pages if they have any roles that pertain to
+// the corresponding Banner Form/Object (except if their only applicable role ends with '_CONNECT').
+// Please see comments below regarding the special 'ROLE_DETERMINED_DYNAMICALLY' role.
 grails.plugins.springsecurity.interceptUrlMap = [
         '/': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/zkau/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
@@ -237,20 +226,36 @@ grails.plugins.springsecurity.interceptUrlMap = [
         '/errors/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
 
          // ALL URIs specified with the BannerAccessDecisionVoter.ROLE_DETERMINED_DYNAMICALLY
-         // 'role' (it's not a real role) will result in authorization being determined based 
+         // 'role' (it's not a real role) will result in authorization being determined based
          // upon a user's role assignments to the corresponding form (see 'formControllerMap' above).
-         // Note: This 'dynamic form-based authorization' is performed by the BannerAccessDecisionVoter 
+         // Note: This 'dynamic form-based authorization' is performed by the BannerAccessDecisionVoter
          // registered as the 'roleVoter' within Spring Security.
          //
-         // Only '/name_used_in_formControllerMap/' and '/api/name_used_in_formControllerMap/'
-         // URL formats are supported.  That is, the name_used_in_formControllerMap must be first, or
-         // immediately after 'api' -- but it cannot be otherwise nested. URIs may be protected 
+         // Only '/<key_used_in_formControllerMap>/' and '/api/<key_used_in_formControllerMap>/'
+         // URL formats are supported.  That is, the key_used_in_formControllerMap must be first, or
+         // immediately after 'api' -- but it cannot be otherwise nested. URIs may be protected
          // by explicitly specifying true roles instead -- as long as ROLE_DETERMINED_DYNAMICALLY
-         // is NOT specified. 
+         // is NOT specified.
          //
         '/**': [ 'ROLE_DETERMINED_DYNAMICALLY' ]
 ]
 
+
+
+// ----------------------- Supporting Spring Security configuration --------------------------------- //
+// This section contains configuration that developer's do not need to routinely modify
+
+
+// The bannerAccessDecisionVoter is registered by the banner-core plugin, and needs to be used
+// before the normal 'roleVoter' (as we will grant access without requiring roles to be specified per URL
+// within the interceptUrlMap below.)
+grails.plugins.springsecurity.useRequestMapDomainClass = false
+grails.plugins.springsecurity.providerNames = ['bannerAuthenticationProvider']
+grails.plugins.springsecurity.rejectIfNoRule = true
+
+// FYI: grails.plugins.springsecurity.filterChain.chainMap is set programmatically by the banner-core plugin.
+
+grails.plugins.springsecurity.securityConfigType = SecurityConfigType.InterceptUrlMap
 
 // -------------------- CAS configurations ---------------------------------------------------------- //
 

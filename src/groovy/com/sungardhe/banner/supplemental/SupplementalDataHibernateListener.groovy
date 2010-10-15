@@ -14,34 +14,31 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 import org.hibernate.cfg.Configuration
 import org.hibernate.event.Initializable
-import org.hibernate.event.PreDeleteEvent
-import org.hibernate.event.PreDeleteEventListener
 import org.hibernate.event.PostLoadEventListener
 import org.hibernate.event.PostLoadEvent
 import org.springframework.context.ApplicationContext
-import org.hibernate.event.PostInsertEvent
-import org.hibernate.event.PostUpdateEvent
-import org.hibernate.event.PostInsertEventListener
-import org.hibernate.event.PostUpdateEventListener
-import org.hibernate.event.PreUpdateEvent
-import org.hibernate.event.PreUpdateEventListener
 
 /**
- * A listener that handles reading and writing of supplemental data properties into a model instance.
+ * A listener that handles loading of supplemental data properties into a just-loaded model instance.
+ *
+ * Note: This listener is not used to persist supplemental data, as the listener would not be
+ * notified when attempting to persist model instances that are not dirty (i.e., that have no changes
+ * to their 'normal' properties) but that have changes only to their supplemental data.  Consequently,
+ * persistence is performed explicitly when saving a model via a service that extends from, or mixes in,
+ * ServiceBase.
+ * @see com.sungardhe.banner.service.ServiceBase
  */
-public class SupplementalDataHibernateListener implements PreDeleteEventListener, PostInsertEventListener,
-                                                          PreUpdateEventListener, PostLoadEventListener, Initializable {
+public class SupplementalDataHibernateListener implements PostLoadEventListener, Initializable {
 
     static detailed = false
-    def supplementalDataService
+    SupplementalDataService supplementalDataService
 
 
     public void initialize( final Configuration config ) { }
 
 
     def getSupplementalDataService() {
-        if (!supplementalDataService) {
-            // fyi - it's ok if another thread also sneaks in...
+        if (!supplementalDataService) {  // fyi - it's ok if another thread also sneaks in...
             ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
             supplementalDataService = (SupplementalDataService) ctx.getBean( "supplementalDataService" )
         }
@@ -49,59 +46,10 @@ public class SupplementalDataHibernateListener implements PreDeleteEventListener
     }
 
 
-    // only returns entities that are configured to support supplemental data
-    boolean supportsSupplementalData( event ) {
-        if (event && event.getEntity()) {
-            def entity = event.getEntity()
-            getSupplementalDataService().supportsSupplementalProperties( entity.class )
-        } else {
-            false
-        }
-    }
-
-
-    public boolean onPreDelete( final PreDeleteEvent event ) {
-        try {
-            if (supportsSupplementalData( event )) {
-                handleDelete( event.getEntity() )
-            }
-        } catch (e) {
-            e.printStackTrace()
-            throw e
-        }
-        false // don't veto
-    }
-
-
-    public void onPostInsert( final PostInsertEvent event ) {
-        try {
-            if (supportsSupplementalData( event )) {
-                handleInsertOrUpdate( event.getEntity() )
-            }
-        } catch (e) {
-            e.printStackTrace()
-            throw e
-        }
-    }
-
-
-    public boolean onPreUpdate( final PreUpdateEvent event ) {
-        try {
-            if (supportsSupplementalData( event )) {
-                handleInsertOrUpdate( event.getEntity() )
-            }
-        } catch (e) {
-            e.printStackTrace()
-            throw e
-        }
-        false // don't veto
-    }
-
-
     public void onPostLoad( final PostLoadEvent event ) {
         try {
             if (supportsSupplementalData( event )) {
-                handleLoad( event.getEntity() )
+                getSupplementalDataService().loadSupplementalDataFor( event.getEntity() )
             }
         } catch (e) {
             e.printStackTrace()
@@ -110,22 +58,11 @@ public class SupplementalDataHibernateListener implements PreDeleteEventListener
     }
 
 
-    def handleDelete( entity ) {
-        if (entity.hasSupplementalProperties()) {
-            getSupplementalDataService().removeSupplementalDataFor( entity )
+    private boolean supportsSupplementalData( event ) {
+        if (event && event.getEntity()) {
+            return getSupplementalDataService().supportsSupplementalProperties( event.getEntity().class )
         }
+        false
     }
-
-
-    def handleInsertOrUpdate( entity ) {
-        if (entity.hasSupplementalProperties()) {
-            getSupplementalDataService().persistSupplementalDataFor( entity )
-        }
-    }
-
-
-   def handleLoad( entity ) {
-       getSupplementalDataService().loadSupplementalDataFor( entity )
-   }
 
 }

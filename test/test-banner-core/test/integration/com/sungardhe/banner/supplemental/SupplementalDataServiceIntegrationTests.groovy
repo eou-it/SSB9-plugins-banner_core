@@ -14,6 +14,7 @@ import com.sungardhe.banner.testing.Foo
 import com.sungardhe.banner.testing.BaseIntegrationTestCase
 import com.sungardhe.banner.testing.AreaLibrary
 import com.sungardhe.banner.testing.Bar
+import com.sungardhe.banner.service.ServiceBase
 
 /**
  * Integration tests of the supplemental data service.  Note that this test contains
@@ -63,8 +64,6 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
         assertFalse supplementalDataService.supportsSupplementalProperties( AreaLibrary )
 
         def foo = fooService.create( newTestFooParams() )
-        foo.refresh()
-
         assertTrue foo.hasSupplementalProperties()
         assertEquals 2, foo.supplementalProperties?.size()
         assertTrue foo.supplementalPropertyNames.containsAll( [ 'testSuppA', 'testSuppB' ] )
@@ -79,13 +78,10 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
         shouldFail( MissingPropertyException ) { new Foo( newTestFooParams() ).testSuppA }
 
         def foo = fooService.create( newTestFooParams() )
-        foo.refresh()
-
         foo.testSuppA = newPropertyValue( value: "I'm supplemental!" )
         foo.description = "Updated" // TODO: Currently a core property of the model MUST be modified for supplemental properties to be persisted
-        save foo
-        foo.refresh()
 
+        foo = fooService.update( foo )
         assertTrue foo.hasSupplementalProperties()
         assertEquals "Expected 2 but have ${foo.supplementalPropertyNames().size()} properties: ${foo.supplementalPropertyNames().join(', ')}", 2, foo.supplementalPropertyNames().size()
         assertTrue foo.hasSupplementalProperty( 'testSuppA' )
@@ -100,9 +96,8 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
         // but we can still add supplemental properties directly...
         foo.supplementalProperties = [ testSuppA: newPropertyValue( value: "I'm a new supplemental property!" ),
                                        testSuppB: newPropertyValue( value: "Me too!" ) ]
-        save foo
-        foo.refresh()
 
+        foo = fooService.create( foo )
         assertTrue foo.hasSupplementalProperties()
         assertEquals "Expected 2 but have ${foo.supplementalPropertyNames().size()} properties: ${foo.supplementalPropertyNames().join(', ')}", 2, foo.supplementalPropertyNames().size()
         assertTrue foo.hasSupplementalProperty( 'testSuppA' )
@@ -117,12 +112,7 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
      * when the other model is the same type.
      */
     void testSupplementalDataIsolationWithinModelType() {
-        def foo = fooService.create( newTestFooParams() )
-        foo.refresh() // we need to force a reload so Foo 'has' the supplemental property 'setters'
-        def bar = fooService.create( newTestFooParams( "#C" ) )
-        bar.refresh() // we need to force a reload so Foo 'has' the supplemental property 'setters'
-
-        runTestSupplementalDataIsolation( foo, bar )
+        runTestSupplementalDataIsolation( fooService )
     }
 
 
@@ -135,34 +125,26 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
                                                                              testSuppB: [ required: false, dataType: boolean ]
                                                                            ]
                                                                      )
-        def foo = fooService.create( newTestFooParams() )
-        foo.refresh() // we need to force a reload so Foo 'has' the supplemental property 'setters'
-
-        def bar = new Bar( newTestFooParams( "#C" ) )
-        save bar
-        bar.refresh()
-
-        runTestSupplementalDataIsolation( foo, bar )
+        runTestSupplementalDataIsolation( new BarService() )
     }
 
 
-    private runTestSupplementalDataIsolation( foo, bar ) {
+    private runTestSupplementalDataIsolation( barService ) {
+
+        def foo = fooService.create( newTestFooParams() )
+        def bar = barService.create( newTestFooParams( "#C" ) )
+
         assertTrue supplementalDataService.supportsSupplementalProperties( Foo )
         assertFalse supplementalDataService.supportsSupplementalProperties( AreaLibrary )
 
         foo.testSuppA = newPropertyValue( value: "Supplemental property A" )
         foo.testSuppB = new SupplementalPropertyValue( [ '1': new SupplementalPropertyDiscriminatorContent( value: "Supplemental property B" ),
                                                          '2': new SupplementalPropertyDiscriminatorContent( value: "Supplemental property B2" ) ] )
-foo.description = "changed" // temporarily required
-        save foo
-        foo.refresh()
-
+        foo = fooService.update( foo )
 
         bar.testSuppA = newPropertyValue( value: "Bar Supplemental property A" )
         bar.testSuppB = newPropertyValue( value: "Bar Supplemental property B" )
-bar.description = "changed also" // temporarily required
-        save bar
-        bar.refresh()
+        bar = barService.update( bar )
 
         assertTrue foo.hasSupplementalProperties()
         assertTrue bar.hasSupplementalProperties()
@@ -227,6 +209,7 @@ class SupplementalDataPersistenceTestManager {
         def modelKey = "${model.class.name}-${model.id}"
         if (persistentStore."$modelKey") {
             model.supplementalProperties = persistentStore."$modelKey".clone()
+            model
         }
         else {
             println "...and will load default definitions (since there is no existing supplemental data"
@@ -234,6 +217,7 @@ class SupplementalDataPersistenceTestManager {
             Map defaultSuppData = [ testSuppA: newDefaultPropertySpec( '1' ),
                                     testSuppB: newDefaultPropertySpec( '1', Boolean ) ]
             model.supplementalProperties = defaultSuppData
+            model
         }
     }
 
@@ -246,6 +230,7 @@ class SupplementalDataPersistenceTestManager {
         model.supplementalProperties?.each { k, v ->
             persistentStore."$modelKey".put( k, v )
         }
+        loadSupplementalDataFor model
     }
 
 
@@ -261,4 +246,9 @@ class SupplementalDataPersistenceTestManager {
         new SupplementalPropertyValue( [ (discProp.disc): discProp ] )
     }
 
+}
+
+
+class BarService extends ServiceBase {
+    public BarService() { domainClass = Bar }
 }

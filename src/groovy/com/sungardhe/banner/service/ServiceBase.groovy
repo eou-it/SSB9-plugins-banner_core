@@ -18,16 +18,18 @@ import grails.util.GrailsNameUtils
 
 import org.apache.log4j.Logger
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-
 import org.hibernate.StaleObjectStateException
 
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
-import org.springframework.security.core.context.SecurityContextHolder as SCH
+
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.interceptor.TransactionAspectSupport
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
+
+import org.springframework.context.ApplicationContext
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+import com.sungardhe.banner.supplemental.SupplementalDataService
 
 /**
  * Base class for services that provides generic support for CRUD.
@@ -58,21 +60,18 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
 @Transactional(readOnly = false, propagation = Propagation.REQUIRED )
 class ServiceBase {
 
-    @Lazy // note: Lazy needed here to ensure 'this' refers to the service we're mixed into (if we're mixed in)
+    @Lazy
+    // note: Lazy annotation is needed here to ensure 'this' refers to the service we're mixed into (if we're mixed in)
     def log = Logger.getLogger( this.getClass() )
-    Class domainClass
 
-    Class getDomainClass() {
-        if (!domainClass) {
-            String serviceClassName = this.class.name
-            String domainClassName = serviceClassName.substring( 0, serviceClassName.indexOf( "Service" ) )
-            domainClass = Class.forName( domainClassName, true, Thread.currentThread().getContextClassLoader() )
-        }
-        domainClass
-    }
+    Class domainClass // if not explicitly set by a subclass, this will be determined when needed
+
+    // since this class may be mixed-into a service versus being extended, we won't rely on injection of the
+    // supplemental data service, but will fetch it if required.
+    SupplementalDataService supplementalDataService
 
 
-    def create( domainModelOrMap, flushImmediately = true ) {
+    public def create( domainModelOrMap, flushImmediately = true ) {
 
         log.debug "In ServiceBase.create, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
@@ -91,11 +90,12 @@ class ServiceBase {
                 if (this.respondsTo( 'preCreate' )) this.preCreate( domainModelOrMap )
 
                 def domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap )
-                assert domainObject.id == null
+                
                 // updateSystemFields( domainObject ) // Note: No longer needed as audit trail is set via AuditTrailPropertySupportHibernateListener
                 log.trace "${this.class.simpleName}.create will save $domainObject"
 
                 def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
+                createdModel = persistSupplementalDataFor( createdModel )
 
                 log.trace "${this.class.simpleName}.create will now invoke the postCreate callback if it exists"
                 if (this.respondsTo( 'postCreate' )) this.postCreate( [  before: domainModelOrMap, after: createdModel ] )
@@ -115,7 +115,7 @@ class ServiceBase {
     }
 
 
-    def update( domainModelOrMap, flushImmediately = true ) {
+    public def update( domainModelOrMap, flushImmediately = true ) {
 
         log.debug "In ServiceBase.update, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
@@ -151,6 +151,7 @@ class ServiceBase {
 
                     log.trace "${this.class.simpleName}.update applied updates and will save $domainObject"
                     updatedModel = domainObject.save( failOnError: true, flush: flushImmediately )
+                    updatedModel = persistSupplementalDataFor( updatedModel )
                 }
                 else {
                     log.trace "${this.class.simpleName}.update found the model to not be dirty and will not update it"
@@ -180,7 +181,7 @@ class ServiceBase {
     }
 
 
-    def createOrUpdate( domainModelOrMap, flushImmediately = true ) {
+    public def createOrUpdate( domainModelOrMap, flushImmediately = true ) {
 
         log.debug "In ServiceBase.createOrUpdate, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
@@ -211,7 +212,7 @@ class ServiceBase {
     }
 
 
-    def delete( domainModelOrMapOrId, flushImmediately = true ) {
+    public def delete( domainModelOrMapOrId, flushImmediately = true ) {
 
         log.debug "In ServiceBase.delete, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
@@ -237,6 +238,8 @@ class ServiceBase {
 
                 def id = extractId( getDomainClass(), domainModelOrMapOrId )
                 domainObject = fetch( getDomainClass(), id, log )
+
+                removeSupplementalDataFor( domainObject )
                 domainObject.delete( failOnError: true, flush: flushImmediately )
 
                 log.trace "${this.class.simpleName}.delete will now invoke the postDelete callback if it exists"
@@ -257,7 +260,7 @@ class ServiceBase {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
-    def read( id ) {
+    public def read( id ) {
 
         log.debug "In ServiceBase.read, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
@@ -277,7 +280,7 @@ class ServiceBase {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
-    def get( id ) {
+    public def get( id ) {
 
         log.debug "In ServiceBase.get, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
@@ -297,7 +300,7 @@ class ServiceBase {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
-    def list( args ) {
+    public def list( args ) {
 
         log.debug "In ServiceBase.list, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
@@ -313,7 +316,7 @@ class ServiceBase {
 
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
-    def count( args = null ) {  // args are ignored -- TODO: Remove from signature
+    public def count( args = null ) {  // args are ignored -- TODO: Remove from signature
 
         log.debug "In ServiceBase.count, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
@@ -328,7 +331,7 @@ class ServiceBase {
     }
 
 
-    def flush() {
+    public def flush() {
         log.trace "${this.class.simpleName}Service.flush invoked"
         try {
             getDomainClass().withSession { session ->
@@ -347,11 +350,11 @@ class ServiceBase {
     }
 
 
-// ---------------------------- Helper Methods -----------------------------------
-// (public static methods, so they may be used within services that implement their own CRUD methods.)
+    // ---------------------------- Public Static Helper Methods -------------------------------
+    // (public static methods to facilitate use within services that implement their own CRUD methods.)
 
 
-    private static boolean isDomainModelInstance( domainClass, domainModelOrMap ) {
+    public static boolean isDomainModelInstance( domainClass, domainModelOrMap ) {
         (domainClass.isAssignableFrom( domainModelOrMap.getClass() ) &&
                 !(Map.isAssignableFrom( domainModelOrMap.getClass() )))
     }
@@ -365,7 +368,7 @@ class ServiceBase {
      * 3) be a map that contains a 'domainModel' key whose value is the domain model instance to return
      * This static method is public so that it may be used within any services that implement their own CRUD methods.
      **/
-    public static def assignOrInstantiate(domainClass, domainModelOrMap) {
+    public static def assignOrInstantiate( domainClass, domainModelOrMap ) {
         if (isDomainModelInstance( domainClass, domainModelOrMap )) {
             domainModelOrMap
         }
@@ -414,7 +417,6 @@ class ServiceBase {
     }
 
 
-    // TODO: Refactor this -- it's pretty ugly...
     /**
      * Returns an 'id' extracted from the supplied domainObjectParamsIdOrMap.
      * The domainObjectParamsIdOrMap may:
@@ -439,8 +441,8 @@ class ServiceBase {
                 return domainObjectParamsIdOrMap // return as a string
             }
         }
-        else if (isDomainModelInstance(domainClass, domainObjectParamsIdOrMap)) {
-            extractId(domainClass, domainObjectParamsIdOrMap.id)
+        else if (isDomainModelInstance( domainClass, domainObjectParamsIdOrMap )) {
+            extractId( domainClass, domainObjectParamsIdOrMap.id )
         }
         else if (domainObjectParamsIdOrMap instanceof Map) {
             def paramsMap = extractParams( domainClass, domainObjectParamsIdOrMap )
@@ -448,7 +450,7 @@ class ServiceBase {
         }
         else {
             if (domainObjectParamsIdOrMap.toString().isNumber()) {
-                // now we'll try to see if we can use an intermidiate coercion (to a string) to extract the id
+                // now we'll try to see if we can use an intermediate coercion (to a string) to extract the id
                 extractId( domainClass, domainObjectParamsIdOrMap.toString() )
             }
             else {
@@ -513,6 +515,45 @@ class ServiceBase {
         else {
             log.warn "An optimistic lock version was provided when updating ${domainObject?.class.name} with id = ${domainObject?.id}, \
                   but this object doesn't support optimistic locking!"
+        }
+    }
+
+
+    // ---------------------------- Helper Methods -----------------------------------
+
+
+    protected Class getDomainClass() {
+        if (!domainClass) {
+            String serviceClassName = this.class.name
+            String domainClassName = serviceClassName.substring( 0, serviceClassName.indexOf( "Service" ) )
+            domainClass = Class.forName( domainClassName, true, Thread.currentThread().getContextClassLoader() )
+        }
+        domainClass
+    }
+
+
+    protected def getSupplementalDataService() {
+        if (!supplementalDataService) {
+            // fyi - it's ok if another thread also sneaks in...
+            ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+            supplementalDataService = (SupplementalDataService) ctx.getBean( GrailsNameUtils.getPropertyNameRepresentation( SupplementalDataService.class ) )
+        }
+        supplementalDataService
+    }
+
+
+    protected def persistSupplementalDataFor( modelInstance ) {
+        if (getSupplementalDataService().supportsSupplementalProperties( modelInstance.class )) {
+            return getSupplementalDataService().persistSupplementalDataFor( modelInstance )
+        } else {
+            modelInstance
+        }
+    }
+
+
+    protected def removeSupplementalDataFor( modelInstance ) {
+        if (getSupplementalDataService().supportsSupplementalProperties( modelInstance.class )) {
+            getSupplementalDataService().persistSupplementalDataFor( modelInstance )
         }
     }
 

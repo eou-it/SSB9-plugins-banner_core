@@ -85,16 +85,15 @@ class SupplementalPropertyDiscriminatorContent {
 
 
     int hashCode() {
-        int result;
-
-        result = (required != null ? required.hashCode() : 0);
-        result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (disc != null ? disc.hashCode() : 0);
-        result = 31 * result + (pkParentTab != null ? pkParentTab.hashCode() : 0);
-        result = 31 * result + (id != null ? id.hashCode() : 0);
-        result = 31 * result + (dataType != null ? dataType.hashCode() : 0);
-        result = 31 * result + (prompt != null ? prompt.hashCode() : 0);
-        return result;
+        int result
+        result = (required != null ? required.hashCode() : 0)
+        result = 31 * result + (value != null ? value.hashCode() : 0)
+        result = 31 * result + (disc != null ? disc.hashCode() : 0)
+        result = 31 * result + (pkParentTab != null ? pkParentTab.hashCode() : 0)
+        result = 31 * result + (id != null ? id.hashCode() : 0)
+        result = 31 * result + (dataType != null ? dataType.hashCode() : 0)
+        result = 31 * result + (prompt != null ? prompt.hashCode() : 0)
+        return result
     }
 
 

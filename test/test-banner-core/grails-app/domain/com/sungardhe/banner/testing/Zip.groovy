@@ -21,7 +21,7 @@ import org.hibernate.annotations.Type
  * A model used for testing the Banner framework.
  */
 @Entity
-@Table(name="GTVZIPC")  
+@Table(name="GTVZIPC")
 class Zip implements Serializable {
 
 	@Id
@@ -44,22 +44,22 @@ class Zip implements Serializable {
 	Date lastModified
 
 	@Column(name="GTVZIPC_USER_ID", length=30, nullable = true)
-	String lastModifiedBy 
+	String lastModifiedBy
 
 	@Column(name="GTVZIPC_DATA_ORIGIN", length=30, nullable = true)
 	String dataOrigin
 
 
 	public String toString() {
-		"Zip[id=$id, code=$code, city=$description, lastModifiedBy=$lastModifiedBy, version=$version, dataOrigin=$dataOrigin]"
+		"Zip[id=$id, code=$code, city=$city, lastModifiedBy=$lastModifiedBy, version=$version, dataOrigin=$dataOrigin]"
 	}
-	
+
 
 	static constraints = {
-		code(nullable: false, maxSize: 30) 
-		city(nullable: false, maxSize: 50)
-	    lastModified(nullable: true)
-		lastModifiedBy(nullable: true, maxSize: 30)
-		dataOrigin(nullable: true, maxSize: 30)
+		code (          nullable: false, maxSize: 30 )
+		city(           nullable: false, maxSize: 50 )
+	    lastModified(   nullable: true )
+		lastModifiedBy( nullable: true, maxSize: 30 )
+		dataOrigin(     nullable: true, maxSize: 30 )
 	}
 }

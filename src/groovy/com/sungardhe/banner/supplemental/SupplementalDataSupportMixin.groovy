@@ -109,8 +109,13 @@ class SupplementalDataSupportMixin {
      * primarily by the framework, not by application code.
      * @param supplementalData the map of supplemental data property names to property values
      */
-    public void setSupplementalProperties( Map<String, SupplementalPropertyValue> supplementalData ) {
+    public void setSupplementalProperties( Map<String, SupplementalPropertyValue> supplementalData, boolean setAsDirty = true ) {
         this.@supplementalDataContent = supplementalData
+        if (setAsDirty) {
+            this.@supplementalDataContent.values()?.each { supplementalPropertyValue ->
+                supplementalPropertyValue.values()?.each { discriminatorValue -> discriminatorValue.isDirty = true }
+            }
+        }
     }
 
 

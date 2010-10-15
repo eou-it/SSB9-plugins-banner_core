@@ -238,11 +238,10 @@ class BannerCoreGrailsPlugin {
     def doWithApplicationContext = { applicationContext ->
         def listeners = applicationContext.sessionFactory.eventListeners
 
-        def supplementalDataSupportListener = new SupplementalDataHibernateListener()
-        ['preDelete', 'postInsert', 'preUpdate', 'postLoad'].each {
-            addEventTypeListener( listeners, supplementalDataSupportListener, it )
-        }
+        // register hibernate listener to load supplemental data
+        addEventTypeListener( listeners, new SupplementalDataHibernateListener(), 'postLoad' )
 
+        // register hibernate listener for populating audit trail properties before inserting and updating models
         def auditTrailSupportListener = new AuditTrailPropertySupportHibernateListener()
         ['preInsert', 'preUpdate'].each {
             addEventTypeListener( listeners, auditTrailSupportListener, it )

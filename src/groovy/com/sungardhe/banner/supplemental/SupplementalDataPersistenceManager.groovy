@@ -28,6 +28,14 @@ class SupplementalDataPersistenceManager {
 
 	private final Logger log = Logger.getLogger( getClass() )
 
+
+
+
+    /**
+     * Returns the supplied model after loading it's supplemental data.
+     * @param model the model that has supplemental data to persist
+     * @return def, fully populated with supplemental data re-loaded from the database
+     */
 	public def loadSupplementalDataFor( model ) {
 		log.trace "In load: ${model}"
 		if (!supplementalDataService.supportsSupplementalProperties( model.getClass() )) {
@@ -61,8 +69,9 @@ class SupplementalDataPersistenceManager {
 			resultSetAttributesList.each() {
                 loadSupplementalProperty( it, supplementalProperties, tableName )
 			}
-		    model.supplementalProperties = supplementalProperties.clone()
+		    model.setSupplementalProperties( supplementalProperties.clone(), false ) // false -> don't mark as dirty
             log.debug "Set supplemental properties: ${model.supplementalProperties}"
+            model
 		} catch (e) {
 			log.error "Failed to load SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
 			throw e
@@ -70,6 +79,11 @@ class SupplementalDataPersistenceManager {
 	}
 
 
+    /**
+     * Returns the supplied model after persisting it's supplemental data.
+     * @param model the model that has supplemental data to persist
+     * @return def the model fully populated with supplemental data re-loaded from the database
+     */
 	public def persistSupplementalDataFor( model ) {
 		log.trace "In persist: ${model}"
 		if (!supplementalDataService.supportsSupplementalProperties(model.getClass())) {
@@ -81,7 +95,6 @@ class SupplementalDataPersistenceManager {
 			log.debug "SDE Properties for model: ${model.supplementalProperties}"
 
 			sql = new Sql( sessionFactory.getCurrentSession().connection() )
-			def session = sessionFactory.getCurrentSession()
 			def tableName = sessionFactory.getClassMetadata(model.getClass()).tableName
 			def sdeTableName = 'GORSDAV'
 
@@ -109,72 +122,26 @@ class SupplementalDataPersistenceManager {
 					disc = paramMap.disc
 					parentTab = paramMap.pkParentTab
 
-					if (parentTab == null) {
-						parentTab = getPk( tableName,model.id )
-					}
+                    parentTab = parentTab ?: getPk( tableName,model.id )
 					dataType = paramMap.dataType
 
-					if (value == null) {
-						value = ""
-					}
+					value = value ?: ""
+                    disc = disc ?: "1"
 
-					if (disc == null) {
-						disc = "1"
-					}
+					validateDataType( dataType, value )
+				    if (log.isDebugEnabled()) debug( id, tableName, attributeName, disc, parentTab, dataType, value )
 
-					// Validation Logic
-					if (dataType.equals( "NUMBER" ) && !isNumeric( value )) {
-						throw new RuntimeException( "Invalid Number" )
-					} else if (dataType.equals( "DATE" ) && !isDateValid( value )) {
-						throw new RuntimeException( "Invalid Date" )
-					}
-
-					log.debug "*****************************"
-					log.debug "id: " + id
-					log.debug "tableName:" + tableName
-					log.debug "attributeName:" + attributeName
-					log.debug "disc: " + disc
-					log.debug "parentTab: " + parentTab
-					log.debug "dataType: " + dataType
-					log.debug "value: " + value
-					log.debug "*****************************"
-
-					/*******************************************************
-					 * This code needs to be disabled. To debug Oracle ROWID
-					 *
-					 * *****************************************************
-					 sql = new Sql(sessionFactory.getCurrentSession().connection())
-					 sql.call ("""
-					 declare
-					 l_pkey 	GORSDAV.GORSDAV_PK_PARENTTAB%TYPE;
-					 l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${sdeTableName},${id});
-					 begin
-					 ${Sql.VARCHAR} := l_rowid;
-					 end ;
-					 """
-					 ){key ->
-                        log.info "ROWID:" +	key
-					 }
-					 ***************************************************************/
-
-					sql.call ("""
-					declare
-					   l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${sdeTableName},${id});
-					begin
-					    gp_goksdif.p_set_attribute(
-							   ${tableName}
-							  ,${attributeName}
-							  ,${disc}
-							  ,${parentTab}
-							  ,l_rowid
-							  ,${dataType}
-							  ,${value}
-							  );
-					end;
-	                      """
-							)
+					sql.call ( """declare
+					                  l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${sdeTableName},${id});
+					              begin
+					                  gp_goksdif.p_set_attribute( ${tableName}, ${attributeName}, ${disc},
+							                                      ${parentTab}, l_rowid, ${dataType}, ${value} );
+					              end;
+	                           """ )
 				}
 			}
+
+            loadSupplementalDataFor( model )
 		} catch (e) {
 			log.error "Failed to save SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
 			throw e
@@ -182,7 +149,45 @@ class SupplementalDataPersistenceManager {
 	}
 
 
-	public def removeSupplementalDataFor( model ) {
+    private def debug( id, tableName, attributeName, String disc, parentTab, dataType, String value ) {
+        log.debug "*****************************"
+        log.debug "id: " + id
+        log.debug "tableName:" + tableName
+        log.debug "attributeName:" + attributeName
+        log.debug "disc: " + disc
+        log.debug "parentTab: " + parentTab
+        log.debug "dataType: " + dataType
+        log.debug "value: " + value
+        log.debug "*****************************"
+
+        /** *****************************************************
+         * This code may be enabled in order to debug Oracle ROWID
+         * *****************************************************
+         sql = new Sql(sessionFactory.getCurrentSession().connection())
+         sql.call ("""
+         declare
+         l_pkey 	GORSDAV.GORSDAV_PK_PARENTTAB%TYPE;
+         l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${sdeTableName},${id});
+         begin
+         ${Sql.VARCHAR} := l_rowid;
+         end ;
+         """
+         ){key ->
+         log.info "ROWID:" +	key}************************************************************** */
+    }
+
+
+    private def validateDataType( dataType, String value ) {
+        if (dataType.equals( "NUMBER" ) && !isNumeric( value )) {
+            throw new RuntimeException( "Invalid Number" )
+        }
+        else if (dataType.equals( "DATE" ) && !isDateValid( value )) {
+            throw new RuntimeException( "Invalid Date" )
+        }
+    }
+
+
+    public def removeSupplementalDataFor( model ) {
 		log.warn "TO BE IMPLEMENTED: SupplementalDataPersistenceManager.removeSupplementalDataFor asked to remove supplementalProperties ${model.supplementalProperties()}"
 		throw new RuntimeException( "Not yet implemented!" )
 	}
