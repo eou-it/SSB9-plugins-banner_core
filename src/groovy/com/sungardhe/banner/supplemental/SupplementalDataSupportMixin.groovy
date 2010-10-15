@@ -133,34 +133,25 @@ class SupplementalDataSupportMixin {
     // For any property that isn't defined on the model, check to see if it has been configured as a
     // supplemental data property. If it hasn't, then throw a MissingMethodException.
     def propertyMissing( name, value ) {
-println "ZZZZZOOOOOOOOOOOOOOOOOOOXXXXXXXXXXXXXX mixin setter will set property $name with value $value"
-println "XXXXXXXXXXXXXX before state: \n${this.@supplementalDataContent}"
-
         // We'll only support setting of pre-configured supplemental data properties for an existing
         // model instance that was loaded from the database.  If the model is newly instantiated
         // (and not loaded from the database), the setter for any supplemental property will throw a
         // MissingPropertyException.
         if (!this.@id || !this.@supplementalDataContent.containsKey( name )) {
-println "XXXXXXXXXXXXXX ${this.class} does not have property $name but only has supplemental properties ${this.@supplementalDataContent.entrySet()*.toString()}"
             throw new MissingPropertyException( name, this.class )
         }
 
         switch (value) {
             case SupplementalPropertyValue: // may have many discriminated values; will replace the property value entirely
-println "New value is a SupplementalPropertyValue and so the entire property value will be replaced"
                 this.@supplementalDataContent."$name" = value
                 this.@supplementalDataContent."$name"?.values()?.each { it.isDirty = true }
                 break
             case SupplementalPropertyDiscriminatorContent: // will add or replace only the specific discriminated value
-println "New value is a SupplementalPropertyDiscriminatorContent, so only the affected discrimintor value will be affected"
                 value.isDirty = true
                 this.@supplementalDataContent."$name"["${value.disc}"] = value
                 break
             default: throw IllegalArgumentException( "Supplemental data must be of type SupplementalPropertyValue or SupplementalPropertyDiscriminatorContent" )
         }
-
-
-println "XXXXXXXXXXXXXX After state: \n${this.@supplementalDataContent}"
     }
 
 
