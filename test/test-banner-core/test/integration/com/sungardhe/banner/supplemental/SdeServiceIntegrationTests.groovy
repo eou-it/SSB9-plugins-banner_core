@@ -57,6 +57,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull zip.lastModified
     }
 
+
     /**
      * Tests updating the entity.
      **/
@@ -102,12 +103,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         }
 
         assertEquals 7, returnList.size()
-
-        returnList.each { sdeEntry ->
-            println sdeEntry.attributeName
-            println sdeEntry.value
-        }
     }
+
 
     /**
      * Tests loading the entity with SDE defined. (SDE data is not empty).
@@ -160,6 +157,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertNull found.NUMBER."1".value
     }
 
+
     /**
      * Tests loading the entity without SDE defined.
      **/
@@ -196,6 +194,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "10", zip.NUMBER."1".value
 
         def updatedSde = Zip.findByCodeAndCity( "00001", "newcity" )
+        updatedSde.refresh() // not needed normally, but used to ensure better testing...
         assertEquals "my comments", updatedSde.COMMENTS."1".value
         assertEquals "my test", updatedSde.TEST."1".value
         assertEquals "10", updatedSde.NUMBER."1".value
@@ -215,13 +214,15 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "comment 1", found.COMMENTS."1".value
         assertEquals "comment 1", found.TEST."1".value
         assertNull found.NUMBER."1".value
+        assertEquals 3, found.COMMENTS.size()
 
         found.COMMENTS."1".value = null
         def zip = zipService.update( found )
-        assertNull zip.COMMENTS."1".value
+        assertEquals 2, zip.COMMENTS.size()
 
         def updatedSde = Zip.findByCodeAndCity( "00001", "newcity" )
-        assertNull updatedSde.COMMENTS."1".value
+        updatedSde.refresh() // not needed normally, but used to ensure better testing...
+        assertEquals 2, zip.COMMENTS.size()
     }
 
 
@@ -249,6 +250,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "10", zip.NUMBER."1".value
 
         def updatedSde = Zip.findByCodeAndCity( "02186", "Milton" )
+        updatedSde.refresh() // not needed normally, but used to ensure better testing...
         assertEquals "my comments", updatedSde.COMMENTS."1".value
         assertEquals "my test", updatedSde.TEST."1".value
         assertEquals "10", updatedSde.NUMBER."1".value

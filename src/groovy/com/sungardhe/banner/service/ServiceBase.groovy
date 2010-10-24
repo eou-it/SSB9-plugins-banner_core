@@ -90,7 +90,7 @@ class ServiceBase {
                 if (this.respondsTo( 'preCreate' )) this.preCreate( domainModelOrMap )
 
                 def domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap )
-                
+
                 // updateSystemFields( domainObject ) // Note: No longer needed as audit trail is set via AuditTrailPropertySupportHibernateListener
                 log.trace "${this.class.simpleName}.create will save $domainObject"
 
@@ -151,11 +151,16 @@ class ServiceBase {
 
                     log.trace "${this.class.simpleName}.update applied updates and will save $domainObject"
                     updatedModel = domainObject.save( failOnError: true, flush: flushImmediately )
-                    updatedModel = persistSupplementalDataFor( updatedModel )
                 }
                 else {
                     log.trace "${this.class.simpleName}.update found the model to not be dirty and will not update it"
                     updatedModel = domainObject
+                }
+
+                // regardless of whether the model was dirty, we'll always persist supplemental properties (if they are dirty)
+                if (content.supplementalProperties) {
+                    updatedModel.setSupplementalProperties( content.supplementalProperties, false )
+                    updatedModel = persistSupplementalDataFor( updatedModel )
                 }
 
                 log.trace "${this.class.simpleName}.update will now invoke the postUpdate callback if it exists"
