@@ -20,9 +20,17 @@ def authString() {
 //
 // usage:
 // grails invoke-rest -model=<lower case model name> -httpMethod=<get|post|put|delete> -format=<mime type> -id: 123 -host=<host:port> -body=<file path name>
-// example:
+// example 1:
 // grails invoke-rest -model=foo -httpMethod=GET -format=application/vnd.sungardhe.student.v0.03+xml -id=31
 //                                (note http method can be capitalized if desired)
+// example 2:
+// grails invoke-rest -model=foo -httpMethod=put -format=application/vnd.sungardhe.student.v0.03+xml -id=31 -body=body_content.txt
+// (where body_content.txt contains:
+//     <FooInstance apiVersion="1.0">
+//         <Foo id='31' systemRequiredIndicator="N" optimisticLockVersion="0">
+//             <Description>Updated!</Description>
+//         </Foo>
+//     </FooInstance>
 //
 target( main: "Programmatically interact with a resource") {
     depends( parseArguments )
@@ -35,20 +43,6 @@ target( main: "Programmatically interact with a resource") {
     def url = "http://$host/test-banner-core/api"
     def bodyContent
 
-    if (httpMethod == 'post' || httpMethod == 'put') {
-        if (argsMap.body) {
-            bodyContent = new File( argsMap.body ).getText()
-            println "Going to submit body content of: $bodyContent"
-        }
-        else {
-            println "***ERROR: Cannot use $httpMethod without specifying a body"
-            exit( 1 )
-        }
-    }
-
-    println "Now invoking $httpMethod  $url"
-    println "(requesting content-type $format)"
-
     def restClient = new groovyx.net.http.RESTClient()
     restClient.uri = url
     restClient.client.params.setBooleanParameter 'http.protocol.expect-continue', false
@@ -60,9 +54,27 @@ target( main: "Programmatically interact with a resource") {
 
     // note the 'api' portion must be in both the uri AND the path.  Strange, but it needs to be this way...
     def path = id ? "api/$modelUriName/$id" : "api/$modelUriName"
-    def response = restClient."${httpMethod.toLowerCase()}"( path: path )
-    println "Response from $httpMethod: $response.data"
+
+    println "About to invoke $httpMethod --> $url   (will request content-type $format)"
+
+    def response
+    if (httpMethod == 'post' || httpMethod == 'put') {
+        if (argsMap.body) {
+            bodyContent = new File( argsMap.body ).getText()
+            println "Going to submit body content of: $bodyContent"
+            response = restClient."${httpMethod.toLowerCase()}"( path: path, body: bodyContent )
+        }
+        else {
+            println "***ERROR: Cannot use $httpMethod without specifying a body"
+            exit( 1 )
+        }
+    } else {
+        response = restClient."${httpMethod.toLowerCase()}"( path: path )
+    }
+
+    println "Response from $httpMethod: ${response?.data}"
 }
+
 
 setDefaultTarget( main )
 
