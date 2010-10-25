@@ -159,7 +159,7 @@ class ServiceBase {
 
                 // regardless of whether the model was dirty, we'll always persist supplemental properties (if they are dirty)
                 if (content.supplementalProperties) {
-                    updatedModel.setSupplementalProperties( content.supplementalProperties, false )
+                    updatedModel.setSupplementalProperties( content.supplementalProperties )
                     updatedModel = persistSupplementalDataFor( updatedModel )
                 }
 
