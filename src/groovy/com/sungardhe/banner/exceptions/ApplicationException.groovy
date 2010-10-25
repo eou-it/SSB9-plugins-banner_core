@@ -211,7 +211,23 @@ class ApplicationException extends RuntimeException {
         log.debug "translate RETURNING: msg = $msg"
         msg
     }
-    
+
+    def buildErrors (errors, localize) {
+         errors.collect { error ->
+             [
+                // field, model and rejectedValue can be used to locate the UI
+                // component that triggers the error, if needed.
+                field : error.field,
+                model : error.objectName,
+                rejectedValue : error.rejectedValue,
+                message :  error.codes.collect{ errorCode ->
+                                def msg = localize(code: errorCode)
+                                (msg == errorCode)?null:msg;
+                           }.find{msg -> msg != null}
+
+             ]
+         }
+    }
     
     // ----------------------- Exception Handlers Map ------------------------
     //
@@ -273,9 +289,9 @@ class ApplicationException extends RuntimeException {
             returnMap:  { localize ->
                             [ message: translate( localize: localize,
                                                   code: "validation.errors.message",
-                                                  args: [ localize( code: "${entityClassName}.label", 
+                                                  args: [ localize( code: "${entityClassName}.label",
                                                                     default: getUserFriendlyName() ) ] ) as String,
-                              errors: wrappedException.errors?.allErrors?.collect { localize( error: it ) }
+                              errors: buildErrors(wrappedException.errors?.allErrors, localize)
                             ]
                         }
         ],
