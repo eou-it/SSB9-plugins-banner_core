@@ -11,23 +11,15 @@
  ****************************************************************************** */
 package com.sungardhe.banner.exceptions
 
-import com.sungardhe.banner.exceptions.NotFoundException
-
 import java.sql.SQLException
 
 import javax.persistence.EntityExistsException
 
 import grails.util.GrailsNameUtils
-import grails.validation.ValidationException
 
 import org.apache.log4j.Logger
 
-import org.hibernate.StaleObjectStateException
-
-import org.springframework.dao.DataIntegrityViolationException as ConstraintException
 import org.springframework.jdbc.UncategorizedSQLException
-import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
-
 
 /**
  * A runtime exception thrown from services (and other artifacts as necessary).  
@@ -211,7 +203,23 @@ class ApplicationException extends RuntimeException {
         log.debug "translate RETURNING: msg = $msg"
         msg
     }
-    
+
+    def localizeFieldValidationErrors ( errors, localize ) {
+         errors.collect { error ->
+             [
+                // field, model and rejectedValue are the additional info
+                // about the field that caused the error.
+                field : error.field,
+                model : error.objectName,
+                rejectedValue : error.rejectedValue,
+                message :  error.codes.collect{ errorCode ->
+                                def msg = localize( code : errorCode )
+                                ( msg == errorCode ) ? null : msg;
+                           }.find{ msg -> msg != null }
+
+             ]
+         }
+    }
     
     // ----------------------- Exception Handlers Map ------------------------
     //
@@ -273,9 +281,9 @@ class ApplicationException extends RuntimeException {
             returnMap:  { localize ->
                             [ message: translate( localize: localize,
                                                   code: "validation.errors.message",
-                                                  args: [ localize( code: "${entityClassName}.label", 
+                                                  args: [ localize( code: "${entityClassName}.label",
                                                                     default: getUserFriendlyName() ) ] ) as String,
-                              errors: wrappedException.errors?.allErrors?.collect { localize( error: it ) }
+                              errors: localizeFieldValidationErrors( wrappedException.errors?.allErrors, localize )
                             ]
                         }
         ],
