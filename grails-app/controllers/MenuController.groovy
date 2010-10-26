@@ -22,7 +22,7 @@ class MenuController {
       mnuParams = "type=Personal"
     }
     if (request.parameterMap["pageName"] != null)
-      list = getCrumb((request.parameterMap["pageName"][0]))
+      list = getCrumb((request.parameterMap["pageName"][0])], menuType)
     else
     if (request.parameterMap["menuName"] != null)
       list = getMenuList(request.parameterMap["menuName"][0], menuType)
@@ -101,7 +101,11 @@ class MenuController {
    * This method returns simgle navigational entry as breadcrumb
    */
   private def getCrumb(String pageName, String menuType) {
-    def mnuList = getMenu()
+    def mnuList
+    if (menuType == null)
+      mnuList = getMenu()
+    else
+      mnuList = getPersonalMenu()
     def childMenu = []
     for (a in mnuList) {
       if (a.pageName == pageName) {

@@ -114,8 +114,9 @@ class MenuService {
   }
 
    private def getMnuPref() {
-      def prefs = menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference()
-      return prefs.get(0).formnameDisplayIndicator
+      //def prefs = menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference()
+      //return prefs.get(0).formnameDisplayIndicator
+      return "Y"
   }
 
 }
