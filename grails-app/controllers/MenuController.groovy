@@ -22,7 +22,7 @@ class MenuController {
       mnuParams = "type=Personal"
     }
     if (request.parameterMap["pageName"] != null)
-      list = getCrumb((request.parameterMap["pageName"][0])], menuType)
+      list = getCrumb((request.parameterMap["pageName"][0]),menuType)
     else
     if (request.parameterMap["menuName"] != null)
       list = getMenuList(request.parameterMap["menuName"][0], menuType)
