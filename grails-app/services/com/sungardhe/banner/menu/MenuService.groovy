@@ -18,7 +18,8 @@ class MenuService {
   boolean transactional = false
   Sql sql
   def sessionFactory
-  def menuAndToolbarPreferenceService
+  //def menuAndToolbarPreferenceService
+  def personalDataMap = [:]
 
   /**
    * This is returns map of all menu items based on user access
@@ -37,7 +38,7 @@ class MenuService {
     def map = personalMenuMap()
     return map
   }
-
+                        
   /**
    * This is returns map of all personal items based on user access
    * @return Map of menu objects that a user has access
@@ -45,11 +46,12 @@ class MenuService {
   def personalMenuMap() {
     def bannerMenu
     def dataMap = []
+
     def mnuLabelPref = getMnuPref()
     sql = new Sql(sessionFactory.getCurrentSession().connection())
     sql.execute("Begin gukmenu.p_bld_pers_menu; End;")
     sql.eachRow("select * from gutpmnu,gubmodu,gubpage where  substr(gutpmnu_value,6,length(gutpmnu_value))  = gubpage_code (+) AND " +
-            " gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+) ", {
+            " gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+) order by gutpmnu_seq_no", {
       def mnu = new Menu()
       def str = it.gutpmnu_value.split("\\|")
       mnu.formName = str[1]
@@ -62,12 +64,27 @@ class MenuService {
       mnu.type = str[0]
       mnu.module = it.gubmodu_name
       mnu.url = it.gubmodu_url
+      personalDataMap.put(it.gutpmnu_seq_no,mnu)
+      mnu.parent = setParent(mnu)
       dataMap.add(mnu)
     });
+
 
     return dataMap
   }
 
+
+  def setParent( Menu mnu) {
+    String parent
+    if (mnu.level == 1)
+      return parent
+    personalDataMap.each {
+       if (it.value.level == (mnu.level - 1) && (it.value.type == "MENU")) {
+              parent = it.value.formName
+       }
+    }
+    return parent
+   }
   /**
    * This is returns map of all menu items based on user access
    * @param pageName
@@ -114,9 +131,9 @@ class MenuService {
   }
 
    private def getMnuPref() {
-      //def prefs = menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference()
-      //return prefs.get(0).formnameDisplayIndicator
-      return "Y"
+     return "Y"
+     // def prefs = menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference()
+     // return prefs.get(0).formnameDisplayIndicator
   }
 
 }
