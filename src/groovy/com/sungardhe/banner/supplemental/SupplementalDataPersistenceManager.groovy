@@ -128,7 +128,10 @@ class SupplementalDataPersistenceManager {
 					value = value ?: ""
                     disc = disc ?: "1"
 
-					validateDataType( dataType, value )
+                    if (value){
+					  validateDataType( dataType, value )
+                    }
+
 				    if (log.isDebugEnabled()) debug( id, tableName, attributeName, disc, parentTab, dataType, value )
 
 					sql.call ( """declare
@@ -140,6 +143,15 @@ class SupplementalDataPersistenceManager {
 	                           """ )
 				}
 			}
+
+            sql.executeUpdate("""
+                                   update GORSDAV
+                                      set GORSDAV_DISC = rownum
+                                    where  GORSDAV_TABLE_NAME = '${tableName}'
+                                      and GORSDAV_PK_PARENTTAB = '${parentTab}'
+                                      and GORSDAV_ATTR_NAME = '${attributeName}'
+                                   """
+                              )
 
             loadSupplementalDataFor( model )
 		} catch (e) {
@@ -205,7 +217,11 @@ class SupplementalDataPersistenceManager {
                       govsdav_pk_parenttab,
                       govsdav_surrogate_id,
                       govsdav_attr_data_type,
-                      REPLACE( govsdav_attr_prompt_disp, '%DISC%',govsdav_disc )
+                      REPLACE( govsdav_attr_prompt_disp, '%DISC%',govsdav_disc ),
+                      govsdav_disc_type,
+                      govsdav_disc_validation,
+                      govsdav_attr_data_len,
+                      govsdav_attr_data_scale
                FROM govsdav
                    WHERE govsdav_table_name = :tableName
                    AND govsdav_attr_name = :attributeName
@@ -222,7 +238,11 @@ class SupplementalDataPersistenceManager {
                                                               pkParentTab: it[4],
                                                               id: it[5],
                                                               dataType: it[6],
-                                                              prompt: it[7] )
+                                                              prompt: it[7],
+                                                              discType: it[8],
+                                                              validation: it[9] != null ? it[9].toInteger() : 1,
+                                                              dataLength: it[10],
+                                                              dataScale: it[11])
 
             SupplementalPropertyValue propValue = new SupplementalPropertyValue( [ (discProp.disc): discProp ] )
             supplementalProperties."${attributeName}" << propValue

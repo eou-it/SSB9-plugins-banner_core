@@ -113,6 +113,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertTrue supplementalDataService.supportsSupplementalProperties( Zip )
 
         def found = Zip.findByCodeAndCity( "00001", "newcity" )
+
         assertTrue found?.hasSupplementalProperties()
         assertEquals "comment 1", found.COMMENTS."1".value
         assertEquals "comment 2", found.COMMENTS."2".value
@@ -122,6 +123,10 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "Enter a comment", found.COMMENTS."2".prompt
         assertEquals "Enter a comment", found.COMMENTS."3".prompt
 
+        assertEquals "VARCHAR2", found.COMMENTS."1".dataType
+        assertEquals "M", found.COMMENTS."1".discType
+        assertEquals 3, found.COMMENTS."1".validation
+
         assertEquals "comment 1", found.TEST."1".value
         assertEquals "comment 2", found.TEST."2".value
         assertEquals "comment 3", found.TEST."3".value
@@ -130,8 +135,19 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "Comment 2", found.TEST."2".prompt
         assertEquals "Comment 3", found.TEST."3".prompt
 
+        assertEquals "VARCHAR2", found.TEST."1".dataType
+        assertEquals "M", found.TEST."1".discType
+        assertEquals 6, found.TEST."1".validation
+
         assertNull found.NUMBER."1".value
         assertEquals "enter a numbere", found.NUMBER."1".prompt
+
+        assertEquals "NUMBER", found.NUMBER."1".dataType
+        assertEquals "S", found.NUMBER."1".discType
+        assertEquals 1, found.NUMBER."1".validation
+        assertEquals 2, found.NUMBER."1".dataLength
+        assertEquals 2, found.NUMBER."1".dataScale
+
 
         assertEquals 3, found.supplementalPropertyNames().size()
         assertTrue 'TEST' in found.supplementalPropertyNames()
@@ -224,6 +240,36 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         updatedSde.refresh() // not needed normally, but used to ensure better testing...
         assertEquals 2, zip.COMMENTS.size()
     }
+
+
+    /**
+	 * Tests when SDE attributes are defined for the entity.
+	 * 1. SDE data already exists
+	 * 2. Remove SDE data from the attribute
+	 */
+	void testSaveDeleteNotEmptySdeDataInTheMiddle(){
+		assertTrue supplementalDataService.supportsSupplementalProperties( Zip )
+
+		def found = Zip.findByCodeAndCity("00001","newcity")
+		assertTrue found?.hasSupplementalProperties()
+		assertEquals "comment 2", found.COMMENTS."2".value   // in the middle
+		assertEquals "comment 1", found.TEST."1".value
+		assertNull    found.NUMBER."1".value
+
+		found.COMMENTS."2".value = null
+        def zip = zipService.update( found )
+        assertEquals 2, zip.COMMENTS.size()
+
+		def updatedSde = Zip.findByCodeAndCity("00001","newcity")
+
+		def zipFound = Zip.findByCodeAndCity("00001","newcity")
+		zipFound.refresh() // not needed normally, but used to ensure better testing...
+
+        assertNotNull zipFound.COMMENTS."2".value   // rebuilt discriminator
+        assertEquals "cmment 3", zipFound.COMMENTS."2".value
+
+        assertNull zipFound.COMMENTS."3"
+	}
 
 
     /**
@@ -362,6 +408,23 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         catch (ApplicationException e) {
             assertEquals "Invalid Date", e.wrappedException.message
         }
+    }
+
+     /**
+     * Tests when the block is SDE enabled
+     **/
+    void testIsSde(){
+            def isSde =  supplementalDataService.hasSde("zipBlock")
+            assertTrue isSde
+
+            def isSde1 =  supplementalDataService.hasSde("fooBlock")
+            assertFalse isSde1
+
+            def isSde2 =  supplementalDataService.hasSde("zip")
+            assertFalse isSde2
+
+            def isSde3 =  supplementalDataService.hasSde("studentBlock")
+            assertFalse isSde3
     }
 
 
