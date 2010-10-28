@@ -65,6 +65,10 @@ class SupplementalPropertyDiscriminatorContent {
     def id
     def dataType = String
     def prompt = ""
+    def discType
+    def validation
+    def dataLength
+    def dataScale
 
 
     boolean equals( o ) {
@@ -80,6 +84,10 @@ class SupplementalPropertyDiscriminatorContent {
         if (prompt != that.prompt) return false
         if (required != that.required) return false
         if (value != that.value) return false
+        if (discType != that.discType) return false
+        if (validation != that.validation) return false
+        if (dataLength != that.dataLength) return false
+        if (dataScale != that.dataScale) return false
         return true
     }
 
@@ -93,11 +101,15 @@ class SupplementalPropertyDiscriminatorContent {
         result = 31 * result + (id != null ? id.hashCode() : 0)
         result = 31 * result + (dataType != null ? dataType.hashCode() : 0)
         result = 31 * result + (prompt != null ? prompt.hashCode() : 0)
+        result = 31 * result + (discType != null ? discType.hashCode() : 0)
+        result = 31 * result + (validation != null ? validation.hashCode() : 0)
+        result = 31 * result + (dataLength != null ? dataLength.hashCode() : 0)
+        result = 31 * result + (dataScale != null ? dataScale.hashCode() : 0)
         return result
     }
 
 
     public String toString() {
-        super.toString() + "disc=$disc, value=$value, id=$id, required=$required, dataType=$dataType, pkParentTab=$pkParentTab, prompt=$prompt"
+        super.toString() + "disc=$disc, value=$value, id=$id, required=$required, dataType=$dataType, pkParentTab=$pkParentTab, prompt=$prompt, discType=$discType, validation=$validation, dataLength=$dataLength, dataScale=$dataScale"
     }
 }
