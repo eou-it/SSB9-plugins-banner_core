@@ -193,7 +193,7 @@ class SupplementalDataPersistenceManager {
         if (dataType.equals( "NUMBER" ) && !isNumeric( value )) {
             throw new RuntimeException( "Invalid Number" )
         }
-        else if (dataType.equals( "DATE" ) && !isDateValid( value )) {
+        else if (dataType.equals( "DATE" ) && value && !isDateValid( value )) {
             throw new RuntimeException( "Invalid Date" )
         }
     }
