@@ -60,8 +60,7 @@ import com.sungardhe.banner.supplemental.SupplementalDataService
 @Transactional(readOnly = false, propagation = Propagation.REQUIRED )
 class ServiceBase {
 
-    @Lazy
-    // note: Lazy annotation is needed here to ensure 'this' refers to the service we're mixed into (if we're mixed in)
+    @Lazy // note: Lazy annotation is needed here to ensure 'this' refers to the service we're mixed into (if we're mixed in)
     def log = Logger.getLogger( this.getClass() )
 
     Class domainClass // if not explicitly set by a subclass, this will be determined when needed
@@ -86,14 +85,23 @@ class ServiceBase {
         else {
             log.trace "${this.class.simpleName}.create invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
             try {
-                log.trace "${this.class.simpleName}.create will now invoke the preCreate callback if it exists"
-                if (this.respondsTo( 'preCreate' )) this.preCreate( domainModelOrMap )
 
+                log.trace "${this.class.simpleName}.create will now invoke the preValidationForCreate callback if it exists"
+                if (this.respondsTo( 'preValidationForCreate' )) this.preValidationForCreate( domainModelOrMap )
+                
                 def domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap )
 
-                // updateSystemFields( domainObject ) // Note: No longer needed as audit trail is set via AuditTrailPropertySupportHibernateListener
-                log.trace "${this.class.simpleName}.create will save $domainObject"
+                log.trace "${this.class.simpleName}.create has populated a model instance and will now validate: $domainObject"
+                validate domainObject
 
+                log.trace "${this.class.simpleName}.create will now invoke the preCreate callback if it exists"
+                if (this.respondsTo( 'preCreate' )) {
+                    this.preCreate( domainModelOrMap )
+                    // Since the preCreate may have altered the domainModelOrMap, we'll have to re-create the domainObject
+                    domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap ) 
+                }
+                
+                log.trace "${this.class.simpleName}.create will now save the ${getDomainClass()}"
                 def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
                 createdModel = persistSupplementalDataFor( createdModel )
 
@@ -142,12 +150,19 @@ class ServiceBase {
                 if (domainObject.isDirty()) {
 
                     validateReadOnlyPropertiesNotDirty( domainObject ) // throws RuntimeException if readonly properties are dirty
-
                     log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
 
-                    log.trace "${this.class.simpleName}.update will now invoke the preUpdate callback if it exists"
-                    if (this.respondsTo( 'preUpdate' )) this.preUpdate( domainModelOrMap )
-                    // updateSystemFields( domainObject ) // Note: No longer needed as audit trail is set via AuditTrailPropertySupportHibernateListener
+                    log.trace "${this.class.simpleName}.update will now invoke the preValidationForUpdate callback if it exists"
+                    if (this.respondsTo( 'preValidationForUpdate' )) this.preValidationForUpdate( domainModelOrMap )
+                                        
+                    validate domainObject
+
+                    log.trace "${this.class.simpleName}.update is done validation and will now invoke the preUpdate callback if it exists"
+                    if (this.respondsTo( 'preUpdate' )) {
+                        this.preUpdate( domainModelOrMap )
+                        // Since the preUpdate may have altered the domainModelOrMap, we'll have to re-create the domainObject
+                        domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap ) 
+                    }
 
                     log.trace "${this.class.simpleName}.update applied updates and will save $domainObject"
                     updatedModel = domainObject.save( failOnError: true, flush: flushImmediately )
@@ -525,6 +540,13 @@ class ServiceBase {
 
 
     // ---------------------------- Helper Methods -----------------------------------
+
+
+    protected validate( model ) {
+        if (model && !model.validate()) {
+            throw new ValidationException( "${model.class.simpleName}", model.errors )
+        }
+    }
 
 
     protected Class getDomainClass() {

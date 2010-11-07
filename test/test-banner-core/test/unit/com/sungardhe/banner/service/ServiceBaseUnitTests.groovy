@@ -24,9 +24,9 @@ import com.sungardhe.banner.supplemental.SupplementalDataService
  **/
 class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
-    def myService           // assigned in setUp method
     List serviceCallbacks   // assigned in setUp method
-
+    def svc                 // assigned in setUp method
+    def myService           // assigned in setUp method
 
     protected void setUp() {
         super.setUp()
@@ -50,6 +50,8 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
             sessionMock.metaClass.invokeMethod { String name, args -> }
             closure( sessionMock )
         }
+        
+        svc = new AnotherTestService()
     }
 
 
@@ -57,35 +59,30 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testCreateUsingModelInstance() {
-        def svc = new AnotherTestService()
         def createdDomain = svc.create( new MyMock( newMyMockParams() ) )
         assertNotNull createdDomain?.id
     }
 
 
     void testCreateUsingModelProperties() {
-        def svc = new AnotherTestService()
         def createdDomain = svc.create( new MyMock( newMyMockParams() ).properties ) // map will have a 'class' key, that can be confused with model.class
         assertNotNull createdDomain?.id
     }
 
 
     void testCreateUsingParamsMap() {
-        def svc = new AnotherTestService()
         def createdDomain = svc.create( newMyMockParams() ) // map doesn't contain the 'class' key -- it is a 'params' map
         assertNotNull createdDomain?.id
     }
 
 
     void testCreateUsingMapHavingDomainModelKeyHoldingModelInstance() {
-        def svc = new AnotherTestService()
         def createdDomain = svc.create( [ domainModel: new MyMock( newMyMockParams() ), otherJunk: 'Some validation stuff maybe?' ] )
         assertNotNull createdDomain?.id
     }
 
 
     void testCreateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {  // how's that for a name ;-)
-        def svc = new AnotherTestService()
         def createdDomain = svc.create( [ myMock: new MyMock( newMyMockParams() ), otherJunk: 'Some validation stuff maybe?' ] )
         assertNotNull createdDomain?.id
     }
@@ -94,7 +91,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
     void testCreateUsingModelInstanceAndNotFlushingSession() {
         // actually, can't really test that via mocking, but we'll at least test signatures here and
         // implement 'real' testing to the FooServiceIntegrationTests. The below is more or less, documentation.
-        def svc = new AnotherTestService()
         def createdDomains = [ svc.create( new MyMock( newMyMockParams() ), false ), // yup, looks like we can pass a boolean
                                svc.create( new MyMock( newMyMockParams() ), false ), // without getting a methodMissing exception
                                svc.create( new MyMock( newMyMockParams() ), false ) ]
@@ -109,7 +105,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchCreateUsingModelInstance() {
-        def svc = new AnotherTestService()
         List models = []
         (0..4).each{ models << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
         def createdDomains = svc.create( models )
@@ -119,7 +114,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchCreateUsingModelProperties() {
-        def svc = new AnotherTestService()
         List models = []
         (0..4).each{ models << new MyMock( newMyMockParams( it ) ).properties }
         def createdDomains = svc.create( models )
@@ -129,7 +123,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchCreateUsingParamsMap() {
-        def svc = new AnotherTestService()
         List models = []
         (0..4).each { models << newMyMockParams( it ) + [ someExtraInfoNeededForValidation: "I need this in my callback!" ] }
 
@@ -140,7 +133,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchCreateUsingMapHavingDomainModelKeyHoldingModelInstance() {
-        def svc = new AnotherTestService()
 
         List models = []
         (0..4).each { models << [ domainModel: new MyMock( newMyMockParams( it ) ), otherJunk: 'Some validation stuff maybe?' ] }
@@ -152,7 +144,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchCreateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {
-        def svc = new AnotherTestService()
 
         List models = []
         (0..4).each { models << [ myMock: new MyMock( newMyMockParams( it) ), otherJunk: 'Some validation stuff maybe?' ] }
@@ -220,7 +211,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchUpdateUsingModelInstance() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         existingModels.eachWithIndex { model, i -> model.description = "Updated_$i" }
@@ -233,7 +223,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchUpdateUsingModelProperties() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         def existingProperties = []
@@ -247,7 +236,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchUpdateUsingParamsMap() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         def existingParams = []
@@ -261,7 +249,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchUpdateUsingMapHavingDomainModelKeyHoldingModelInstance() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         def existingModelsInMapValues = []
@@ -278,7 +265,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchUpdateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         def existingModelsInMap = []
@@ -298,7 +284,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchCreateOrUpdateUsingModelInstance() {
-        def svc = new AnotherTestService()
 
         def requestList = []
         (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
@@ -314,7 +299,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchCreateOrUpdateUsingModelProperties() {
-        def svc = new AnotherTestService()
 
         def requestList = []
         (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
@@ -330,7 +314,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchCreateOrUpdateUsingParamsMap() {
-        def svc = new AnotherTestService()
 
         def requestList = []
         (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
@@ -347,7 +330,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchCreateOrUpdateUsingMapHavingDomainModelKeyHoldingModelInstance() {
-        def svc = new AnotherTestService()
 
         def requestList = []
         (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
@@ -366,7 +348,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchCreateOrUpdateUsingMapHavingDomainModelClassPropertyNameKeyHoldingModelInstance() {
-        def svc = new AnotherTestService()
 
         def requestList = []
         (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
@@ -397,7 +378,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
     void testDeleteUsingModelProperties() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
-        def svc = new AnotherTestService()
         assertTrue svc.delete( existingModel.properties )
         assertNull MyMock.findByName( 'Mocked_1' )
     }
@@ -405,7 +385,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
     void testDeleteUsingParamsMap() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
-        def svc = new AnotherTestService()
         assertNotNull svc.delete( [ id: existingModel.id, name: existingModel.name,
                                     description: existingModel.description, version: existingModel.version ] )
         assertNull MyMock.findByName( 'Mocked_1' )
@@ -414,7 +393,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
     void testDeleteUsingMapHavingDomainModelKeyHoldingModelInstance() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
-        def svc = new AnotherTestService()
         assertNotNull svc.delete( [ domainModel: existingModel, otherJunk: 'Some validation stuff maybe?' ] )
         assertNull MyMock.findByName( 'Mocked_1' )
     }
@@ -422,14 +400,12 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
     void testDeleteUsingLongId() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
-        def svc = new AnotherTestService()
         assertNotNull svc.delete( (Long) existingModel.id )
         assertNull MyMock.findByName( 'Mocked_1' )
     }
 
 
     void testDeleteUsingNumber() {
-        def svc = new AnotherTestService()
         assertNotNull svc.delete( 1 )
         assertNull MyMock.get( 1 )
     }
@@ -437,14 +413,12 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
     void testDeleteUsingPrimativeId() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
-        def svc = new AnotherTestService()
         assertNotNull svc.delete( (long) existingModel.id )
         assertNull MyMock.findByName( 'Mocked_1' )
     }
 
 
     void testDeleteUsingString() {
-        def svc = new AnotherTestService()
         assertNotNull svc.delete( '1' )
         assertNull MyMock.get( 1 )
     }
@@ -454,7 +428,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchDeleteUsingModelInstance() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         svc.delete( existingModels )
@@ -464,7 +437,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchDeleteUsingModelProperties() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         def existingProperties = []
@@ -476,7 +448,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchDeleteUsingParamsMap() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         def existingParams = []
@@ -489,7 +460,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchDeleteUsingMapHavingDomainModelKeyHoldingModelInstance() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         def existingModelsInMapValues = []
@@ -503,7 +473,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchDeleteUsingLongIds() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         def existingIds = []
@@ -515,7 +484,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchDeleteUsingPrimativeId() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         def existingIds = []
@@ -527,7 +495,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
 
     void testBatchDeleteUsingStrings() {
-        def svc = new AnotherTestService()
 
         def existingModels = MyMock.list()
         def existingStringIds = []
@@ -544,7 +511,8 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
     void testCreateCallbacks() {
         assertTrue serviceCallbacks.size() == 0
         myService.create( newMyMockParams() )
-        assertTrue serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
+println "XXXXXXXXXXXXXXXXXXXXX $serviceCallbacks"        
+        assertTrue serviceCallbacks.containsAll( [ 'preValidationForCreate', 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 3
     }
 
 
@@ -558,22 +526,22 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
     void testUpdateCallbacks() {
         assertTrue serviceCallbacks.size() == 0
         myService.update( newMyMockParams() + [ id: 1, description: "Updated", version: 0 ] )
-        assertTrue serviceCallbacks.containsAll( [ 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 2
+        assertTrue serviceCallbacks.containsAll( [ 'preValidationForUpdate', 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 3
     }
 
 
     void testCreateOrUpdateWithCallbacks() {
         assertTrue serviceCallbacks.size() == 0
-        def createdDomain = myService.create( newMyMockParams() )
+        def createdDomain = myService.createOrUpdate( newMyMockParams() )
         assertNotNull createdDomain?.id
-        assertTrue serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
+        assertTrue serviceCallbacks.containsAll( [ 'preValidationForCreate', 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 3
 
         // now we'll issue the same and expect an update
         createdDomain.description = "Updated" // note the update callback handler asserts this specific content
-        assertTrue serviceCallbacks?.size() == 2
-        def updatedDomain = myService.update( createdDomain )
+        assertTrue serviceCallbacks?.size() == 3
+        def updatedDomain = myService.createOrUpdate( createdDomain )
         assertEquals createdDomain.id, updatedDomain?.id
-        assertTrue serviceCallbacks.containsAll( [ 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 4
+        assertTrue serviceCallbacks.containsAll( [ 'preValidationForUpdate', 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 6
     }
 
 
@@ -654,11 +622,19 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
             assertEquals "Test", domainObjectOrParams.name
             assertEquals "I need this in my callback!", domainObjectOrParams['someExtraInfoNeededForValidation']
         }
+        service.metaClass.preValidationForCreate = { domainObjectOrParams ->
+            registerCallback 'preValidationForCreate'
+            assertNotNull domainObjectOrParams
+        }
         service.metaClass.postCreate = { results ->
             registerCallback 'postCreate'
             assertNotNull results.before
             assertNull results.before.id
             assertNotNull results.after.id
+        }
+        service.metaClass.preValidationForUpdate = { domainObjectOrParams ->
+            registerCallback 'preValidationForUpdate'
+            assertNotNull domainObjectOrParams
         }
         service.metaClass.preUpdate = { domainObjectOrParams ->
             registerCallback 'preUpdate'

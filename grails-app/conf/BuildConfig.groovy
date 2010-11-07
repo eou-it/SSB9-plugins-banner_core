@@ -47,7 +47,11 @@ grails.project.dependency.resolution = {
         
         grailsPlugins()
         grailsHome()
-        grailsCentral() 
+        grailsCentral()
+        
+        mavenCentral()
+        mavenRepo "http://repository.jboss.org/maven2/"
+        mavenRepo "http://repository.codehaus.org"
     }
     
     

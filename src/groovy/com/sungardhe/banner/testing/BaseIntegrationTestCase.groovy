@@ -194,6 +194,40 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     }
     
     
+    /**
+     * Asserts that a FieldError exists for the expectedField, and that other FieldError attributes are as expected.  
+     * The FieldError may be asserted against the following properties.  The expectedField property.
+     *
+     *    [ fieldName: fieldName, errorName: errorName, modelName: modelName, 
+     *      partialMessage: partialMessage, exactMessage: exactMessage, rejectedValue: rejectedValue ]
+     *
+     * @param errors the list of FieldError objects that should contain the expected FieldError properties
+     * @param expected a Map of expected field error properties, where only expectedField is required
+     **/
+    protected void assertFieldErrorContent( List errors, Map expected ) {
+                                                
+        def error = errors.find { it.field == expected.fieldName }
+        assertNotNull "Did not find an error property map for field ${expected.fieldName}", error
+        
+        if (expected.modelName) {
+            assertEquals expected.modelName, error.model 
+        }
+                
+        if (expected.rejectedValue) {
+            assertEquals expected.rejectedValue, error.rejectedValue
+        } 
+        
+        if (expected.partialMessage) {
+            assertTrue error.message ==~ expected.partialMessage
+        }
+        
+        if (expected.exactMessage) {
+            assertTrue error.message == expected.exactMessage
+        }
+        
+    }
+    
+    
     protected void assertErrorsFor( model, errorName, fieldList ) {
         fieldList.each { field ->
             def fieldError = model.errors.getFieldError( field )

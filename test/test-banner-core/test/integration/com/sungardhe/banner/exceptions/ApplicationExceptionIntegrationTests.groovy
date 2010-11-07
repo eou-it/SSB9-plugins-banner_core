@@ -58,19 +58,17 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 
 		    // note that validation exceptions, unlike most others, may hold many localized error messages that may be presented to a user
             assertEquals 2L, returnMap.errors?.size()
-
-            if (returnMap.errors instanceof List){
-                def errors = returnMap.errors
-                errors.each { error ->
-                    assertTrue ((error.field == "description" && error.model == "com.sungardhe.banner.testing.Foo" && error.message=="The foo description is too long, it must be no more than 30 characters"
-                                            && error.rejectedValue == "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT") ||
-                                (error.field == "code" && error.model == "com.sungardhe.banner.testing.Foo" && error.message=="The foo code is too long, it must be no more than 2 characters"
-                                            && error.rejectedValue == "TTTTTTTTT" ))
-                }
-            }  else {
-                assertTrue returnMap.errors ==~ /.*The foo code is too long, it must be no more than 2 characters.*/
-            }
-		    assertNotNull returnMap.underlyingErrorMessage // this is the underlying exception's message (which is not appropriate to display to a user)
+            assertTrue returnMap.errors instanceof List
+            
+            assertFieldErrorContent( returnMap.errors, [ fieldName: "code", modelName: "com.sungardhe.banner.testing.Foo", 
+                                                         exactMessage: "The foo code is too long, it must be no more than 2 characters",
+                                                         rejectedValue: "TTTTTTTTT" ] )
+                                                         
+            assertFieldErrorContent( returnMap.errors, [ fieldName: "description", modelName: "com.sungardhe.banner.testing.Foo", 
+                                                         exactMessage: "The foo description is too long, it must be no more than 30 characters",
+                                                         rejectedValue: "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT" ] )
+            
+ 		    assertNotNull returnMap.underlyingErrorMessage // this is the underlying exception's message (which is not appropriate to display to a user)
 		}
     }
 
@@ -330,7 +328,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    // hows this for a long name ;-)
+    // how's this for a long name ;-)
     public void testWrappedAnyOtherExceptionThatUsesBannerConventionsToEncodeResourceCodeAndParams() {
         RuntimeException e = new RuntimeException( "@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@" )
 		def ae = new ApplicationException( Foo, e )

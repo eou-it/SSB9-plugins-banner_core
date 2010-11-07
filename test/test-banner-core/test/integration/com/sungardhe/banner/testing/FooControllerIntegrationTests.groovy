@@ -29,8 +29,8 @@ import com.sungardhe.banner.supplemental.SupplementalPropertyDiscriminatorConten
  **/
 class FooControllerIntegrationTests extends BaseIntegrationTestCase {
 
-    def fooService               // injected by Spring
-    def supplementalDataService  // injected by Spring
+    def fooService                         // injected by Spring
+    def supplementalDataService            // injected by Spring
 	def supplementalDataPersistenceManager // injected by Spring
 
 
@@ -52,7 +52,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
 
 
 	protected void tearDown() {
-		supplementalDataService.supplementalDataConfiguration.remove("com.sungardhe.banner.testing.Foo")
+		supplementalDataService.supplementalDataConfiguration.remove( "com.sungardhe.banner.testing.Foo" )
 		supplementalDataService.supplementalDataPersistenceManager = supplementalDataPersistenceManager
 		super.tearDown()
 	}
