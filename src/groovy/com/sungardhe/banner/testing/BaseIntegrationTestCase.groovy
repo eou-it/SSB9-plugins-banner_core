@@ -244,6 +244,24 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     }
 
 
+    protected void assertApplicationException( ApplicationException ae, String resourceCode, String message = null ) {
+
+        // Typically we would be more explicit, but we have gotten into the habit of doing a regex to evaluate the
+        // wrapped exception with the 'resourceCode' varying from including '@@r1:' but excluding potential parameter information that
+        // comes on the tail of the ApplicationException.  We are just evaluating that the message contains the code.
+        if (ae.wrappedException.message.contains( resourceCode )) {
+            // this is ok, we found the correct error message
+        } else {
+
+            if (message == null) {
+                message = "Did not find expected error code $resourceCode.  Found '${ae.wrappedException}' instead."
+            }
+
+            fail( message )
+        }
+    }
+
+
     /**
      * Convience method to return a localized string based off of an error.
      **/
