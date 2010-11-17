@@ -244,20 +244,30 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     }
 
 
-    protected void assertApplicationException( ApplicationException ae, String resourceCode, String message = null ) {
+    protected void assertApplicationException( ApplicationException ae, String resourceCodeOrExceptedMessage, String message = null ) {
 
-        // Typically we would be more explicit, but we have gotten into the habit of doing a regex to evaluate the
-        // wrapped exception with the 'resourceCode' varying from including '@@r1:' but excluding potential parameter information that
-        // comes on the tail of the ApplicationException.  We are just evaluating that the message contains the code.
-        if (ae.wrappedException.message.contains( resourceCode )) {
-            // this is ok, we found the correct error message
-        } else {
-
-            if (message == null) {
-                message = "Did not find expected error code $resourceCode.  Found '${ae.wrappedException}' instead."
+        if (ae.sqlException) {
+            if (!ae.sqlException.toString().contains( resourceCodeOrExceptedMessage )) {
+                fail( "This should of returned a SQLException with a message '$resourceCodeOrExceptedMessage'." )
             }
+        }
+        else if (ae.wrappedException?.message) {
+            // Typically we would be more explicit, but we have gotten into the habit of doing a regex to evaluate the
+            // wrapped exception with the 'resourceCode' varying from including '@@r1:' but excluding potential parameter information that
+            // comes on the tail of the ApplicationException.  We are just evaluating that the message contains the code.
+            if (ae.wrappedException.message.contains( resourceCodeOrExceptedMessage )) {
+                // this is ok, we found the correct error message
+            } else {
 
-            fail( message )
+                if (message == null) {
+                    message = "Did not find expected error code $resourceCodeOrExceptedMessage.  Found '${ae.wrappedException}' instead."
+                }
+
+                fail( message )
+            }
+        }
+        else {
+            throw new Exception( "Unable to assert application exception" )
         }
     }
 

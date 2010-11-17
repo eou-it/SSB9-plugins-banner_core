@@ -342,3 +342,4 @@ codenarc.reportName="target/CodeNarcReport.html"
 codenarc.propertiesFile="grails-app/conf/codenarc.properties"
 
 codenarc.processTaglib=false
+codenarc.processUtils=false
