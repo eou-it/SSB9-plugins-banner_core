@@ -43,7 +43,7 @@ class SupplementalDataService {
         Map x = sessionFactory.getAllClassMetadata()
         for (Iterator i = x.values().iterator(); i.hasNext();) {
             SingleTableEntityPersister y = (SingleTableEntityPersister) i.next();
-            setSDE(y.getName(), y.getTableName())
+            setSDE(y.getName(), y.getTableName().toUpperCase())
             // for (int j = 0; j < y.getPropertyNames().length; j++) {
             //     println( " " + y.getPropertyNames()[ j ] + " -> " + (y.getPropertyColumnNames( j ).length > 0 ? y.getPropertyColumnNames( j )[ 0 ] : ""))
             // }
@@ -105,7 +105,7 @@ class SupplementalDataService {
         if (domainClass == null)
             return false
 
-        def tableName = sessionFactory.getClassMetadata(domainClass?.getClazz())?.tableName
+        def tableName = sessionFactory.getClassMetadata(domainClass?.getClazz())?.tableName.toUpperCase()
 
         if (tableName == null)
             return false

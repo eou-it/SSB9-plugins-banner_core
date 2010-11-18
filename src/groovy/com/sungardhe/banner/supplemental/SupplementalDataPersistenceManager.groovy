@@ -45,7 +45,7 @@ class SupplementalDataPersistenceManager {
 
 		try {
 			sql = new Sql( sessionFactory.getCurrentSession().connection() )
-            def tableName = sessionFactory.getClassMetadata( model.getClass() ).tableName
+            def tableName = sessionFactory.getClassMetadata( model.getClass() ).tableName.toUpperCase()
 			def attributeName
 			def id = model.id
 
@@ -95,7 +95,7 @@ class SupplementalDataPersistenceManager {
 			log.debug "SDE Properties for model: ${model.supplementalProperties}"
 
 			sql = new Sql( sessionFactory.getCurrentSession().connection() )
-			def tableName = sessionFactory.getClassMetadata(model.getClass()).tableName
+			def tableName = sessionFactory.getClassMetadata(model.getClass()).tableName.toUpperCase()
 			def sdeTableName = 'GORSDAV'
 
 			def id
