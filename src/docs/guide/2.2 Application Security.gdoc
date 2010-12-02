@@ -1,0 +1,89 @@
+
+Grails projects using this plugin must also use the Spring Security library.  This plugin leverages existing Banner Security (e.g., groups and roles) to reduce the impact of moving to this newer architecture.  This plugin supports form-based authentication (i.e., a login form), CAS SSO, and SAML 2 based SSO.  
+
+h4. High level Overview of Security 
+Following are the security-related steps that occur (when SSO is not being employed) during a request:
+# A user attempts to reach a URL such as [http://myschool.edu/banner/basicCourceInformation]
+# The user is redirected to a login page if not already authenticated.
+# The user is authenticated by connecting to the database using the supplied credentials.  This is performed within the 'BannerAuthenticationProvider'. If the provider is able to establish a connection to the Banner database, the user is 'authenticated'.  Before returning, the provider will establish the user's authorities.   
+# The provider retrieves the effective Banner security roles for that user, using a database view. The Banner security role assignments for this user are then used to construct 'security roles' in a format usable by Spring Security. For instance, if a user has been given the BAN_DEFAULT_Q role for object 'FPARORD' and the BAN_DEFAULT_M role for object 'STVCOLL', that user will be granted two 'authorities' named "ROLE_FPARORD_BAN_DEFAULT_Q" and "ROLE_STVCOLL_BAN_DEFAULT_M". 
+# The user is redirected back to their desired URI once authentication completes, or is sent back to the login screen if authentication fails.
+# A filter intercepts the request and verifies that the user is authenticated (which he/she is, as we just did that\!), and determines if the user is authorized to reach the composer or controller.  This authorization is based upon the 'interceptUrlMap' map within Config.groovy that relates each URL to authentication and authorization requirements. Please see below for details on how this map can be used. 
+# Once we have authenticated and authorized the user, a 'FormContext' threadlocal is set based upon a 'formControllerMap' contained in Config.groovy that maps controller and composer names to one or more 'Banner Classic Forms'.  When a controller is being accessed, this is performed by a 'before filter' (really an AOP Aspect) that intercepts the request.  When a composer is being accessed, this is handled by a custom ZK page filter (that is explicitly wired into the ZK plugin).  For instance, if the user is navigating to a "/college" URL, the filter will set a FormContext value of 'STVCOLL' (assuming the formControllerMap relates the College controller and or composer with 'STVCOLL').  Controllers may map to more than one legacy Oracle object.
+# The controller or composer mapped to the URL is then allowed to service the request. To do this, the controller or composer interacts with transactional services and domain models.  Whenever a database connection is needed (either indirectly by the Hibernate ORM library or used explicitly), it is retrieved from the 'BannerDS' (usually imported as 'BannerDataSource').  This data source proxies the connection for the logged in user, calculates the 'applicable' authorities for that user (i.e., retrieves the authorities from the authentication object that pertain to the Banner Classic Form being accessed, as identified in the FormContext), and unlocks those roles.
+# When the transaction is committed (declaratively), the connection proxy session is closed and the connection is returned to the pool.  The form context is also cleared using an 'after' filter.
+
+The Spring Security Core Grails plugin being used provides a number of convenience features, including tags that can be used within the view to identify the user, verify the user has certain roles, etc.  Details are available [here|http://burtbeckwith.github.com/grails-spring-security-core/docs/manual/index.html].
+
+*Configuration*
+
+Currently, there are two important maps that must reside within the Config.groovy of any project using this plugin. These maps must be updated when introducing new controllers or composers.  
+
+Config.groovy must contain a'formControllerMap' map, similar to the one depicted below.  This map relates controller and composer names to the Banner Classic objects (e.g., Forms) that they replace.  Note that in most cases there will be a one-to-one mapping, but it is possible that one Grails controller or composer is being used to replace multiple Banner objects.  This map allows for grails applications to leverage existing Banner security configuration. _(Note: This map will likely be replaced by one managed within the database.)_
+
+{code}
+// ******************************************************************************
+//
+//          +++ SECURITY: FORM-CONTROLLER MAP & INTERCEPT URL MAP +++
+//
+// ******************************************************************************
+// This map relates controllers to the Banner forms that it replaces.  This map
+// supports 1:1 and 1:M (where a controller supports the functionality of more than
+// one Banner form.  This map is critical, as it is used by the security framework to
+// set appropriate Banner security role(s) on a database connection. For example, if a
+// logged in user navigates to the 'medicalInformation' controller, when a database
+// connection is attained and the user has the necessary role, the role is enabled
+// for that user and Banner object.  In addition, this information 'may' be used 
+// when determining if a user is authorized to access the endpoint (see 'interceptUrlMap'
+// comments below).
+formControllerMap = [
+                      'college'            : [ 'STVCOLL' ],
+                      'interest'           : [ 'STVINTS' ],
+                      'medicalInformation' : [ 'GOAMEDI' ],
+                      ...
+                    ]
+{code}
+The above 'formControllerMap' is used by a 'before filter' (FormContextFilters.groovy) that sets a ThreadLocal with the Banner Classic object name(s) corresponding to the controller or composer being accessed.  The 'FormContext' threadlocal is then used by the security framework when determining whether the user can access the URL mapped to the controller or composer. As described above, this is done by checking the user's 'Banner role assignments' that were cached during the authentication process.
+
+Whether or not a user is allowed to access a URL depends upon a Spring Security Map that defines the roles needed to access each URL.  This map must also be included within Config.groovy, and represents a standard 'acegi' configuration:
+{code}
+// The following map is used to secure URLs, based upon authentication or role-based authorization.
+// In general, users should be granted access to Banner pages if they have any roles that pertain to
+// the corresponding Banner Form/Object (except if their only applicable role ends with '_CONNECT').
+// Please see comments below regarding the special 'ROLE_DETERMINED_DYNAMICALLY' role.
+grails.plugins.springsecurity.interceptUrlMap = [
+        '/'          : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/zkau/**'   : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/zkau**'    : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/login/**'  : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/mainPage**': ['ROLE_SCACRSE_BAN_DEFAULT_M'], // not in formControllerMap, so we must explicitly identify a role
+        '/menu/**'   : ['ROLE_SCACRSE_BAN_DEFAULT_M'], // not in formControllerMap, so we must explicitly identify a role
+        '/index**'   : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/logout/**' : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/js/**'     : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/css/**'    : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/images/**' : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/plugins/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/errors/**' : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+
+        // ALL URIs specified with the BannerAccessDecisionVoter.ROLE_DETERMINED_DYNAMICALLY
+        // 'role' (it's not a real role) will result in authorization being determined based
+        // upon a user's role assignments to the corresponding form (see 'formControllerMap' above).
+        // Note: This 'dynamic form-based authorization' is performed by the BannerAccessDecisionVoter
+        // registered as the 'roleVoter' within Spring Security.
+        //
+        // Only '/name_used_in_formControllerMap/' and '/api/name_used_in_formControllerMap/'
+        // URL formats are supported.  That is, the name_used_in_formControllerMap must be first, or
+        // immediately after 'api' -- but it cannot be otherwise nested. URIs may be protected
+        // by explicitly specifying true roles instead -- as long as ROLE_DETERMINED_DYNAMICALLY
+        // is NOT specified.
+        //
+       '/**': [ 'ROLE_DETERMINED_DYNAMICALLY' ]
+]
+{code}
+
+As described in the code comments above, URLs may be protected with a special 'ROLE_DETERMINED_DYNAMICALLY' role.  A custom 'role voter' is configured by banner-core that will, when a URL is protected by this special role, determine authorization based upon the formControllerMap. Specifically, if a user has ANY roles corresponding to the Banner Classic Form identified in the formControllerMap for the current request, the user is granted access. (Note: Any roles ending with '_CONNECT' are excluded, and are not used to grant access.)
+
+\\
+\\
+\\
