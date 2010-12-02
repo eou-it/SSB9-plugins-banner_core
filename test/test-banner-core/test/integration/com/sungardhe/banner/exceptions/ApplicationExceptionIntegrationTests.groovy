@@ -1,5 +1,4 @@
 /*******************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -51,7 +50,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
     	    assertTrue "toString() does not have expected content, but has: ${ae}", ae.toString().contains( "code.maxSize" ) // should include the resourceCode
 		    assertEquals 'ValidationException', ae.getType()
 
-		    def returnMap = ae.returnMap( controller.localizer )
+		    def returnMap = ae.returnMap( message ) // 'message' closure is provided by BaseIntegrationTestCase
 		    assertTrue "Return map not as expected but was: ${returnMap.message}",
 		                returnMap.message ==~ /.*The Foo cannot be saved, as it contains errors.*/
 		    assertFalse returnMap.success

@@ -69,6 +69,12 @@ class FooService extends ServiceBase {
     //
     // Note that for a simple service, with no additional methods like the test ones below, the body of the class would be completely empty.
     //
+    
+    
+    // Example of a callback... this one gets called after the preValidationForUpdate callback and subsequent model validation
+//    void preUpdate(map) { 
+//        println map 
+//    }
 
 
     // ----------------------------------------- Test Methods ------------------------------------------

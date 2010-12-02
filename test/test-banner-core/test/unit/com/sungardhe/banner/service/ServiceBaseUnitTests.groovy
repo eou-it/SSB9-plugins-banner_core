@@ -162,7 +162,7 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
         existingModel.description = "Updated"
         def svc = new AnotherTestService()
         def updatedDomain = svc.update( existingModel )
-        assertNotNull updatedDomain.id
+        assertEquals existingModel.id, updatedDomain.id
         assertEquals "Updated", updatedDomain.description
     }
 
@@ -172,7 +172,7 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
         existingModel.description = "Updated"
         def svc = new AnotherTestService()
         def updatedDomain = svc.update( existingModel.properties )
-        assertNotNull updatedDomain.id
+        assertEquals existingModel.id, updatedDomain.id
         assertEquals "Updated", updatedDomain.description
     }
 
@@ -182,7 +182,7 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
         def svc = new AnotherTestService()
         def updatedDomain = svc.update( [ id: existingModel.id, name: existingModel.name,
                                           description: "Updated", version: existingModel.version ] )
-        assertNotNull updatedDomain.id
+        assertEquals existingModel.id, updatedDomain.id
         assertEquals "Updated", updatedDomain.description
     }
 
@@ -192,7 +192,7 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
         existingModel.description = "Updated"
         def svc = new AnotherTestService()
         def updatedDomain = svc.update( [ domainModel: existingModel, otherJunk: 'Some validation stuff maybe?' ] )
-        assertNotNull updatedDomain.id
+        assertEquals existingModel.id, updatedDomain.id
         assertEquals "Updated", updatedDomain.description
     }
 
@@ -202,7 +202,7 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
         existingModel.description = "Updated"
         def svc = new AnotherTestService()
         def updatedDomain = svc.update( [ myMock: existingModel, otherJunk: 'Some validation stuff maybe?' ] )
-        assertNotNull updatedDomain.id
+        assertEquals existingModel.id, updatedDomain.id
         assertEquals "Updated", updatedDomain.description
     }
 
@@ -511,7 +511,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
     void testCreateCallbacks() {
         assertTrue serviceCallbacks.size() == 0
         myService.create( newMyMockParams() )
-println "XXXXXXXXXXXXXXXXXXXXX $serviceCallbacks"        
         assertTrue serviceCallbacks.containsAll( [ 'preValidationForCreate', 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 3
     }
 
@@ -524,9 +523,16 @@ println "XXXXXXXXXXXXXXXXXXXXX $serviceCallbacks"
 
 
     void testUpdateCallbacks() {
+        def existingModel = MyMock.findByName( 'Mocked_1' )
+        existingModel.description = "Updated"
+println "XXXXXXXXXXXXXXXXXXXX $existingModel"        
         assertTrue serviceCallbacks.size() == 0
-        myService.update( newMyMockParams() + [ id: 1, description: "Updated", version: 0 ] )
+        def updatedModel = myService.update( existingModel )
         assertTrue serviceCallbacks.containsAll( [ 'preValidationForUpdate', 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 3
+
+println "XXXXXXXXXXXXXXXXXXXX $updatedModel"        
+        
+        assertEquals existingModel.id, updatedModel.id        
     }
 
 

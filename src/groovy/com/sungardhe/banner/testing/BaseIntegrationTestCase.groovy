@@ -10,6 +10,7 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
+import com.sungardhe.banner.configuration.ConfigurationUtils
 import com.sungardhe.banner.exceptions.*
 import com.sungardhe.banner.security.FormContext // this IS used - damn you IntelliJ ;-)
 
@@ -18,11 +19,12 @@ import grails.util.GrailsNameUtils
 import groovy.sql.Sql
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken as UPAT
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import com.sungardhe.banner.configuration.ConfigurationUtils
+
 
 /**
  * Base class for integration tests, that sets the FormContext and logs in 'GRAILS_USER' if necessary 
@@ -49,6 +51,7 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     def sessionFactory                // injected via spring 
     def nativeJdbcExtractor           // injected via spring
     def messageSource                 // injected via spring
+    private validationTagLibInstance  // assigned lazily - see getValidationTagLib method
     
     def controller = null             // assigned by subclasses, e.g., within the setUp()
     def flash                         // Use this to look at the flash messages and errors
@@ -206,23 +209,27 @@ class BaseIntegrationTestCase extends GroovyTestCase {
      **/
     protected void assertFieldErrorContent( List errors, Map expected ) {
                                                 
-        def error = errors.find { it.field == expected.fieldName }
-        assertNotNull "Did not find an error property map for field ${expected.fieldName}", error
+        def fieldErrors = errors.findAll { it.field == expected.fieldName }
+        assertTrue "Did not find field errors for field '${expected.fieldName}'", fieldErrors instanceof List && fieldErrors.size() > 0
         
         if (expected.modelName) {
-            assertEquals expected.modelName, error.model 
+            assertTrue "Field errors do not have expected model name ('${expected.modelName}'), but instead error(s) have content ${fieldErrors*.model}", 
+                       fieldErrors.every { expected.modelName == it.model } 
         }
                 
         if (expected.rejectedValue) {
-            assertEquals expected.rejectedValue, error.rejectedValue
+            assertTrue "Field error not found having rejected value '${expected.rejectedValue}', but instead error(s) have content ${fieldErrors*.rejectedValue}", 
+                       fieldErrors.any { expected.rejectedValue == it.rejectedValue }
         } 
         
         if (expected.partialMessage) {
-            assertTrue error.message ==~ expected.partialMessage
+            assertTrue "Field error not found having partial message content '${expected.partialMessage}', but instead error(s) have content ${fieldErrors*.message}", 
+                       fieldErrors.any { it.message ==~ expected.partialMessage }
         }
         
         if (expected.exactMessage) {
-            assertTrue error.message == expected.exactMessage
+            assertTrue "Field error not found having exact message content '${expected.exactMessage}', but instead error(s) have content ${fieldErrors*.message}", 
+                       fieldErrors.any { expected.exactMessage == it.message }
         }
         
     }
@@ -270,7 +277,20 @@ class BaseIntegrationTestCase extends GroovyTestCase {
             throw new Exception( "Unable to assert application exception" )
         }
     }
-
+    
+    
+    protected ValidationTagLib getValidationTagLib() {
+        if (!validationTagLibInstance) {
+           validationTagLibInstance = new ValidationTagLib() 
+        }
+        validationTagLibInstance
+    }
+    
+    
+    protected def message = { attrs ->
+        getValidationTagLib().messageImpl( attrs )
+    }
+    
 
     /**
      * Convience method to return a localized string based off of an error.
