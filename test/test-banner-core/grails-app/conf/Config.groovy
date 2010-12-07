@@ -337,7 +337,7 @@ bannerRepresentationHandlerMap =
 
 
 // Codenarc Properties
-codenarc.ruleSetFiles="rulesets/basic.xml,rulesets/exceptions.xml,rulesets/imports.xml,rulesets/grails.xml,rulesets/unused.xml,rulesets/logging.xml"
+codenarc.ruleSetFiles="rulesets/banner.groovy"
 codenarc.reportName="target/CodeNarcReport.html"
 codenarc.propertiesFile="grails-app/conf/codenarc.properties"
 
