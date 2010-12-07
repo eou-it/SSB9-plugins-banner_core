@@ -53,7 +53,10 @@ grails.project.dependency.resolution = {
         mavenRepo "http://repository.jboss.org/maven2/"
         mavenRepo "http://repository.codehaus.org"
     }
-    
+
+    plugins {
+	    provided 'com.sungardhe:banner-codenarc:0.1.1'// Note: Also update version within 'application.properties'
+	}
     
     dependencies {
     }

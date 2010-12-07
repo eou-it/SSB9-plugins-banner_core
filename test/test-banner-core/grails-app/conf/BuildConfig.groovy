@@ -45,6 +45,10 @@ grails.project.dependency.resolution = {
         mavenRepo "http://repository.codehaus.org"
     }
 
+	plugins {
+		compile 'com.sungardhe:banner-codenarc:0.1.1'
+	}
+
     dependencies {
          build 'org.codehaus.groovy:http-builder:0.5.0'  // needed for FooClient, a script that interacts with the Foo resource
     }
