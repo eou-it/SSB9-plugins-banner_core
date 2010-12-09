@@ -46,7 +46,7 @@ grails.project.dependency.resolution = {
     }
 
 	plugins {
-		compile 'com.sungardhe:banner-codenarc:0.1.1'
+		compile 'com.sungardhe:banner-codenarc:0.1.3'
 	}
 
     dependencies {
