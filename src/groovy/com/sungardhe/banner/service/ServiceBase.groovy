@@ -86,8 +86,8 @@ class ServiceBase {
             log.trace "${this.class.simpleName}.create invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
             try {
 
-                log.trace "${this.class.simpleName}.create will now invoke the preValidationForCreate callback if it exists"
-                if (this.respondsTo( 'preValidationForCreate' )) this.preValidationForCreate( domainModelOrMap )
+                log.trace "${this.class.simpleName}.create will now invoke the preCreate callback if it exists"
+                if (this.respondsTo( 'preCreate' )) this.preCreate( domainModelOrMap )
                 
                 def domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap )
                 
@@ -143,12 +143,9 @@ class ServiceBase {
                     validateReadOnlyPropertiesNotDirty( domainObject ) // throws RuntimeException if readonly properties are dirty
                     log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
 
-                    log.trace "${this.class.simpleName}.update will now invoke the 'preValidationForUpdate' (or 'preUpdate') callback if it exists"
-                    if (this.respondsTo( 'preValidationForUpdate' )) {
-                        this.preValidationForUpdate( domainModelOrMap )
-                        domainObject.properties = extractParams( getDomainClass(), domainModelOrMap ) // re-apply changes
-                    } else if (this.respondsTo( 'preUpdate' )) {
-                        this.preUpdate( domainModelOrMap )     
+                    log.trace "${this.class.simpleName}.update will now invoke the 'preUpdate' callback if it exists"
+                    if (this.respondsTo( 'preUpdate' )) {
+                        this.preUpdate( domainModelOrMap )
                         domainObject.properties = extractParams( getDomainClass(), domainModelOrMap ) // re-apply changes
                     }                    
                                         

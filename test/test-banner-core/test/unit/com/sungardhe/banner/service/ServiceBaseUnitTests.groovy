@@ -511,14 +511,14 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
     void testCreateCallbacks() {
         assertTrue serviceCallbacks.size() == 0
         myService.create( newMyMockParams() )
-        assertTrue serviceCallbacks.containsAll( [ 'preValidationForCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
+        assertTrue serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
     }
 
 
     void testCreateExplicitMethodCallback() {
         def svc = new AnotherWithCallbacksTestService()
         svc.create( newMyMockParams() )
-        assertTrue svc.preValidationForCreateCalled
+        assertTrue svc.preCreateCalled
     }
 
 
@@ -527,7 +527,7 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
         existingModel.description = "Updated"
         assertTrue serviceCallbacks.size() == 0
         def updatedModel = myService.update( existingModel )
-        assertTrue serviceCallbacks.containsAll( [ 'preValidationForUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 2
+        assertTrue serviceCallbacks.containsAll( [ 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 2
         assertEquals existingModel.id, updatedModel.id        
     }
 
@@ -536,14 +536,14 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
         assertTrue serviceCallbacks.size() == 0
         def createdDomain = myService.createOrUpdate( newMyMockParams() )
         assertNotNull createdDomain?.id
-        assertTrue serviceCallbacks.containsAll( [ 'preValidationForCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
+        assertTrue serviceCallbacks.containsAll( [ 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
 
         // now we'll issue the same and expect an update
         createdDomain.description = "Updated" // note the update callback handler asserts this specific content
 
         def updatedDomain = myService.createOrUpdate( createdDomain )
         assertEquals createdDomain.id, updatedDomain?.id
-        assertTrue serviceCallbacks.containsAll( [ 'preValidationForUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 4
+        assertTrue serviceCallbacks.containsAll( [ 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 4
     }
 
 
@@ -618,8 +618,8 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
     //
     private def injectTestCallbacks( service ) {
         // We'll inject some pre and post CRUD behavior into our service to test service callbacks (this test is NOT College specific)
-        service.metaClass.preValidationForCreate = { domainObjectOrParams ->
-            registerCallback 'preValidationForCreate'
+        service.metaClass.preCreate = { domainObjectOrParams ->
+            registerCallback 'preCreate'
             assertNotNull domainObjectOrParams
             assertNull domainObjectOrParams.id
             assertEquals "Test", domainObjectOrParams.name
@@ -631,8 +631,8 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
             assertNull results.before.id
             assertNotNull results.after.id
         }
-        service.metaClass.preValidationForUpdate = { domainObjectOrParams ->
-            registerCallback 'preValidationForUpdate'
+        service.metaClass.preUpdate = { domainObjectOrParams ->
+            registerCallback 'preUpdate'
             assertNotNull domainObjectOrParams
         }
         service.metaClass.postUpdate = { results ->
@@ -750,14 +750,14 @@ class AnotherTestService extends ServiceBase {
 
 class AnotherWithCallbacksTestService extends ServiceBase {
     boolean transactional = true
-    boolean preValidationForCreateCalled = false
+    boolean preCreateCalled = false
 
     public AnotherWithCallbacksTestService() {
         domainClass = MyMock
         supplementalDataService = new SupplementalDataService()
     }
 
-    def preValidationForCreate( map ) {
-        preValidationForCreateCalled = true
+    def preCreate( map ) {
+        preCreateCalled = true
     }
 }
