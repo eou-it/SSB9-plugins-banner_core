@@ -90,19 +90,10 @@ class ServiceBase {
                 if (this.respondsTo( 'preValidationForCreate' )) this.preValidationForCreate( domainModelOrMap )
                 
                 def domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap )
-
-                log.trace "${this.class.simpleName}.create has populated a model instance and will now validate: $domainObject"
-                validate domainObject
-
-                log.trace "${this.class.simpleName}.create will now invoke the preCreate callback if it exists"
-                if (this.respondsTo( 'preCreate' )) {
-                    this.preCreate( domainModelOrMap )
-                    // Since the preCreate may have altered the domainModelOrMap, we'll have to re-create the domainObject
-                    domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap ) 
-                }
                 
                 log.trace "${this.class.simpleName}.create will now save the ${getDomainClass()}"
                 def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
+                
                 createdModel = persistSupplementalDataFor( createdModel )
 
                 log.trace "${this.class.simpleName}.create will now invoke the postCreate callback if it exists"
@@ -152,18 +143,15 @@ class ServiceBase {
                     validateReadOnlyPropertiesNotDirty( domainObject ) // throws RuntimeException if readonly properties are dirty
                     log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
 
-                    log.trace "${this.class.simpleName}.update will now invoke the preValidationForUpdate callback if it exists"
-                    if (this.respondsTo( 'preValidationForUpdate' )) this.preValidationForUpdate( domainModelOrMap )
+                    log.trace "${this.class.simpleName}.update will now invoke the 'preValidationForUpdate' (or 'preUpdate') callback if it exists"
+                    if (this.respondsTo( 'preValidationForUpdate' )) {
+                        this.preValidationForUpdate( domainModelOrMap )
+                        domainObject.properties = extractParams( getDomainClass(), domainModelOrMap ) // re-apply changes
+                    } else if (this.respondsTo( 'preUpdate' )) {
+                        this.preUpdate( domainModelOrMap )     
+                        domainObject.properties = extractParams( getDomainClass(), domainModelOrMap ) // re-apply changes
+                    }                    
                                         
-                    validate domainObject
-
-                    log.trace "${this.class.simpleName}.update is done validation and will now invoke the preUpdate callback if it exists"
-                    if (this.respondsTo( 'preUpdate' )) {
-                        this.preUpdate( domainModelOrMap )
-                        // Since the preUpdate may have altered the domainModelOrMap, we'll have to re-create the domainObject
-                        domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap ) 
-                    }
-
                     log.trace "${this.class.simpleName}.update applied updates and will save $domainObject"
                     updatedModel = domainObject.save( failOnError: true, flush: flushImmediately )
                 }

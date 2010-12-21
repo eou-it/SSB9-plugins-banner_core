@@ -511,27 +511,23 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
     void testCreateCallbacks() {
         assertTrue serviceCallbacks.size() == 0
         myService.create( newMyMockParams() )
-        assertTrue serviceCallbacks.containsAll( [ 'preValidationForCreate', 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 3
+        assertTrue serviceCallbacks.containsAll( [ 'preValidationForCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
     }
 
 
     void testCreateExplicitMethodCallback() {
         def svc = new AnotherWithCallbacksTestService()
         svc.create( newMyMockParams() )
-        assertTrue svc.preCreateCalled
+        assertTrue svc.preValidationForCreateCalled
     }
 
 
     void testUpdateCallbacks() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         existingModel.description = "Updated"
-println "XXXXXXXXXXXXXXXXXXXX $existingModel"        
         assertTrue serviceCallbacks.size() == 0
         def updatedModel = myService.update( existingModel )
-        assertTrue serviceCallbacks.containsAll( [ 'preValidationForUpdate', 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 3
-
-println "XXXXXXXXXXXXXXXXXXXX $updatedModel"        
-        
+        assertTrue serviceCallbacks.containsAll( [ 'preValidationForUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 2
         assertEquals existingModel.id, updatedModel.id        
     }
 
@@ -540,14 +536,14 @@ println "XXXXXXXXXXXXXXXXXXXX $updatedModel"
         assertTrue serviceCallbacks.size() == 0
         def createdDomain = myService.createOrUpdate( newMyMockParams() )
         assertNotNull createdDomain?.id
-        assertTrue serviceCallbacks.containsAll( [ 'preValidationForCreate', 'preCreate', 'postCreate' ] ) && serviceCallbacks.size() == 3
+        assertTrue serviceCallbacks.containsAll( [ 'preValidationForCreate', 'postCreate' ] ) && serviceCallbacks.size() == 2
 
         // now we'll issue the same and expect an update
         createdDomain.description = "Updated" // note the update callback handler asserts this specific content
-        assertTrue serviceCallbacks?.size() == 3
+
         def updatedDomain = myService.createOrUpdate( createdDomain )
         assertEquals createdDomain.id, updatedDomain?.id
-        assertTrue serviceCallbacks.containsAll( [ 'preValidationForUpdate', 'preUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 6
+        assertTrue serviceCallbacks.containsAll( [ 'preValidationForUpdate', 'postUpdate' ] ) && serviceCallbacks.size() == 4
     }
 
 
@@ -622,15 +618,12 @@ println "XXXXXXXXXXXXXXXXXXXX $updatedModel"
     //
     private def injectTestCallbacks( service ) {
         // We'll inject some pre and post CRUD behavior into our service to test service callbacks (this test is NOT College specific)
-        service.metaClass.preCreate = { domainObjectOrParams ->
-            registerCallback 'preCreate'
-            assertNull domainObjectOrParams.id
-            assertEquals "Test", domainObjectOrParams.name
-            assertEquals "I need this in my callback!", domainObjectOrParams['someExtraInfoNeededForValidation']
-        }
         service.metaClass.preValidationForCreate = { domainObjectOrParams ->
             registerCallback 'preValidationForCreate'
             assertNotNull domainObjectOrParams
+            assertNull domainObjectOrParams.id
+            assertEquals "Test", domainObjectOrParams.name
+            assertEquals "I need this in my callback!", domainObjectOrParams['someExtraInfoNeededForValidation']
         }
         service.metaClass.postCreate = { results ->
             registerCallback 'postCreate'
@@ -640,10 +633,6 @@ println "XXXXXXXXXXXXXXXXXXXX $updatedModel"
         }
         service.metaClass.preValidationForUpdate = { domainObjectOrParams ->
             registerCallback 'preValidationForUpdate'
-            assertNotNull domainObjectOrParams
-        }
-        service.metaClass.preUpdate = { domainObjectOrParams ->
-            registerCallback 'preUpdate'
             assertNotNull domainObjectOrParams
         }
         service.metaClass.postUpdate = { results ->
@@ -761,14 +750,14 @@ class AnotherTestService extends ServiceBase {
 
 class AnotherWithCallbacksTestService extends ServiceBase {
     boolean transactional = true
-    boolean preCreateCalled = false
+    boolean preValidationForCreateCalled = false
 
     public AnotherWithCallbacksTestService() {
         domainClass = MyMock
         supplementalDataService = new SupplementalDataService()
     }
 
-    def preCreate( map ) {
-        preCreateCalled = true
+    def preValidationForCreate( map ) {
+        preValidationForCreateCalled = true
     }
 }
