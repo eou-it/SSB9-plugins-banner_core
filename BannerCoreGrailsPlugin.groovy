@@ -85,7 +85,7 @@ class BannerCoreGrailsPlugin {
                          |Banner Security configuration. In addition, this plugin provides
                          |additional framework support (e.g., injecting CRUD methods into
                          |services, providing base test classes) to facilitate development of
-                         |Banner web applications.'''//.stripMargin()  // TODO Enable this once we adopt Groovy 1.7.3
+                         |Banner web applications.'''.stripMargin() 
 
     def documentation = "http://sungardhe.com/development/horizon/plugins/banner-core"
 
