@@ -87,10 +87,14 @@ class BannerAccessDecisionVoter extends RoleVoter {
     // The FormContext is not yet set (we haven't even reached the Dispatcher yet!), so we'll have to do our own work..
     private List getCorrespondingFormNamesFor( String url ) {
         String lcUrl = url.toLowerCase()
+        def splitIndex = 2
+        if(url.contains("?")){
+          splitIndex = 3
+        }
         def urlParts = lcUrl.split( /\/|\?|\./ ).toList() // note, first element will be empty string (i.e., representing before the first '/')
         log.debug "BannerAccessDecisionVoter.vote() has parsed url into: $urlParts"
         def result = CH.config.formControllerMap?.find { k, v ->
-            k == (urlParts[1] == 'api' ? urlParts[2] : urlParts[1]) // we may have to ignore '/api/' if found within the uri
+            k == (urlParts[1] == 'api' ? urlParts[2] : urlParts[urlParts.size()- splitIndex]) // we may have to ignore '/api/' if found within the uri
         }
         result?.value
     }
