@@ -15,17 +15,17 @@ hibernate {
 environments {
 	development {
 		dataSource {
-			url = "jdbc:oracle:thin:@winxp-50174ccec:1521:ban83"
+			url = "jdbc:oracle:thin:@AP-BGLR-LP0111.internal.sungard.corp:1521:BAN83"
 		}
 	}
 	test {
 		dataSource {
-			url = "jdbc:oracle:thin:@localhost:1521:ban83"
+			url = "jdbc:oracle:thin:@AP-BGLR-LP0111.internal.sungard.corp:1521:BAN83"
 		}
 	}
 	production {
 		dataSource {
-			url = "jdbc:oracle:thin:@winxp-50174ccec:1521:ban83"
+			url = "jdbc:oracle:thin:@AP-BGLR-LP0111.internal.sungard.corp:1521:BAN83"
 		}
 	}
 }

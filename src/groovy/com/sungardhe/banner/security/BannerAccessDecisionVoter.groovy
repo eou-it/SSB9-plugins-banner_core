@@ -88,7 +88,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
     private List getCorrespondingFormNamesFor( String url ) {
         String lcUrl = url.toLowerCase()
         def splitIndex = 2
-        if(url.contains("?")){
+        if(url.contains("?page=")){
           splitIndex = 3
         }
         def urlParts = lcUrl.split( /\/|\?|\./ ).toList() // note, first element will be empty string (i.e., representing before the first '/')
