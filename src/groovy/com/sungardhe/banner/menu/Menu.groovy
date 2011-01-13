@@ -18,7 +18,7 @@ package com.sungardhe.banner.menu
  *  This class contains representation of a banner menu item. 
  *    
  */
-class Menu {
+public class Menu implements Serializable {
     def menu
     def pageName
     def formName
