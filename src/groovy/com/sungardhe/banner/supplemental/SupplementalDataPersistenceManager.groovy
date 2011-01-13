@@ -221,7 +221,9 @@ class SupplementalDataPersistenceManager {
                       govsdav_disc_type,
                       govsdav_disc_validation,
                       govsdav_attr_data_len,
-                      govsdav_attr_data_scale
+                      govsdav_attr_data_scale,
+                      govsdav_attr_info,
+                      govsdav_attr_order
                FROM govsdav
                    WHERE govsdav_table_name = :tableName
                    AND govsdav_attr_name = :attributeName
@@ -242,7 +244,9 @@ class SupplementalDataPersistenceManager {
                                                               discType: it[8],
                                                               validation: it[9] != null ? it[9].toInteger() : 1,
                                                               dataLength: it[10],
-                                                              dataScale: it[11])
+                                                              dataScale: it[11],
+                                                              attrInfo: it[12],
+                                                              attrOrder: it[13])
 
             SupplementalPropertyValue propValue = new SupplementalPropertyValue( [ (discProp.disc): discProp ] )
             supplementalProperties."${attributeName}" << propValue

@@ -69,6 +69,8 @@ class SupplementalPropertyDiscriminatorContent {
     def validation
     def dataLength
     def dataScale
+    def attrInfo
+    def attrOrder
 
 
     boolean equals( o ) {
@@ -88,6 +90,8 @@ class SupplementalPropertyDiscriminatorContent {
         if (validation != that.validation) return false
         if (dataLength != that.dataLength) return false
         if (dataScale != that.dataScale) return false
+        if (attrInfo != that.attrInfo) return false
+        if (attrOrder != that.attrOrder) return false
         return true
     }
 
@@ -105,11 +109,13 @@ class SupplementalPropertyDiscriminatorContent {
         result = 31 * result + (validation != null ? validation.hashCode() : 0)
         result = 31 * result + (dataLength != null ? dataLength.hashCode() : 0)
         result = 31 * result + (dataScale != null ? dataScale.hashCode() : 0)
+        result = 31 * result + (attrInfo != null ? attrInfo.hashCode() : 0)
+        result = 31 * result + (attrOrder != null ? attrOrder.hashCode() : 0)
         return result
     }
 
 
     public String toString() {
-        super.toString() + "disc=$disc, value=$value, id=$id, required=$required, dataType=$dataType, pkParentTab=$pkParentTab, prompt=$prompt, discType=$discType, validation=$validation, dataLength=$dataLength, dataScale=$dataScale"
+        super.toString() + "disc=$disc, value=$value, id=$id, required=$required, dataType=$dataType, pkParentTab=$pkParentTab, prompt=$prompt, discType=$discType, validation=$validation, dataLength=$dataLength, dataScale=$dataScale, attrInfo=$attrInfo, attrOrder=$attrOrder"
     }
 }

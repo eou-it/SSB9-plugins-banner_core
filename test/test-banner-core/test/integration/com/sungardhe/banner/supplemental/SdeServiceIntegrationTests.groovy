@@ -123,9 +123,14 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "Enter a comment", found.COMMENTS."2".prompt
         assertEquals "Enter a comment", found.COMMENTS."3".prompt
 
+        assertEquals "Use record dulicate to add more records", found.COMMENTS."1".attrInfo
+        assertEquals "Use record dulicate to add more records", found.COMMENTS."2".attrInfo
+        assertEquals "Use record dulicate to add more records", found.COMMENTS."3".attrInfo
+
         assertEquals "VARCHAR2", found.COMMENTS."1".dataType
         assertEquals "M", found.COMMENTS."1".discType
         assertEquals 3, found.COMMENTS."1".validation
+        assertEquals 1, found.COMMENTS."1".attrOrder
 
         assertEquals "comment 1", found.TEST."1".value
         assertEquals "comment 2", found.TEST."2".value
@@ -138,6 +143,9 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "VARCHAR2", found.TEST."1".dataType
         assertEquals "M", found.TEST."1".discType
         assertEquals 6, found.TEST."1".validation
+        assertNull found.TEST."1".attrInfo
+        assertEquals 2, found.TEST."1".attrOrder
+
 
         assertNull found.NUMBER."1".value
         assertEquals "enter a numbere", found.NUMBER."1".prompt
@@ -147,6 +155,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 1, found.NUMBER."1".validation
         assertEquals 2, found.NUMBER."1".dataLength
         assertEquals 2, found.NUMBER."1".dataScale
+        assertEquals "with 2 decimal points", found.NUMBER."1".attrInfo
+        assertEquals 3, found.NUMBER."1".attrOrder
 
 
         assertEquals 3, found.supplementalPropertyNames().size()
