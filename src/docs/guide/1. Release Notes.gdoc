@@ -1,3 +1,13 @@
+ 
+
+
+h4. Version 0.2.11 (and previous builds after 0.2.4)
+
+* CodeNarc code quality analysis and reporting
+* Cobertura code coverage instrumentation and reporting
+* Bug fixes (Jira's not available)
+* Modified Service callback methods (such that only one occurs before a save)
+* Added documentation for 'Services' and 'REST'
 
 h4. Version 0.2.4
 
