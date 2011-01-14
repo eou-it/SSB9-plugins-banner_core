@@ -17,7 +17,7 @@ SendFailures.txt
 out/
 grails-banner-core*.zip
 *.sha1
-test/test-banner-core/cobertura.ser
+test/**/cobertura.ser
 
 
 

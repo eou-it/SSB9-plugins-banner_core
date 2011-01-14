@@ -56,6 +56,7 @@ grails.project.dependency.resolution = {
 
     plugins {
 	    provided 'com.sungardhe:banner-codenarc:0.1.3'// Note: Also update version within 'application.properties'
+	    provided 'com.sungardhe:code-coverage:1.2'    // Note: Also update version within 'application.properties'
 	}
     
     dependencies {

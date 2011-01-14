@@ -35,6 +35,8 @@ grails.doc.alias.release_notes = "1. Release Notes"
 grails.doc.alias.user          = "2. User Guide"
 grails.doc.alias.overview      = "2.1 Architecture Overview"
 grails.doc.alias.security      = "2.2 Application Security"
+grails.doc.alias.services      = "2.3 Services"
+grails.doc.alias.rest          = "2.4 REST"
 grails.doc.alias.dev           = "3. Developer Guide"
 
 
@@ -42,3 +44,9 @@ grails.doc.alias.dev           = "3. Developer Guide"
 codenarc.ruleSetFiles="rulesets/banner.groovy"
 codenarc.reportName="target/CodeNarcReport.html"
 codenarc.propertiesFile="grails-app/conf/codenarc.properties"
+
+
+// Code Coverage configuration
+coverage {
+	enabledByDefault = false
+}

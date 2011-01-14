@@ -1,6 +1,7 @@
 
 {warning}This plugin is under active development.{warning}
 
+_Note: This documentation may be generated locally using 'grails Doc' from the root directory of the plugin._ 
 \\
 The banner-core plugin provides common framework support for Grails applications that interact with the Banner database. It is expected that all grails applications that build upon Banner will use this plugin.  If you find this plugin does not fit your requirements, please contact the architect so that enhancements to this plugin may be considered. 
 
@@ -20,6 +21,8 @@ The following sections provide details of the key capabilities provided by this 
 \\
 * [Architecture Overview|guide:overview]
 * [Security|guide:security]
+* [Services|guide:services]
+* [RESTful Interfaces|guide:rest]
 
 \\
 \\

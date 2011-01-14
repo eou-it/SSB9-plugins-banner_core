@@ -1,0 +1,43 @@
+
+The banner-core plugin provides a 'ServiceBase' base class for transactional services, that provides an implementation of the standard CRUD methods. 
+
+There are two way to use ServiceBase.  The preferred way is to extend from it. Extending your services from ServiceBase enables the use of Spring '@Transactional' annotations to define the transaction attributes declaratively for the service methods in your service. This provides more control than using '' (the standard 'grails' approach). 
+
+The second way to use ServiceBase is as a 'mixin'.  This is supported to allow benefit from ServiceBase in cases where extending from it is not feasible.  A drawback to mixing in ServiceBase is that the @Transactional annotation within ServiceBase are not effective, and the concrete service must employ the 'grails' approach for indicating a service is transactional. .
+
+h4. CRUD Method Input Arguments
+
+ServiceBase provides 'create', 'update', 'delete', 'createOrUpdate', 'fetch', and 'list' methods. To facilitate reuse, these methods support various inputs. 
+
+The 'create' and 'update' methods accept a single argument, being either:
+* An instance of a domain model
+* A 'params' Map (i.e., a map holding property key-value entries, such as a normal Grails 'params' map)
+* A Map containing a key named after the model's class (in property form), whose instance is held by that key. For instance, to hold an instance of a MyModel model class, you may use a key named 'myModel'.
+* A Map that contains a key named 'domainModel', whose value is a domain model instance
+* A List that contains any combination of the above. When providing a list, the create/update method will be invoked separately for each element in the list. That is, it does not implement 'true batch processing' but instead provides an 'internal iterator' for convenience.
+
+Similarly, the delete method accepts a single argument, being either:
+* An 'id' (either as a 'Long', primitive 'long', or String). If a String representation is provided, it will be coerced into a long if possible otherwise it will be used as a string. In general, we do not have complete support for String primary keys, so in practice a 'long' compatible key should be used.
+* An instance of a domain model that has a populated id
+* A 'params' map (i.e., a map holding property key-value entries, such as a normal Grails 'params' map)
+* A Map containing a key named for the model (in property form) whose instance is held by that key. For instance, to hold an instance of a MyModel model class, you may use a key named 'myModel'.
+* A map that contains a 'domainModel' key whose value is a domain model instance
+* A List that contains any combination of the above. When providing a list, the create method will be invoked separately for each element in the list. That is, it does not implement 'true batch processing' but instead provides an 'internal iterator' for convenience.
+
+The delete method returns 'true' if the delete was successful, or an exception if it was not successful. 
+
+The 'list' and 'read' (as well 'get' method providing same implementation as 'read' with a different name) simply pass along any input arguments to the corresponding GORM 'list' and 'get' methods (e.g., to support paging and filtering). 
+
+h4. CRUD Method Callbacks 
+The 'create', 'update', and 'delete' methods each invoke pre and post methods (e.g., preCreate, postUpdate, etc.).  The 'pre' methods are invoked with the same input argument of the create/update/delete method invocation, and the 'post' invocations return a map containing status and results of the database operation. 
+
+While the 'pre' callback argument is whatever was passed to 'create', the 'post' callback arguments differ slightly for 'create', 'update', and 'delete'.  The 'postCreate' callback is invoked with a single argument: '\[ before: domainModelOrMap, after: createdModel \]' where 'domainModelOrMap' is whatever was passed into the create method, and 'createdModel' is the as-created model instance.  The 'postUpdate' argument is the same, except instead of a 'createdModel' key it contains an 'updatedModel' key. Lastly, the 'postDelete' callback argument looks like: '\[ before: domainObject, after: null \]' where 'domainObject' is the model instance that was fetched from the database and that will be deleted. The 'after' key simply holds null, as the model instance has been deleted.
+
+h4. CRUD Method Return Values
+
+The create and update methods return the created/updated model instance if successful, and the 'delete' method returns 'true' if successful.  If any of these method invocations is not successful, they throw an exception.  Usually, the exception to be thrown will be an 'ApplicationException', however it is prudent to write your client that is invoking a service method to first catch ApplicationException (and handle it) and then in a second catch block catch 'Exception' (or Throwable).  This second catch should attempt to handle the exception, and should also log this exception as an 'error' that  should not have been thrown by the service. That is, log an error to indicate that the service should have wrapped this exception into an ApplicationException.   
+
+h4. ApplicationException
+
+The banner-core plugin defines an ApplicationException that is used to wrap various exceptions, provide a common interface, and ensure localization of exception messages. Please refer to 'ApplicationExceptionIntegrationTests' (contained in this plugin) for example usage.  
+
