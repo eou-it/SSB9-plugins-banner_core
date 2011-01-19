@@ -14,6 +14,7 @@ import groovy.sql.Sql
 import java.sql.Connection;
 import com.sungardhe.banner.db.BannerDS as BannerDataSource
 import com.sungardhe.banner.db.BannerConnection
+import com.sungardhe.banner.configuration.SupplementalDataUtils
 import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -43,7 +44,7 @@ class SupplementalDataService {
         Map x = sessionFactory.getAllClassMetadata()
         for (Iterator i = x.values().iterator(); i.hasNext();) {
             SingleTableEntityPersister y = (SingleTableEntityPersister) i.next();
-            setSDE(y.getName(), y.getTableName().toUpperCase())
+            setSDE(y.getName(), SupplementalDataUtils.getTableName(y.getTableName().toUpperCase()))
             // for (int j = 0; j < y.getPropertyNames().length; j++) {
             //     println( " " + y.getPropertyNames()[ j ] + " -> " + (y.getPropertyColumnNames( j ).length > 0 ? y.getPropertyColumnNames( j )[ 0 ] : ""))
             // }
@@ -107,8 +108,13 @@ class SupplementalDataService {
 
         def tableName = sessionFactory.getClassMetadata(domainClass?.getClazz())?.tableName.toUpperCase()
 
+
         if (tableName == null)
             return false
+
+
+        tableName = SupplementalDataUtils.getTableName(tableName)
+      
 
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
 
