@@ -14,7 +14,6 @@ import org.apache.log4j.Logger
 
 import java.text.SimpleDateFormat
 import java.text.ParseException
-import com.sungardhe.banner.configuration.SupplementalDataUtils
 
 /**
  * DAO for supplemental data. This strategy works against the
@@ -47,7 +46,6 @@ class SupplementalDataPersistenceManager {
 		try {
 			sql = new Sql( sessionFactory.getCurrentSession().connection() )
             def tableName = sessionFactory.getClassMetadata( model.getClass() ).tableName.toUpperCase()
-            tableName = SupplementalDataUtils.getTableName(tableName)
 			def attributeName
 			def id = model.id
 
@@ -98,7 +96,6 @@ class SupplementalDataPersistenceManager {
 
 			sql = new Sql( sessionFactory.getCurrentSession().connection() )
 			def tableName = sessionFactory.getClassMetadata(model.getClass()).tableName.toUpperCase()
-            tableName = SupplementalDataUtils.getTableName(tableName)
 			def sdeTableName = 'GORSDAV'
 
 			def id

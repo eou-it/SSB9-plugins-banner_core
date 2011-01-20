@@ -436,8 +436,8 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
             def isSde3 =  supplementalDataService.hasSde("studentBlock")
             assertFalse isSde3
 
-            def isSde4 =  supplementalDataService.hasSde("courseLaborDistributionBlock")
-            assertTrue isSde4
+            //def isSde4 =  supplementalDataService.hasSde("courseLaborDistributionBlock")
+            //assertTrue isSde4
     }
 
 
