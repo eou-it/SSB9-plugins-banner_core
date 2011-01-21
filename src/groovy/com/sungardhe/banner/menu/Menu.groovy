@@ -28,5 +28,6 @@ public class Menu implements Serializable {
     def module
     def parent
     def type
+    def path
 }
 

@@ -86,7 +86,11 @@ class MenuController {
    * Returns menu itesm for a specified menu
    */
   private def getMenuList(String menuName, String menuType) {
-    def mnuList = getMenu()
+    def mnuList
+    if (menuType == null)
+      mnuList = getMenu()
+    else
+      mnuList = getPersonalMenu()
     def childMenu = []
     for (a in mnuList) {
       if (a.parent == menuName) {
@@ -147,4 +151,37 @@ class MenuController {
     }
     return rootMenu + "/" + parentChain
   }
+
+   /**
+   * This method derives the menu parent structure
+   */
+  private def getParentChain (List map, Menu mnu, String rootMenu) {
+    def parentChain
+    def parentMnu
+    def menuFName = mnu.formName
+    def caption = mnu.caption
+    if (mnu.type == "MENU") {
+      parentChain = caption
+    }
+    for (i in 1..(mnu.level)) {
+      for (a in map) {
+        if (a.formName == menuFName) {
+          parentMnu = a
+          break;
+        }
+      }
+      menuFName = parentMnu.parent
+      for (b in map) {
+        if (b.formName == menuFName) {
+          caption = b.caption
+          break;
+        }
+      }
+      if (parentChain == null) parentChain = caption
+      else
+      if (menuFName != null) parentChain = caption + "/" + parentChain
+    }
+    return rootMenu + "/" + parentChain
+  }
+
 }

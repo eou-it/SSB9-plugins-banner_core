@@ -103,11 +103,12 @@ class MenuService {
   private def processMenu() {
     def bannerMenu
     def dataMap = []
+    def addmenu
     def i = 0
     def mnuLabelPref =  getMnuPref()
     sql = new Sql(sessionFactory.getCurrentSession().connection())
     sql.execute("Begin gukmenu.p_bld_prod_menu; End;")
-    sql.eachRow("select * from gutmenu,gubmodu,gubpage where  gutmenu_value  = gubpage_code (+) AND " +
+    sql.eachRow("select * from gutmenu,gubmodu,gubpage where gutmenu_value  = gubpage_code (+) AND " +
             " gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+)", {
       def mnu = new Menu()
 
@@ -124,9 +125,18 @@ class MenuService {
       mnu.parent = it.gutmenu_prior_obj
       mnu.module = it.gubmodu_name
       mnu.url = it.gubmodu_url
+      
+               //Added for horizon
+  if (mnu.level ==1)
+    if (mnu.formName == "*HORIZON")
+      addmenu ="Y"
+    else
+       addmenu ="N"
+  if (addmenu == "Y")
+    {
       dataMap.add(mnu)
     }
-    );
+    });
     return dataMap
   }
 
@@ -134,6 +144,18 @@ class MenuService {
      return "Y"
      // def prefs = menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference()
      // return prefs.get(0).formnameDisplayIndicator
+  }
+
+   def searchMenu(String menuName) {
+    def mnuList = bannerMenu()
+    def childMenu = []
+    for (a in mnuList) {
+      if (a.formName.find (menuName) == menuName || a.caption.find (menuName) == menuName ) {
+        a.path = a.pageName + ".zul"
+        childMenu.add(a)
+      }
+    }
+    return childMenu
   }
 
 }
