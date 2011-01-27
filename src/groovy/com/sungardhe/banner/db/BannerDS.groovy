@@ -130,11 +130,7 @@ public class BannerDS {
      * Returns the jdbcUrl of the real DataSource
      */
     public String getUrl() {
-      Connection conn = underlyingDataSource.getConnection()
-      //Using conn.meteData.URL //JDBC 3.0 Spec (Supported by all database implementations)
-      return conn.metaData.URL
-      //This call is unsupported with weblogic RmiDatasource as it is not JDBC 4.0 complaint :(
-      //return underlyingDataSource.getUrl()
+        return underlyingDataSource.getUrl()
     }
 
     // ------------- end of public methods ----------------

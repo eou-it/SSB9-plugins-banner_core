@@ -15,7 +15,7 @@ import com.sungardhe.banner.service.DomainManagementMethodsInjector
 import grails.util.GrailsNameUtils
 
 /**
- * Executes arbitrary code at bootstrap time. 
+ * Executes arbitrary code at bootstrap time.
  * Code executed includes:
  * -- Configuring the dataSource to ensure connections are tested prior to use
  * -- Injects CRUD methods into services having a static defaultCrudMethods set to true
@@ -23,25 +23,25 @@ import grails.util.GrailsNameUtils
 class BootStrap {
 
     def grailsApplication
-    
+
 
     def init = { servletContext ->
         def ctx = servletContext.getAttribute( ApplicationAttributes.APPLICATION_CONTEXT )
- 
+
         // Configuring the dataSource to ensure connections are tested prior to use
-/*        def dataSource = ctx.dataSource.underlyingDataSource
+        def dataSource = ctx.dataSource.underlyingDataSource
         dataSource.setMinEvictableIdleTimeMillis( 1000 * 60 * 30 )
         dataSource.setTimeBetweenEvictionRunsMillis( 1000 * 60 * 30 )
         dataSource.setNumTestsPerEvictionRun( 3 )
-        dataSource.setTestOnBorrow( true ) 
+        dataSource.setTestOnBorrow( true )
         dataSource.setTestWhileIdle( false )
         dataSource.setTestOnReturn( false )
-        dataSource.setValidationQuery( "select 1 from dual" )*/
+        dataSource.setValidationQuery( "select 1 from dual" )
     }
 
 
     def destroy = {
         // no-op
     }
-    
+
 }
