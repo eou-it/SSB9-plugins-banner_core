@@ -52,11 +52,11 @@
 			<form action='${postUrl}' method='POST' id='loginForm' class='cssform'>
 				<p>
 					<label for='j_username'>Login ID</label>
-					<input type='text' class='text_' name='j_username' id='j_username' value='grails_user' />
+					<input type='text' class='text_' name='j_username' id='j_username' />
 				</p>
 				<p>
 					<label for='j_password'>Password</label>
-					<input type='password' class='text_' name='j_password' id='j_password' value="u_pick_it" />
+					<input type='password' class='text_' name='j_password' id='j_password' />
 				</p>
 				<p>
 					<input type='submit' value='Login' />
