@@ -29,14 +29,14 @@ class BootStrap {
         def ctx = servletContext.getAttribute( ApplicationAttributes.APPLICATION_CONTEXT )
  
         // Configuring the dataSource to ensure connections are tested prior to use
-        def dataSource = ctx.dataSource.underlyingDataSource
+/*        def dataSource = ctx.dataSource.underlyingDataSource
         dataSource.setMinEvictableIdleTimeMillis( 1000 * 60 * 30 )
         dataSource.setTimeBetweenEvictionRunsMillis( 1000 * 60 * 30 )
         dataSource.setNumTestsPerEvictionRun( 3 )
         dataSource.setTestOnBorrow( true ) 
         dataSource.setTestWhileIdle( false )
         dataSource.setTestOnReturn( false )
-        dataSource.setValidationQuery( "select 1 from dual" )
+        dataSource.setValidationQuery( "select 1 from dual" )*/
     }
 
 

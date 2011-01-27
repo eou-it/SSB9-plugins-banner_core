@@ -63,7 +63,7 @@ class BannerCoreGrailsPlugin {
     // independent of deploying a new plugin build to Nexus.
     //
 //    String version = "0.1-SNAPSHOT"
-    String version = "0.2.13"
+    String version = "0.2.14"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
@@ -228,9 +228,12 @@ class BannerCoreGrailsPlugin {
 
         // inject the logger into every class (Grails only injects this into some artifacts)
         application.allClasses.each {->
+          //For some reason weblogic throws an error if we try to inject the method if it is already present
+          if(!it.metaClass.methods.find { m -> m.name.matches("getLog")}) {
             it.metaClass.getLog = {->
                 LogFactory.getLog it
             }
+          }
         }
     }
 
