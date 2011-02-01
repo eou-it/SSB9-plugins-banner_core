@@ -147,9 +147,9 @@ class SupplementalDataPersistenceManager {
             sql.executeUpdate("""
                                    update GORSDAV
                                       set GORSDAV_DISC = rownum
-                                    where  GORSDAV_TABLE_NAME = '${tableName}'
-                                      and GORSDAV_PK_PARENTTAB = '${parentTab}'
-                                      and GORSDAV_ATTR_NAME = '${attributeName}'
+                                    where  GORSDAV_TABLE_NAME = ${tableName}
+                                      and GORSDAV_PK_PARENTTAB = ${parentTab}
+                                      and GORSDAV_ATTR_NAME = ${attributeName}
                                    """
                               )
 
