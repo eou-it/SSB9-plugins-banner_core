@@ -40,11 +40,11 @@ def locationAdder = ConfigFinder.&addLocation.curry( grails.config.locations )
 //                    +++ INSTANCE-SPECIFIC CONFIGURATION +++
 //
 // ******************************************************************************
-
+//
 // Developers: You should create a small configuration file that contains your own specific
 // configuration (e.g., URIs, usernames, etc.) and that resides at the location specified here:
 //     ${userHome}/.grails/banner_on_grails-local-config.groovy
-
+//
 /* ***************************** EXAMPLE local file ******************************
 def username = "banproxy"
 def password = "u_pick_it"
@@ -67,6 +67,35 @@ myDataSource.url = url
 // myDataSource.url = "jdbc:elvyx://localhost:4448/?elvyx.real_driver=$driver&elvyx.real_jdbc=$url&user=$username&password=$password"
 ********************************************************************************* */
 
+
+
+// ******************************************************************************
+//
+//                       +++ BUILD NUMBER SEQUENCE UUID +++
+//
+// ******************************************************************************
+//
+// A UUID corresponding to this project, which is used by the build number generator.
+// Since the build number generator web service provides build number sequences to 
+// multiple projects, and each project uses a unique UUID to identify which number 
+// sequence it is using. 
+//
+// This number should NOT be changed.  
+// FYI: When a new UUID is needed (e.g., for a new project), use this URI: 
+//      http://maldevl2.sungardhe.com:8080/BuildNumberServer/newUUID 
+//
+// DO NOT EDIT THIS UUID UNLESS YOU ARE AUTHORIZED TO DO SO AND KNOW WHAT YOU ARE DOING
+//
+build.number.uuid = "cb0f9ca1-0857-4a2f-a3f8-8b530f3edb2e"
+build.number.base.url="http://maldevl2.sungardhe.com:8080/BuildNumberServer/buildNumber?method=getNextBuildNumber&uuid="
+
+
+
+// ******************************************************************************
+//
+//                       +++ General Grails Configuration +++
+//
+// ******************************************************************************
 
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
 grails.mime.use.accept.header = false
@@ -127,6 +156,8 @@ environments {
 // the lastModified uses the current timestamp, and the dataOrigin uses the value
 // specified here:
 dataOrigin = "Banner"
+
+
 
 // ******************************************************************************
 //
