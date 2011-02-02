@@ -1,4 +1,6 @@
 import com.sungardhe.banner.menu.Menu
+import org.apache.log4j.Logger
+import com.sungardhe.banner.security.FormContext
 
 /**
  * Menu controller returns menu as XML format
@@ -12,17 +14,21 @@ class MenuController {
   def menuService
   def list
   def mnuLabel = "Banner"
+  private static final log = Logger.getLogger(getClass())
   def data = {
     def i = 0
     def menuType
     def mnuParams
+    FormContext.set(["GUAGMNU"])
+    log.debug("Menu Controller DATA fetch")
+
     if (request.parameterMap["type"] != null) {
       menuType = request.parameterMap["type"][0]
       mnuLabel = "My Banner"
       mnuParams = "type=Personal"
     }
     if (request.parameterMap["pageName"] != null)
-      list = getCrumb((request.parameterMap["pageName"][0]),menuType)
+      list = getCrumb((request.parameterMap["pageName"][0]), menuType)
     else
     if (request.parameterMap["menuName"] != null)
       list = getMenuList(request.parameterMap["menuName"][0], menuType)
@@ -32,7 +38,7 @@ class MenuController {
       NavigationEntries {
         for (a in list) {
           i += 1
-          NavigationEntryValueObject(id: i, menu: a.menu, form: a.formName, path: a.pageName + ".zul", name: a.formName, caption: a.caption, type: a.type, url: a.url, parent: a.parent, params:mnuParams)
+          NavigationEntryValueObject(id: i, menu: a.menu, form: a.formName, path: a.pageName + ".zul", name: a.formName, caption: a.caption, type: a.type, url: a.url, parent: a.parent, params: mnuParams)
         }
       }
     }
@@ -41,6 +47,8 @@ class MenuController {
    * Driver for banner menu
    */
   private def getMenu() {
+    FormContext.set(["GUAGMNU"])
+    log.debug("Menu Controller getmenu")
     if (session["menuList"] == null) {
       list = menuService.bannerMenu()
       session["menuList"] = list
@@ -54,6 +62,8 @@ class MenuController {
    * Driver for personal menu
    */
   private def getPersonalMenu() {
+    FormContext.set(["GUAGMNU"])
+    log.debug("Menu Controller getmenu")
     if (session["personalMenuList"] == null) {
       list = menuService.personalMenu()
       session["personalMenuList"] = list
@@ -68,7 +78,8 @@ class MenuController {
    */
   private def getFirstList(String menuType) {
     def mnuList
-
+    FormContext.set(["GUAGMNU"])
+    log.debug("Menu Controller getmenu")
     if (menuType == null)
       mnuList = getMenu()
     else
@@ -87,6 +98,8 @@ class MenuController {
    */
   private def getMenuList(String menuName, String menuType) {
     def mnuList
+    FormContext.set(["GUAGMNU"])
+    log.debug("Menu Controller getmenulist")
     if (menuType == null)
       mnuList = getMenu()
     else
@@ -106,6 +119,8 @@ class MenuController {
    */
   private def getCrumb(String pageName, String menuType) {
     def mnuList
+    FormContext.set(["GUAGMNU"])
+    log.debug("Menu Controller getcrumb")
     if (menuType == null)
       mnuList = getMenu()
     else
@@ -152,10 +167,10 @@ class MenuController {
     return rootMenu + "/" + parentChain
   }
 
-   /**
+  /**
    * This method derives the menu parent structure
    */
-  private def getParentChain (List map, Menu mnu, String rootMenu) {
+  private def getParentChain(List map, Menu mnu, String rootMenu) {
     def parentChain
     def parentMnu
     def menuFName = mnu.formName
