@@ -1,4 +1,4 @@
-<plugin name='banner-core' version='0.2.16' grailsVersion='1.3.0 &gt; *'>
+<plugin name='banner-core' version='0.2.18' grailsVersion='1.3.0 &gt; *'>
   <author>SunGard Higher Education</author>
   <authorEmail>horizon-support@sungardhe.com</authorEmail>
   <title>Banner Core Framework Plugin</title>
@@ -24,6 +24,7 @@ Banner web applications.</description>
     <resource>com.sungardhe.banner.general.utility.MenuAndToolbarPreferenceService</resource>
     <resource>com.sungardhe.banner.general.utility.PersonalPreferenceService</resource>
     <resource>com.sungardhe.banner.menu.MenuService</resource>
+    <resource>com.sungardhe.banner.menu.OptionMenuService</resource>
     <resource>com.sungardhe.banner.supplemental.SupplementalDataService</resource>
     <resource>com.sungardhe.banner.configuration.ConfigurationUtils</resource>
     <resource>com.sungardhe.banner.configuration.SupplementalDataUtils</resource>
