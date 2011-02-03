@@ -395,7 +395,7 @@ class RestfulControllerMixin {
      */
     private Map extractParams() {
 
-        log.debug "extractParams() will ask the registry for a params extractor supporting content-type ${request?.getHeader( 'Content-Type' )} and domain class ${getDomainClass()}"
+        log.debug "extractParams() will ask the registry for a params extractor supporting content type ${request?.getHeader( 'Content-Type' )} and domain class ${getDomainClass()}"
         ParamsExtractor extractor = retrieveParamsExtractorFromRegistry( request?.getHeader( 'Content-Type' ), getDomainClass() )
 
         if (extractor) {
@@ -447,7 +447,7 @@ class RestfulControllerMixin {
 
 
     private  RepresentationBuilder representationBuilderFor( String actionName ) {
-        RepresentationBuilder representationBuilder = retrieveRepresentationBuilderFromRegistry( request?.getHeader( 'Content-Type' ), actionName, getDomainClass() )
+        RepresentationBuilder representationBuilder = retrieveRepresentationBuilderFromRegistry( request?.getHeader( 'Accept' ), actionName, getDomainClass() )
         if (representationBuilder) {
             log.debug "RestfulControllerMixin.representationBuilderFor found a custom representationBuilder within the registry"
         } else {
@@ -458,7 +458,7 @@ class RestfulControllerMixin {
         }
         if (representationBuilder) {
             // we found support for the current request, so we'll set the response content type before returning the representationBuilder
-            response.setHeader( "Content-Type", request?.getHeader( 'Content-Type' ) )
+            response.setHeader( "Content-Type", request?.getHeader( 'Accept' ) )
         } else {
             log.debug "RestfulControllerMixin.representationBuilderFor did not find any custom representation support, and will use a default representationBuilder"
             // note the defaultrepresentationBuilder will set the appropriate content type
@@ -472,15 +472,25 @@ class RestfulControllerMixin {
     // we cannot rely on solely on 'request.format' (as the format is 'html' by default, and must be set to
     // another type).
     private RepresentationBuilder defaultRepresentationBuilder = { Map responseMap ->
-        if (request.getHeader( 'Content-Type' ) ==~ /.*html.*/) {
+        // We'll first try to use the Accept header
+        if (request.getHeader( 'Accept' ) ==~ /.*html.*/) {
             response.setHeader( "Content-Type", "application/html" )
             return responseMap.toString()
         }
-        else if (request.format  ==~ /.*json.*/ || request.getHeader( 'Content-Type' ) ==~ /.*json.*/) {
+        else if (request.getHeader( 'Accept' ) ==~ /.*json.*/) {
             response.setHeader( "Content-Type", "application/json" )
             return (responseMap as JSON).toString()
         }
-        else if (request.format ==~ /.*xml.*/ || request.getHeader( 'Content-Type' ) ==~ /.*xml.*/) {
+        else if (request.getHeader( 'Accept' ) ==~ /.*xml.*/) {
+            response.setHeader( "Content-Type", "application/xml" )
+            return (responseMap as XML).toString()
+        }
+        // but if that doesn't work, we'll fall back to the format determined by grails
+        else if (request.format  ==~ /.*json.*/) {
+            response.setHeader( "Content-Type", "application/json" )
+            return (responseMap as JSON).toString()
+        }
+        else if (request.format ==~ /.*xml.*/) {
             response.setHeader( "Content-Type", "application/xml" )
             return (responseMap as XML).toString()
         }

@@ -13,6 +13,7 @@ package com.sungardhe.banner.testing
 import com.sungardhe.banner.json.JsonHelper
 
 import grails.converters.JSON
+import grails.converters.XML
 
 import groovy.sql.Sql
 
@@ -67,6 +68,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
             method = 'GET'
             content = "{'id': ${entity.id} }".getBytes()
             contentType = "application/json"
+            addHeader( 'Accept', "application/json" )
             getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
         }
         controller.show()
@@ -79,6 +81,29 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "Found code ${result?.data?.code} but expected ${entity.code}", entity.code, result?.data?.code
         assertEquals "Found description ${result?.data?.description} but expected ${entity.description}", entity.description, result?.data?.description
         assertNull result?.supplementalData
+    }
+
+
+    void testShow_Json_Accept_XML() {
+
+        def entity = new Foo( newFooParamsWithAuditTrailProperties() )
+        save entity
+
+        controller.request.with {
+            method = 'GET'
+            content = "{'id': ${entity.id} }".getBytes()
+            contentType = "application/json"
+            addHeader( 'Accept', "text/xml" )
+            getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
+        }
+        controller.show()
+
+        assertEquals 1, controller.invokedRenderCallbacks.size()
+        assertTrue controller.invokedRenderCallbacks.any { it == 'show' }
+        def stringContent = controller.response.contentAsString
+        def xmlResultMap = new XmlSlurper().parseText( stringContent )
+        def xmlFoo = xmlResultMap.entry.findAll { it.@key.text() == "data" }
+        assertEquals "Expected Foo id of '${entity.id}' but got: ${xmlFoo[0].@id.text().toString()}", "${entity.id}", xmlFoo[0]?.@id.text().toString()
     }
 
 
@@ -105,6 +130,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
             method = 'GET'
             content = "{'id': ${entity.id} }".getBytes()
             contentType = "application/json"
+            addHeader( 'Accept', "application/json" )
             getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
         }
         controller.show()
@@ -130,6 +156,7 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
             method = 'GET'
             content = "{'max': ${MAX} }".getBytes()
             contentType = "application/json"
+            addHeader( 'Accept', "application/json" )
             getAttribute( "org.codehaus.groovy.grails.WEB_REQUEST" ).informParameterCreationListeners()
         }
         controller.list()

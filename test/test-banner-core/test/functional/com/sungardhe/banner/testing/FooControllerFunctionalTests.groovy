@@ -367,6 +367,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
         def pageSize = 15
         get("/api/foobar?max=$pageSize") {
             headers[ 'Content-Type' ]  = contentType
+            headers[ 'Accept' ]  = contentType
             headers[ 'Authorization' ] = authHeader()
         }
         assertStatus 200
@@ -399,6 +400,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
         get( "/api/foobar/1" ) {  // 'GET' /api/foobar/id => 'show'
             headers[ 'Content-Type' ]  = contentType
+            headers[ 'Accept' ]  = contentType
             headers[ 'Authorization' ] = authHeader()
         }
         assertStatus 200
@@ -420,6 +422,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
         try {
             post( "/api/foobar" ) {   // 'POST' /api/foobar => 'create'
                 headers[ 'Content-Type' ] = contentType
+                headers[ 'Accept' ]  = contentType
                 headers[ 'Authorization' ] = authHeader()
                 body { """
                     <FooInstance apiVersion="1.0">
@@ -446,6 +449,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
             put( "/api/foobar/$id" ) {  // 'PUT' /api/foobar => 'update'
                 headers[ 'Content-Type' ] = contentType
+                headers[ 'Accept' ]  = contentType
                 headers[ 'Authorization' ] = authHeader()
                 body { """
                     <FooInstance apiVersion="1.0">
@@ -471,6 +475,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
         finally {
             delete( "/api/foobar/$id" ) {
                 headers[ 'Content-Type' ] = contentType
+                headers[ 'Accept' ]  = contentType
                 headers[ 'Authorization' ] = authHeader()
             }
             assertStatus 200
@@ -482,6 +487,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
             get( "/api/foobar/$id" ) {  // 'GET' /api/foobar/id => 'show'
                 headers[ 'Content-Type' ] = contentType
+                headers[ 'Accept' ]  = contentType
                 headers[ 'Authorization' ] = authHeader()
             }
             assertStatus 404

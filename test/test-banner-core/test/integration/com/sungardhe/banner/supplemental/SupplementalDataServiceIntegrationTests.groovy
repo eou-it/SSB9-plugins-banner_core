@@ -205,14 +205,12 @@ class SupplementalDataPersistenceTestManager {
 
 
     public def loadSupplementalDataFor( model ) {
-        println "SupplementalDataPersistenceTestManager.load called for model $model"
         def modelKey = "${model.class.name}-${model.id}"
         if (persistentStore."$modelKey") {
             model.supplementalProperties = persistentStore."$modelKey".clone()
             model
         }
         else {
-            println "...and will load default definitions (since there is no existing supplemental data"
             // load in common specification of the supplemental data properties
             Map defaultSuppData = [ testSuppA: newDefaultPropertySpec( '1' ),
                                     testSuppB: newDefaultPropertySpec( '1', Boolean ) ]
@@ -223,7 +221,6 @@ class SupplementalDataPersistenceTestManager {
 
 
     public def persistSupplementalDataFor( model ) {
-        println "SupplementalDataPersistenceTestManager.persist called"
         def modelKey = "${model.class.name}-${model.id}"
         persistentStore."$modelKey" = new HashMap()
 
