@@ -67,7 +67,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             if (authorities) {
                 def user = new BannerUser( dbUser, authentication.credentials as String,
                         true /*enabled*/, true /*accountNonExpired*/,
-                        true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities as Collection )
+                        true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities as Collection, getFullName( dbUser.toUpperCase(), dataSource ) as String  )
                 def token = new BannerAuthenticationToken( user )
                 log.trace "BannerAuthenticationProvider.authenticate authenticated user $user and is returning a token $token"
                 token
@@ -157,6 +157,41 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         }
         log.trace "BannerAuthenticationProvider.determineAuthorities is returning $authorities"
         authorities
+    }
+
+
+    public static getFullName ( String name, def dataSource ) {
+      def conn = null
+      def fullName
+      Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
+      name = name.toUpperCase()
+      try {
+          conn = dataSource.unproxiedConnection
+          Sql db = new Sql( conn )
+          db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname from spriden, gobeacc where gobeacc_username = ? AND spriden_pidm = gobeacc_pidm AND  spriden_change_ind is null", [name] ) {
+            row -> fullName = row.fullname
+          }
+          log.trace "BannerAuthenticationProvider.getFullName after checking f_formatname $fullName"
+          if (null == fullName) {
+            db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname  from gurlogn,spriden where gurlogn_user = ? and gurlogn_pidm = spriden_pidm", [name] ) { row ->
+               fullName = row.fullname
+            }
+          }
+          log.trace "BannerAuthenticationProvider.getFullName after checking gurlogn_pidm $fullName"
+          if (null == fullName) {
+            db.eachRow( "select gurlogn_first_name|| ' '||gurlogn_last_name fullname from gurlogn where gurlogn_user = ? and gurlogn_first_name is not null and gurlogn_last_name is not null", [name] ) { row ->
+               fullName = row.fullname
+            }
+          }
+          if (null == fullName) fullName = name
+      } catch (SQLException e) {
+          log.error "BannerAuthenticationProvider not able to getFullName $name due to exception $e.message"
+          return null
+      } finally {
+          conn?.close()
+      }
+      log.trace "BannerAuthenticationProvider.getFullName is returning $fullName"
+      fullName
     }
 
 }

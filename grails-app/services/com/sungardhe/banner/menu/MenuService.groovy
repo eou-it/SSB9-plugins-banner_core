@@ -20,7 +20,7 @@ import com.sungardhe.banner.security.FormContext
 
 class MenuService {
   static transactional = true
-
+  def menuAndToolbarPreferenceService
   def sessionFactory
   def personalDataMap = [:]
   private static final log = Logger.getLogger(getClass())
@@ -165,9 +165,9 @@ class MenuService {
   }
 
   private def getMnuPref() {
-    return "Y"
-    // def prefs = menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference()
-    // return prefs.get(0).formnameDisplayIndicator
+    //return "Y"
+     def prefs = menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference()
+     return prefs.get(0).formnameDisplayIndicator
   }
 
   def searchMenu(String menuName) {
