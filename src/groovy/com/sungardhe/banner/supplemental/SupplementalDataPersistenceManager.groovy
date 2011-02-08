@@ -212,7 +212,7 @@ class SupplementalDataPersistenceManager {
         def resultSet = session.createSQLQuery(
          """  SELECT govsdav_attr_name,
                       govsdav_attr_reqd_ind,
-                      govsdav_value_as_char,
+                      DECODE(govsdav_attr_data_type,'DATE',TO_CHAR(TO_DATE(govsdav_value_as_char), g\$_date.get_nls_date_format),govsdav_value_as_char),
                       govsdav_disc,
                       govsdav_pk_parenttab,
                       govsdav_surrogate_id,
