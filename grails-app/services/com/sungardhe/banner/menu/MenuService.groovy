@@ -48,11 +48,14 @@ class MenuService {
    * This is returns map of all personal items based on user access
    * @return Map of menu objects that a user has access
    */
+
+
   def personalMenuMap() {
     def bannerMenu
     def dataMap = []
     Sql sql
     def mnuLabelPref = getMnuPref()
+
     FormContext.set(["GUAGMNU"])
     log.debug("Personal Menu started")
     log.debug("Before Connection Retrieval")
@@ -64,24 +67,25 @@ class MenuService {
     log.debug("After gukmenu.p_bld_pers_menu sql.execute" )
     sql.eachRow("select * from gutpmnu,gubmodu,gubpage where  substr(gutpmnu_value,6,length(gutpmnu_value))  = gubpage_code (+) AND " +
             " gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+) order by gutpmnu_seq_no", {
-      def mnu = new Menu()
-      def str = it.gutpmnu_value.split("\\|")
-      mnu.formName = str[1]
-      mnu.pageName = it.gubpage_name
-      if (mnuLabelPref == "N")
-        mnu.caption = it.gutpmnu_label
-      else
-        mnu.caption = it.gutpmnu_label + "(" + mnu.formName + ")"
-      mnu.level = it.gutpmnu_level
-      mnu.type = str[0]
-      mnu.module = it.gubmodu_name
-      mnu.url = it.gubmodu_url
-      personalDataMap.put(it.gutpmnu_seq_no, mnu)
-      mnu.parent = setParent(mnu)
-      dataMap.add(mnu)
-    });
 
-      log.debug("Personal Menu executed" )
+        def mnu = new Menu()
+        def str = it.gutpmnu_value.split("\\|")
+        mnu.formName = str[1]
+        mnu.pageName = it.gubpage_name
+        mnu.caption = it.gutpmnu_label
+        if (mnuLabelPref)
+          mnu.caption = it.gutpmnu_label + "(" + mnu.formName + ")"
+        mnu.level = it.gutpmnu_level
+        mnu.type = str[0]
+        mnu.module = it.gubmodu_name
+        mnu.url = it.gubmodu_url
+        personalDataMap.put(it.gutpmnu_seq_no, mnu)
+        mnu.parent = setParent(mnu)
+        dataMap.add(mnu)
+      }
+    );
+
+    log.debug("Personal Menu executed" )
     sql.connection.close()
     return dataMap
   }
@@ -121,16 +125,14 @@ class MenuService {
     Sql sql
     def i = 0
     FormContext.set(["GUAGMNU"])
-    def mnuLabelPref = getMnuPref()
     log.debug("Process Menu started")
-    log.debug("Before Connection Retrieval")
     sql = new Sql(sessionFactory.getCurrentSession().connection())
     log.debug("After Connection Retrieval")
     log.debug(sql.useConnection.toString())
     sql.execute("Begin gukmenu.p_bld_prod_menu; End;")
     log.debug("After gukmenu.p_bld_prod_menu sql.execute" )
 
-
+    def prefName = getMnuPref()
     sql.eachRow("select * from gutmenu,gubmodu,gubpage where gutmenu_value  = gubpage_code (+) AND " +
             " gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+)", {
       def mnu = new Menu()
@@ -139,10 +141,11 @@ class MenuService {
       mnu.formName = it.gutmenu_value
       mnu.pageName = it.gubpage_name
       if (it.gutmenu_desc != null)
-        if (mnuLabelPref == "N")
-          mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
-        else
-          mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;") + "(" + mnu.formName + ")"
+      {
+        mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
+        if (prefName)
+          mnu.caption = mnu.caption + "(" + mnu.formName + ")"
+      }
       mnu.level = it.gutmenu_level
       mnu.type = it.gutmenu_objt_code
       mnu.parent = it.gutmenu_prior_obj
