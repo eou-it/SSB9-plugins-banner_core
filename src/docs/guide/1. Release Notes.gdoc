@@ -1,6 +1,15 @@
  
 
 
+h4. Version 0.2.20 
+
+* Added build-release target that assigns a build number and writes a release_info.groovy configuration file
+* Added full name to authentication object, to facilitate showing within the UI
+* Added explicit support for accept header within RESTful API
+* Added workaround for Java/Hibernate/Gorm handling of dates and timestamps. The Java/Groovy 'equals' implementation is not symmetrical when dealing with dates (i.e., 'timestamp == date' is not the same as 'date == timestamp').  Unfortunately, Hibernate exposes timestamps within it's cache.  GORM 'isDirty' support uses this cache to determine if an object is dirty, but given the poor Java implementation this can lead to 'false positives'.  The workaround is, if a model is considered dirty, to check if the only dirty properties are 'dates' and if so to check them again (by reversing the order of the equality check).  
+* Added support for 'horizon specific' menu
+* Miscellaneous improvements and bug fixes
+
 h4. Version 0.2.11 (and previous builds after 0.2.4)
 
 * CodeNarc code quality analysis and reporting
