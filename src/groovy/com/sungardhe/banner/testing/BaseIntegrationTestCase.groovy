@@ -21,6 +21,8 @@ import groovy.sql.Sql
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
 
+import org.junit.Ignore // not used, but imported here for convenience of subclasses
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken as UPAT
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder

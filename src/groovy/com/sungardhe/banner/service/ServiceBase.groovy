@@ -138,7 +138,7 @@ class ServiceBase {
                 domainObject.version = content.version // needed as version is not included in bulk assignment
 
                 def updatedModel
-                if (domainObject.isDirty()) {
+                if (isDirty( domainObject, log )) {
 
                     validateReadOnlyPropertiesNotDirty( domainObject ) // throws RuntimeException if readonly properties are dirty
                     log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
@@ -357,6 +357,43 @@ class ServiceBase {
 
     // ---------------------------- Public Static Helper Methods -------------------------------
     // (public static methods to facilitate use within services that implement their own CRUD methods.)
+
+
+    // We'll execute a hack to workaround Hibernate exposing a Timestamp from it's cache... 
+    // Unfortunately, Hibernate returns a Timestamp versus just a Date. Although there are 
+    // blogs and Jiras (HB-6810), Hibernate will not address this (as it isn't 'really' a Hibernate problem).
+    //
+    // Unfortunately, Java violates the 'equals' contract for Date, by using an implemention 
+    // that is not symmetrical (i.e., 'Timestamp == Date' and 'Date == Timestamp' may return different results).
+    //
+    // While this should be fixed in either Hibernate, Java, or GORM (TODO: Submit Jira to GORM), 
+    // this method provides ServiceBase with a 'band-aid' -- go ahead, call this a hack.  It is... 
+    // 
+    // This method simply ensures that if only 'Date' properties are identified as being 'Dirty', that 
+    // we test them in the correct order (specifically, 'persistent value' == 'property value').
+    // 
+    public static boolean isDirty( model, log ) {
+        if (!(model?.isDirty())) return false
+        log.trace "Model ${model?.class} id=${model?.id} dirty properties reported as:  ${model?.getDirtyPropertyNames()}" 
+        if (model?.getDirtyPropertyNames()?.size() > 0) { 
+            // check the list, as some test models always return 'isDirty = true' even when there are no dirty fields
+            if (model?.getDirtyPropertyNames()?.size() == model?.getDirtyPropertyNames()?.findAll { model."$it" instanceof Date }?.size()) {
+                // All of the dirty property values are of type 'Date'
+                log.trace "ALL of the dirty properties have instances that are instanceof 'Date'"
+                model?.getDirtyPropertyNames()?.each {
+                    log.trace "Going to check property ${it}"
+                    def propValue = model?."$it"
+                    def persistentValue = model?.getPersistentValue( "$it" )
+                    log.trace "Property $it : persistentValue = $persistentValue and propertyValue = $propValue, so isDirty = ${persistentValue == propValue}"
+                    if (persistentValue != propValue) return true // we found one that is really dirty, so can stop now...
+                }
+                log.trace "All of the date properties that were reported as 'dirty' are not really dirty..."
+                model.discard() // so we need to prevent GORM from proceeding with the update
+                return false // all of the date properties that were reported as 'dirty' are not really dirty...
+            }
+        }
+        true
+    }
 
 
     public static boolean isDomainModelInstance( domainClass, domainModelOrMap ) {

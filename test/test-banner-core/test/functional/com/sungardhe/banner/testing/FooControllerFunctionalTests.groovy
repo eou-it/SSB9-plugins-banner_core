@@ -424,7 +424,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                 body { """
                     <FooInstance apiVersion="1.0">
                         <Foo systemRequiredIndicator="N">
-                            <Code>#W</Code>
+                            <Code>#V</Code>
                             <Description>Created via XML</Description>
                         </Foo>
                     </FooInstance>
@@ -442,7 +442,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             assertEquals 'FooInstance', xml.name()
             assertTrue "Ref element not as expected: ${xml.Foo[0]?.Ref}", "${xml.Foo[0]?.Ref}" ==~ /.*test-banner-core\/api\/foo.*/
             def ref = "${xml.Foo[0]?.Ref}"
-            assertEquals "Expected foo with code '#W' but got: ${xml.Foo[0]?.Code[0].text()}", '#W', xml.Foo[0]?.Code[0].text()
+            assertEquals "Expected foo with code '#V' but got: ${xml.Foo[0]?.Code[0].text()}", '#V', xml.Foo[0]?.Code[0].text()
 
             put( "/api/foobar/$id" ) {  // 'PUT' /api/foobar => 'update'
                 headers[ 'Content-Type' ] = contentType
@@ -464,7 +464,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             assertEquals 'FooInstance', xml.name()
             assertEquals "Ref element after 'update' not the same as that after 'create': ${xml.Foo[0]?.Ref}", ref, "${xml.Foo[0]?.Ref}"
             assertEquals "Expected id $id but got: ${xml.Foo[0]?.@id.text()}", id, xml.Foo[0]?.@id.text().toInteger()
-            assertEquals "Expected foo with code '#W' but got: ${xml.Foo[0]?.Code[0].text()}", '#W', xml.Foo[0]?.Code[0].text()
+            assertEquals "Expected foo with code '#V' but got: ${xml.Foo[0]?.Code[0].text()}", '#V', xml.Foo[0]?.Code[0].text()
             assertEquals "Expected foo with description 'Updated!' but got: ${xml.Foo[0]?.Description[0].text()}", 'Updated!', xml.Foo[0]?.Description[0].text()
 
         }
