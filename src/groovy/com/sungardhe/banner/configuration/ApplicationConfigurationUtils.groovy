@@ -10,11 +10,31 @@
  ****************************************************************************** */
 package com.sungardhe.banner.configuration
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+
+
 /**
  * Utilities for application configuration.
  */
 abstract
 class ApplicationConfigurationUtils {
+
+
+    /**
+     * Returns the release number that may be displayed to the user. 
+     * The 'release number' is the grails metadata 'app.version' + buildNumber, 
+     * where the buildNumber is a one-up number provided by a build number web service. 
+     * Please see the 'scripts/BuildRelease.groovy' for details concerning assigning 
+     * a build number.
+     **/
+    public static String getReleaseNumber() {
+        def releaseNum = CH.config.application.build.version
+        if (!(releaseNum instanceof String)) {
+            releaseNum = AH.application.metadata[ 'app.version' ] + "-DEVELOPMENT"
+        }
+        releaseNum
+    }
 
     
     // Loads a configuration file, using the following search order:

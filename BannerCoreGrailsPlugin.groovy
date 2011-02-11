@@ -24,12 +24,15 @@ import oracle.jdbc.pool.OracleDataSource
 
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.commons.logging.LogFactory
+import org.apache.log4j.jmx.HierarchyDynamicMBean
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
+import org.springframework.jmx.support.MBeanServerFactoryBean
+import org.springframework.jmx.export.MBeanExporter
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.security.authentication.ProviderManager
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter
@@ -62,8 +65,8 @@ class BannerCoreGrailsPlugin {
     // more control on 'when' a grails app is updated to use a newer plugin version, and therefore 'could' allow delayed testing within those apps
     // independent of deploying a new plugin build to Nexus.
     //
-//    String version = "0.1-SNAPSHOT"
-    String version = "0.2.21"
+    String version = "0.1-SNAPSHOT"
+//    String version = "0.2.21"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
@@ -183,6 +186,28 @@ class BannerCoreGrailsPlugin {
             key = 'horizon-anon'
             userAttribute = 'anonymousUser,ROLE_ANONYMOUS'
         }
+        
+        // ---------------- JMX Mbeans (incl. Logging) ----------------
+        
+        log4jBean( HierarchyDynamicMBean )
+
+        mbeanServer( MBeanServerFactoryBean ) {
+          locateExistingServerIfPossible = true
+        }
+
+        switch (GrailsUtil.environment) {
+            case "development":
+            // break // uncomment to turn off JMX for 'development'
+            case "test":
+            // break // uncomment to turn off JMX for 'test'
+            case "production":
+                exporter( MBeanExporter ) {
+                    server = mbeanServer
+                    beans = ["log4j:hierarchy=default":log4jBean]
+                }        
+            break
+        }
+        
     }
 
 

@@ -19,3 +19,4 @@ grails-banner-core*.zip
 *.sha1
 test/**/cobertura.ser
 test/**/release_info.groovy
+test/**/release_info.groovy.old
