@@ -167,60 +167,109 @@ dataOrigin = "Banner"
 // ******************************************************************************
 // See http://grails.org/doc/1.1.x/guide/3.%20Configuration.html#3.1.2%20Logging
 // for more information about log4j configuration.
+
+
+// If we specify a 'logFileDir' as a system property, we'll write the file to that directory. 
+// Otherwise, we'll log to the target/logs directory. 
+String loggingFileDir = System.properties['logFileDir'] ? "${System.properties['logFileDir']}" : "target/logs"
+String loggingFileName = "${loggingFileDir}/$environment-${appName}.log".toString() 
+
+
+// Note that logging is configured separately for each environment ('development', 'test', and 'production').   
+// By default, all 'root' logging is 'off'.  Logging levels for root, or specific packages/artifacts, should be configured via JMX. 
+// Note that you may enable logging here, but it:
+//   1) requires a restart, and 
+//   2) will report an error indicating 'Cannot add new method [getLog]'. (although the logging will in fact work)
+// 
+// JMX should be used to modify logging levels (and enable logging for specific packages). Any JMX client, such as JConsole, may be used. 
+//
+// The logging levels that may be configured are, in order: ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF   
+// 
 log4j = {
     appenders {
-    	file name:'file', file:'target/logs/development.log'
+        rollingFile name:'appLog', file:loggingFileName, maxFileSize:"${10*1024*1024}", maxBackupIndex:10, layout:pattern( conversionPattern: '%d{[EEE, dd-MMM-yyyy @ HH:mm:ss.SSS]} [%t] %-5p %c %x - %m%n' )
     }
-    root {
-        off 'stdout', 'file'
-        additivity = true
-    }
-
-
-    // Configure logging for other classes (e.g., in src/ or grails-app/utils/) here:
-//  off  'com.sungardhe.banner.security'
-//  off  'com.sungardhe.banner.db'
-//  off  'com.sungardhe.banner.student'
-//    all 'com.sungardhe.banner.testing.FooController'
-//    all 'com.sungardhe.banner.testing.FooService'
-
-    info 'com.sungardhe.banner.representations'
-    info 'com.sungardhe.banner.supplemental.SupplementalDataService'
-
-//    debug 'org.apache.http.headers'
-//    debug 'org.apache.http.wire'
-
-    // Grails framework classes
-//  off    'org.codehaus.groovy.grails.web.servlet'        // controllers
-//  off    'org.codehaus.groovy.grails.web.pages'          // GSP
-//  off    'org.codehaus.groovy.grails.web.sitemesh'       // layouts
-//  all    'org.codehaus.groovy.grails.web.mapping.filter' // URL mapping
-//  all    'org.codehaus.groovy.grails.web.mapping'        // URL mapping
-//	off    'org.codehaus.groovy.grails.commons'            // core / classloading
-//	off    'org.codehaus.groovy.grails.plugins'            // plugins
-//	off    'org.codehaus.groovy.grails.orm.hibernate'      // hibernate integration
-//	off    'org.springframework'                           // Spring IoC
-//	off    'org.hibernate'                                 // hibernate ORM
-
-//	all    'grails.plugins.springsecurity'
-//	all    'org.springframework.security'
-//    all    'com.sungardhe.banner.security.BannerAccessDecisionVoter'
-
-// Grails provides a convenience for enabling logging within artefacts, using 'grails.app.XXX'.
-// Unfortunately, this configuration is not effective when 'mixing in' methods that perform logging.
-// Therefore, for controllers and services it is recommended that you enable logging using the controller
-// or service class name (see above 'class name' based configurations).  For example:
-//     all  'com.sungardhe.banner.testing.FooController' // turns on all logging for the FooController
-//
-// off 'grails.app' // apply to all artefacts
-// off 'grails.app.<artefactType>.ClassName // where artefactType is in:
-        //  bootstrap  - For bootstrap classes
-        //  dataSource - For data sources
-        //  tagLib     - For tag libraries
-        //  service    // Not effective with mixins -- see comment above
-        //  controller // Not effective with mixins -- see comment above
-        //  domain     - For domain entities
+    
+    switch( environment?.toString() ) {
+        case 'development':
+            root {
+                off 'stdout','appLog'
+                additivity = true
+            }
+            info 'com.sungardhe.banner.representations'
+            info 'com.sungardhe.banner.supplemental.SupplementalDataService'
+            break
+        case 'test':
+            root {
+                off 'stdout','appLog'
+                additivity = true
+            }
+            break
+        case 'production':
+            root {
+                off 'appLog'
+                additivity = true
+            }
+            warn 'grails.app.service'
+            warn 'grails.app.controller'
+            info 'com.sungardhe.banner.representations'
+            info 'com.sungardhe.banner.supplemental.SupplementalDataService'
+            break
+    } 
+    
 }
+    // Log4j configuration notes:
+    // The following are some common packages that you may want to enable for logging in the section above.
+    // You may enable any of these within this file (which will require a restart), 
+    // or you may add these to a running instance via JMX.  
+    //
+    // Note that settings for specific packages/artifacts will override those for the root logger.
+    // Consequently, we'll keep these commented out. Setting any of these to 'off' will prevent logging
+    // from that package/artifact regardless of the root logging level.   
+    
+    // ******** non-Grails classes (e.g., in src/ or grails-app/utils/) *********
+    //  debug 'com.sungardhe.banner.security'
+    //  debug 'com.sungardhe.banner.db'
+    //  debug 'com.sungardhe.banner.student'
+    //  debug 'com.sungardhe.banner.testing.FooController'
+    //  debug 'com.sungardhe.banner.testing.FooService'
+    
+    
+    //  debug 'org.apache.http.headers'
+    //  debug 'org.apache.http.wire'
+    
+    // ******** Grails framework classes *********
+    //  debug 'org.codehaus.groovy.grails.web.servlet'        // controllers
+    //  debug 'org.codehaus.groovy.grails.web.pages'          // GSP
+    //  debug 'org.codehaus.groovy.grails.web.sitemesh'       // layouts
+    //  debug 'org.codehaus.groovy.grails.web.mapping.filter' // URL mapping
+    //  debug 'org.codehaus.groovy.grails.web.mapping'        // URL mapping
+    //	debug 'org.codehaus.groovy.grails.commons'            // core / classloading
+    //	debug 'org.codehaus.groovy.grails.plugins'            // plugins
+    //	debug 'org.codehaus.groovy.grails.orm.hibernate'      // hibernate integration
+    //	debug 'org.springframework'                           // Spring IoC
+    //	debug 'org.hibernate'                                 // hibernate ORM
+    
+    //	debug 'grails.plugins.springsecurity'
+    //	debug 'org.springframework.security'
+    //  debug 'com.sungardhe.banner.security.BannerAccessDecisionVoter'
+    
+    // Grails provides a convenience for enabling logging within artefacts, using 'grails.app.XXX'.
+    // Unfortunately, this configuration is not effective when 'mixing in' methods that perform logging.
+    // Therefore, for controllers and services it is recommended that you enable logging using the controller
+    // or service class name (see above 'class name' based configurations).  For example:
+    //     all  'com.sungardhe.banner.testing.FooController' // turns on all logging for the FooController
+    //
+    // debug 'grails.app' // apply to all artefacts
+    // debug 'grails.app.<artefactType>.ClassName // where artefactType is in:
+    //                   bootstrap  - For bootstrap classes
+    //                   dataSource - For data sources
+    //                   tagLib     - For tag libraries
+    //                   service    // Not effective with mixins -- see comment above
+    //                   controller // Not effective with mixins -- see comment above
+    //                   domain     - For domain entities
+    
+
 
 
 // ******************************************************************************

@@ -374,22 +374,30 @@ class ServiceBase {
     // 
     public static boolean isDirty( model, log ) {
         if (!(model?.isDirty())) return false
-        log.trace "Model ${model?.class} id=${model?.id} dirty properties reported as:  ${model?.getDirtyPropertyNames()}" 
+        log.trace "Model ${model?.class} with id=${model?.id} has GORM-reported dirty properties:  ${model?.getDirtyPropertyNames()}" 
         if (model?.getDirtyPropertyNames()?.size() > 0) { 
             // check the list, as some test models always return 'isDirty = true' even when there are no dirty fields
             if (model?.getDirtyPropertyNames()?.size() == model?.getDirtyPropertyNames()?.findAll { model."$it" instanceof Date }?.size()) {
                 // All of the dirty property values are of type 'Date'
-                log.trace "ALL of the dirty properties have instances that are instanceof 'Date'"
+                log.trace "However, ALL of the dirty properties have instances that are instanceof 'Date' which may have resulted in a 'false positive'"
+                def returnValue = false
                 model?.getDirtyPropertyNames()?.each {
                     log.trace "Going to check property ${it}"
                     def propValue = model?."$it"
                     def persistentValue = model?.getPersistentValue( "$it" )
                     log.trace "Property $it : persistentValue = $persistentValue and propertyValue = $propValue, so isDirty = ${persistentValue == propValue}"
-                    if (persistentValue != propValue) return true // we found one that is really dirty, so can stop now...
+                    if (persistentValue != propValue) {
+                        returnValue = true
+                        return true // we found one that is really dirty, so can stop now...
+                    }
                 }
-                log.trace "All of the date properties that were reported as 'dirty' are not really dirty..."
-                model.discard() // so we need to prevent GORM from proceeding with the update
-                return false // all of the date properties that were reported as 'dirty' are not really dirty...
+                if (returnValue) {
+                    log.trace "Model ${model?.class} with id=${model?.id} was determined to really be dirty"
+                } else {
+                    log.trace "All 'Date' properties that were reported as 'dirty' for model ${model?.class} with id=${model?.id} are not really dirty..."
+                    model.discard() // so we need to prevent GORM from proceeding with the update
+                }
+                return returnValue
             }
         }
         true
