@@ -1,5 +1,12 @@
  
 
+h4. Version 0.2.24
+
+* Exposed logging via JMX, and adopted use of a rolling log file. 
+* Renamed log file to include environment and application name
+* Allow location of log file to be specified as a system property
+* Fixed a bug pertaining to 'isDirty' when dealing with dates (a follow up to the workaround implemented in Version 0.2.20)
+
 
 h4. Version 0.2.20 
 
