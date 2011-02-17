@@ -95,10 +95,6 @@ class BannerConnection {
         log.trace "BannerConnection ${this} 'close()' invoked"
 //        invokeProcedureCall "{ set role 'null' }" // TODO: Do we need to clear the roles if we're releasing the connection?
         closeProxySession extractOracleConnection(), proxyUserName
-        //If the underlysing connection is a Weblogic wrapper then we need to clear the statement cache to avoid closed statement errors
-        if(underlyingConnection.class.name.startsWith("weblogic")) {
-          underlyingConnection.metaClass.invokeMethod underlyingConnection, "clearStatementCache", []
-        }
         underlyingConnection?.close()
     }
                                                                                                                      ,
