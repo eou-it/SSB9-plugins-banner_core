@@ -226,7 +226,7 @@ class BaseIntegrationTestCase extends GroovyTestCase {
         
         if (expected.partialMessage) {
             assertTrue "Field error not found having partial message content '${expected.partialMessage}', but instead error(s) have content ${fieldErrors*.message}", 
-                       fieldErrors.any { it.message ==~ expected.partialMessage }
+                       fieldErrors.any { it.message?.contains( expected.partialMessage ) }
         }
         
         if (expected.exactMessage) {

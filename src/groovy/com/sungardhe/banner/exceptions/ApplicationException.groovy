@@ -212,11 +212,12 @@ class ApplicationException extends RuntimeException {
                 field : error.field,
                 model : error.objectName,
                 rejectedValue : error.rejectedValue,
-                message :  error.codes.collect{ errorCode ->
+                message: localize( error: error )
+/*                message :  error.codes.collect{ errorCode ->
                                 def msg = localize( code : errorCode )
                                 ( msg == errorCode ) ? null : msg;
                            }.find{ msg -> msg != null }
-
+*/
              ]
          }
     }

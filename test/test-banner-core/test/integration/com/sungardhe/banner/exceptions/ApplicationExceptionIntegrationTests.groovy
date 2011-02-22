@@ -64,7 +64,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
                                                          rejectedValue: "TTTTTTTTT" ] )
                                                          
             assertFieldErrorContent( returnMap.errors, [ fieldName: "description", modelName: "com.sungardhe.banner.testing.Foo", 
-                                                         exactMessage: "The foo description is too long, it must be no more than 30 characters",
+                                                         partialMessage: "exceeds the maximum size of",
                                                          rejectedValue: "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT" ] )
             
  		    assertNotNull returnMap.underlyingErrorMessage // this is the underlying exception's message (which is not appropriate to display to a user)
