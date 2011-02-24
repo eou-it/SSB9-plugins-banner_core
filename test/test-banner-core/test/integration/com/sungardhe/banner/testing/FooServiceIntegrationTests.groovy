@@ -69,7 +69,6 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         assertNotNull foo.lastModified
     }
 
-
     void testSaveInvalid() {
         try {
             // note: this will be invalid for both code and description, resulting in two errors
@@ -78,27 +77,24 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         } catch (ApplicationException e) {
             def returnMap = e.returnMap( new FooController().localizer )
             assertTrue "Return map not as expected but was: ${returnMap.message}",
-                        returnMap.message ==~ /.*The Foo cannot be saved, as it contains errors.*/
+            returnMap.message ==~ /.*The Foo cannot be saved, as it contains errors.*/
             assertFalse returnMap.success
-
             // note that validation exceptions, unlike most others, may hold many localized error messages that may be presented to a user
             assertEquals 2L, returnMap.errors?.size()
-
             if (returnMap.errors instanceof List){
                 def errors = returnMap.errors
                 errors.each { error ->
-                    assertTrue ((error.field == "description" && error.model == "com.sungardhe.banner.testing.Foo" && error.message=="The foo description is too long, it must be no more than 30 characters"
-                                    && error.rejectedValue == "Horizon Test - TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT") ||
-                                (error.field == "code" && error.model == "com.sungardhe.banner.testing.Foo" && error.message=="The foo code is too long, it must be no more than 2 characters"
-                                    && error.rejectedValue == "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"))
+                    assertTrue ((error.field == "description" && error.model == "com.sungardhe.banner.testing.Foo" && error.message?.contains( "exceeds the maximum size of" )
+                    && error.rejectedValue == "Horizon Test - TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT") ||
+                    (error.field == "code" && error.model == "com.sungardhe.banner.testing.Foo" && error.message=="The foo code is too long, it must be no more than 2 characters"
+                    && error.rejectedValue == "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"))
                 }
             }  else {
                 assertTrue returnMap.errors ==~ /.*The foo code is too long, it must be no more than 2 characters.*/
             }
-		    assertNotNull returnMap.underlyingErrorMessage // this is the underlying exception's message (which is not appropriate to display to a user)
+            assertNotNull returnMap.underlyingErrorMessage // this is the underlying exception's message (which is not appropriate to display to a user)
         }
     }
-
 
     void testUpdate() {
         def foo = fooService.create( newTestFooParams() )

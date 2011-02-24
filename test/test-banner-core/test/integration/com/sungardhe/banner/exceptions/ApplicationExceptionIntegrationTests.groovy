@@ -58,15 +58,15 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 		    // note that validation exceptions, unlike most others, may hold many localized error messages that may be presented to a user
             assertEquals 2L, returnMap.errors?.size()
             assertTrue returnMap.errors instanceof List
-            
-            assertFieldErrorContent( returnMap.errors, [ fieldName: "code", modelName: "com.sungardhe.banner.testing.Foo", 
+
+            assertFieldErrorContent( returnMap.errors, [ fieldName: "code", modelName: "com.sungardhe.banner.testing.Foo",
                                                          exactMessage: "The foo code is too long, it must be no more than 2 characters",
                                                          rejectedValue: "TTTTTTTTT" ] )
-                                                         
-            assertFieldErrorContent( returnMap.errors, [ fieldName: "description", modelName: "com.sungardhe.banner.testing.Foo", 
-                                                         exactMessage: "The foo description is too long, it must be no more than 30 characters",
+
+            assertFieldErrorContent( returnMap.errors, [ fieldName: "description", modelName: "com.sungardhe.banner.testing.Foo",
+                                                         partialMessage: "exceeds the maximum size of",
                                                          rejectedValue: "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT" ] )
-            
+
  		    assertNotNull returnMap.underlyingErrorMessage // this is the underlying exception's message (which is not appropriate to display to a user)
 		}
     }
