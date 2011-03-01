@@ -134,7 +134,7 @@ class MenuService {
 
     def prefName = getMnuPref()
     sql.eachRow("select * from gutmenu,gubmodu,gubpage where gutmenu_value  = gubpage_code (+) AND " +
-            " gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+)", {
+            " gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+)  order by gutmenu_seq_no", {
       def mnu = new Menu()
 
 
