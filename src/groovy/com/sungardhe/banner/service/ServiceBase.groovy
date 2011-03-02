@@ -96,6 +96,8 @@ class ServiceBase {
                 
                 createdModel = persistSupplementalDataFor( createdModel )
 
+                refreshIfNeeded( createdModel )
+
                 log.trace "${this.class.simpleName}.create will now invoke the postCreate callback if it exists"
                 if (this.respondsTo( 'postCreate' )) this.postCreate( [  before: domainModelOrMap, after: createdModel ] )
 
@@ -138,7 +140,7 @@ class ServiceBase {
                 domainObject.version = content.version // needed as version is not included in bulk assignment
 
                 def updatedModel
-                if (isDirty( domainObject, log )) {
+                if (isDirty( domainObject )) {
 
                     validateReadOnlyPropertiesNotDirty( domainObject ) // throws RuntimeException if readonly properties are dirty
                     log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
@@ -162,6 +164,8 @@ class ServiceBase {
                     updatedModel.setSupplementalProperties( content.supplementalProperties )
                     updatedModel = persistSupplementalDataFor( updatedModel )
                 }
+                
+                refreshIfNeeded( updatedModel ) // after we persist everything, including supplemental data...
 
                 log.trace "${this.class.simpleName}.update will now invoke the postUpdate callback if it exists"
                 if (this.respondsTo( 'postUpdate' )) this.postUpdate( [ before: domainModelOrMap, after: updatedModel ] )
@@ -180,7 +184,7 @@ class ServiceBase {
             }
             catch (e) {
                 log.debug "Could not update an existing ${this.class.simpleName} with id = ${domainModelOrMap?.id} due to exception: ${e.message}", e
-                throw new ApplicationException(getDomainClass(), e)
+                throw new ApplicationException( getDomainClass(), e )
             }
         }
     }
@@ -287,7 +291,7 @@ class ServiceBase {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def get( id ) {
 
-        log.debug "In ServiceBase.get, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        log.trace "In ServiceBase.get, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
         try {
             fetch( getDomainClass(), id, log )
@@ -307,7 +311,7 @@ class ServiceBase {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def list( args ) {
 
-        log.debug "In ServiceBase.list, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        log.trace "In ServiceBase.list, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
         try {
             getDomainClass().list( args )
@@ -323,7 +327,7 @@ class ServiceBase {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def count( args = null ) {  // args are ignored -- TODO: Remove from signature
 
-        log.debug "In ServiceBase.count, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        log.trace "In ServiceBase.count, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
         try {
             getDomainClass().count()
@@ -355,9 +359,7 @@ class ServiceBase {
     }
 
 
-    // ---------------------------- Public Static Helper Methods -------------------------------
-    // (public static methods to facilitate use within services that implement their own CRUD methods.)
-
+    // ------------------------------------ Public Helper Methods --------------------------------------
 
     // We'll execute a hack to workaround Hibernate exposing a Timestamp from it's cache... 
     // Unfortunately, Hibernate returns a Timestamp versus just a Date. Although there are 
@@ -371,8 +373,13 @@ class ServiceBase {
     // 
     // This method simply ensures that if only 'Date' properties are identified as being 'Dirty', that 
     // we test them in the correct order (specifically, 'persistent value' == 'property value').
+    //
+    // This method also 'ignores' the 'lastModified' for models where the lastModified is set within the 
+    // database, as indicated by a 'List requirePostOperationRefreshing = [ ModelClass ]' property in the concrete service.
+    // This property identifies the models that are modified inside the database (i.e., by either a trigger or an API), 
+    // which must therefore be 'refreshed' to attain the modified database values. 
     // 
-    public static boolean isDirty( model, log ) {
+    public boolean isDirty( model ) {
         if (!(model?.isDirty())) return false
         log.trace "Model ${model?.class} with id=${model?.id} has GORM-reported dirty properties:  ${model?.getDirtyPropertyNames()}" 
         if (model?.getDirtyPropertyNames()?.size() > 0) { 
@@ -385,11 +392,18 @@ class ServiceBase {
                     log.trace "Going to check property ${it}"
                     def propValue = model?."$it"
                     def persistentValue = model?.getPersistentValue( "$it" )
-                    log.trace "Property $it : persistentValue = $persistentValue and propertyValue = $propValue, so isDirty = ${persistentValue == propValue}"
-                    if (persistentValue != propValue) {
-                        returnValue = true
-                        return true // we found one that is really dirty, so can stop now...
-                    }
+                    if ('lastModified' == it && databaseMayAlterPropertiesOf( model )) {
+                        // We'll ignore the 'lastModified' property if the database is known to make changes to models (e.g., via triggers). 
+                        // That is, even though the 'refreshIfNeeded' method called whenever ServiceBase saves a model, we'll protect ourselves 
+                        // here just in case the model was saved outside of a ServiceBase method.   
+                        log.trace "Property $it is managed within the database, and will be ignored for the purposes of 'isDirty()"
+                    } else {
+                        log.trace "Property $it : persistentValue = $persistentValue and propertyValue = $propValue, so isDirty = ${persistentValue == propValue}"
+                        if (persistentValue != propValue) {
+                            returnValue = true
+                            return true // we found one that is really dirty, so can stop now...
+                        }    
+                    }                    
                 }
                 if (returnValue) {
                     log.trace "Model ${model?.class} with id=${model?.id} was determined to really be dirty"
@@ -402,11 +416,27 @@ class ServiceBase {
         }
         true
     }
+    
+    
+    public def databaseMayAlterPropertiesOf( model ) {
+        def needRefresh = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue( this /*service*/, 'databaseMayAlterPropertiesOf' )
+        (needRefresh && model.class in needRefresh)
+    }
+        
+    
+    // Models that are backed by APIs (often indirectly, via a database view with 'instead of' triggers) may have their 'activity date' (i.e., lastModified property)
+    // modified within the database.  This method will determined if a model is dirty solely due to the 'lastModified' property, and if so, will reset the 
+    // lastModified property value to the persistent value.
+    public refreshIfNeeded( model ) {
+        if (databaseMayAlterPropertiesOf( model )) {
+            log.debug "Model ${model.class} is identified as a model that may be modified within the database, and will therefore be refreshed" 
+            model.refresh()
+        }    
+    }
 
 
     public static boolean isDomainModelInstance( domainClass, domainModelOrMap ) {
-        (domainClass.isAssignableFrom( domainModelOrMap.getClass() ) &&
-                !(Map.isAssignableFrom( domainModelOrMap.getClass() )))
+        (domainClass.isAssignableFrom( domainModelOrMap.getClass() ) && !(Map.isAssignableFrom( domainModelOrMap.getClass() )))
     }
 
 
@@ -416,9 +446,8 @@ class ServiceBase {
      * 1) already be the domain model instance that should be returned,
      * 2) be a 'params' map that may be used to create a new model instance
      * 3) be a map that contains a 'domainModel' key whose value is the domain model instance to return
-     * This static method is public so that it may be used within any services that implement their own CRUD methods.
      **/
-    public static def assignOrInstantiate( domainClass, domainModelOrMap ) {
+    public def assignOrInstantiate( domainClass, domainModelOrMap ) {
         if (isDomainModelInstance( domainClass, domainModelOrMap )) {
             domainModelOrMap
         }
@@ -431,6 +460,7 @@ class ServiceBase {
     }
 
 
+    // Note: This method is static to facilitate use from composite controllers that do not extend ServiceBase.
     /**
      * Returns a 'params map' based upon the supplied domainObjectOrMap.
      * The domainObjectOrMap may:
@@ -439,7 +469,6 @@ class ServiceBase {
      * 3) be a map that contains a model instance as the value for a key whose name is the simple class name but with
      *    lower case first letter (i.e., in 'property name' form)
      * 4) be a map that contains a model instance as the value for a key named 'domainModel'
-     * This static method is public so that it may be used within any services that implement their own CRUD methods.
      **/
     public static def extractParams( domainClass, domainObjectOrMap ) {
         if (isDomainModelInstance( domainClass, domainObjectOrMap )) {
@@ -475,9 +504,8 @@ class ServiceBase {
      * 3) be a map that contains a key named with the 'property name' form of the model's simple class
      *    name (e.g., campusParty), whose value is a domain model instance from which the 'id' may be extracted
      * 4) be a map that contains a 'domainModel' key whose value is a domain model instance from which the 'id' may be extracted
-     * This static method is public so that it may be used within any services that implement their own CRUD methods.
      **/
-    public static def extractId( domainClass, domainObjectParamsIdOrMap ) {
+    public def extractId( domainClass, domainObjectParamsIdOrMap ) {
         if (domainObjectParamsIdOrMap instanceof Long) {
             (Long) domainObjectParamsIdOrMap
         }
@@ -510,7 +538,7 @@ class ServiceBase {
     }
 
 
-    public static def fetch( domainClass, id, log ) {
+    public def fetch( domainClass, id, log ) {
         log.debug "Going to fetch a $domainClass using id $id"
         if (id == null) {
             throw new NotFoundException( id: id, entityClassName: domainClass.simpleName )
@@ -549,7 +577,7 @@ class ServiceBase {
      * @param domainObject the domainObject as represented in the database
      * @content a map contianing updated fields
      **/
-    public static def checkOptimisticLockIfInvalid( domainObject, content, log ) {
+    public def checkOptimisticLockIfInvalid( domainObject, content, log ) {
         if ((content.version != null) && (domainObject.hasProperty( 'version') != null )) {
             domainObject.refresh() // query the database, as a domainObject.get(id) will just hit the cache...
             if (content.version != domainObject.version) {
@@ -567,9 +595,6 @@ class ServiceBase {
                   but this object doesn't support optimistic locking!"
         }
     }
-
-
-    // ---------------------------- Helper Methods -----------------------------------
 
 
     protected validate( model ) {

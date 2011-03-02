@@ -674,7 +674,7 @@ class MyMock {
         new MyMock( id: id, name: 'Mocked' )
     }
 
-    public boolean isDirty() { true } // we'll 'always' be dirty
+    public boolean isDirty( propName = null ) { true } // we'll 'always' be dirty
     public List getDirtyPropertyNames() { new ArrayList() }
 
     public String toString() {

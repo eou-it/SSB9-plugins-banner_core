@@ -107,12 +107,17 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 
         def id = foo.id
         def version = foo.version
-        def lastModified = foo.lastModified
+        def lastModifiedTime = foo.lastModified.time
+        
+        sleep 1000      // would not really be needed, except that 'Foo' is marked (artificially, and incorrectly) as needing a refresh() immediately 
+                        // after being saved (just to ensure code is exercised during the test). Since lastModified is mapped to a SQL DATE type, 
+                        // the fractional seconds are truncated -- so to test that the date is 'changed' we need some time to elapse...
 
         def updatedFoo = fooService.update( foo )
         assertEquals id, updatedFoo.id
+        assertEquals "Updated", updatedFoo.description
         assertEquals version + 1, updatedFoo.version
-        assertFalse lastModified == updatedFoo.lastModified
+        assertFalse "original lastModified was $lastModifiedTime and updatedFoo.lastModified is ${updatedFoo.lastModified.time}", lastModifiedTime == updatedFoo.lastModified.time
     }
 
 

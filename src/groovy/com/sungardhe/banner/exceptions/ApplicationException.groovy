@@ -89,6 +89,11 @@ class ApplicationException extends RuntimeException {
         this( entityClassOrName, e )
         this.id = id
     }
+    
+    
+    public String getMessage() {
+        wrappedException?.message
+    }
 
 
     public def getHttpStatusCode() {

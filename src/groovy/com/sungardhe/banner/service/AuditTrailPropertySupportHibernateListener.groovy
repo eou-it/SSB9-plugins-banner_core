@@ -59,13 +59,30 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
     }
 
 
+    // Sets the three audit trail fields: 
+    // lastModified - the time with 'second' resolution    (created here)
+    // lastModifiedBy - the person who modified the record (taken from the authentication token of the user)
+    // dataOrigin - the system that modified the value     (taken from Config.groovy)
     boolean updateSystemFields( event ) {
+        // Unfortunately, 'lastModified' is mapped to SQL DATE type versus SQL TIMESTAMP, and thus does not retain fractional seconds. 
+        // More unfortunately, the Hibernate cache does not reflect this, but will hold the 'lastModified' instance with fractional seconds 
+        // as the 'persistentValue'. Usually this is ok, but if a 'refresh()' is subsequently performed on the model the model and 
+        // it's 'persistentValue' (cache) will be updated to reflect the 'actual' database value (without fractional seconds). 
+        // 
+        // To avoid issues (e.g., during testing), we'll just make sure the hibernate cache reflects the 'actual' persisted value, 
+        // by removing the fractional seconds.
+        Calendar cal = Calendar.getInstance()
+        cal.setTime( new Date() )
+        cal.set( Calendar.MILLISECOND, 0 ) // truncate fractional seconds, so that we can compare dates to those retrieved from the database   
+        Date lastModified = new Date( cal.getTime().getTime() )
+
         (setPropertyValue( event, "dataOrigin" ) { CH.config?.dataOrigin ?: "Banner" }
             && setPropertyValue( event, "lastModifiedBy" ) { SCH.context?.authentication?.principal?.username }
-            && setPropertyValue( event, "lastModified" ) { new Date() })
+            && setPropertyValue( event, "lastModified" ) { lastModified })
     }
 
 
+    // Note that in a Hibernate callback, we can't just change the model (it's too late for that) -- so, we have to set the value within the event.
     boolean setPropertyValue( event, String name, Closure valueClosure ) {
         try {
             int index = ArrayUtils.indexOf( event.getPersister().getPropertyNames(), name )
