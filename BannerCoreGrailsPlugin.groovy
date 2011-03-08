@@ -196,10 +196,10 @@ class BannerCoreGrailsPlugin {
         }
 
         switch (GrailsUtil.environment) {
-            case "development":
-            // break // uncomment to turn off JMX for 'development'
             case "test":
-            // break // uncomment to turn off JMX for 'test'
+                break // Logging is not exported via JMX for 'test' environment
+            case "development":
+              // 'pass through', so logging will be exported via JMX for 'development' and 'production'
             case "production":
                 exporter( MBeanExporter ) {
                     server = mbeanServer

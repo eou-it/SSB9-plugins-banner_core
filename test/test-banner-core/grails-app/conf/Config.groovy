@@ -193,7 +193,7 @@ log4j = {
     switch( environment?.toString() ) {
         case 'development':
             root {
-                off 'stdout','appLog'
+                error 'stdout','appLog'
                 additivity = true
             }
             info 'com.sungardhe.banner.representations'
@@ -201,13 +201,13 @@ log4j = {
             break
         case 'test':
             root {
-                off 'stdout','appLog'
+                all 'stdout','appLog'
                 additivity = true
             }
             break
         case 'production':
             root {
-                off 'appLog'
+                error 'appLog'
                 additivity = true
             }
             warn 'grails.app.service'
@@ -217,9 +217,8 @@ log4j = {
             break
     } 
     
-}
     // Log4j configuration notes:
-    // The following are some common packages that you may want to enable for logging in the section above.
+    // The following are some common packages that you may want to enable for logging.
     // You may enable any of these within this file (which will require a restart), 
     // or you may add these to a running instance via JMX.  
     //
@@ -228,31 +227,31 @@ log4j = {
     // from that package/artifact regardless of the root logging level.   
     
     // ******** non-Grails classes (e.g., in src/ or grails-app/utils/) *********
-    //  debug 'com.sungardhe.banner.security'
-    //  debug 'com.sungardhe.banner.db'
-    //  debug 'com.sungardhe.banner.student'
-    //  debug 'com.sungardhe.banner.testing.FooController'
-    //  debug 'com.sungardhe.banner.testing.FooService'
+    off 'com.sungardhe.banner.security'
+    off 'com.sungardhe.banner.db'
+    off 'com.sungardhe.banner.student'
+    all 'com.sungardhe.banner.testing.FooController'
+    all 'com.sungardhe.banner.testing.FooService'
     
     
-    //  debug 'org.apache.http.headers'
-    //  debug 'org.apache.http.wire'
+    off 'org.apache.http.headers'
+    off 'org.apache.http.wire'
     
     // ******** Grails framework classes *********
-    //  debug 'org.codehaus.groovy.grails.web.servlet'        // controllers
-    //  debug 'org.codehaus.groovy.grails.web.pages'          // GSP
-    //  debug 'org.codehaus.groovy.grails.web.sitemesh'       // layouts
-    //  debug 'org.codehaus.groovy.grails.web.mapping.filter' // URL mapping
-    //  debug 'org.codehaus.groovy.grails.web.mapping'        // URL mapping
-    //	debug 'org.codehaus.groovy.grails.commons'            // core / classloading
-    //	debug 'org.codehaus.groovy.grails.plugins'            // plugins
-    //	debug 'org.codehaus.groovy.grails.orm.hibernate'      // hibernate integration
-    //	debug 'org.springframework'                           // Spring IoC
-    //	debug 'org.hibernate'                                 // hibernate ORM
+    off 'org.codehaus.groovy.grails.web.servlet'        // controllers
+    off 'org.codehaus.groovy.grails.web.pages'          // GSP
+    off 'org.codehaus.groovy.grails.web.sitemesh'       // layouts
+    off 'org.codehaus.groovy.grails.web.mapping.filter' // URL mapping
+    off 'org.codehaus.groovy.grails.web.mapping'        // URL mapping
+    off 'org.codehaus.groovy.grails.commons'            // core / classloading
+    off 'org.codehaus.groovy.grails.plugins'            // plugins
+    off 'org.codehaus.groovy.grails.orm.hibernate'      // hibernate integration
+    off 'org.springframework'                           // Spring IoC
+    off 'org.hibernate'                                 // hibernate ORM
     
-    //	debug 'grails.plugins.springsecurity'
-    //	debug 'org.springframework.security'
-    //  debug 'com.sungardhe.banner.security.BannerAccessDecisionVoter'
+    off 'grails.plugins.springsecurity'
+    off 'org.springframework.security'
+    off 'com.sungardhe.banner.security.BannerAccessDecisionVoter'
     
     // Grails provides a convenience for enabling logging within artefacts, using 'grails.app.XXX'.
     // Unfortunately, this configuration is not effective when 'mixing in' methods that perform logging.
@@ -268,6 +267,8 @@ log4j = {
     //                   service    // Not effective with mixins -- see comment above
     //                   controller // Not effective with mixins -- see comment above
     //                   domain     - For domain entities
+    
+}
     
 
 
