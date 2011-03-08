@@ -135,6 +135,7 @@ class MenuController {
     }
     return childMenu
   }
+    //TODO Remove this method
   /**
    * This method derives the menu parent structure
    */
@@ -164,7 +165,10 @@ class MenuController {
       else
       if (menuFName != null) parentChain = caption + "/" + parentChain
     }
-    return rootMenu + "/" + parentChain
+    if (rootMenu == "Banner")
+        return  parentChain
+    else
+        return rootMenu + "/" + parentChain
   }
 
   /**
@@ -196,7 +200,10 @@ class MenuController {
       else
       if (menuFName != null) parentChain = caption + "/" + parentChain
     }
-    return rootMenu + "/" + parentChain
+    if (rootMenu == "Banner")
+        return  parentChain
+    else
+        return rootMenu + "/" + parentChain
   }
 
 }
