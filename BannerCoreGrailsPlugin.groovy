@@ -189,7 +189,7 @@ class BannerCoreGrailsPlugin {
         
         // ---------------- JMX Mbeans (incl. Logging) ----------------
         
-        log4jBean( HierarchyDynamicMBean )
+/*        log4jBean( HierarchyDynamicMBean )
 
         mbeanServer( MBeanServerFactoryBean ) {
           locateExistingServerIfPossible = true
@@ -207,7 +207,7 @@ class BannerCoreGrailsPlugin {
                 }        
             break
         }
-        
+*/        
     }
 
 

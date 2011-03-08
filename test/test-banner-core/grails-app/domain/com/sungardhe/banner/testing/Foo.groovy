@@ -10,6 +10,8 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
+import com.sungardhe.banner.service.DatabaseModifiesState
+
 import javax.persistence.*
 
 import org.hibernate.annotations.*
@@ -20,7 +22,11 @@ import org.hibernate.annotations.*
  */
 @Entity
 @Table( name="STVCOLL" )
-class Foo implements Serializable { // Currently based on 'College'; may replace with another model implementation if needed
+// The 'DatabaseModifiesState' annotation is 'normally' used to indicate that the database modifies the object after it is saved.
+// This annotation is used by ServiceBase to indicate models that must be refreshed after saving. In this case, Foo (aka College) 
+// is not really  modified in the database, but we use the annotation here to force testing of this ServiceBase functionality.
+@DatabaseModifiesState 
+class Foo implements Serializable { // based on 'College'
 
 	@Id
 	@Column( name="STVCOLL_SURROGATE_ID" )

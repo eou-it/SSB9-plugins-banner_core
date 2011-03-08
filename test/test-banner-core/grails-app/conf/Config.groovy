@@ -184,7 +184,9 @@ String loggingFileName = "${loggingFileDir}/$environment-${appName}.log".toStrin
 // JMX should be used to modify logging levels (and enable logging for specific packages). Any JMX client, such as JConsole, may be used. 
 //
 // The logging levels that may be configured are, in order: ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF   
-// 
+//
+
+
 log4j = {
     appenders {
         rollingFile name:'appLog', file:loggingFileName, maxFileSize:"${10*1024*1024}", maxBackupIndex:10, layout:pattern( conversionPattern: '%d{[EEE, dd-MMM-yyyy @ HH:mm:ss.SSS]} [%t] %-5p %c %x - %m%n' )
@@ -201,9 +203,12 @@ log4j = {
             break
         case 'test':
             root {
-                all 'stdout','appLog'
+                error 'stdout','appLog'
                 additivity = true
             }
+            all 'com.sungardhe.banner.testing.FooController'
+            all 'com.sungardhe.banner.testing.FooService'
+            all 'grails.app.service.com.sungardhe.banner.testing.FooService'
             break
         case 'production':
             root {
@@ -229,10 +234,11 @@ log4j = {
     // ******** non-Grails classes (e.g., in src/ or grails-app/utils/) *********
     off 'com.sungardhe.banner.security'
     off 'com.sungardhe.banner.db'
-    off 'com.sungardhe.banner.student'
-    all 'com.sungardhe.banner.testing.FooController'
-    all 'com.sungardhe.banner.testing.FooService'
     
+    off 'com.sungardhe.banner.testing.FooController'
+    off 'com.sungardhe.banner.testing.FooService'
+    off 'grails.app.service.com.sungardhe.banner.testing.FooService'
+    off 'com.sungardhe.banner.service.ServiceBase'    
     
     off 'org.apache.http.headers'
     off 'org.apache.http.wire'

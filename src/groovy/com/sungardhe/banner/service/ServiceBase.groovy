@@ -416,19 +416,13 @@ class ServiceBase {
         }
         true
     }
-    
-    
-    public def databaseMayAlterPropertiesOf( model ) {
-        def needRefresh = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue( this /*service*/, 'databaseMayAlterPropertiesOf' )
-        (needRefresh && model.class in needRefresh)
-    }
         
     
-    // Models that are backed by APIs (often indirectly, via a database view with 'instead of' triggers) may have their 'activity date' (i.e., lastModified property)
-    // modified within the database.  This method will determined if a model is dirty solely due to the 'lastModified' property, and if so, will reset the 
-    // lastModified property value to the persistent value.
+    // Models that are backed by APIs (often indirectly, via a database view with 'instead of' triggers) usually (always?) have their 'activity date' 
+    // (i.e., lastModified property) modified within the database, and may modify other fields.  This method will refresh the model 
+    // if it is identified as one that may be modified in the database (specifically, if it is annotated with the 'DatabaseModifiesState' annotation).
     public refreshIfNeeded( model ) {
-        if (databaseMayAlterPropertiesOf( model )) {
+        if (model.class.getAnnotation( DatabaseModifiesState.class )) {
             log.debug "Model ${model.class} is identified as a model that may be modified within the database, and will therefore be refreshed" 
             model.refresh()
         }    
