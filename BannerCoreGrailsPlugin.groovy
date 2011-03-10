@@ -189,25 +189,21 @@ class BannerCoreGrailsPlugin {
         
         // ---------------- JMX Mbeans (incl. Logging) ----------------
         
-/*        log4jBean( HierarchyDynamicMBean )
+        log4jBean( HierarchyDynamicMBean )
 
         mbeanServer( MBeanServerFactoryBean ) {
           locateExistingServerIfPossible = true
         }
 
         switch (GrailsUtil.environment) {
-            case "test":
-                break // Logging is not exported via JMX for 'test' environment
-            case "development":
-              // 'pass through', so logging will be exported via JMX for 'development' and 'production'
+            case "development": // 'pass through', so logging will be exported via JMX for 'development' and 'production'
             case "production":
                 exporter( MBeanExporter ) {
                     server = mbeanServer
                     beans = ["log4j:hierarchy=default":log4jBean]
                 }        
             break
-        }
-*/        
+        }        
     }
 
 
@@ -293,7 +289,7 @@ class BannerCoreGrailsPlugin {
                 break
         }
 
-        LinkedHashMap<String, List<Filter>> filterChainMap = new LinkedHashMap();
+        LinkedHashMap<String, List<Filter>> filterChainMap = new LinkedHashMap()
         filterChain.each { key, value ->
             def filters = value.toString().split(',').collect {
                 name -> applicationContext.getBean( name )

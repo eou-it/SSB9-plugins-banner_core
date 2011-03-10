@@ -77,11 +77,6 @@ class FooService extends ServiceBase {
 //    }
 
 
-      // The models specified here will be 'refreshed' immediately after being created or updated. This is useful when 
-      // the model is modified within the database, so that GORM can be made to reflect the state of the database. 
-    public static databaseMayAlterPropertiesOf = [ Foo, Bar ]
-
-
     // ----------------------------------------- Test Methods ------------------------------------------
 
     

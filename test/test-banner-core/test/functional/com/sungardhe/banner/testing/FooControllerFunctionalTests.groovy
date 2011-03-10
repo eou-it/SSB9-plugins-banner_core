@@ -225,8 +225,8 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
     void testCreateUpdateAndDelete_XML() {
         def id
         try {
-            def code = 'Z8'
-            def xmlBody = new Foo( code: code, description: 'Desc_Z8' ) as XML
+            def code = 'Z#'
+            def xmlBody = new Foo( code: code, description: "Desc_${code}" ) as XML
 
             // 'POST' /api/foobar => 'create'
             post( "/api/foobar" ) {
