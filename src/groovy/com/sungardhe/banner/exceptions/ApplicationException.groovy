@@ -371,7 +371,7 @@ class ApplicationException extends RuntimeException {
                                 ]
                             } else {
                                 log.warn "ApplicationException cannot localize or handle it's wrapped exception $wrappedException"
-                                [ message: "Sorry, an unexpected error has occurred: ${wrappedException.message}", // If this is an unmapped message, we won't localize at all...
+                                [ message: "${wrappedException.message}", // If this is an unmapped message, we won't localize at all...
                                   errors:  (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.collect { message( error: it ) } : null)
                                 ]
                             }

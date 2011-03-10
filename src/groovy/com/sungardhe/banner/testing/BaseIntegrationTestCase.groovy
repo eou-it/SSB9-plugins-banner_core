@@ -199,6 +199,14 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     }
 
 
+    protected Date removeFractionalSecondsFrom( Date date ) {
+        Calendar cal = Calendar.getInstance()
+        cal.setTime( date )
+        cal.set( Calendar.MILLISECOND, 0 ) // truncate fractional seconds, so that we can compare dates to those retrieved from the database   
+        new Date( cal.getTime().getTime() )
+    }
+
+
     /**
      * Asserts that a FieldError exists for the expectedField, and that other FieldError attributes are as expected.
      * The FieldError may be asserted against the following properties.  The expectedField property.

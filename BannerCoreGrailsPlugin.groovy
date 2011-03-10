@@ -248,13 +248,11 @@ class BannerCoreGrailsPlugin {
         }
 
         // inject the logger into every class (Grails only injects this into some artifacts)
-        application.allClasses.each {->
-          //For some reason weblogic throws an error if we try to inject the method if it is already present
-          if(!it.metaClass.methods.find { m -> m.name.matches("getLog")}) {
-            it.metaClass.getLog = {->
-                LogFactory.getLog it
+        application.allClasses.each {
+            //For some reason weblogic throws an error if we try to inject the method if it is already present
+            if (!it.metaClass.methods.find { m -> m.name.matches( "getLog" ) }) { 
+                it.metaClass.getLog = { LogFactory.getLog it }
             }
-          }
         }
     }
 

@@ -321,7 +321,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 
 		def returnMap = ae.returnMap( controller.localizer )
 		assertFalse returnMap.success
-		assertTrue "returnMap was not as expected, but was: ${returnMap.message}", returnMap.message?.contains( "Sorry, an unexpected error has occurred" )
+		assertTrue "returnMap was not as expected, but was: ${returnMap.message}", returnMap.message?.contains( "my test runtime exception" )
 	    assertNull returnMap.errors
 	    assertTrue returnMap.underlyingErrorMessage ==~ /.*my test runtime exception.*/
     }
