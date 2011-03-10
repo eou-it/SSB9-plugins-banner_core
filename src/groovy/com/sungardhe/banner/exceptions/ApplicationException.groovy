@@ -370,7 +370,7 @@ class ApplicationException extends RuntimeException {
                                     errors:  (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.collect { message( error: it ) } : null)
                                 ]
                             } else {
-                                log.error "ApplicationException cannot localize or handle it's wrapped exception $wrappedException"
+                                log.warn "ApplicationException cannot localize or handle it's wrapped exception $wrappedException"
                                 [ message: "Sorry, an unexpected error has occurred: ${wrappedException.message}", // If this is an unmapped message, we won't localize at all...
                                   errors:  (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.collect { message( error: it ) } : null)
                                 ]
@@ -388,7 +388,7 @@ class ApplicationException extends RuntimeException {
 
         switch (sqlExceptionErrorCode) {
             case 1 : // 'Unique Exception'
-                log.error "A 'Unique' constraint exception was encountered that apparently was not \
+                log.warn "A 'Unique' constraint exception was encountered that apparently was not \
                           caught as a validation constraint, for $entityClassName with id=$id", sqlException
                 return [ message: translate( localize: localize,
                                              code: "not.unique.message",
@@ -396,7 +396,7 @@ class ApplicationException extends RuntimeException {
                          errors: null
                        ]
             case 2290 : // 'Check' constraint -- This is considered a programming error, as this can be avoided using model validation constraints
-                log.error "A 'Check' constraint exception was encountered which may be better handled \
+                log.warn "A 'Check' constraint exception was encountered which may be better handled \
                           by adding a validation constraint to the $entityClassName with id $id", sqlException
                 return [ message: translate( localize: localize,
                                              code: "constraint.error.message",
@@ -410,7 +410,7 @@ class ApplicationException extends RuntimeException {
 
                 // This isn't necessarily an error -- some constraint exceptions will likely be expected... we'll log as an error (at least initially)
                 // so the logging has access to the exception...
-                log.error "An 'integrity.$type' constraint exception was encountered which may be better handled \
+                log.warn  "An 'integrity.$type' constraint exception was encountered which may be better handled \
                            by adding a validation constraint to the $entityClassName with id $id", sqlException
 
                 String constraintName = getConstraintName( sqlException.message )
@@ -533,11 +533,11 @@ class ApplicationException extends RuntimeException {
     private Map getResourceCodeAndParams( String msg ) {
         List<String> bindingParams = parse( extractAPIErrorText( msg ) )
         if (bindingParams.size() < 2) {
-            log.error "Exception message did not contain parsable content: $msg"
+            log.warn "Exception message did not contain parsable content: $msg"
             resourceCode = "unknown.banner.api.exception"
         }
         if (!bindingParams.get( 0 ).equals( "r1" )) {
-            log.error "Unknown tunneled exception; message should have started with 'r1' but was: $msg"
+            log.warn "Unknown tunneled exception; message should have started with 'r1' but was: $msg"
             resourceCode = "unknown.banner.api.exception"
         }
         String resourceCode = bindingParams.get( 1 )

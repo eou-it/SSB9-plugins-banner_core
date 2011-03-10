@@ -66,7 +66,7 @@ class BannerCoreGrailsPlugin {
     // independent of deploying a new plugin build to Nexus.
     //
 //    String version = "0.1-SNAPSHOT"
-    String version = "0.2.25"
+    String version = "0.2.27" // (Note: '26' was published from summit2011 branch - thus 27 was next available number after 25)
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
