@@ -1,4 +1,13 @@
- 
+
+h4. Version 0.2.27
+
+* Added @DatabaseModifiesState annotation that should be used on domain model classes whose persistent state may be altered within the database. 
+* Modified ServiceBase to perform an immediate refresh after creating and updating a model, if this annotation is present on the model. 
+* Modified the AuditTrailPropertySupportHibernateListener Hibernate listener to strip the fractional seconds from 'lastModified' Date property in domain models, since this property is mapped to the SQL DATE type which does not support fractional seconds. This prevents false reporting of this property as being dirty when performing subsequent saves.  Also modified ServiceBase 'isDirty' checking to exclude 'lastModified' if the @DatabaseModifiesState is present on the model.  
+
+h4. Version 0.2.26
+
+* This is a Summit-only release, that updates the menu functionality for use at Summit.  
 
 h4. Version 0.2.24
 

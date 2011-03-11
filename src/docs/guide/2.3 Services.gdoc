@@ -41,3 +41,11 @@ h4. ApplicationException
 
 The banner-core plugin defines an ApplicationException that is used to wrap various exceptions, provide a common interface, and ensure localization of exception messages. Please refer to 'ApplicationExceptionIntegrationTests' (contained in this plugin) for example usage.  
 
+h4. Automatic Refresh
+Some domain models are modified within the database, which results in the persisted data being different than that in the domain model or Hibernate cache.  To simplify use of models where this situation exists, a '@DatabaseModifiesState' should be added to the model.  The 'ServiceBase' base class checks for the presence annotation after saving the model, and if present will perform a refresh before returning the model. Domain models that are backed by APIs (i.e., backed by views using instead of triggers that delegate to the API), or that are backed by tables that have triggers that modify the persistent state must have this annotation.  Services that do not extend or mixin ServiceBase should also check for this annotation and refresh the model when appropriate. 
+{code}
+@Entity
+@Table( name="SOME_TABLE" )
+@DatabaseModifiesState 
+class MyModel implements Serializable {
+{code}
