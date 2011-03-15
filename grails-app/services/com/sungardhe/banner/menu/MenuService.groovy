@@ -74,7 +74,7 @@ class MenuService {
         mnu.pageName = it.gubpage_name
         mnu.caption = it.gutpmnu_label
         if (mnuLabelPref)
-          mnu.caption = it.gutpmnu_label + "(" + mnu.formName + ")"
+          mnu.caption = it.gutpmnu_label + " (" + mnu.formName + ")"
         mnu.level = it.gutpmnu_level
         mnu.type = str[0]
         mnu.module = it.gubmodu_name
@@ -144,7 +144,7 @@ class MenuService {
       {
         mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
         if (prefName)
-          mnu.caption = mnu.caption + "(" + mnu.formName + ")"
+          mnu.caption = mnu.caption + " (" + mnu.formName + ")"
       }
       mnu.level = it.gutmenu_level
       mnu.type = it.gutmenu_objt_code
