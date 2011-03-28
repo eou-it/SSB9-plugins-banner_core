@@ -49,14 +49,14 @@ class BannerConnection {
         assert bannerDataSource
         underlyingConnection = conn
         this.bannerDataSource = bannerDataSource
-        log.trace "BannerConnection ${this} has been constructed"
+        log.trace "BannerConnection has been constructed: ${this}"
+        invokeProcedureCall "{ call DBMS_SESSION.MODIFY_PACKAGE_STATE(2) }" // Constant DBMS_SESSION.REINITIALIZE = 2
     }
 
 
     BannerConnection( Connection conn, String userName, bannerDataSource ) {
         this( conn, bannerDataSource )
         proxyUserName = userName
-        log.trace "BannerConnection ${this} constructor has proxyUserName ${proxyUserName}"
     }
 
 
@@ -73,7 +73,7 @@ class BannerConnection {
      * @see java.sql.Connection#commit()
      */
     public void commit() throws SQLException {
-        log.trace "BannerConnection ${this} 'commit()' invoked"
+        log.trace "BannerConnection ${super.toString()} 'commit()' invoked"
         invokeProcedureCall "{ call gb_common.p_commit() }"
     }
 
@@ -86,15 +86,20 @@ class BannerConnection {
      * @see java.sql.Connection#rollback()
      */
     public void rollback() throws SQLException {
-        log.trace "BannerConnection ${this} 'rollback()' invoked"
+        log.trace "BannerConnection ${super.toString()}.rollback() invoked"
         invokeProcedureCall "{ call gb_common.p_rollback() }"
     }
 
 
     public void close() throws SQLException {
-        log.trace "BannerConnection ${this} 'close()' invoked"
+        log.trace "BannerConnection ${super.toString()}.close() invoked"
 //        invokeProcedureCall "{ set role 'null' }" // TODO: Do we need to clear the roles if we're releasing the connection?
-        closeProxySession extractOracleConnection(), proxyUserName
+
+        def oconn = extractOracleConnection()
+        log.trace "${super.toString()}.closeProxySession() will close proxy session for $oconn"
+        closeProxySession oconn, proxyUserName
+        
+        log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps $oconn"
         underlyingConnection?.close()
     }
 
@@ -112,6 +117,7 @@ class BannerConnection {
      * @throws SQLException if reported when executing this stored procedure
      */
     private void invokeProcedureCall( String procedureCall ) throws SQLException {
+        log.trace "BannerConnection ${super.toString()}.invokeProcedureCall() will execute '$procedureCall'"
         CallableStatement cs
         try {
             cs = underlyingConnection.prepareCall( procedureCall )
@@ -131,7 +137,7 @@ class BannerConnection {
     }
 
     public String toString() {
-        "BannerConnection[instance=${super.toString()}, user='${proxyUserName}',conn='${underlyingConnection}']"
+        "${super.toString()}[user='${proxyUserName}', oracle connection='${extractOracleConnection()}']"
     }
 
 

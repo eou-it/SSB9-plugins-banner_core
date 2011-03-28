@@ -21,6 +21,7 @@ Banner web applications.</description>
     <resource>MenuController</resource>
     <resource>com.sungardhe.banner.general.utility.MenuAndToolbarPreference</resource>
     <resource>com.sungardhe.banner.general.utility.PersonalPreference</resource>
+    <resource>com.sungardhe.banner.general.utility.DomainAttributePropertiesService</resource>
     <resource>com.sungardhe.banner.general.utility.MenuAndToolbarPreferenceService</resource>
     <resource>com.sungardhe.banner.general.utility.PersonalPreferenceService</resource>
     <resource>com.sungardhe.banner.menu.MenuService</resource>

@@ -34,7 +34,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 // It is not currently understood why the BannerDataSource naming was problematic.
 // To reduce confusion, you may want to import this class using:
 //     import com.sungardhe.banner.db.BannerDS as BannerDataSource
-// TODO: Investigate why BannerDataSource naming causes 'can not resolve class' while BannerDS works.
 
 /**
  * A dataSource that proxies connections, sets roles needed for the current request,
@@ -74,11 +73,9 @@ public class BannerDS {
                 setRoles( oconn, user?.username, applicableAuthorities )
             }
         }
-        // Reset Oracle session plsql package state.
-        def sql = new Sql( conn )
-        sql.call("{ call DBMS_SESSION.MODIFY_PACKAGE_STATE(2) }") // Constant DBMS_SESSION.REINITIALIZE = 2
         return new BannerConnection( conn, user?.username, this )  // Note that while an IDE may not like this, the delegate supports this type coersion
     }
+    
 
     // Note: This method is used for Integration Tests -- it is not intended to be used within production code.
     // TODO: Refactor - not DRY with other methods
@@ -94,6 +91,7 @@ public class BannerDS {
             }
         }
     }
+    
 
     // Note: This method should be used only for initial authentication, and for testing purposes.
     /**
@@ -110,6 +108,7 @@ public class BannerDS {
         OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
         return new BannerConnection( conn, null, this )  // Note that while an IDE may not like this, the delegate supports this type coersion
     }
+    
 
     // Note: This method should be used only for initial authentication, and for testing purposes.
     // WARNING: This method MUTATES the supplied connection by proxying it for the identified user.
@@ -125,6 +124,7 @@ public class BannerDS {
         bconn.proxyUserName = userName
         return bconn
     }
+    
 
     /**
      * Returns the jdbcUrl of the real DataSource
@@ -132,6 +132,7 @@ public class BannerDS {
     public String getUrl() {
         return underlyingDataSource.getUrl()
     }
+    
 
     // ------------- end of public methods ----------------
 
@@ -159,7 +160,7 @@ public class BannerDS {
 
         List formContext = FormContext.get()
         log.debug "BannerDS has retrieved the FormContext value: $formContext"
-        log.debug "The user's granted authorities are $grantedAuthorities*.authority" // TODO remove logging of authorities, or log only in Test environment
+        // log.debug "The user's granted authorities are $grantedAuthorities*.authority" // re-enable in development to see all the user's privileges 
 
         List applicableAuthorities = []
         formContext.each { form ->
@@ -195,7 +196,7 @@ public class BannerDS {
             case 'INSECURED': println "No role to unlock -- the password was 'INSECURED'"
                 return // nothing to do... no roles need to be set
             case 'ABORT': println "Role 'ABORT' encountered - throwing an exception!"
-                throw new RuntimeException("ABORT Banner Role encountered!")
+                throw new RuntimeException( "ABORT Banner Role encountered!" )
         }
         // still here? We will try to unlock the role...
         Sql db = new Sql( conn )
@@ -209,26 +210,32 @@ public class BannerDS {
             // Note: Don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
         }
     }
+    
 
     public void setLogWriter( PrintWriter printWriter ) {
         log.trace "setLogWriter printWriter = $printWriter"
     }
+    
 
     public PrintWriter getLogWriter() {
         log.trace 'getLogWriter'
     }
+    
 
     boolean isWrapperFor( Class clazz ) {
         log.trace "isWrapperFor clazz = $clazz"
     }
+    
 
     Object unwrap( Class clazz ) {
         log.trace "unwrap clazz = $clazz"
     }
+    
 
     void setLoginTimeout( int i ) {
         log.trace "setLoginTimeout i = $i"
     }
+    
 
     int getLoginTimeout() {
         log.trace 'getLoginTimeout'
