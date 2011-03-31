@@ -148,6 +148,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                             "class": "com.sungardhe.banner.testing.Foo",
                             "id": "$id",
                             "description": "Updated",
+                            "version": "${data.version}"
                         }"""
                 } // Notice the body only needed to include the properties we want to change, plus the id and class
             }
@@ -251,7 +252,8 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                 headers[ 'Content-Type' ] = 'text/xml'
                 headers[ 'Authorization' ] = authHeader()
                 body { """
-                    <foo id="$id" version="$version">
+                    <foo id="$id">
+                        <version>$version</version>
                         <description>Updated</description>
                     </foo>"""
                 }

@@ -136,15 +136,22 @@ class ServiceBase {
 
                 content = extractParams( getDomainClass(), domainModelOrMap )
                 domainObject = fetch( getDomainClass(), content?.id, log )
+
+                // Now we'll set the provided properties (content) onto our pristine domainObject instance -- this may make the model dirty 
                 domainObject.properties = content
-                domainObject.version = content.version // needed as version is not included in bulk assignment
 
                 def updatedModel
                 if (isDirty( domainObject )) {
-
-                    validateReadOnlyPropertiesNotDirty( domainObject ) // throws RuntimeException if readonly properties are dirty
                     log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
 
+                    // Next we'll explicitly check the optimistic lock.  Even though GORM will include the version within the 'where' clause
+                    // when issuing an update, some (?) views that employ triggers with 'instead of' clauses do not correctly use the version
+                    // value but instead simply idenfity the record to update by getting the Oracle rowid using only the model's surrogate id.  
+                    checkOptimisticLock( domainObject, content, log )
+                    
+                    // throw a RuntimeException if 'readonly' properties are dirty
+                    validateReadOnlyPropertiesNotDirty( domainObject ) 
+                    
                     log.trace "${this.class.simpleName}.update will now invoke the 'preUpdate' callback if it exists"
                     if (this.respondsTo( 'preUpdate' )) {
                         this.preUpdate( domainModelOrMap )
@@ -179,7 +186,7 @@ class ServiceBase {
             catch (ValidationException e) {
                 def ae = new ApplicationException( getDomainClass(), e )
                 log.debug "Could not update an existing ${this.class.simpleName} with id = ${domainObject?.id} due to exception: $ae", e
-                checkOptimisticLockIfInvalid( domainObject, content, log ) // optimistic lock trumps validation errors
+                checkOptimisticLock( domainObject, content, log ) // optimistic lock trumps validation errors 
                 throw ae
             }
             catch (e) {
@@ -571,23 +578,29 @@ class ServiceBase {
      * @param domainObject the domainObject as represented in the database
      * @content a map contianing updated fields
      **/
-    public def checkOptimisticLockIfInvalid( domainObject, content, log ) {
-        if ((content.version != null) && (domainObject.hasProperty( 'version') != null )) {
-            domainObject.refresh() // query the database, as a domainObject.get(id) will just hit the cache...
-            if (content.version != domainObject.version) {
-                log.debug "Optimistic lock violation between params $content and the model's state in the database $domainObject that has version ${domainObject.version}"
-                throw new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.name, domainObject.id ) ) )
+    public def checkOptimisticLock( domainObject, content, log ) {
+        if (domainObject.hasProperty( 'version' )) {
+            if (content.version != null) {
+                int ver = content.version instanceof String ? content.version.toInteger() : content.version
+                if (ver != domainObject.version) {
+                    throw exceptionForOptimisticLock( domainObject, content, log )
+                }
+            }
+            else {
+                log.debug "The params content did not provide a 'version', but the ${domainObject?.class.simpleName} model requires a version to support optimistic locking"
+                throw exceptionForOptimisticLock( domainObject, content, log )
             }
         }
-        else if (domainObject.hasProperty('version')) {
-            def ae = new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.simpleName, domainObject.id ) ) )
-            log.debug "Could not update an existing ${domainObject.class.simpleName} with id = ${domainObject?.id} and version = ${domainObject?.version} due to Optimistic Lock violation, when given version ${content.version}. Exception is $ae"
-            throw ae
+        else if (content.version != null) {
+            log.warn "An optimistic lock version was provided when updating ${domainObject?.class.simpleName} with id = ${domainObject?.id}, \
+                      but this object doesn't support optimistic locking!"
         }
-        else {
-            log.warn "An optimistic lock version was provided when updating ${domainObject?.class.name} with id = ${domainObject?.id}, \
-                  but this object doesn't support optimistic locking!"
-        }
+    }
+    
+    
+    private ApplicationException exceptionForOptimisticLock( domainObject, content, log ) {
+        log.debug "Optimistic lock violation between params $content and the model's state in the database $domainObject"
+        new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.simpleName, domainObject.id ) ) ) 
     }
 
 

@@ -30,22 +30,21 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 
 // This class was renamed from the more desirable 'BannerDataSource' as doing so
-// circumvented 'can not resolve class' issues when running applications using this plugin.
-// It is not currently understood why the BannerDataSource naming was problematic.
+// circumvented 'cannot resolve class' issues when running applications using this plugin.
 // To reduce confusion, you may want to import this class using:
-//     import com.sungardhe.banner.db.BannerDS as BannerDataSource
-
+//     'import com.sungardhe.banner.db.BannerDS as BannerDataSource'
+//
 /**
  * A dataSource that proxies connections, sets roles needed for the current request,
  * and invokes p_commit and p_rollback.
- * */
+ **/
 public class BannerDS {
 
     // Delegates all methods not implemented here, to the underlying dataSource injected via Spring.
     @Delegate
     DataSource underlyingDataSource
 
-    def nativeJdbcExtractor
+    def nativeJdbcExtractor  // injected by Spring
 
     private final Logger log = Logger.getLogger( getClass() )
 
@@ -77,9 +76,7 @@ public class BannerDS {
     }
     
 
-    // Note: This method is used for Integration Tests -- it is not intended to be used within production code.
-    // TODO: Refactor - not DRY with other methods
-
+    // Note: This method is used for Integration Tests.
     public Connection proxyAndSetRolesFor( BannerConnection bconn, userName, password ) {
         def user
         if (SecurityContextHolder?.context?.authentication) {
@@ -127,7 +124,7 @@ public class BannerDS {
     
 
     /**
-     * Returns the jdbcUrl of the real DataSource
+     * Returns the jdbcUrl of the underlying DataSource.
      */
     public String getUrl() {
         return underlyingDataSource.getUrl()
@@ -145,9 +142,9 @@ public class BannerDS {
         // properties.put( OracleConnection.PROXY_USER_NAME, userName )
         // properties.put( OracleConnection.PROXY_USER_PASSWORD, password )
         // The following is a workaround approach:
-        // properties.put(OracleConnection.PROXY_USER_NAME, ("${userName}/${password}" as String))
-        // Changed approach to proxy connections without authenticating via password.  This will be required in a
-        // claims based authentication approach and IdM integration.
+        // properties.put( OracleConnection.PROXY_USER_NAME, ("${userName}/${password}" as String) )
+        // We proxy connections without authenticating via password.  This is required in a
+        // claims-based authentication approach.
         properties.put( OracleConnection.PROXY_USER_NAME, ("${userName}" as String) )
 
         oconn.openProxySession( OracleConnection.PROXYTYPE_USER_NAME, properties )
@@ -167,18 +164,18 @@ public class BannerDS {
             def authoritiesForForm = grantedAuthorities.findAll { it.authority ==~ /\w+_${form}_\w+/ }
             authoritiesForForm.each { applicableAuthorities << it }
         }
-        log.debug "Given FormContext of ${formContext?.join(',')}, the user's applicable authorities are $applicableAuthorities" // TODO remove logging of authorities, or log only in Test environment
+        log.debug "Given FormContext of ${formContext?.join(',')}, the user's applicable authorities are $applicableAuthorities" 
         applicableAuthorities
     }
 
 
     private setRoles( OracleConnection oconn, String proxiedUserName, applicableAuthorities ) {
-        log.debug "Applicable roles are ${applicableAuthorities*.authority}" // TODO remove logging of authorities, or log only in Test environment
+        log.debug "Applicable role(s) are ${applicableAuthorities*.authority}" 
 
         try {
-            log.trace "BannerDS.setRoles - will unlock roles for the connection proxied for $proxiedUserName"
-            applicableAuthorities?.each { auth -> unlockRole(oconn, (BannerGrantedAuthority) auth) }
-            log.trace "BannerDS.setRoles unlocked roles for the connection proxied for $proxiedUserName"
+            log.trace "BannerDS.setRoles - will unlock role(s) for the connection proxied for $proxiedUserName"
+            applicableAuthorities?.each { auth -> unlockRole( oconn, (BannerGrantedAuthority) auth ) }
+            log.trace "BannerDS.setRoles unlocked role(s) for the connection proxied for $proxiedUserName"
         }
         catch (e) {
             //if we cannot unlock a role, abort the proxy session and rollback
@@ -191,20 +188,20 @@ public class BannerDS {
 
     private unlockRole( Connection conn, BannerGrantedAuthority bannerAuth ) throws SQLException {
         switch (bannerAuth.bannerPassword) {
-            case null: println "No role to unlock -- the password was null"
-                return // nothing to do... no roles need to be set
+            case null:        println "No role to unlock -- the password was null"
+                              return // nothing to do... no roles need to be set
+                              
             case 'INSECURED': println "No role to unlock -- the password was 'INSECURED'"
-                return // nothing to do... no roles need to be set
-            case 'ABORT': println "Role 'ABORT' encountered - throwing an exception!"
-                throw new RuntimeException( "ABORT Banner Role encountered!" )
+                              return // nothing to do... no roles need to be set
+                              
+            case 'ABORT':     println "Role 'ABORT' encountered - throwing an exception!"
+                              throw new RuntimeException( "ABORT Banner Role encountered!" )
         }
-        // still here? We will try to unlock the role...
+        // still here? We will now try to set the role...
         Sql db = new Sql( conn )
         try {
-            String stmt = "set role \"${bannerAuth.roleName}\" identified by \"${bannerAuth.bannerPassword}\""
-            log.debug "BannerDS.unlockRole will now execute $stmt"
-            db.execute(stmt);
-            log.debug "BannerDS.unlockRole executed $stmt"
+            log.trace "BannerDS.unlockRole will set role '${bannerAuth.roleName}' for connection $conn" 
+            db.execute( "set role \"${bannerAuth.roleName}\" identified by \"${bannerAuth.bannerPassword}\"" )
         }
         finally {
             // Note: Don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use

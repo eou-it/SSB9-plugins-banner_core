@@ -37,10 +37,10 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
 
         configureSupplementalData( [ "com.sungardhe.banner.testing.Foo":
                                        [ testSuppA: [ required: false, dataType: String ],
-                                         testSuppB: [ required: false, dataType: boolean ] ],
+                                         testSuppB: [ required: false, dataType: String ] ],
                                      "com.sungardhe.banner.testing.Bar":
                                        [ testSuppA: [ required: false, dataType: String ],
-                                         testSuppB: [ required: false, dataType: boolean ] ]] )
+                                         testSuppB: [ required: false, dataType: String ] ]] )
     }
 
 
@@ -122,7 +122,7 @@ class SupplementalDataServiceIntegrationTests extends BaseIntegrationTestCase {
     void testSupplementalDataIsolationAcrossModels() {
         supplementalDataService.appendSupplementalDataConfiguration(  "com.sungardhe.banner.testing.Bar":
                                                                            [ testSuppA: [ required: false, dataType: String ],
-                                                                             testSuppB: [ required: false, dataType: boolean ]
+                                                                             testSuppB: [ required: false, dataType: String ]
                                                                            ]
                                                                      )
         runTestSupplementalDataIsolation( new BarService() )
@@ -213,7 +213,7 @@ class SupplementalDataPersistenceTestManager {
         else {
             // load in common specification of the supplemental data properties
             Map defaultSuppData = [ testSuppA: newDefaultPropertySpec( '1' ),
-                                    testSuppB: newDefaultPropertySpec( '1', Boolean ) ]
+                                    testSuppB: newDefaultPropertySpec( '1' ) ]
             model.supplementalProperties = defaultSuppData
             model
         }

@@ -226,10 +226,6 @@ log4j = {
     // The following are some common packages that you may want to enable for logging.
     // You may enable any of these within this file (which will require a restart), 
     // or you may add these to a running instance via JMX.  
-    //
-    // Note that settings for specific packages/artifacts will override those for the root logger.
-    // Consequently, we'll keep these commented out. Setting any of these to 'off' will prevent logging
-    // from that package/artifact regardless of the root logging level.   
     
     // ******** non-Grails classes (e.g., in src/ or grails-app/utils/) *********
     off 'com.sungardhe.banner.security'
@@ -276,7 +272,6 @@ log4j = {
     
 }
     
-
 
 
 // ******************************************************************************
