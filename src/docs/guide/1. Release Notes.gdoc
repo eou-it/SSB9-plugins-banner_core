@@ -1,4 +1,8 @@
 
+h4. Version 0.2.28
+
+* ServiceBase now explicitly checks the optimistic lock, as models that are backed by views which employ triggers with instead of clauses for 'update' do not check the optimistic lock. Consequently, this change in ServiceBase ensures optimistic locking is functional for these models when using them in Horizon web applications.  (The Banner APIs should be modified to ensure optimistic lock checking when  'version' is included as part of the 'where' clause, so that other applications that use these APIs can benefit from optimistic locking without having to add an explicit check.)
+
 h4. Version 0.2.27
 
 * Added @DatabaseModifiesState annotation that should be used on domain model classes whose persistent state may be altered within the database. 
