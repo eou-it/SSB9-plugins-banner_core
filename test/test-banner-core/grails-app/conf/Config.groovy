@@ -206,9 +206,9 @@ log4j = {
                 error 'stdout','appLog'
                 additivity = true
             }
-            all 'com.sungardhe.banner.testing.FooController'
-            all 'com.sungardhe.banner.testing.FooService'
-            all 'grails.app.service.com.sungardhe.banner.testing.FooService'
+            off 'com.sungardhe.banner.testing.FooController'
+            off 'com.sungardhe.banner.testing.FooService'
+            off 'grails.app.service.com.sungardhe.banner.testing.FooService'
             break
         case 'production':
             root {
