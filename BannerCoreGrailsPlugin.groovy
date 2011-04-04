@@ -29,6 +29,7 @@ import org.apache.log4j.jmx.HierarchyDynamicMBean
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.codehaus.groovy.runtime.GStringImpl
 
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jmx.support.MBeanServerFactoryBean
@@ -113,10 +114,18 @@ class BannerCoreGrailsPlugin {
                     maxActive = 5
                     maxIdle = 2
                     defaultAutoCommit = "false"
-                    driverClassName = "${ConfigurationHolder.config.myDataSource.driver}"
-                    url = "${ConfigurationHolder.config.myDataSource.url}"
-                    password = "${ConfigurationHolder.config.myDataSource.password}"
-                    username = "${ConfigurationHolder.config.myDataSource.username}"
+                    if (ConfigurationHolder.config.elvyx.url instanceof String || ConfigurationHolder.config.elvyx.url instanceof GStringImpl) {
+                        log.info "Will use the 'elvyx' database driver to allow capture of SQL -- url: ${ConfigurationHolder.config.elvyx.url}"
+                        log.info "Please launch the Elvyx UI to monitor SQL traffic... (see http://www.elvyx.com/ to download)"
+                        driverClassName = "${ConfigurationHolder.config.elvyx.driver}"
+                        url = "${ConfigurationHolder.config.elvyx.url}"
+                    } 
+                    else {
+                        driverClassName = "${ConfigurationHolder.config.myDataSource.driver}"
+                        url = "${ConfigurationHolder.config.myDataSource.url}"
+                        password = "${ConfigurationHolder.config.myDataSource.password}"
+                        username = "${ConfigurationHolder.config.myDataSource.username}"
+                    }
                 }
                 break
         }
@@ -152,7 +161,7 @@ class BannerCoreGrailsPlugin {
 
         roleVoter( BannerAccessDecisionVoter )
 
-        authenticationDataSource( OracleDataSource )
+        authenticationDataSource( OracleDataSource ) 
 
         bannerAuthenticationProvider( BannerAuthenticationProvider ) {
             dataSource = ref( dataSource )

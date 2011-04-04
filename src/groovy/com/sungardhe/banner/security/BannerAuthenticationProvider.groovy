@@ -87,8 +87,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         def conn
 
         try {
-            log.trace "BannerAuthenticationProvider jdbc url = ${dataSource.url}"
-            authenticationDataSource.setURL( dataSource.url )
+            authenticationDataSource.setURL( CH?.config?.myDataSource.url )
             conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
             log.trace "BannerAuthenticationProvider successfully authenticated user ${authentication.name} against data source ${dataSource.url}"
         } catch (SQLException e) {

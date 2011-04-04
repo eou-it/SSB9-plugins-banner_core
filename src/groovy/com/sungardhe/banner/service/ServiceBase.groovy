@@ -145,11 +145,12 @@ class ServiceBase {
                     log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
 
                     // Next we'll explicitly check the optimistic lock.  Even though GORM will include the version within the 'where' clause
-                    // when issuing an update, some (?) views that employ triggers with 'instead of' clauses do not correctly use the version
-                    // value but instead simply idenfity the record to update by getting the Oracle rowid using only the model's surrogate id.  
+                    // when issuing an update, the 'version' property used with be that from the Hibernate cache (reflecting the persistent state)
+                    // versus the one set on our domainObject. (This is true even when explicitly assigning the version property.)
+                    //  
                     checkOptimisticLock( domainObject, content, log )
                     
-                    // throw a RuntimeException if 'readonly' properties are dirty
+                    // throw a RuntimeException if any properties identified as 'readonly' within the model are dirty
                     validateReadOnlyPropertiesNotDirty( domainObject ) 
                     
                     log.trace "${this.class.simpleName}.update will now invoke the 'preUpdate' callback if it exists"

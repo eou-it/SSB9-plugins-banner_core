@@ -197,16 +197,13 @@ public class BannerDS {
             case 'ABORT':     println "Role 'ABORT' encountered - throwing an exception!"
                               throw new RuntimeException( "ABORT Banner Role encountered!" )
         }
+        
         // still here? We will now try to set the role...
         String stmt = "set role \"${bannerAuth.roleName}\" identified by \"${bannerAuth.bannerPassword}\"" as String
-        Sql db = new Sql( conn )
-        try {
-            log.trace "BannerDS.unlockRole will set role '${bannerAuth.roleName}' for connection $conn" 
-            db.execute( stmt )
-        }
-        finally {
-            // Note: Don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
-        }
+        log.trace "BannerDS.unlockRole will set role '${bannerAuth.roleName}' for connection $conn" 
+        
+        Sql db = new Sql( conn )        
+        db.execute( stmt ) // Note: Don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
     }
     
 
