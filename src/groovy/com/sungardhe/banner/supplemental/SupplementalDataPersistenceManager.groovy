@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ ï¿½ 2010 SunGard Higher Education.  All Rights Reserved.
  CONFIDENTIAL BUSINESS INFORMATION
  THIS PROGRAM IS PROPRIETARY INFORMATION OF SUNGARD HIGHER EDUCATION
  AND IS NOT TO BE COPIED, REPRODUCED, LENT, OR DISPOSED OF,
@@ -52,6 +52,7 @@ class SupplementalDataPersistenceManager {
 				      l_pkey 	GORSDAV.GORSDAV_PK_PARENTTAB%TYPE;
 				      l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${tableName},${id});
 				   begin
+				       gp_goksdif.p_insert_disc(${tableName});
 				       l_pkey := gp_goksdif.f_get_pk(${tableName},l_rowid);
 				       gp_goksdif.p_set_current_pk(l_pkey);
 				   end;
@@ -60,13 +61,14 @@ class SupplementalDataPersistenceManager {
 
             def resultSetAttributesList = sessionFactory.getCurrentSession().createSQLQuery(
                     """SELECT DISTINCT govsdav_attr_name as attrName
-				   FROM govsdav WHERE govsdav_table_name= :tableName
+				         FROM govsdav WHERE govsdav_table_name= :tableName
 				""").setString("tableName", tableName).list()
 
             def supplementalProperties = [:]
             resultSetAttributesList.each() {
                 loadSupplementalProperty(it, supplementalProperties, tableName)
             }
+
             model.setSupplementalProperties(supplementalProperties.clone(), false) // false -> don't mark as dirty
             log.debug "Set supplemental properties: ${model.supplementalProperties}"
             model
@@ -107,6 +109,7 @@ class SupplementalDataPersistenceManager {
             model.supplementalProperties.each {
 
                 log.debug "KEY: ${it.key} - VALUE: ${it.value}"
+                println "KEY: ${it.key} - VALUE: ${it.value}"
                 def map = it.value
                 attributeName = it.key
 
@@ -129,6 +132,9 @@ class SupplementalDataPersistenceManager {
                         validateDataType(dataType, value)
                     }
 
+                    println "attributeName: " + attributeName
+                    println "disc: "+ disc
+                    println "value: " + value
                     if (log.isDebugEnabled()) debug(id, tableName, attributeName, disc, parentTab, dataType, value)
 
                     sql.call("""declare
@@ -220,7 +226,8 @@ class SupplementalDataPersistenceManager {
                       govsdav_attr_data_len,
                       govsdav_attr_data_scale,
                       govsdav_attr_info,
-                      govsdav_attr_order
+                      govsdav_attr_order,
+                      govsdav_disc_method
                FROM govsdav x
                    WHERE govsdav_table_name = :tableName
                    AND govsdav_attr_name = :attributeName
@@ -247,13 +254,13 @@ class SupplementalDataPersistenceManager {
                     dataLength: it[10],
                     dataScale: it[11],
                     attrInfo: it[12],
-                    attrOrder: it[13])
+                    attrOrder: it[13],
+                    discMethod: it[14])
 
             SupplementalPropertyValue propValue = new SupplementalPropertyValue([(discProp.disc): discProp])
             supplementalProperties."${attributeName}" << propValue
         }
     }
-
 
     private def getPk(def table, def id) {
         try {

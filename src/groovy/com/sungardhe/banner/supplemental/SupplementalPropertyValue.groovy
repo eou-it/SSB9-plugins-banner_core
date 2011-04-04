@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ ï¿½ 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -71,6 +71,7 @@ class SupplementalPropertyDiscriminatorContent {
     def dataScale
     def attrInfo
     def attrOrder
+    def discMethod
 
 
     boolean equals( o ) {
@@ -87,6 +88,7 @@ class SupplementalPropertyDiscriminatorContent {
         if (required != that.required) return false
         if (value != that.value) return false
         if (discType != that.discType) return false
+        if (discMethod != that.discMethod) return false
         if (validation != that.validation) return false
         if (dataLength != that.dataLength) return false
         if (dataScale != that.dataScale) return false
@@ -106,6 +108,7 @@ class SupplementalPropertyDiscriminatorContent {
         result = 31 * result + (dataType != null ? dataType.hashCode() : 0)
         result = 31 * result + (prompt != null ? prompt.hashCode() : 0)
         result = 31 * result + (discType != null ? discType.hashCode() : 0)
+        result = 31 * result + (discMethod != null ? discMethod.hashCode() : 0)
         result = 31 * result + (validation != null ? validation.hashCode() : 0)
         result = 31 * result + (dataLength != null ? dataLength.hashCode() : 0)
         result = 31 * result + (dataScale != null ? dataScale.hashCode() : 0)
@@ -116,6 +119,6 @@ class SupplementalPropertyDiscriminatorContent {
 
 
     public String toString() {
-        super.toString() + "disc=$disc, value=$value, id=$id, required=$required, dataType=$dataType, pkParentTab=$pkParentTab, prompt=$prompt, discType=$discType, validation=$validation, dataLength=$dataLength, dataScale=$dataScale, attrInfo=$attrInfo, attrOrder=$attrOrder"
+        super.toString() + "disc=$disc, value=$value, id=$id, required=$required, dataType=$dataType, pkParentTab=$pkParentTab, prompt=$prompt, discType=$discType, discMethod=$discMethod, validation=$validation, dataLength=$dataLength, dataScale=$dataScale, attrInfo=$attrInfo, attrOrder=$attrOrder"
     }
 }
