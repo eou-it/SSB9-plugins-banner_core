@@ -109,7 +109,6 @@ class SupplementalDataPersistenceManager {
             model.supplementalProperties.each {
 
                 log.debug "KEY: ${it.key} - VALUE: ${it.value}"
-                println "KEY: ${it.key} - VALUE: ${it.value}"
                 def map = it.value
                 attributeName = it.key
 
@@ -132,9 +131,6 @@ class SupplementalDataPersistenceManager {
                         validateDataType(dataType, value)
                     }
 
-                    println "attributeName: " + attributeName
-                    println "disc: "+ disc
-                    println "value: " + value
                     if (log.isDebugEnabled()) debug(id, tableName, attributeName, disc, parentTab, dataType, value)
 
                     sql.call("""declare
