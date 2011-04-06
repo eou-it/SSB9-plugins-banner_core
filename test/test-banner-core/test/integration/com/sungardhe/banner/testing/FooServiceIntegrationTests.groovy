@@ -247,12 +247,15 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    // TODO: Enable this test (or employ an alternate means to verify support for 'REQUIRES_NEW' transaction propagation)
-    @Ignore // Results in an exception:  No value for key [org.hibernate.impl.SessionFactoryImpl@cb8a0c8] bound to thread [main]
     void testUsingRequiresNewTransaction() {
-        Foo.withTransaction {
-            assertTrue fooService.useRequiresNewTransaction()
-        }
+        def newTransaction 
+        def otherThread = new Thread( {  // we'll use a closure to interact with the service on a different thread
+            newTransaction = fooService.useRequiresNewTransaction()
+        } )
+        otherThread.start()
+        otherThread.join()
+        
+        assertTrue newTransaction
     }
 
 
