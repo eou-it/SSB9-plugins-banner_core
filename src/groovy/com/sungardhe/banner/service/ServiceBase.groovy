@@ -70,216 +70,271 @@ class ServiceBase {
     SupplementalDataService supplementalDataService
 
 
-    public def create( domainModelOrMap, flushImmediately = true ) {
+    /**
+     * Creates model instances provided within the supplied domainModelsOrMaps list.
+     **/
+    public def create( List domainModelsOrMaps, flushImmediately = true ) {
 
-        log.debug "In ServiceBase.create, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
-
-        if (domainModelOrMap instanceof List) {
-            log.trace "${this.class}.create invoked with a list of size ${domainModelOrMap.size()} -- will iterate list and invoke 'create' on each..."
-            List results = []
-            domainModelOrMap.each { modelOrMap ->
-                results << this.create( modelOrMap, flushImmediately )
-            }
-            results
+        log.debug "${this.class.simpleName}.create(List domainModelsOrMaps) invoked with a list of size ${domainModelsOrMaps.size()} -- will iterate list and invoke 'create' on each..."
+        
+        List results = []
+        domainModelsOrMaps.each { modelOrMap ->
+            results << this.create( modelOrMap, flushImmediately )
         }
-        else {
-            log.trace "${this.class.simpleName}.create invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
-            try {
-
-                log.trace "${this.class.simpleName}.create will now invoke the preCreate callback if it exists"
-                if (this.respondsTo( 'preCreate' )) this.preCreate( domainModelOrMap )
-                
-                def domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap )
-                
-                log.trace "${this.class.simpleName}.create will now save the ${getDomainClass()}"
-                def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
-                
-                createdModel = persistSupplementalDataFor( createdModel )
-
-                refreshIfNeeded( createdModel )
-
-                log.trace "${this.class.simpleName}.create will now invoke the postCreate callback if it exists"
-                if (this.respondsTo( 'postCreate' )) this.postCreate( [  before: domainModelOrMap, after: createdModel ] )
-
-                createdModel
-            }
-            catch (ApplicationException ae) {
-                log.debug "Could not save a new ${this.class.simpleName} due to exception: $ae", ae
-                throw ae
-            }
-            catch (e) {
-                def ae = new ApplicationException( getDomainClass(), e )
-                log.debug "Could not save a new ${this.class.simpleName} due to exception: $ae", e
-                throw ae
-            }
-        }
+        results
     }
 
 
+    /**
+     * Creates a model instance within the persistent store, based on the supplied domainModelOrMap.
+     * The supplied domainModelOrMap may be:
+     * 1) a 'params' map containing model properties for the new model instance
+     * 2) a map containing a key named as the property-style simple class name of the model, whose value is a new model instance 
+     * 3) a map containing a key named 'domainModel', whose value is a new model instance
+     * 4) a new domain model instance
+     **/
+    public def create( domainModelOrMap, flushImmediately = true ) {
+        
+        log.debug "${this.class.simpleName}.create invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
+        log.trace "${this.class.simpleName}.create transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        
+        try {        
+            log.trace "${this.class.simpleName}.create will now invoke the preCreate callback if it exists"
+            if (this.respondsTo( 'preCreate' )) this.preCreate( domainModelOrMap )
+            
+            def domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap )
+            
+            log.trace "${this.class.simpleName}.create will now save the ${getDomainClass()}"
+            def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
+            
+            createdModel = persistSupplementalDataFor( createdModel )
+        
+            refreshIfNeeded( createdModel )
+        
+            log.trace "${this.class.simpleName}.create will now invoke the postCreate callback if it exists"
+            if (this.respondsTo( 'postCreate' )) this.postCreate( [  before: domainModelOrMap, after: createdModel ] )
+        
+            createdModel
+        }
+        catch (ApplicationException ae) {
+            log.debug "Could not save a new ${this.class.simpleName} due to exception: $ae", ae
+            throw ae
+        }
+        catch (e) {
+            def ae = new ApplicationException( getDomainClass(), e )
+            log.debug "Could not save a new ${this.class.simpleName} due to exception: $ae", e
+            throw ae
+        }        
+    }
+
+
+    /**
+     * Updates model instances provided within the supplied domainModelsOrMaps list.
+     **/
+    public def update( List domainModelsOrMaps, flushImmediately = true ) {
+
+        log.debug "${this.class.simpleName}.update(List domainModelsOrMaps) invoked with a list of size ${domainModelsOrMaps.size()} -- will iterate list and invoke 'update' on each..."
+        
+        List results = []
+        domainModelsOrMaps.each { modelOrMap ->
+            results << this.update( modelOrMap, flushImmediately )
+        }
+        results
+    }
+
+
+    /**
+     * Updates a model instance provided within the supplied domainModelOrMap.
+     * The supplied domainModelOrMap may be:
+     * 1) a 'params' map containing model properties for an existing model instance
+     * 2) a map containing a key named as the property-style simple class name of the model, whose value is an existing model instance 
+     * 3) a map containing a key named 'domainModel', whose value is an existing model instance
+     * 4) an existing domain model instance
+     **/
     public def update( domainModelOrMap, flushImmediately = true ) {
 
-        log.debug "In ServiceBase.update, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
-
-        if (domainModelOrMap instanceof List) {
-            log.trace "${this.class.simpleName}.update invoked with a list of size ${domainModelOrMap.size()} -- will iterate list and invoke 'update' on each..."
-            List results = []
-            domainModelOrMap.each { modelOrMap ->
-                results << this.update( modelOrMap, flushImmediately )
-            }
-            results
-        }
-        else {
-            log.trace "${this.class.simpleName}.update invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
-            def content      // we'll extract the domainModelOrMap into a params map of the properties
-            def domainObject // we'll fetch the model instance into this, and bulk assign the 'content'
-            try {
-
-                content = extractParams( getDomainClass(), domainModelOrMap )
-                domainObject = fetch( getDomainClass(), content?.id, log )
-
-                // Now we'll set the provided properties (content) onto our pristine domainObject instance -- this may make the model dirty 
-                domainObject.properties = content
-
-                def updatedModel
-                if (isDirty( domainObject )) {
-                    log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
-
-                    // Next we'll explicitly check the optimistic lock.  Even though GORM will include the version within the 'where' clause
-                    // when issuing an update, the 'version' property used with be that from the Hibernate cache (reflecting the persistent state)
-                    // versus the one set on our domainObject. (This is true even when explicitly assigning the version property.)
-                    //  
-                    checkOptimisticLock( domainObject, content, log )
-                    
-                    // throw a RuntimeException if any properties identified as 'readonly' within the model are dirty
-                    validateReadOnlyPropertiesNotDirty( domainObject ) 
-                    
-                    log.trace "${this.class.simpleName}.update will now invoke the 'preUpdate' callback if it exists"
-                    if (this.respondsTo( 'preUpdate' )) {
-                        this.preUpdate( domainModelOrMap )
-                        domainObject.properties = extractParams( getDomainClass(), domainModelOrMap ) // re-apply changes
-                    }                    
-                                        
-                    log.trace "${this.class.simpleName}.update applied updates and will save $domainObject"
-                    updatedModel = domainObject.save( failOnError: true, flush: flushImmediately )
-                }
-                else {
-                    log.trace "${this.class.simpleName}.update found the model to not be dirty and will not update it"
-                    updatedModel = domainObject
-                }
-
-                // regardless of whether the model was dirty, we'll always persist supplemental properties (if they are dirty)
-                if (content.supplementalProperties) {
-                    updatedModel.setSupplementalProperties( content.supplementalProperties )
-                    updatedModel = persistSupplementalDataFor( updatedModel )
-                }
+        log.debug "${this.class.simpleName}.update invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
+        log.trace "${this.class.simpleName}.update transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        
+        def content      // we'll extract the domainModelOrMap into a params map of the properties
+        def domainObject // we'll fetch the model instance into this, and bulk assign the 'content'
+        try {
+        
+            content = extractParams( getDomainClass(), domainModelOrMap )
+            domainObject = fetch( getDomainClass(), content?.id, log )
+        
+            // Now we'll set the provided properties (content) onto our pristine domainObject instance -- this may make the model dirty 
+            domainObject.properties = content
+        
+            def updatedModel
+            if (isDirty( domainObject )) {
+                log.trace "${this.class.simpleName}.update will update model with dirty properties ${domainObject.getDirtyPropertyNames()?.join(", ")}"
+        
+                // Next we'll explicitly check the optimistic lock.  Even though GORM will include the version within the 'where' clause
+                // when issuing an update, the 'version' property used with be that from the Hibernate cache (reflecting the persistent state)
+                // versus the one set on our domainObject. (This is true even when explicitly assigning the version property.)
+                //  
+                checkOptimisticLock( domainObject, content, log )
                 
-                refreshIfNeeded( updatedModel ) // after we persist everything, including supplemental data...
-
-                log.trace "${this.class.simpleName}.update will now invoke the postUpdate callback if it exists"
-                if (this.respondsTo( 'postUpdate' )) this.postUpdate( [ before: domainModelOrMap, after: updatedModel ] )
-                updatedModel
-
-            }
-            catch (ApplicationException ae) {
-                log.debug "Could not update an existing ${this.class.simpleName} with id = ${domainModelOrMap?.id} due to exception: ${ae.message}", ae
-                throw ae
-            }
-            catch (ValidationException e) {
-                def ae = new ApplicationException( getDomainClass(), e )
-                log.debug "Could not update an existing ${this.class.simpleName} with id = ${domainObject?.id} due to exception: $ae", e
-                checkOptimisticLock( domainObject, content, log ) // optimistic lock trumps validation errors 
-                throw ae
-            }
-            catch (e) {
-                log.debug "Could not update an existing ${this.class.simpleName} with id = ${domainModelOrMap?.id} due to exception: ${e.message}", e
-                throw new ApplicationException( getDomainClass(), e )
-            }
-        }
-    }
-
-
-    public def createOrUpdate( domainModelOrMap, flushImmediately = true ) {
-
-        log.debug "In ServiceBase.createOrUpdate, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
-
-        if (domainModelOrMap instanceof List) {
-            log.trace "${this.class.simpleName}.createOrUpdate invoked with a list of size ${domainModelOrMap.size()} -- will iterate list and invoke 'createOrUpdate' on each..."
-            List results = []
-            domainModelOrMap.each { modelOrMap ->
-                results << this.createOrUpdate( modelOrMap, flushImmediately )
-            }
-            results
-        }
-        else {
-            log.trace "${this.class.simpleName}.createOrUpdate invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
-            def content = extractParams( getDomainClass(), domainModelOrMap )
-            if (content.id) {
-                log.trace "${this.class.simpleName}.createOrUpdate will delegate to 'update'"
-                // note: even though we extracted a params map, we'll pass the original so that other information (e.g., a keyBlock)
-                // will remain available to any callbacks. If redundant processing incurs too much performance penalty, this
-                // will require changes to prevent the redundant processing.
-                this.update( domainModelOrMap, flushImmediately )
+                // throw a RuntimeException if any properties identified as 'readonly' within the model are dirty
+                validateReadOnlyPropertiesNotDirty( domainObject ) 
+                
+                log.trace "${this.class.simpleName}.update will now invoke the 'preUpdate' callback if it exists"
+                if (this.respondsTo( 'preUpdate' )) {
+                    this.preUpdate( domainModelOrMap )
+                    domainObject.properties = extractParams( getDomainClass(), domainModelOrMap ) // re-apply changes
+                }                    
+                                    
+                log.trace "${this.class.simpleName}.update applied updates and will save $domainObject"
+                updatedModel = domainObject.save( failOnError: true, flush: flushImmediately )
             }
             else {
-                log.trace "${this.class.simpleName}.createOrUpdate will delegate to 'create'"
-                // see note above
-                this.create( domainModelOrMap, flushImmediately )
+                log.trace "${this.class.simpleName}.update found the model to not be dirty and will not update it"
+                updatedModel = domainObject
             }
+        
+            // regardless of whether the model was dirty, we'll always persist supplemental properties (if they are dirty)
+            if (content.supplementalProperties) {
+                updatedModel.setSupplementalProperties( content.supplementalProperties )
+                updatedModel = persistSupplementalDataFor( updatedModel )
+            }
+            
+            refreshIfNeeded( updatedModel ) // after we persist everything, including supplemental data...
+        
+            log.trace "${this.class.simpleName}.update will now invoke the postUpdate callback if it exists"
+            if (this.respondsTo( 'postUpdate' )) this.postUpdate( [ before: domainModelOrMap, after: updatedModel ] )
+            updatedModel        
         }
+        catch (ApplicationException ae) {
+            log.debug "Could not update an existing ${this.class.simpleName} with id = ${domainModelOrMap?.id} due to exception: ${ae.message}", ae
+            throw ae
+        }
+        catch (ValidationException e) {
+            def ae = new ApplicationException( getDomainClass(), e )
+            log.debug "Could not update an existing ${this.class.simpleName} with id = ${domainObject?.id} due to exception: $ae", e
+            checkOptimisticLock( domainObject, content, log ) // optimistic lock trumps validation errors 
+            throw ae
+        }
+        catch (e) {
+            log.debug "Could not update an existing ${this.class.simpleName} with id = ${domainModelOrMap?.id} due to exception: ${e.message}", e
+            throw new ApplicationException( getDomainClass(), e )
+        }        
     }
 
 
-    public def delete( domainModelOrMapOrId, flushImmediately = true ) {
+    /**
+     * Creates or updates model instances provided within the supplied domainModelsOrMaps list.
+     **/
+    public def createOrUpdate( List domainModelsOrMaps, flushImmediately = true ) {
 
-        log.debug "In ServiceBase.delete, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        log.debug "${this.class.simpleName}.createOrUpdate invoked with a list of size ${domainModelsOrMaps.size()} -- will iterate list and invoke 'createOrUpdate' on each..."
+        
+        List results = []
+        domainModelsOrMaps.each { modelOrMap ->
+            results << this.createOrUpdate( modelOrMap, flushImmediately )
+        }
+        results
+    }
 
-        if (domainModelOrMapOrId instanceof List) {
-            log.trace "${this.class.simpleName}.delete invoked with a list of size ${domainModelOrMapOrId.size()} -- will iterate list and invoke 'delete' on each..."
 
-            // Since we can't delete while iterating the list containing things being deleted (i.e., concurrent access exception) we'll make them values in a map
-            Map toBeDeletedMap = [:]
-            domainModelOrMapOrId.eachWithIndex { modelOrMap, i -> toBeDeletedMap << ["$i": modelOrMap] }
+    /**
+     * Creates or updates a model instance provided within the supplied domainModelOrMap.
+     * The supplied domainModelOrMap may be:
+     * 1) a 'params' map containing model properties for a new or existing model instance
+     * 2) a map containing a key named as the property-style simple class name of the model, whose value is a new or existing model instance 
+     * 3) a map containing a key named 'domainModel', whose value is a new or existing model instance
+     * 4) a new or existing domain model instance
+     **/
+    public def createOrUpdate( domainModelOrMap, flushImmediately = true ) {
+        
+        log.debug "${this.class.simpleName}.createOrUpdate invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
+        log.trace "${this.class.simpleName}.createOrUpdate transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
-            List results = []
-            toBeDeletedMap.each { k, v ->
-                results << this.delete( v, flushImmediately )
-            }
-            results
+        def content = extractParams( getDomainClass(), domainModelOrMap )
+        if (content.id) {
+            log.trace "${this.class.simpleName}.createOrUpdate will delegate to 'update'"
+            // note: even though we extracted a params map, we'll pass the original so that other information (e.g., a keyBlock)
+            // will remain available to any callbacks. If redundant processing incurs too much performance penalty, this
+            // will require changes to prevent the redundant processing.
+            this.update( domainModelOrMap, flushImmediately )
         }
         else {
-            log.trace "${this.class.simpleName}.delete invoked with domainModelOrMapOrId = $domainModelOrMapOrId and flushImmediately = $flushImmediately"
-            def domainObject
-            try {
-                log.trace "${this.class.simpleName}.delete will now invoke the preDelete callback if it exists"
-                if (this.respondsTo( 'preDelete' )) this.preDelete( domainModelOrMapOrId )
-
-                def id = extractId( getDomainClass(), domainModelOrMapOrId )
-                domainObject = fetch( getDomainClass(), id, log )
-
-                removeSupplementalDataFor( domainObject )
-                domainObject.delete( failOnError: true, flush: flushImmediately )
-
-                log.trace "${this.class.simpleName}.delete will now invoke the postDelete callback if it exists"
-                if (this.respondsTo( 'postDelete' )) this.postDelete( [ before: domainObject, after: null ] )
-                true
-            }
-            catch (ApplicationException ae) {
-                log.debug "Could not delete ${this.class.simpleName} with id = ${domainObject?.id} due to exception: $ae", ae
-                throw ae
-            }
-            catch (e) {
-                def ae = new ApplicationException( getDomainClass(), e )
-                log.debug "Could not delete ${getDomainClass().simpleName} with id = ${domainObject?.id} due to exception: $ae", e
-                throw ae
-            }
-        }
+            log.trace "${this.class.simpleName}.createOrUpdate will delegate to 'create'"
+            // see note above
+            this.create( domainModelOrMap, flushImmediately )
+        }        
     }
 
 
+    /**
+     * Deletes the model instances identified within the supplied domainModelsOrMapsOrIds list.
+     **/
+    public def delete( List domainModelsOrMapsOrIds, flushImmediately = true ) {
+
+        log.debug "${this.class.simpleName}.delete invoked with a list of size ${domainModelsOrMapsOrIds.size()} -- will iterate list and invoke 'delete' on each..."
+        
+        // Since we can't delete while iterating the list containing things being deleted (i.e., concurrent access exception) we'll make them values in a map
+        Map toBeDeletedMap = [:]
+        domainModelsOrMapsOrIds.eachWithIndex { modelOrMap, i -> toBeDeletedMap << ["$i": modelOrMap] }
+        
+        List results = []
+        toBeDeletedMap.each { k, v ->
+            results << this.delete( v, flushImmediately )
+        }
+        results
+    }
+
+
+    /**
+     * Deletes a model instance from the persistent store, as identified within the supplied domainModelOrMapOrId.
+     * The supplied domainModelOrMap may be:
+     * 1) a 'params' map containing model properties for a an existing model instance
+     * 2) a map containing a key named as the property-style simple class name of the model, whose value is an existing model instance 
+     * 3) a map containing a key named 'domainModel', whose value is an existing model instance
+     * 4) an existing domain model instance
+     * 5) a Long representing the id
+     * 6) a String representing the id
+     **/
+    public def delete( domainModelOrMapOrId, flushImmediately = true ) {
+        
+        log.debug "${this.class.simpleName}.delete invoked with domainModelOrMapOrId = $domainModelOrMapOrId and flushImmediately = $flushImmediately"
+        log.trace "${this.class.simpleName}.delete transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+
+        def domainObject
+        try {
+            log.trace "${this.class.simpleName}.delete will now invoke the preDelete callback if it exists"
+            if (this.respondsTo( 'preDelete' )) this.preDelete( domainModelOrMapOrId )
+        
+            def id = extractId( getDomainClass(), domainModelOrMapOrId )
+            domainObject = fetch( getDomainClass(), id, log )
+        
+            removeSupplementalDataFor( domainObject )
+            domainObject.delete( failOnError: true, flush: flushImmediately )
+        
+            log.trace "${this.class.simpleName}.delete will now invoke the postDelete callback if it exists"
+            if (this.respondsTo( 'postDelete' )) this.postDelete( [ before: domainObject, after: null ] )
+            true
+        }
+        catch (ApplicationException ae) {
+            log.debug "Could not delete ${this.class.simpleName} with id = ${domainObject?.id} due to exception: $ae", ae
+            throw ae
+        }
+        catch (e) {
+            def ae = new ApplicationException( getDomainClass(), e )
+            log.debug "Could not delete ${getDomainClass().simpleName} with id = ${domainObject?.id} due to exception: $ae", e
+            throw ae
+        }        
+    }
+
+
+    /**
+     * Returns the model instance having the supplied id. 
+     * Note that the 'get' method is equivalent. 
+     **/ 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def read( id ) {
 
-        log.debug "In ServiceBase.read, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        log.trace "${this.class.simpleName}.read, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
         try {
             fetch( getDomainClass(), id, log )
@@ -296,10 +351,14 @@ class ServiceBase {
     }
 
 
+    /**
+     * Returns the model instance having the supplied id. 
+     * Note that the 'read' method is equivalent. 
+     **/ 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def get( id ) {
 
-        log.trace "In ServiceBase.get, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        log.trace "${this.class.simpleName}.get, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
         try {
             fetch( getDomainClass(), id, log )
@@ -316,10 +375,13 @@ class ServiceBase {
     }
 
 
+    /**
+     * Returns a list of the model instances, passing the supplied args to the GORM list() method.
+     **/ 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def list( args ) {
 
-        log.trace "In ServiceBase.list, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        log.trace "${this.class.simpleName}.list, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
         try {
             getDomainClass().list( args )
@@ -332,10 +394,13 @@ class ServiceBase {
     }
 
 
+    /**
+     * Returns a count of the domain class.  Note: The 'args' are ignored and will be removed. 
+     **/ 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def count( args = null ) {  // args are ignored -- TODO: Remove from signature
 
-        log.trace "In ServiceBase.count, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        log.trace "${this.class.simpleName}.count, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
         try {
             getDomainClass().count()
@@ -348,8 +413,13 @@ class ServiceBase {
     }
 
 
+    /**
+     * Flushes the hibernate session.
+     **/
     public def flush() {
-        log.trace "${this.class.simpleName}Service.flush invoked"
+        
+        log.trace "${this.class.simpleName}.flush invoked"
+        
         try {
             getDomainClass().withSession { session ->
                 session.flush()
@@ -369,24 +439,28 @@ class ServiceBase {
 
     // ------------------------------------ Public Helper Methods --------------------------------------
 
-    // We'll execute a hack to workaround Hibernate exposing a Timestamp from it's cache... 
-    // Unfortunately, Hibernate returns a Timestamp versus just a Date. Although there are 
-    // blogs and Jiras (HB-6810), Hibernate will not address this (as it isn't 'really' a Hibernate problem).
-    //
-    // Unfortunately, Java violates the 'equals' contract for Date, by using an implemention 
-    // that is not symmetrical (i.e., 'Timestamp == Date' and 'Date == Timestamp' may return different results).
-    //
-    // While this should be fixed in either Hibernate, Java, or GORM (TODO: Submit Jira to GORM), 
-    // this method provides ServiceBase with a 'band-aid' -- go ahead, call this a hack.  It is... 
-    // 
-    // This method simply ensures that if only 'Date' properties are identified as being 'Dirty', that 
-    // we test them in the correct order (specifically, 'persistent value' == 'property value').
-    //
-    // This method also 'ignores' the 'lastModified' for models where the lastModified is set within the 
-    // database, as indicated by a 'List requirePostOperationRefreshing = [ ModelClass ]' property in the concrete service.
-    // This property identifies the models that are modified inside the database (i.e., by either a trigger or an API), 
-    // which must therefore be 'refreshed' to attain the modified database values. 
-    // 
+
+    /**
+     * Determines if the supplied model is dirty. This method provides additional behavior than the normal 
+     * GORM implementation. Specifically, this method provides a workaround for Hibernate exposing a Timestamp 
+     * from it's cache... 
+     * Unfortunately, Hibernate returns a Timestamp versus just a Date. Although there are 
+     * blogs and Jiras (HB-6810), Hibernate will not address this (as it isn't 'really' a Hibernate problem).
+     * 
+     * Unfortunately, Java violates the 'equals' contract for Date, by using an implemention 
+     * that is not symmetrical (i.e., 'Timestamp == Date' and 'Date == Timestamp' may return different results).
+     * 
+     * While this should be fixed in either Hibernate, Java, or GORM (TODO: Submit Jira to GORM), 
+     * this method provides ServiceBase with a 'band-aid' -- go ahead, call this a hack.  It is... 
+     * 
+     * This method simply ensures that if only 'Date' properties are identified as being 'Dirty', that 
+     * we test them in the correct order (specifically, 'persistent value' == 'property value').
+     * 
+     * This method also 'ignores' the 'lastModified' for models where the lastModified is set within the 
+     * database, as indicated by a 'List requirePostOperationRefreshing = [ ModelClass ]' property in the concrete service.
+     * This property identifies the models that are modified inside the database (i.e., by either a trigger or an API), 
+     * which must therefore be 'refreshed' to attain the modified database values. 
+     **/ 
     public boolean isDirty( model ) {
         if (!(model?.isDirty())) return false
         log.trace "Model ${model?.class} with id=${model?.id} has GORM-reported dirty properties:  ${model?.getDirtyPropertyNames()}" 
@@ -426,9 +500,12 @@ class ServiceBase {
     }
         
     
-    // Models that are backed by APIs (often indirectly, via a database view with 'instead of' triggers) usually (always?) have their 'activity date' 
-    // (i.e., lastModified property) modified within the database, and may modify other fields.  This method will refresh the model 
-    // if it is identified as one that may be modified in the database (specifically, if it is annotated with the 'DatabaseModifiesState' annotation).
+    /**
+     * Refreshes the supplied model if that model has the '@DatabaseModifiesState' annatation.
+     * Models that are backed by APIs (often indirectly, via a database view with 'instead of' triggers) usually (always?) have their 'activity date' 
+     * (i.e., lastModified property) modified within the database, and may modify other fields.  This method will refresh the model 
+     * if it is identified as one that may be modified in the database (specifically, if it is annotated with the 'DatabaseModifiesState' annotation).
+     **/
     public refreshIfNeeded( model ) {
         if (model.class.getAnnotation( DatabaseModifiesState.class )) {
             log.debug "Model ${model.class} is identified as a model that may be modified within the database, and will therefore be refreshed" 
@@ -437,108 +514,123 @@ class ServiceBase {
     }
 
 
-    public static boolean isDomainModelInstance( domainClass, domainModelOrMap ) {
-        (domainClass.isAssignableFrom( domainModelOrMap.getClass() ) && !(Map.isAssignableFrom( domainModelOrMap.getClass() )))
+    /**
+     * Returns true if the supplied object is found to be assignable from the supplied class.
+     **/
+    public boolean isDomainModelInstance( Class domainClass, object ) {
+        (domainClass.isAssignableFrom( object.getClass() ) && !(Map.isAssignableFrom( object.getClass() )))
     }
 
 
     /**
-     * Returns a model instance based upon the supplied domainModelOrMap.
-     * The domainModelOrMap may:
-     * 1) already be the domain model instance that should be returned,
+     * Returns a model instance based upon the supplied domainObjectOrProperties map.
+     * The domainObjectOrProperties argument is expected to:
      * 2) be a 'params' map that may be used to create a new model instance
+     * 3) be a map that contains a key using the property-style simple class name, whose value is the domain model instance to return
      * 3) be a map that contains a 'domainModel' key whose value is the domain model instance to return
      **/
-    public def assignOrInstantiate( domainClass, domainModelOrMap ) {
-        if (isDomainModelInstance( domainClass, domainModelOrMap )) {
-            domainModelOrMap
-        }
-        else if (domainModelOrMap instanceof Map) {
-            domainClass.newInstance( extractParams( domainClass, domainModelOrMap ) )
-        }
-        else {
-            throw new ApplicationException( domainClass, "Cannot assign a $domainClass using ${domainModelOrMap}" )
+    public def assignOrInstantiate( domainClass, Map domainObjectOrProperties ) {
+        domainClass.newInstance( extractParams( domainClass, domainObjectOrProperties ) )
+    }
+
+
+    /**
+     * Returns a model instance based upon the supplied domainModel instance.
+     **/
+    public def assignOrInstantiate( domainClass, domainModel ) {
+        if (isDomainModelInstance( domainClass, domainModel )) {
+            domainModel
+        } else {
+            log.error "${this.class.simpleName}.assignOrInstantiate(domainModel) cannot recognize the supplied ${getDomainClass()} as a domain model: ${domainModel}"
+            throw new ApplicationException( getDomainClass(), "@@r1:default.unknown.banner.api.exception@@" ) 
         }
     }
 
 
-    // Note: This method is static to facilitate use from composite controllers that do not extend ServiceBase.
     /**
-     * Returns a 'params map' based upon the supplied domainObjectOrMap.
-     * The domainObjectOrMap may:
-     * 1) be a domain model instance whose properties should be returned,
-     * 2) already be a 'params' map that may be returned
-     * 3) be a map that contains a model instance as the value for a key whose name is the simple class name but with
-     *    lower case first letter (i.e., in 'property name' form)
-     * 4) be a map that contains a model instance as the value for a key named 'domainModel'
+     * Returns a 'params map' based upon the supplied Map that contains a model instance or model properties.
+     * The domainObjectOrProperties map may contain:
+     * 1) a 'params' map alreay, that may be returned with no other action required
+     * 2) a model instance as the value for a key whose name is the property-style simple class name (e.g., 'college')
+     * 3) a model instance as the value for a key named 'domainModel'
      **/
-    public static def extractParams( domainClass, domainObjectOrMap ) {
-        if (isDomainModelInstance( domainClass, domainObjectOrMap )) {
-            def paramsMap = domainObjectOrMap.properties
-            if (domainObjectOrMap.version) {
-                paramsMap.version = domainObjectOrMap.version // version is not included in bulk asisgnments
-            }
+    public def extractParams( domainClass, Map domainObjectOrProperties ) {
+        def model = domainObjectOrProperties."${GrailsNameUtils.getPropertyName( domainClass.simpleName )}" ?: domainObjectOrProperties.domainModel
+        model ? extractParams( domainClass, model ) : domainObjectOrProperties
+    }
+    
+    
+    /**
+     * Returns a 'params map' based upon the supplied object, that is expected to be a domain model instance.
+     **/
+    public def extractParams( domainClass, domainObject ) {
+        if (isDomainModelInstance( domainClass, domainObject )) {
+            def paramsMap = domainObject.properties
+            if (domainObject.version) paramsMap.version = domainObject.version // version is not included in bulk asisgnments
             paramsMap
         }
-        else if (domainObjectOrMap instanceof Map) {
-            String specificModelKeyName = GrailsNameUtils.getPropertyName( domainClass.simpleName )
-            if (domainObjectOrMap."${specificModelKeyName}") {
-                extractParams( domainClass, domainObjectOrMap."${specificModelKeyName}" )
-            }
-            else if (domainObjectOrMap.domainModel) {
-                extractParams( domainClass, domainObjectOrMap.domainModel )
-            }
-            else {
-                domainObjectOrMap
-            }
-        }
         else {
-            throw new ApplicationException( domainClass, "Cannot extract a params map supporting $domainClass from: ${domainObjectOrMap}" )
+            log.error "${this.class.simpleName}.extractParams(domainModel) cannot recognize the supplied $domainClass as a domain model: $domainObject"
+            throw new ApplicationException( domainClass, "@@r1:default.unknown.banner.api.exception@@" ) 
         }
     }
 
 
     /**
-     * Returns an 'id' extracted from the supplied domainObjectParamsIdOrMap.
-     * The domainObjectParamsIdOrMap may:
-     * 1) already be a Long 'id' that should be returned,
-     * 2) be a 'params' map that contains a key named 'id'
-     * 3) be a map that contains a key named with the 'property name' form of the model's simple class
-     *    name (e.g., campusParty), whose value is a domain model instance from which the 'id' may be extracted
-     * 4) be a map that contains a 'domainModel' key whose value is a domain model instance from which the 'id' may be extracted
+     * Returns an 'id' based on the supplied input. Since this is a Long, it will simply be returned.
      **/
-    public def extractId( domainClass, domainObjectParamsIdOrMap ) {
-        if (domainObjectParamsIdOrMap instanceof Long) {
-            (Long) domainObjectParamsIdOrMap
-        }
-        else if (domainObjectParamsIdOrMap instanceof String) {
-            if (domainObjectParamsIdOrMap.isNumber()) {
-                // note: we'll 'assume' we can coerce a number into a long -- given our use of long for IDs, this should not be too risky...
-                //       but this note is included here in case there are issues -- note the use of isNumber and toLong
-                (Long) domainObjectParamsIdOrMap.toLong()
-            }
-            else {
-                return domainObjectParamsIdOrMap // return as a string
-            }
-        }
-        else if (isDomainModelInstance( domainClass, domainObjectParamsIdOrMap )) {
-            extractId( domainClass, domainObjectParamsIdOrMap.id )
-        }
-        else if (domainObjectParamsIdOrMap instanceof Map) {
-            def paramsMap = extractParams( domainClass, domainObjectParamsIdOrMap )
-            extractId( domainClass, paramsMap?.id )
+    public def extractId( domainClass, Long id ) {
+        id
+    }
+    
+    
+    /**
+     * Returns an 'id' based on the supplied idString.  The returned id will be converted to a Long if possible, 
+     * otherwise the supplied string will be returned. 
+     **/
+    public def extractId( domainClass, String idString ) {
+        if (idString.isNumber()) {
+            // note: we'll 'assume' we can coerce a number into a long -- given our use of long for IDs, this should not be too risky...
+            //       but this note is included here in case there are issues -- note the use of isNumber and toLong
+            (Long) idString.toLong()
         }
         else {
-            if (domainObjectParamsIdOrMap.toString().isNumber()) {
-                // now we'll try to see if we can use an intermediate coercion (to a string) to extract the id
-                extractId( domainClass, domainObjectParamsIdOrMap.toString() )
-            }
-            else {
-                throw new ApplicationException( domainClass, "Could not extract an 'id' from ${domainObjectParamsIdOrMap}" )
-            }
+            return idString // return as a string
         }
     }
 
+
+    /**
+     * Returns an 'id' extracted from the supplied inputMap.
+     * The inputMap may contain:
+     * 1) a key named 'id', whose value will simply be returned
+     * 2) a key named with the 'property name' form of the model's simple class name (e.g., campusParty), whose value is a domain model instance from which the 'id' may be extracted
+     * 3) a key named 'domainModel' whose value is a domain model instance from which the 'id' may be extracted
+     **/
+    public def extractId( domainClass, Map inputMap ) {
+        def paramsMap = extractParams( domainClass, inputMap )
+        extractId( domainClass, paramsMap?.id )
+    }
+    
+    
+    /**
+     * Returns an 'id' based on the supplied inputObject, which is expected to be a domain model instance. 
+     **/
+    public def extractId( domainClass, inputObject ) {
+        if (isDomainModelInstance( domainClass, inputObject )) {
+            extractId( domainClass, inputObject.id )
+        } 
+        else {
+            // now we'll try to see if we can use an intermediate coercion (to a string) to extract the id
+            if (inputObject.toString().isNumber()) {
+                extractId( domainClass, inputObject.toString() )
+            }
+            else {
+                throw new ApplicationException( domainClass, "Could not extract an 'id' from ${inputObject}" )
+            }
+        }
+    }
+    
 
     public def fetch( domainClass, id, log ) {
         log.debug "Going to fetch a $domainClass using id $id"
@@ -605,6 +697,33 @@ class ServiceBase {
     }
 
 
+    /**
+     * Returns true if there is a keyblock associated with the current request.
+     * @param domainModelOrMap An optional argument that is expected to be the input argument that was supplied to the create/update/delete method
+     * @return boolean True if a keyblock is available for the current request 
+     **/
+    protected boolean hasKeyblock( domainModelOrMap = null ) {
+        getKeyBlock( domainModelOrMap ) ? true : false
+    }
+
+
+    /**
+     * Returns the keyblock if one exists, otherwise returns null.
+     * @param domainModelOrMap An optional argument that is expected to be the input argument that was supplied to the create/update/delete 
+     * @return the keyblock if it exists, or null if there is no keyblock
+     **/
+    protected def getKeyBlock( domainModelOrMap) {
+        def kb = KeyBlockHolder.get()
+        if (!kb && domainModelOrMap instanceof Map) {
+            kb = domainModelOrMap.keyBlock
+        }
+        kb
+    }
+
+
+    /**
+     * Validates the supplied model, and throws a ValidationException if the model is invalid.
+     **/
     protected validate( model ) {
         if (model && !model.validate()) {
             throw new ValidationException( "${model.class.simpleName}", model.errors )
@@ -612,6 +731,10 @@ class ServiceBase {
     }
 
 
+    /**
+     * Sets the 'domainClass' property if not already populated, using naming conventions. 
+     * Specifically, this will derive the model class name from this service's class name.
+     **/
     protected Class getDomainClass() {
         if (!domainClass) {
             String serviceClassName = this.class.name
@@ -622,6 +745,9 @@ class ServiceBase {
     }
 
 
+    /**
+     * Returns the SupplementalDataService.
+     **/
     protected def getSupplementalDataService() {
         if (!supplementalDataService) {
             // fyi - it's ok if another thread also sneaks in...
@@ -632,6 +758,9 @@ class ServiceBase {
     }
 
 
+    /**
+     * Persists supplemental data for the supplied modelInstance, if needed.
+     **/
     protected def persistSupplementalDataFor( modelInstance ) {
         if (getSupplementalDataService().supportsSupplementalProperties( modelInstance.class )) {
             return getSupplementalDataService().persistSupplementalDataFor( modelInstance )
@@ -641,6 +770,9 @@ class ServiceBase {
     }
 
 
+    /**
+     * Removes supplemental data for the supplied modelInstance, if needed.
+     **/
     protected def removeSupplementalDataFor( modelInstance ) {
         if (getSupplementalDataService().supportsSupplementalProperties( modelInstance.class )) {
             getSupplementalDataService().persistSupplementalDataFor( modelInstance )
@@ -648,6 +780,10 @@ class ServiceBase {
     }
 
 
+    /**
+     * Ensures that dirty properties are not identified as 'readonlyProperties' within the model. If any read only
+     * properties are found to be dirty, a runtime exception is thrown.
+     **/
     private def validateReadOnlyPropertiesNotDirty( domainObject ) {
         def readonlyProperties = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue( domainObject, 'readonlyProperties' )
         if (readonlyProperties) {
