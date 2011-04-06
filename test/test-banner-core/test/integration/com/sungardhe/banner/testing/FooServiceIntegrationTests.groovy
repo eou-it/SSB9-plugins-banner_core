@@ -10,17 +10,20 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
+import com.sungardhe.banner.service.KeyBlockHolder
+import com.sungardhe.banner.exceptions.ApplicationException
+
 import java.sql.Connection
 
 import groovy.sql.Sql
-import org.springframework.security.core.context.SecurityContextHolder
+
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.springframework.security.core.context.SecurityContextHolder
+
 import org.junit.Ignore
-import com.sungardhe.banner.exceptions.ApplicationException
 
 /**
- * Integration test for the Foo service.  This test is 'not transactional'
- * and is used to verify the desired declarative transactions are in effect.
+ * Integration test for the Foo service.  
  * This is NOT a model for normal 'service' tests -- it is a framework test.
  **/
 class FooServiceIntegrationTests extends BaseIntegrationTestCase {
@@ -38,7 +41,9 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         tearDownTestFoo( true ) // tearDown should take care of this -- will really only be effective once we stop managing
                                 // transactions within the test framework (that is, for a specific framework test of transactions)
                                 // but instead rely on declarative transactions.
+        fooService.testKeyBlock = null // remove any testkeyBlock (this is a test-only field exposed by the FooService)
     }
+    
 
     protected void tearDown() {
         tearDownTestFoo()
@@ -68,6 +73,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals SecurityContextHolder.context?.authentication?.principal?.username, foo.lastModifiedBy
         assertNotNull foo.lastModified
     }
+    
 
     void testSaveInvalid() {
         try {
@@ -95,6 +101,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
             assertNotNull returnMap.underlyingErrorMessage // this is the underlying exception's message (which is not appropriate to display to a user)
         }
     }
+    
 
     void testUpdate() {
         def foo = fooService.create( newTestFooParams() )
@@ -257,7 +264,30 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         
         assertTrue newTransaction
     }
+       
 
+    void testKeyBlockFoundInMap() {
+        def foo = fooService.create( newTestFooParams() )
+        foo.description = "Updated"
+        
+        assertNull fooService.testKeyBlock
+
+        def updatedFoo = fooService.update( [ foo: foo, keyBlock: [ kb: 'Dummy KeyBlock' ] ] )
+        assertEquals "Dummy KeyBlock", fooService.getTestKeyBlock()?.kb
+    }
+
+
+    void testKeyBlockFoundInHolder() {
+        def foo = fooService.create( newTestFooParams() )
+        foo.description = "Updated"
+    
+        assertNull fooService.testKeyBlock
+        KeyBlockHolder.set( [ kb: 'Dummy KeyBlock' ] )
+    
+        def updatedFoo = fooService.update( foo )
+        assertEquals "Dummy KeyBlock", fooService.getTestKeyBlock()?.kb
+    }
+    
 
     // really only effective once we stop managing transactions within tests and truly use the declarative transaction boundaries.
     // This testing, once the @Transactional attribute is working, may need to be performed within a functional test...

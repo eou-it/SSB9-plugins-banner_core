@@ -1,5 +1,9 @@
 
-h4. Version 0.2.NEXT
+h4. Version NEXT
+
+* Added KeyBlockHolder as a mechanism to pass key block information to a service, outside of the service invocation. 
+
+h4. Version 0.2.29
 
 * Added explicit support for using 'elvyx' [http://www.elvyx.com/] to monitor and profile SQL activity. This tool is very helpful in order to view bound SQL statements. For reference, here is a local configuration file that may be used (after setting the appropriate database url value).  To use elvyx, just uncomment the two elvyx configuration items.
 {code}

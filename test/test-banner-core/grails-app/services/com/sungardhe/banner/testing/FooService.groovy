@@ -10,8 +10,10 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
-import org.springframework.transaction.interceptor.TransactionAspectSupport
+import com.sungardhe.banner.service.KeyBlockHolder
 import com.sungardhe.banner.service.ServiceBase
+
+import org.springframework.transaction.interceptor.TransactionAspectSupport
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.interceptor.TransactionAttribute
@@ -23,9 +25,11 @@ import org.springframework.transaction.interceptor.TransactionAttribute
 // will also be mixed in if there is a 'static defaultCrudMethds = true' line.
 //
 // When 'mixing in' ServiceBase versus extending from it, @Transactional annotations are not effective.
-// Consequently, if using @Mixin or including 'static defaultCrudMethods = false' (which will cause the ServiceBase
-// to be mixed in dynamically during bootstrap), you must also include 'static transactional = true' to ensure
-// your service is transactional.  If you extend ServiceBase, you should omit 'static transactional = true' as
+// Consequently, if using @Mixin or including 'static defaultCrudMethods = true' (which will cause ServiceBase
+// to be mixed-in dynamically during bootstrap), you should also include 'static transactional = true' to ensure
+// your service is transactional.  
+//
+// If you extend ServiceBase, you should omit 'static transactional = true' as
 // the @Transactional annotations in the ServiceBase are effective. @Transactional annotations provide more
 // control as each method may be annotated, and each annotation may specify it's own transaction attributes.
 //
@@ -36,7 +40,7 @@ import org.springframework.transaction.interceptor.TransactionAttribute
 // are likely programming errors (as they were not wrapped in an ApplicationException).
 
 // Please review ApplicationException and it's integration test for details on handling
-// exceptions. The FooController in this project illustrates use of ApplicationException 
+// exceptions. The RestfulControllerMixin in this project illustrates use of ApplicationException 
 // functionality.   
 
 /**
@@ -70,11 +74,16 @@ class FooService extends ServiceBase {
     // Note that for a simple service, with no additional methods like the test ones below, the body of the class would be completely empty.
     //
     
+    // The 'keyBlock' public field is used solely for testing, and simply exposes the keyBlock if one was provided to the service
+    // either within a map or via the KeyBlockHolder threadlocal. 
+    // Foo (or College) doesn't need or use a key block - again, this is solely for testing the framework. 
+    private def testKeyBlock
+    public def getTestKeyBlock() { testKeyBlock }
     
-    // Example of a callback... this one gets called after the preValidationForUpdate callback and subsequent model validation
-//    void preUpdate(map) { 
-//        println map 
-//    }
+    // This preUpdate callback is used solely for testing. It facilitates access to the keyBlock when it exists. 
+    void preUpdate( inputArg ) { 
+        testKeyBlock = getKeyBlock( inputArg ) 
+    }
 
 
     // ----------------------------------------- Test Methods ------------------------------------------

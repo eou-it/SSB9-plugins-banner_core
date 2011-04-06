@@ -160,7 +160,7 @@ class ServiceBase {
         def domainObject // we'll fetch the model instance into this, and bulk assign the 'content'
         try {
         
-            content = extractParams( getDomainClass(), domainModelOrMap )
+            content = extractParams( getDomainClass(), domainModelOrMap, log )
             domainObject = fetch( getDomainClass(), content?.id, log )
         
             // Now we'll set the provided properties (content) onto our pristine domainObject instance -- this may make the model dirty 
@@ -182,7 +182,7 @@ class ServiceBase {
                 log.trace "${this.class.simpleName}.update will now invoke the 'preUpdate' callback if it exists"
                 if (this.respondsTo( 'preUpdate' )) {
                     this.preUpdate( domainModelOrMap )
-                    domainObject.properties = extractParams( getDomainClass(), domainModelOrMap ) // re-apply changes
+                    domainObject.properties = extractParams( getDomainClass(), domainModelOrMap, log ) // re-apply changes
                 }                    
                                     
                 log.trace "${this.class.simpleName}.update applied updates and will save $domainObject"
@@ -250,7 +250,7 @@ class ServiceBase {
         log.debug "${this.class.simpleName}.createOrUpdate invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
         log.trace "${this.class.simpleName}.createOrUpdate transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
-        def content = extractParams( getDomainClass(), domainModelOrMap )
+        def content = extractParams( getDomainClass(), domainModelOrMap, log )
         if (content.id) {
             log.trace "${this.class.simpleName}.createOrUpdate will delegate to 'update'"
             // note: even though we extracted a params map, we'll pass the original so that other information (e.g., a keyBlock)
@@ -531,7 +531,7 @@ class ServiceBase {
      *   3) be a map that contains a 'domainModel' key whose value is the domain model instance to return
      **/
     public def assignOrInstantiate( domainClass, Map domainObjectOrProperties ) {
-        domainClass.newInstance( extractParams( domainClass, domainObjectOrProperties ) )
+        domainClass.newInstance( extractParams( domainClass, domainObjectOrProperties, log ) )
     }
 
 
@@ -556,9 +556,9 @@ class ServiceBase {
      *   3) a model instance as the value for a key named 'domainModel'
      * This method is static to facilitate use from services that do not extend or mixin ServiceBase. 
      **/
-    public static def extractParams( domainClass, Map domainObjectOrProperties ) {
+    public static def extractParams( domainClass, Map domainObjectOrProperties, log = null ) {
         def model = domainObjectOrProperties."${GrailsNameUtils.getPropertyName( domainClass.simpleName )}" ?: domainObjectOrProperties.domainModel
-        model ? extractParams( domainClass, model ) : domainObjectOrProperties
+        model ? extractParams( domainClass, model, log ) : domainObjectOrProperties
     }
     
     
@@ -611,7 +611,7 @@ class ServiceBase {
      * 3) a key named 'domainModel' whose value is a domain model instance from which the 'id' may be extracted
      **/
     public def extractId( domainClass, Map inputMap ) {
-        def paramsMap = extractParams( domainClass, inputMap )
+        def paramsMap = extractParams( domainClass, inputMap, log )
         extractId( domainClass, paramsMap?.id )
     }
     
@@ -635,6 +635,9 @@ class ServiceBase {
     }
     
 
+    /**
+     * Returns a model of the identified domain class that has the supplied 'id'. 
+     **/
     public def fetch( domainClass, id, log ) {
         log.debug "Going to fetch a $domainClass using id $id"
         if (id == null) {
@@ -715,7 +718,7 @@ class ServiceBase {
      * @param domainModelOrMap An optional argument that is expected to be the input argument that was supplied to the create/update/delete 
      * @return the keyblock if it exists, or null if there is no keyblock
      **/
-    protected def getKeyBlock( domainModelOrMap) {
+    protected def getKeyBlock( domainModelOrMap ) {
         def kb = KeyBlockHolder.get()
         if (!kb && domainModelOrMap instanceof Map) {
             kb = domainModelOrMap.keyBlock
