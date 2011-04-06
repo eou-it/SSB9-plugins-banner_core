@@ -516,8 +516,9 @@ class ServiceBase {
 
     /**
      * Returns true if the supplied object is found to be assignable from the supplied class.
+     * This method is static to facilitate use from services that do not extend or mixin ServiceBase. 
      **/
-    public boolean isDomainModelInstance( Class domainClass, object ) {
+    public static boolean isDomainModelInstance( Class domainClass, object ) {
         (domainClass.isAssignableFrom( object.getClass() ) && !(Map.isAssignableFrom( object.getClass() )))
     }
 
@@ -525,9 +526,9 @@ class ServiceBase {
     /**
      * Returns a model instance based upon the supplied domainObjectOrProperties map.
      * The domainObjectOrProperties argument is expected to:
-     * 2) be a 'params' map that may be used to create a new model instance
-     * 3) be a map that contains a key using the property-style simple class name, whose value is the domain model instance to return
-     * 3) be a map that contains a 'domainModel' key whose value is the domain model instance to return
+     *   1) be a 'params' map that may be used to create a new model instance
+     *   2) be a map that contains a key using the property-style simple class name, whose value is the domain model instance to return
+     *   3) be a map that contains a 'domainModel' key whose value is the domain model instance to return
      **/
     public def assignOrInstantiate( domainClass, Map domainObjectOrProperties ) {
         domainClass.newInstance( extractParams( domainClass, domainObjectOrProperties ) )
@@ -550,11 +551,12 @@ class ServiceBase {
     /**
      * Returns a 'params map' based upon the supplied Map that contains a model instance or model properties.
      * The domainObjectOrProperties map may contain:
-     * 1) a 'params' map alreay, that may be returned with no other action required
-     * 2) a model instance as the value for a key whose name is the property-style simple class name (e.g., 'college')
-     * 3) a model instance as the value for a key named 'domainModel'
+     *   1) a 'params' map alreay, that may be returned with no other action required
+     *   2) a model instance as the value for a key whose name is the property-style simple class name (e.g., 'college')
+     *   3) a model instance as the value for a key named 'domainModel'
+     * This method is static to facilitate use from services that do not extend or mixin ServiceBase. 
      **/
-    public def extractParams( domainClass, Map domainObjectOrProperties ) {
+    public static def extractParams( domainClass, Map domainObjectOrProperties ) {
         def model = domainObjectOrProperties."${GrailsNameUtils.getPropertyName( domainClass.simpleName )}" ?: domainObjectOrProperties.domainModel
         model ? extractParams( domainClass, model ) : domainObjectOrProperties
     }
@@ -562,15 +564,16 @@ class ServiceBase {
     
     /**
      * Returns a 'params map' based upon the supplied object, that is expected to be a domain model instance.
+     * This method is static to facilitate use from services that do not extend or mixin ServiceBase. 
      **/
-    public def extractParams( domainClass, domainObject ) {
+    public static def extractParams( domainClass, domainObject, log = null ) {
         if (isDomainModelInstance( domainClass, domainObject )) {
             def paramsMap = domainObject.properties
             if (domainObject.version) paramsMap.version = domainObject.version // version is not included in bulk asisgnments
             paramsMap
         }
         else {
-            log.error "${this.class.simpleName}.extractParams(domainModel) cannot recognize the supplied $domainClass as a domain model: $domainObject"
+            log?.error "${this.class.simpleName}.extractParams(domainModel) cannot recognize the supplied $domainClass as a domain model: $domainObject"
             throw new ApplicationException( domainClass, "@@r1:default.unknown.banner.api.exception@@" ) 
         }
     }
