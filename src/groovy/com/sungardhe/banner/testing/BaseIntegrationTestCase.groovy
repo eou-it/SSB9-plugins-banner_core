@@ -87,7 +87,7 @@ class BaseIntegrationTestCase extends GroovyTestCase {
         } else {
             println "Warning: No FormContext has been set, and it cannot be set automatically without knowing the controller..."
         }
-
+        
         if (controller) {
             controller.class.metaClass.getParams = { -> params }
             controller.class.metaClass.getFlash = { -> flash  }

@@ -44,7 +44,6 @@ class FooMarkupBuilderBasedRepresentationHandlerTests extends GrailsUnitTestCase
 
         def content = [ data: foos, refBase: "http://myTest.com/test-banner-core/foo", totalCount: 45, pageOffset: 2, pageMaxSize: 5 ]
         def result = builder.buildRepresentation( content )
-        println "XXXXXXXXXZZZZZZZZZZZZZZZZZZZZZZZZZZZ $result"
 
         def xmlList = new XmlSlurper().parseText( result )
 

@@ -47,25 +47,21 @@ def locationAdder = ConfigFinder.&addLocation.curry( grails.config.locations )
 //     ${userHome}/.grails/banner_on_grails-local-config.groovy
 //
 /* ***************************** EXAMPLE local file ******************************
-def username = "banproxy"
-def password = "u_pick_it"
-def url      ="jdbc:oracle:thin:@winxp-50174ccec:1521:ban83" // CHANGE THIS FOR YOUR DATABASE!
-def driver   = "oracle.jdbc.OracleDriver"
+// JNDI configuration for use in 'production' environment
+myDataSource.jndiName = "jdbc/horizonDataSource"
 
-// Note: When using the com.elvyx.Driver, you may run the standalone elvyx client to see the actual SQL being executed.
-// You must download the elvyx-1.0.24_beta.zip from http://sourceforge.net/projects/elvyx/files and unzip where you want to keep it.
-// Note: You do NOT need to add the jar file to the project -- it is already present.
-// Next, Update the url below in this file for your environment, then
-//       Run the elvyz.bat or elvyz.sh file to launch the swing UI, and run your tests or the grails application.
+// Local configuration for use in 'development' and 'test' environments
+myDataSource.username = "banproxy"
+myDataSource.password = "u_pick_it"	
+myDataSource.driver = "oracle.jdbc.OracleDriver"
+myDataSource.url = "jdbc:oracle:thin:@oracledb:1521:ban83" //myDataSource.url = "jdbc:oracle:thin:@winxp-50174ccec:1521:ban83"
 
-myDataSource.username = username
-myDataSource.password = password
-
-myDataSource.driver = driver
-// myDataSource.driver = "com.elvyx.Driver"
-
-myDataSource.url = url
-// myDataSource.url = "jdbc:elvyx://localhost:4448/?elvyx.real_driver=$driver&elvyx.real_jdbc=$url&user=$username&password=$password"
+// Local configuration for using elvyx to view SQL statements that are bound. To enable this driver, simply uncomment the 
+// elvyx driver and url below. Do NOT comment out the 'myDataSource.url' above -- it is still needed for the authentication data source.
+// To use elvyx, download from "http://www.elvyx.com", unzip, and run from it's top-level directory: java -jar lib/elvyx-1.0.24.jar 
+//
+//elvyx.driver = "com.elvyx.Driver" 
+//elvyx.url = "jdbc:elvyx://localhost:4448/?elvyx.real_driver=${myDataSource.driver}&elvyx.real_jdbc=${myDataSource.url}&user=${myDataSource.username}&password=${myDataSource.password}"
 ********************************************************************************* */
 
 

@@ -12,6 +12,7 @@ package com.sungardhe.banner.framework
 
 import com.sungardhe.banner.db.BannerDS as BannerDataSource
 import com.sungardhe.banner.db.BannerConnection
+import com.sungardhe.banner.testing.Foo
 
 import grails.test.GrailsUnitTestCase
 
@@ -28,6 +29,9 @@ import oracle.jdbc.OracleConnection
 public class BannerDataSourceIntegrationTests extends GrailsUnitTestCase {
 
     def dataSource
+    
+    
+    // NOTE: Please also see 'FooServiceIntegrationTests', as that test also includes framework tests pertaining to connections. 
 
 
     void testExpectedConfiguration() {
@@ -43,6 +47,7 @@ public class BannerDataSourceIntegrationTests extends GrailsUnitTestCase {
         BannerConnection conn
         Sql sql
         try {
+            // we'll first get an unproxied connection and then proxy it, to exercise those methods (versus the normal getConnection())
             conn = (dataSource as BannerDataSource).getUnproxiedConnection() as BannerConnection
             conn = (dataSource as BannerDataSource).proxyConnection( conn, "grails_user" ) as BannerConnection
 
@@ -57,9 +62,9 @@ public class BannerDataSourceIntegrationTests extends GrailsUnitTestCase {
             assertEquals "GRAILS_USER", row.getAt( "SYS_CONTEXT('USERENV','CURRENT_USER')" )
         } finally {
             sql?.close()
-            // note: the test framework will close the connection
         }
     }
+    
     
     void testSettingOracleRole() {
         BannerConnection conn
@@ -71,16 +76,15 @@ public class BannerDataSourceIntegrationTests extends GrailsUnitTestCase {
             // Retrieve the database role name and password for object STVINTS
             def row = sql.firstRow( "select * from govurol where govurol_object = 'STVINTS'" )
             
-            // get the proxied connection
             conn = (dataSource as BannerDataSource).proxyConnection( conn, "grails_user" ) as BannerConnection
-            // Test setting the role
-            String stmt = "set role ${row.govurol_role} identified by \"${row.govurol_role_pswd}\""
-            println "set role ${row.govurol_role} identified by \"${row.govurol_role_pswd}\""
+            
+            String stmt = "set role ${row.govurol_role} identified by \"${row.govurol_role_pswd}\"" 
             sql = new Sql( conn.extractOracleConnection() )
             sql.execute( stmt )
         } finally {
             sql?.close()
         }
     }
+
 
 }

@@ -10,11 +10,16 @@
  ****************************************************************************** */
 package com.sungardhe.banner.service
 
+
+import com.sungardhe.banner.db.BannerConnection
 import com.sungardhe.banner.exceptions.ApplicationException
 import com.sungardhe.banner.exceptions.NotFoundException
+import com.sungardhe.banner.security.FormContext
 
 import grails.validation.ValidationException
 import grails.util.GrailsNameUtils
+
+import groovy.sql.Sql
 
 import org.apache.log4j.Logger
 
@@ -69,6 +74,8 @@ class ServiceBase {
     // supplemental data service, but will fetch it if required.
     SupplementalDataService supplementalDataService
 
+    def sessionFactory // injected by Spring
+    def dataSource     // injected by Spring
 
     /**
      * Creates model instances provided within the supplied domainModelsOrMaps list.
@@ -97,7 +104,9 @@ class ServiceBase {
         
         log.debug "${this.class.simpleName}.create invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
         log.trace "${this.class.simpleName}.create transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
-        
+
+        setDbmsApplicationInfo "${this.class.simpleName}.create()" 
+                
         try {        
             log.trace "${this.class.simpleName}.create will now invoke the preCreate callback if it exists"
             if (this.respondsTo( 'preCreate' )) this.preCreate( domainModelOrMap )
@@ -124,7 +133,9 @@ class ServiceBase {
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Could not save a new ${this.class.simpleName} due to exception: $ae", e
             throw ae
-        }        
+        } finally {
+            clearDbmsApplicationInfo()            
+        }       
     }
 
 
@@ -155,6 +166,8 @@ class ServiceBase {
 
         log.debug "${this.class.simpleName}.update invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
         log.trace "${this.class.simpleName}.update transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        
+        setDbmsApplicationInfo "${this.class.simpleName}.update()"     
         
         def content      // we'll extract the domainModelOrMap into a params map of the properties
         def domainObject // we'll fetch the model instance into this, and bulk assign the 'content'
@@ -218,7 +231,9 @@ class ServiceBase {
         catch (e) {
             log.debug "Could not update an existing ${this.class.simpleName} with id = ${domainModelOrMap?.id} due to exception: ${e.message}", e
             throw new ApplicationException( getDomainClass(), e )
-        }        
+        } finally {
+            clearDbmsApplicationInfo()            
+        }       
     }
 
 
@@ -300,6 +315,8 @@ class ServiceBase {
         log.debug "${this.class.simpleName}.delete invoked with domainModelOrMapOrId = $domainModelOrMapOrId and flushImmediately = $flushImmediately"
         log.trace "${this.class.simpleName}.delete transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
+        setDbmsApplicationInfo "${this.class.simpleName}.delete()" 
+
         def domainObject
         try {
             log.trace "${this.class.simpleName}.delete will now invoke the preDelete callback if it exists"
@@ -323,7 +340,9 @@ class ServiceBase {
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Could not delete ${getDomainClass().simpleName} with id = ${domainObject?.id} due to exception: $ae", e
             throw ae
-        }        
+        } finally {
+            clearDbmsApplicationInfo()            
+        }       
     }
 
 
@@ -335,6 +354,8 @@ class ServiceBase {
     public def read( id ) {
 
         log.trace "${this.class.simpleName}.read, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        
+        setDbmsApplicationInfo "${this.class.simpleName}.read()" 
 
         try {
             fetch( getDomainClass(), id, log )
@@ -347,7 +368,9 @@ class ServiceBase {
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Exception executing ${this.class.simpleName}.read() with id = $id, due to exception: $ae", e
             throw ae
-        }
+        } finally {
+            clearDbmsApplicationInfo()            
+        }       
     }
 
 
@@ -359,6 +382,8 @@ class ServiceBase {
     public def get( id ) {
 
         log.trace "${this.class.simpleName}.get, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        
+        setDbmsApplicationInfo "${this.class.simpleName}.get()" 
 
         try {
             fetch( getDomainClass(), id, log )
@@ -371,7 +396,10 @@ class ServiceBase {
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Exception executing ${this.class.simpleName}.get() with id = $id, due to exception: $ae", e
             throw ae
-        }
+        } 
+        finally {
+            clearDbmsApplicationInfo()            
+        }        
     }
 
 
@@ -381,7 +409,9 @@ class ServiceBase {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def list( args ) {
 
-        log.trace "${this.class.simpleName}.list, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        log.trace "${this.class.simpleName}.list, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}" 
+               
+        setDbmsApplicationInfo "${this.class.simpleName}.list()" 
 
         try {
             getDomainClass().list( args )
@@ -390,6 +420,8 @@ class ServiceBase {
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Exception executing ${this.class.simpleName}.list() with args = $args, due to exception: $ae", e
             throw ae
+        } finally {
+            clearDbmsApplicationInfo()            
         }
     }
 
@@ -400,7 +432,9 @@ class ServiceBase {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def count( args = null ) {  // args are ignored -- TODO: Remove from signature
 
-        log.trace "${this.class.simpleName}.count, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
+        log.trace "${this.class.simpleName}.count, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}" 
+               
+        setDbmsApplicationInfo "${this.class.simpleName}.count()" 
 
         try {
             getDomainClass().count()
@@ -409,6 +443,8 @@ class ServiceBase {
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Exception executing ${this.class.simpleName}.count() due to exception: $ae", e
             throw ae
+        } finally {
+            clearDbmsApplicationInfo()            
         }
     }
 
@@ -438,6 +474,18 @@ class ServiceBase {
 
 
     // ------------------------------------ Public Helper Methods --------------------------------------
+
+
+    /**
+     * Sets a context variable for use by Banner database APIs.
+     * Specifically, this calls the gb_common.p_set_context(?,?,?) procedure.
+     **/
+    public void setApiContext( String packageName, String contextName, String contextVal ) { 
+        def sessionFactory = ApplicationHolder.getApplication().getMainContext().sessionFactory
+        def sql = new Sql( sessionFactory?.currentSession?.connection() ) 
+        sql.call( "{call gb_common.p_set_context( ?, ?, ?)}", [ packageName, contextName, contextVal ] )  
+        // note: the connection is managed by hibernate, hence we won't close it here     
+    }
 
 
     /**
@@ -695,11 +743,10 @@ class ServiceBase {
                       but this object doesn't support optimistic locking!"
         }
     }
+        
     
-    
-    private ApplicationException exceptionForOptimisticLock( domainObject, content, log ) {
-        log.debug "Optimistic lock violation between params $content and the model's state in the database $domainObject"
-        new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.simpleName, domainObject.id ) ) ) 
+    protected def getBannerConnection() {
+        sessionFactory.getCurrentSession().connection()
     }
 
 
@@ -801,6 +848,26 @@ class ServiceBase {
                 throw new RuntimeException( "@@r1:readonlyFieldsCannotBeModified:${cleanNames.join(', ')}@@" )
             }
         }
-
     }
+    
+    
+    private ApplicationException exceptionForOptimisticLock( domainObject, content, log ) {
+        log.debug "Optimistic lock violation between params $content and the model's state in the database $domainObject"
+        new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.simpleName, domainObject.id ) ) ) 
+    }
+    
+    
+    private void setDbmsApplicationInfo( action ) {
+        if (log.debugEnabled) {
+            dataSource.setDbmsApplicationInfo( getBannerConnection(), FormContext.get() ? FormContext.get()[0] : null, action as String ) 
+        }              
+    }
+    
+    
+    private void clearDbmsApplicationInfo() {
+        if (log.debugEnabled) {
+            dataSource.clearDbmsApplicationInfo( getBannerConnection() ) 
+        }              
+    }
+    
 }

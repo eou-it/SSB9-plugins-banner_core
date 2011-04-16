@@ -10,8 +10,11 @@
  ****************************************************************************** */
 package com.sungardhe.banner.testing
 
-import com.sungardhe.banner.service.KeyBlockHolder
+import com.sungardhe.banner.db.BannerDS as BannerDataSource
 import com.sungardhe.banner.exceptions.ApplicationException
+import com.sungardhe.banner.security.FormContext
+import com.sungardhe.banner.service.KeyBlockHolder
+import com.sungardhe.banner.service.ServiceBase
 
 import java.sql.Connection
 
@@ -194,7 +197,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
                          fooService.create( newTestFooParams( 'UU' ), false ),
                          fooService.create( newTestFooParams( 'VV' ), false ) ]
 /*
-        // Note: This currently finds the record -- proving that the DDL has in fact been executed.
+        // Note: This currently finds the record -- showing the DDL has in fact been executed.
         def sql = null
             try {
                 sql = new Sql( session.connection() )
@@ -233,7 +236,6 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
             }
         })
         otherThread.start()
-
         otherThread.join()
         assertNull found
     }
@@ -287,6 +289,42 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         def updatedFoo = fooService.update( foo )
         assertEquals "Dummy KeyBlock", fooService.getTestKeyBlock()?.kb
     }
+    
+    
+    void testApiContextVariableUsage() {
+        Foo.withTransaction {
+            fooService.setApiContext( 'GB_MEDICAL', 'CHECK_HR_SECURITY', 'Y' )
+            def sql = new Sql( sessionFactory.getCurrentSession().connection() )
+            sql.call( "{? = call gb_common.f_get_context(?,?)}", [ Sql.VARCHAR, 'GB_MEDICAL', 'CHECK_HR_SECURITY' ] ) { value ->
+               assertEquals 'Y', value 
+            }         
+        }
+    }
+    
+    
+    // While not really a 'service' test, it is implemented here for convenience
+    void testDatabaseSessionIdentifier() {
+        def conn = sessionFactory.getCurrentSession().connection()
+        (dataSource as BannerDataSource).setIdentifier( conn, "Donald_Duck" )  
+        def sql = new Sql( conn ) // test will close this connection                          
+        def row = sql.firstRow( "select sys_context( 'USERENV', 'CLIENT_IDENTIFIER' ) FROM DUAL" )
+        assertEquals "Donald_Duck", row."SYS_CONTEXT('USERENV','CLIENT_IDENTIFIER')"                 
+    }
+    
+    
+    // While not really a 'service' test, it is implemented here for convenience
+    void testSettingDbmsApplicationInfo() {
+        def conn = sessionFactory.getCurrentSession().connection()
+        (dataSource as BannerDataSource).setDbmsApplicationInfo( conn, "${this.class.simpleName}", 'testSettingDbmsApplicationInfo()' )             
+        def sql = new Sql( conn )        
+        sql.call( "{call dbms_application_info.read_module(?,?)}", [ Sql.out(Sql.VARCHAR.type), Sql.out(Sql.VARCHAR.type) ] ) { module, action ->
+            assertEquals "${this.class.simpleName}", module
+            assertEquals 'testSettingDbmsApplicationInfo()', action 
+        }            
+    }
+    
+    
+// -------------------------------------- Supporting Methods -------------------------------------------    
     
 
     // really only effective once we stop managing transactions within tests and truly use the declarative transaction boundaries.

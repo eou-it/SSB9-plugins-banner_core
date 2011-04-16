@@ -38,14 +38,14 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     private static final Logger log = Logger.getLogger( getClass() )
 
-    def dataSource // injected by Spring
+    def dataSource                  // injected by Spring
     def authenticationDataSource	// injected by Spring
 
 
     public Authentication authenticate( Authentication authentication ) {
 
         // Determine if database authentication is successful
-         // Determine if database authentication is successful
+        // Determine if database authentication is successful
         def dbUser
         def authenticationProvider = CH?.config.banner.sso.authenticationProvider
         log.trace "authenticationProvider = $authenticationProvider"
@@ -130,6 +130,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
 
     public boolean supports( Class clazz ) {
+        log.trace "BannerAuthenticationProvider.supports given ${clazz?.simpleName} and will return ${clazz == UsernamePasswordAuthenticationToken}"
         return clazz == UsernamePasswordAuthenticationToken
     }
 

@@ -212,7 +212,8 @@ class FooControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 'TT', result?.data?.code
 
         assertEquals ConfigurationHolder.config?.dataOrigin, result?.data?.dataOrigin
-        assertEquals SecurityContextHolder.context?.authentication?.principal?.username, result?.data?.lastModifiedBy
+        assertEquals "Expected ${SecurityContextHolder.context?.authentication?.principal?.username} but found ${result?.data?.lastModifiedBy}", 
+                      SecurityContextHolder.context?.authentication?.principal?.username, result?.data?.lastModifiedBy
         assertNotNull result?.data?.lastModified
     }
 

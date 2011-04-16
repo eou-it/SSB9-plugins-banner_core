@@ -1,5 +1,4 @@
 /** *****************************************************************************
-
  © 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
@@ -29,14 +28,18 @@ import org.apache.log4j.Logger
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 
-// This class was renamed from the more desirable 'BannerDataSource' as doing so
-// circumvented 'cannot resolve class' issues when running applications using this plugin.
-// To reduce confusion, you may want to import this class using:
-//     'import com.sungardhe.banner.db.BannerDS as BannerDataSource'
-//
+
 /**
- * A dataSource that proxies connections, sets roles needed for the current request,
- * and invokes p_commit and p_rollback.
+ * A dataSource that wraps an 'underlying' datasource.  When this datasource is asked for a 
+ * connection, it will first:
+ * 1) proxy the connection for the authenticated user, 
+ * 2) set Banner roles that are applicable to the current request, based on the authenticated user's privileges
+ * and the 'FormContext' 
+ * 3) wrap the connection within a 'BannerConnection'. (The BannerConnection wrapper will 
+ * invoke p_commit and p_rollback.) 
+ * Note this class is named 'BannerDS' versus 'BannerDataSource' to circumvent 
+ * 'cannot resolve class' issues when including this plugin.  It is recommended when importing this  
+ * class, to import it like: 'import com.sungardhe.banner.db.BannerDS as BannerDataSource'. 
  **/
 public class BannerDS {
 
@@ -48,18 +51,19 @@ public class BannerDS {
 
     private final Logger log = Logger.getLogger( getClass() )
 
+
     /**
      * Returns a proxied connection for the current logged in user, from the underlying connection pool.
      * In addition to proxying the connection, appropriate password protected roles are unlocked
      * (based upon the configuration within govurol).
      * */
     public Connection getConnection() throws SQLException {
-        log.trace "in BannerDS.getConnection() -- going to delegate to underlying dataSource"
+        log.trace "BannerDS.getConnection() invoked and will delegate to the underlying dataSource"
 
         Connection conn = underlyingDataSource.getConnection()
         OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
 
-        log.trace "in BannerDS.getConnection() -- have attained connection ${oconn} from underlying dataSource"
+        log.debug "BannerDS.getConnection() has attained connection ${oconn} from the underlying dataSource"
 
         // We'll proxy and set roles on the underlying Oracle connection before wrapping it in
         // the BannerConnection
@@ -71,8 +75,8 @@ public class BannerDS {
                 proxy( oconn, user?.username )
                 setRoles( oconn, user?.username, applicableAuthorities )
             }
-        }
-        return new BannerConnection( conn, user?.username, this )  // Note that while an IDE may not like this, the delegate supports this type coersion
+        }        
+        new BannerConnection( conn, user?.username, this )  // Note that while an IDE may not like this, the delegate supports this type coersion
     }
     
 
@@ -121,6 +125,71 @@ public class BannerDS {
         bconn.proxyUserName = userName
         return bconn
     }
+
+
+    public void closeProxySession( BannerConnection conn, String proxiedUserName ) {
+        log.trace "${super.toString()}.closeProxySession() will close proxy session for $conn"
+                
+        if (conn.extractOracleConnection().isProxySession()) {
+            conn.extractOracleConnection().close( OracleConnection.PROXY_SESSION )
+        }
+    }
+
+
+    // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session 
+    /**
+     * Sets the identifer into DBMS_SESSION. 
+     * @param conn the connection upon which to set the dbms session identifer
+     * @param identifer the identifier to set
+     **/
+    public void setIdentifier( conn, identifier ) {
+        log.trace "BannerConnection.setIdentifier will execute 'dbms_session.set_identifier' using identifer '$identifier' for '$conn'" 
+        Sql db = new Sql( conn ) 
+        db.call( "{call dbms_session.set_identifier(?)}", [ identifier ] ) 
+    }
+    
+    
+    // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session 
+    /**
+     * Clears the identifer from the DBMS_SESSION.  This should be called when 'closing' the connection. 
+     * @param conn the connection upon which to clear the dbms session identifer
+     **/
+    public void clearIdentifer( conn ) {
+        log.trace "BannerConnection.clearIdentifier will execute 'dbms_session.set_identifier' using a null value, for '$conn'" 
+        Sql db = new Sql( conn ) 
+        db.call( "{call dbms_session.set_identifier( NULL )}" ) 
+    }
+    
+    
+    // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session 
+    /**
+     * Sets the 'module' and 'action' into the 'DBMS_APPLICATION_INFO'. This method should be called by services, when  
+     * logging at the debug level (except for testing).  Note that 'ServiceBase' does this for it's CRUD methods. 
+     * @param conn the connection upon which to set DBMS application info
+     * @param module The 'module' to be set, which will be populated from the FormContext threadlocal if not provided
+     * @param action the 'action' to set, which will be NULL if not provided 
+     **/
+    public void setDbmsApplicationInfo( conn, module = null, action = null ) {
+        String mod = module ?: (FormContext.get() ? FormContext.get()[0] : null) // FormContext returns a list, but we'll just use the first entry        
+        log.trace "BannerConnection.setDbmsApplicationInfo will call Oracle 'dbms_application_info.set_module' using module = '$mod' and action = '$action' for '$conn'" 
+    
+        Sql db = new Sql( conn )        
+        db.call( "{call dbms_application_info.set_module(?,?)}", [ mod, action ] ) 
+        // Note: Don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
+    }
+    
+    
+    // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session 
+    /**
+     * Clears the DBMS application information.  This should be invoked when 'committing' the transaction. 
+     * @param conn the connection upon which to clear DBMS application info
+     **/
+    public void clearDbmsApplicationInfo( conn ) {
+        log.trace "BannerConnection.clearDbmsApplicationInfo will call Oracle 'dbms_application_info.set_module' with null values, for '$conn'" 
+        Sql db = new Sql( conn )        
+        db.call "{call dbms_application_info.set_module( NULL,NULL )}"
+        // Note: Don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
+    }
     
 
     /**
@@ -131,7 +200,43 @@ public class BannerDS {
     }
     
 
-    // ------------- end of public methods ----------------
+    public void setLogWriter( PrintWriter printWriter ) {
+        log.trace "BannerDS.setLogWriter(printWriter) will set '$printWriter' onto the underyling dataSource"
+        underlyingDataSource.setLogWriter( printWriter )
+    }
+    
+
+    public PrintWriter getLogWriter() {
+        log.trace 'BannerDS.getLogWriter() will delegate to underlying dataSource'
+        underlyingDataSource.getLogWriter()
+    }
+    
+
+    boolean isWrapperFor( Class clazz ) {
+        log.trace "BannerDS.isWrapperFor(clazz) was invoked with '$clazz' and will delegate to the underlying dataSource"
+        underlyingDataSource.isWrapperFor( clazz )
+    }
+    
+
+    Object unwrap( Class clazz ) {
+        log.trace "BannerDS.unwrap(clazz) was invoked with '$clazz' and will delegate to the underlying dataSource"
+        underlyingDataSource.unwrap( clazz )
+    }
+    
+
+    void setLoginTimeout( int i ) {
+        log.trace "setLoginTimeout i = $i"
+        underlyingDataSource.setLoginTimeout( i )
+    }
+    
+
+    int getLoginTimeout() {
+        log.trace 'getLoginTimeout'
+        underlyingDataSource.getLoginTimeout()
+    }
+    
+
+// --------------------------- end of public methods ----------------------------
 
 
     private proxy( OracleConnection oconn, userName ) {
@@ -148,7 +253,7 @@ public class BannerDS {
         properties.put( OracleConnection.PROXY_USER_NAME, ("${userName}" as String) )
 
         oconn.openProxySession( OracleConnection.PROXYTYPE_USER_NAME, properties )
-        log.trace "in BannerDS.proxyConnection - proxied connection for $userName and connection $oconn"
+        log.debug "in BannerDS.proxyConnection - proxied connection for $userName and connection $oconn"
     }
 
 
@@ -170,7 +275,7 @@ public class BannerDS {
 
 
     private setRoles( OracleConnection oconn, String proxiedUserName, applicableAuthorities ) {
-        log.debug "Applicable role(s) are ${applicableAuthorities*.authority}" 
+        log.debug "BannerDS will set applicable role(s): ${applicableAuthorities*.authority}" 
 
         try {
             log.trace "BannerDS.setRoles - will unlock role(s) for the connection proxied for $proxiedUserName"
@@ -180,7 +285,7 @@ public class BannerDS {
         catch (e) {
             //if we cannot unlock a role, abort the proxy session and rollback
             log.error "Failed to unlock role for proxy session for Oracle connection $oconn  Exception: $e "
-            BannerConnection.closeProxySession( oconn, proxiedUserName )
+            closeProxySession( oconn, proxiedUserName )
             throw e
         }
     }
@@ -204,36 +309,6 @@ public class BannerDS {
         
         Sql db = new Sql( conn )        
         db.execute( stmt ) // Note: Don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
-    }
-    
-
-    public void setLogWriter( PrintWriter printWriter ) {
-        log.trace "setLogWriter printWriter = $printWriter"
-    }
-    
-
-    public PrintWriter getLogWriter() {
-        log.trace 'getLogWriter'
-    }
-    
-
-    boolean isWrapperFor( Class clazz ) {
-        log.trace "isWrapperFor clazz = $clazz"
-    }
-    
-
-    Object unwrap( Class clazz ) {
-        log.trace "unwrap clazz = $clazz"
-    }
-    
-
-    void setLoginTimeout( int i ) {
-        log.trace "setLoginTimeout i = $i"
-    }
-    
-
-    int getLoginTimeout() {
-        log.trace 'getLoginTimeout'
     }
 
 }

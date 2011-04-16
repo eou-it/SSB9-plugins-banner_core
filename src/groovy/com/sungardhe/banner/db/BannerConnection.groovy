@@ -40,6 +40,8 @@ class BannerConnection {
 
     def proxyUserName
     def bannerDataSource
+    def oracleConnection // the native connection
+    
     private final Logger log = Logger.getLogger( getClass() )
 
 
@@ -56,11 +58,15 @@ class BannerConnection {
     BannerConnection( Connection conn, String userName, bannerDataSource ) {
         this( conn, bannerDataSource )
         proxyUserName = userName
+        bannerDataSource.setIdentifier( conn, userName )
     }
 
 
     public OracleConnection extractOracleConnection() {
-        bannerDataSource.nativeJdbcExtractor.getNativeConnection( underlyingConnection )
+        if (!oracleConnection) {
+            oracleConnection = bannerDataSource.nativeJdbcExtractor.getNativeConnection( underlyingConnection )
+        }
+        oracleConnection
     }
 
 
@@ -74,6 +80,7 @@ class BannerConnection {
     public void commit() throws SQLException {
         log.trace "BannerConnection ${super.toString()} 'commit()' invoked"
         invokeProcedureCall "{ call gb_common.p_commit() }"
+        bannerDataSource.clearDbmsApplicationInfo( this )           
     }
 
 
@@ -87,25 +94,18 @@ class BannerConnection {
     public void rollback() throws SQLException {
         log.trace "BannerConnection ${super.toString()}.rollback() invoked"
         invokeProcedureCall "{ call gb_common.p_rollback() }"
+        bannerDataSource.clearDbmsApplicationInfo( this )            
     }
 
 
     public void close() throws SQLException {
-        log.trace "BannerConnection ${super.toString()}.close() invoked"
-//        invokeProcedureCall "{ set role 'null' }" // TODO: Do we need to clear the roles if we're releasing the connection?
-
-        def oconn = extractOracleConnection()
-        log.trace "${super.toString()}.closeProxySession() will close proxy session for $oconn"
-        closeProxySession oconn, proxyUserName
-        
-        log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps $oconn"
-        underlyingConnection?.close()
-    }
-
-
-    public static closeProxySession( OracleConnection oracleConnection, String proxiedUserName ) {
-        if (oracleConnection.isProxySession()) {
-            oracleConnection.close( OracleConnection.PROXY_SESSION )
+        try {
+            log.trace "BannerConnection ${super.toString()}.close() invoked"
+            bannerDataSource.closeProxySession( this, proxyUserName )              
+            bannerDataSource.clearIdentifer( this )
+        } finally {            
+            log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
+            underlyingConnection?.close()  
         }
     }
 
@@ -126,14 +126,17 @@ class BannerConnection {
             cs?.close()
         }
     }
+    
 
     boolean isWrapperFor( Class clazz ) {
         log.trace "isWrapperFor clazz = $clazz"
     }
 
+    
     Object unwrap( Class clazz ) {
         log.trace "unwrap clazz = $clazz"
     }
+
 
     public String toString() {
         "${super.toString()}[user='${proxyUserName}', oracle connection='${extractOracleConnection()}']"
