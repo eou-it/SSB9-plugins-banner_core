@@ -13,10 +13,6 @@ package com.sungardhe.banner.testing
 
 import javax.persistence.*
 
-import org.hibernate.annotations.GenericGenerator
-import org.hibernate.annotations.Type
-import javax.persistence.GenerationType
-
 
 /**
  * A model used for testing the Banner framework.
@@ -27,8 +23,8 @@ class Zip implements Serializable {
 
 	@Id
 	@Column(name="GTVZIPC_SURROGATE_ID")
-	@GeneratedValue(generator ="triggerAssigned")
-	@GenericGenerator(name = "triggerAssigned", strategy = "com.sungardhe.banner.framework.persistence.util.TriggerAssignedIdentityGenerator")
+    @SequenceGenerator(name = "GTVZIPC_SEQ_GEN", allocationSize = 1, sequenceName = "GTVZIPC_SURROGATE_ID_SEQUENCE")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GTVZIPC_SEQ_GEN")
 	Long id
 
 	@Column(name="GTVZIPC_CODE", nullable = false)

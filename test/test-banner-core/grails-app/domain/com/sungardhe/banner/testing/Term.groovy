@@ -14,7 +14,6 @@
  */
 package com.sungardhe.banner.testing
 
-import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
 import javax.persistence.*
 
@@ -38,8 +37,8 @@ class Term implements Serializable {
    */
   @Id
   @Column(name = "STVTERM_SURROGATE_ID")
-  @GeneratedValue(generator = "triggerAssigned")
-  @GenericGenerator(name = "triggerAssigned", strategy = "com.sungardhe.banner.framework.persistence.util.TriggerAssignedIdentityGenerator")
+  @SequenceGenerator(name = "STVTERM_SEQ_GEN", allocationSize = 1, sequenceName = "STVTERM_SURROGATE_ID_SEQUENCE")
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "STVTERM_SEQ_GEN")
   Long id
 
   /**

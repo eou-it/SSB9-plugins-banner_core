@@ -11,11 +11,7 @@
 package com.sungardhe.banner.testing
 
 import com.sungardhe.banner.service.DatabaseModifiesState
-
 import javax.persistence.*
-
-import org.hibernate.annotations.*
-
 
 /**
  * A model used for testing the Banner framework.
@@ -30,8 +26,8 @@ class Foo implements Serializable { // based on 'College'
 
 	@Id
 	@Column( name="STVCOLL_SURROGATE_ID" )
-	@GeneratedValue( generator ="triggerAssigned" )
-	@GenericGenerator( name = "triggerAssigned", strategy = "com.sungardhe.banner.framework.persistence.util.TriggerAssignedIdentityGenerator" )
+    @SequenceGenerator(name = "STVCOLL_SEQ_GEN", allocationSize = 1, sequenceName = "STVCOLL_SURROGATE_ID_SEQUENCE")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "STVCOLL_SEQ_GEN")
 	Long id
 
 	@Column( name="STVCOLL_CODE", nullable = false ) // , length=2

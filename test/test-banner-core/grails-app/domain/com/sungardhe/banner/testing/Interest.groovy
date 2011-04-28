@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ ï¿½ 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -16,7 +16,8 @@ import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.Table
 import javax.persistence.Version
-import org.hibernate.annotations.GenericGenerator
+import javax.persistence.SequenceGenerator
+import javax.persistence.GenerationType
 
 /**
  * Outside Interest Code Validation Table
@@ -38,8 +39,8 @@ class Interest implements Serializable {
      */
     @Id
     @Column(name = "STVINTS_SURROGATE_ID")
-    @GeneratedValue(generator = "triggerAssigned")
-    @GenericGenerator(name = "triggerAssigned", strategy = "com.sungardhe.banner.framework.persistence.util.TriggerAssignedIdentityGenerator")
+    @SequenceGenerator(name = "STVINTS_SEQ_GEN", allocationSize = 1, sequenceName = "STVINTS_SURROGATE_ID_SEQUENCE")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "STVINTS_SEQ_GEN")
     Long id
 
     /**

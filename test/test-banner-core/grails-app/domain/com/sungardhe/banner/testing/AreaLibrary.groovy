@@ -11,7 +11,6 @@
 package com.sungardhe.banner.testing
 
 import javax.persistence.*
-import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
 
 // Used to test that an underlying Oracle exception thrown from the driver 
@@ -22,8 +21,8 @@ class AreaLibrary implements Serializable {
 	
 	@Id
 	@Column(name="SMRALIB_SURROGATE_ID")
-	@GeneratedValue(generator ="triggerAssigned")
-	@GenericGenerator(name = "triggerAssigned", strategy = "com.sungardhe.banner.framework.persistence.util.TriggerAssignedIdentityGenerator")
+    @SequenceGenerator(name = "SMRALIB_SEQ_GEN", allocationSize = 1, sequenceName = "SMRALIB_SURROGATE_ID_SEQUENCE")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SMRALIB_SEQ_GEN")
 	Long id
 
 	@Column(name="SMRALIB_AREA", nullable = false, length=10)

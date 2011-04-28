@@ -31,7 +31,7 @@ class AreaLibraryIntegrationTests extends BaseIntegrationTestCase {
         def entity = newAreaLibrary()
         assertTrue "Entity did not validate", entity.validate()
         try {
-            entity.save()
+            entity.save(flush: true)
             fail "AreaLibrary should not have been successfully saved, due to and expected 'invalid hex number' error"
         } catch (e) {
             def ae = new ApplicationException( AreaLibrary, e )
