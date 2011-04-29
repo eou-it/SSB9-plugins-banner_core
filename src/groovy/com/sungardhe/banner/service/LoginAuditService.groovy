@@ -54,7 +54,6 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
                     where GURLOGN_USER = ?""", [count + 1, name])
                 sql.commit()
             }
-            println count
         } catch (Exception e) {
             e.printStackTrace()
         } finally {

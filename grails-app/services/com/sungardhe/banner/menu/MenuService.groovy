@@ -138,7 +138,6 @@ class MenuService {
         mnu.module = it.gubmodu_name
         mnu.url = it.gubmodu_url
         mnu.seq = it.gutmenu_seq_no
-            println   mnu.formName + " " + mnu.caption
         dataMap.add(mnu)
     });
     log.debug("ProcessMenu executed" )
