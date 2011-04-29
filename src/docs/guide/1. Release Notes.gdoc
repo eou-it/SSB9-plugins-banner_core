@@ -7,7 +7,7 @@ h4. Version NEXT
 * Added KeyBlockHolder as a mechanism to pass key block information to a service, outside of the service invocation. 
 * Added 'setApiContext( String packageName, String contextName, String contextVal )' utility method to ServiceBase, to facilitate setting Banner database API context variables. 
 
-h4. Version 0.2.30
+h4. Version 0.2.31
 
 * DBEU support added in banner-core
 * Implementation of menus changed to use banner menu instead of a custom menu
