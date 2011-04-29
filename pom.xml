@@ -20,11 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.sungardhe</groupId>
   <artifactId>banner-core</artifactId>
-<<<<<<< HEAD
-  <version>0.2.31</version>
-=======
   <version>0.2.30</version>
->>>>>>> a31b5eb4d8a000043560c65f8cd2706b67117d07
   <packaging>zip</packaging>
   <description>Common Framework for Banner Modules</description>
   <distributionManagement>
