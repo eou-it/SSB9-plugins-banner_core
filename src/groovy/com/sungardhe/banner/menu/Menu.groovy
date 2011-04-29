@@ -19,6 +19,7 @@ package com.sungardhe.banner.menu
  *    
  */
 public class Menu implements Serializable {
+    int seq
     def menu
     def pageName
     def formName

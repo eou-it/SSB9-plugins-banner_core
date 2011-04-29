@@ -1,4 +1,4 @@
-<plugin name='banner-core' version='0.2.29' grailsVersion='1.3.0 &gt; *'>
+<plugin name='banner-core' version='0.2.31' grailsVersion='1.3.0 &gt; *'>
   <author>SunGard Higher Education</author>
   <authorEmail>horizon-support@sungardhe.com</authorEmail>
   <title>Banner Core Framework Plugin</title>
@@ -30,6 +30,8 @@ Banner web applications.</description>
     <resource>com.sungardhe.banner.configuration.ConfigurationUtils</resource>
     <resource>com.sungardhe.banner.configuration.SupplementalDataUtils</resource>
     <resource>com.sungardhe.banner.constraints.ValidPropertyConstraint</resource>
+    <resource>com.sungardhe.banner.query.DynamicFinder</resource>
+    <resource>com.sungardhe.banner.query.QueryBuilder</resource>
   </resources>
   <dependencies>
     <plugin name='springSecurityCore' version='1.0.1' />

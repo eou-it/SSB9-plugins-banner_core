@@ -192,12 +192,21 @@ public class BannerDS {
     }
     
 
+
     /**
      * Returns the jdbcUrl of the underlying DataSource.
      */
-    public String getUrl() {
-        return underlyingDataSource.getUrl()
-    }
+	public String getUrl() {
+	    def url
+	      try {
+	        //Getting the URL this way works only with Apache DBCP datasource
+	        //This does not work when using Weblogic server as Weblogic server returns a RmiDatasource
+	        url = underlyingDataSource.getUrl()
+	      } catch(MissingMethodException e) {
+	        url = underlyingDataSource.connection.metaData.URL
+	      }
+	      return url
+	}
     
 
     public void setLogWriter( PrintWriter printWriter ) {

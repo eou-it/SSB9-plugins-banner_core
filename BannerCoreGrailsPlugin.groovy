@@ -46,6 +46,9 @@ import com.sungardhe.banner.representations.ResourceRepresentationRegistry
 import com.sungardhe.banner.security.BannerPreAuthenticatedFilter
 import javax.servlet.Filter
 import com.sungardhe.banner.security.BannerAccessDecisionVoter
+import com.sungardhe.banner.service.LoginAuditService
+import org.springframework.context.event.SimpleApplicationEventMulticaster
+import java.util.concurrent.Executors
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access
@@ -67,7 +70,7 @@ class BannerCoreGrailsPlugin {
     // independent of deploying a new plugin build to Nexus.
     //
 //    String version = "0.1-SNAPSHOT"
-    String version = "0.2.29"
+    String version = "0.2.31"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
@@ -161,7 +164,11 @@ class BannerCoreGrailsPlugin {
 
         roleVoter( BannerAccessDecisionVoter )
 
-        authenticationDataSource( OracleDataSource ) 
+        authenticationDataSource( OracleDataSource )
+
+        loginAuditService( LoginAuditService) {
+             dataSource = ref( dataSource )
+        }
 
         bannerAuthenticationProvider( BannerAuthenticationProvider ) {
             dataSource = ref( dataSource )
@@ -195,6 +202,12 @@ class BannerCoreGrailsPlugin {
             key = 'horizon-anon'
             userAttribute = 'anonymousUser,ROLE_ANONYMOUS'
         }
+
+        applicationEventMulticaster(SimpleApplicationEventMulticaster) {
+            taskExecutor = Executors.newCachedThreadPool()
+        }
+
+
         
         // ---------------- JMX Mbeans (incl. Logging) ----------------
         

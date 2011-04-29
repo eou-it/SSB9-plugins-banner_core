@@ -19,7 +19,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
   def menuService
 
   protected void setUp() {
-    formContext = ['SCACRSE']
+    formContext = ['GUAGMNU']
     super.setUp()
     dataSetup()
   }
@@ -28,13 +28,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
     def map
     map = menuService.bannerMenu()
     assertNotNull map
-    def mnu = new Menu()
-    for (i in 1..(map.size())) {
-      if (map.get(i).formName == "SCACRSE") {
-        mnu = map.get(i)
-        break;
-      }
-    }
+    def mnu =  map.find{it -> it.formName == "SCACRSE"}
     assertNotNull mnu.url
     assertNotNull mnu.caption
     assert mnu.formName == "SCACRSE"

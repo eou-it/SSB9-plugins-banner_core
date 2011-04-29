@@ -7,7 +7,14 @@ h4. Version NEXT
 * Added KeyBlockHolder as a mechanism to pass key block information to a service, outside of the service invocation. 
 * Added 'setApiContext( String packageName, String contextName, String contextVal )' utility method to ServiceBase, to facilitate setting Banner database API context variables. 
 
-h4. Version 0.2.29
+h4. Version 0.2.30
+
+* DBEU support added in banner-core
+* Implementation of menus changed to use banner menu instead of a custom menu
+* Support added to capture login statistics and violations
+* Modified getURL method in BannerDS for weblogic support
+
+  h4. Version 0.2.29
 
 * Added explicit support for using 'elvyx' [http://www.elvyx.com/] to monitor and profile SQL activity. This tool is very helpful in order to view bound SQL statements. For reference, here is a local configuration file that may be used (after setting the appropriate database url value).  To use elvyx, just uncomment the two elvyx configuration items.
 {code}

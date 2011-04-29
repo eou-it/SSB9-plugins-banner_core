@@ -19,148 +19,127 @@ import org.apache.log4j.Logger
 import com.sungardhe.banner.security.FormContext
 
 class MenuService {
-  static transactional = true
-  def menuAndToolbarPreferenceService
-  def sessionFactory
-  def personalDataMap = [:]
-  private static final log = Logger.getLogger(getClass())
+    static transactional = true
+    def menuAndToolbarPreferenceService
+    def sessionFactory
+    private static final log = Logger.getLogger(getClass())
 
 
-  /**
-   * This is returns map of all menu items based on user access
-   * @return List representation of menu objects that a user has access
-   */
-  def bannerMenu() {
-    def map = processMenu()
-    return map
+    /**
+    * This is returns map of all menu items based on user access
+    * @return List representation of menu objects that a user has access
+    */
+    def bannerMenu() {
+        def map = processMenu()
+        return map
 
-  }
-  /**
-   * This is returns map of all personal menu items based on user access
-   * @return List representation of personal menu objects that a user has access
-   */
-  def personalMenu() {
-    def map = personalMenuMap()
-    return map
-  }
+    }
+    /**
+    * This is returns map of all personal menu items based on user access
+    * @return List representation of personal menu objects that a user has access
+    */
+    def personalMenu() {
+        def map = personalMenuMap()
+        return map
+    }
 
-  /**
-   * This is returns map of all personal items based on user access
-   * @return Map of menu objects that a user has access
-   */
+    /**
+    * This is returns map of all personal items based on user access
+    * @return Map of menu objects that a user has access
+    */
 
 
-  def personalMenuMap() {
-    def bannerMenu
-    def dataMap = []
-    Sql sql
-    def mnuLabelPref = getMnuPref()
-
-    FormContext.set(["GUAGMNU"])
-    log.debug("Personal Menu started")
-    log.debug("Before Connection Retrieval")
-    sql = new Sql(sessionFactory.getCurrentSession().connection())
-    log.debug("After Connection Retrieval")
-    log.debug(sql.useConnection.toString())
-
-    sql.execute("Begin gukmenu.p_bld_pers_menu; End;")
-    log.debug("After gukmenu.p_bld_pers_menu sql.execute" )
-    sql.eachRow("select * from gutpmnu,gubmodu,gubpage where  substr(gutpmnu_value,6,length(gutpmnu_value))  = gubpage_code (+) AND " +
-            " gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+) order by gutpmnu_seq_no", {
+    def personalMenuMap() {
+        def dataMap = []
+        Sql sql
+        def parent
+        log.debug("Personal Menu started")
+        sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.execute("Begin gukmenu.p_bld_pers_menu; End;")
+        log.debug("After gukmenu.p_bld_pers_menu sql.execute" )
+        sql.eachRow("select * from gutpmnu,gubmodu,gubpage,gubobjs where  substr(gutpmnu_value,6,length(gutpmnu_value))  = gubpage_code (+) AND " +
+            " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubobjs_ban9_flag = 'A' AND gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+) order by gutpmnu_seq_no", {
 
         def mnu = new Menu()
-        def str = it.gutpmnu_value.split("\\|")
-        mnu.formName = str[1]
+
+        mnu.formName = it.gutpmnu_value.split("\\|")[1]
+
         mnu.pageName = it.gubpage_name
         mnu.caption = it.gutpmnu_label
-        if (mnuLabelPref)
-          mnu.caption = it.gutpmnu_label + " (" + mnu.formName + ")"
+        if (getMnuPref())
+            mnu.caption = it.gutpmnu_label + " (" + mnu.formName + ")"
         mnu.level = it.gutpmnu_level
-        mnu.type = str[0]
+        mnu.type = it.gutpmnu_value.split("\\|")[0]
         mnu.module = it.gubmodu_name
         mnu.url = it.gubmodu_url
-        personalDataMap.put(it.gutpmnu_seq_no, mnu)
-        mnu.parent = setParent(mnu)
+        mnu.seq = it.gutpmnu_seq_no
+        mnu.parent = setParent(mnu.level,dataMap)
         dataMap.add(mnu)
-      }
+        }
     );
 
     log.debug("Personal Menu executed" )
     sql.connection.close()
     return dataMap
-  }
-
-
-  def setParent(Menu mnu) {
-    String parent
-    if (mnu.level == 1)
-      return parent
-    personalDataMap.each {
-      if (it.value.level == (mnu.level - 1) && (it.value.type == "MENU")) {
-        parent = it.value.formName
-      }
     }
-    return parent
-  }
-  /**
-   * This is returns map of all menu items based on user access
-   * @param pageName
-   * @return Form name
-   */
-  def getFormName(String pageName) {
-    def formName
-    def sql
-    sql = new Sql(sessionFactory.getCurrentSession().connection())
-    sql.eachRow("select * from gubpage where gubpage_name = ?", [pageName]) {
-      formName = it.gubpage_code
+
+
+    def setParent(def level,def map) {
+        String parent
+        if (level == 1)
+            return parent
+        def notFound = true;
+        map.reverseEach {
+            if (  notFound && it.level < level )  {
+                    parent= it.formName
+                    notFound = false
+            }
+        }
+        return parent
     }
-    return formName
-  }
+
+    /**
+    * This is returns map of all menu items based on user access
+    * @param pageName
+    * @return Form name
+    */
+    def getFormName(String pageName) {
+        def formName
+        def sql
+        sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.eachRow("select * from gubpage where gubpage_name = ?", [pageName]) {
+            formName = it.gubpage_code
+        }
+        return formName
+    }
 
 
-  private def processMenu() {
-    def bannerMenu
-    def dataMap = []
-    def addmenu
-    Sql sql
-    def i = 0
-    FormContext.set(["GUAGMNU"])
-    log.debug("Process Menu started")
-    sql = new Sql(sessionFactory.getCurrentSession().connection())
-    log.debug("After Connection Retrieval")
-    log.debug(sql.useConnection.toString())
-    sql.execute("Begin gukmenu.p_bld_prod_menu; End;")
-    log.debug("After gukmenu.p_bld_prod_menu sql.execute" )
-
-    def prefName = getMnuPref()
-    sql.eachRow("select * from gutmenu,gubmodu,gubpage where gutmenu_value  = gubpage_code (+) AND " +
-            " gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+)  order by gutmenu_seq_no", {
-      def mnu = new Menu()
-
-
-      mnu.formName = it.gutmenu_value
-      mnu.pageName = it.gubpage_name
-      if (it.gutmenu_desc != null)
-      {
-        mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
-        if (prefName)
-          mnu.caption = mnu.caption + " (" + mnu.formName + ")"
-      }
-      mnu.level = it.gutmenu_level
-      mnu.type = it.gutmenu_objt_code
-      mnu.parent = it.gutmenu_prior_obj
-      mnu.module = it.gubmodu_name
-      mnu.url = it.gubmodu_url
-
-      //Added for horizon
-      if (mnu.level == 1)
-        if (mnu.formName == "*HORIZON")
-          addmenu = "Y"
-        else
-          addmenu = "N"
-      if (addmenu == "Y") {
+    private def processMenu() {
+        def dataMap = []
+        Sql sql
+        log.debug("Process Menu started")
+        sql = new Sql(sessionFactory.getCurrentSession().connection())
+        log.debug(sql.useConnection.toString())
+        sql.execute("Begin gukmenu.p_bld_prod_menu; End;")
+        sql.eachRow("select * from gutmenu,gubmodu,gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
+            " gubobjs_name = gutmenu_value AND gubobjs_ban9_flag = 'A' and gubpage_gubmodu_surrogate_id  = gubmodu_surrogate_id (+) " +
+            " order by gutmenu_seq_no", {
+        def mnu = new Menu()
+        mnu.formName = it.gutmenu_value
+        mnu.pageName = it.gubpage_name
+        if (it.gutmenu_desc != null)  {
+            mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
+            if (getMnuPref())
+                mnu.caption = mnu.caption + " (" + mnu.formName + ")"
+        }
+        mnu.level = it.gutmenu_level
+        mnu.type = it.gutmenu_objt_code
+        mnu.parent = it.gutmenu_prior_obj
+        mnu.module = it.gubmodu_name
+        mnu.url = it.gubmodu_url
+        mnu.seq = it.gutmenu_seq_no
+            println   mnu.formName + " " + mnu.caption
         dataMap.add(mnu)
-      }
     });
     log.debug("ProcessMenu executed" )
     sql.connection.close()
@@ -168,10 +147,9 @@ class MenuService {
   }
 
   private def getMnuPref() {
-    //return "Y"
-     def prefs = menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference()
-     return prefs.get(0).formnameDisplayIndicator
+     return menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).formnameDisplayIndicator
   }
+
 
   def searchMenu(String menuName) {
     def mnuList = bannerMenu()

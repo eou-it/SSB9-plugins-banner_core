@@ -30,6 +30,11 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import oracle.jdbc.pool.OracleDataSource
 import org.jasig.cas.client.util.AbstractCasFilter
 import org.springframework.web.context.request.RequestContextHolder
+import com.sungardhe.banner.service.LoginAuditService
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import org.springframework.context.ApplicationContext
 
 /**
  * An authentication provider which authenticates a user by logging into the Banner database.
@@ -38,15 +43,18 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     private static final Logger log = Logger.getLogger( getClass() )
 
-    def dataSource                  // injected by Spring
+    def dataSource // injected by Spring
     def authenticationDataSource	// injected by Spring
-
-
     public Authentication authenticate( Authentication authentication ) {
 
         // Determine if database authentication is successful
-        // Determine if database authentication is successful
+         // Determine if database authentication is successful
         def dbUser
+      //  def messageSource = ApplicationHolder.application.parentContext.getBean("messageSource")
+      //  println messageSource.getMessage('sectionBlock.scheduleBlock.tab.enrollment',Locale)
+
+
+        
         def authenticationProvider = CH?.config.banner.sso.authenticationProvider
         log.trace "authenticationProvider = $authenticationProvider"
 
@@ -56,10 +64,15 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             dbUser = defaultAuthentication( authentication )
         }
 
+        def applicationContext = (ApplicationContext)ServletContextHolder.getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
+
         if (!dbUser) {
             log.warn "BannerAuthenticationProvider was not able to authenticate user."
+            applicationContext.publishEvent( new BannerAuthenticationEvent(authentication.name, false, 'BannerAuthenticationProvider - Invalid password tried', 'BannerAuthenticationProvider', new Date(), 1) )
             return null
         }
+
+        applicationContext.publishEvent( new BannerAuthenticationEvent(dbUser, true, '', '', new Date(), '') )
 
         try {
             Collection<GrantedAuthority> authorities = determineAuthorities( dbUser.toUpperCase(), dataSource )
@@ -74,6 +87,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             }
             else {
                 log.warn "BannerAuthenticationProvider found no authorities for user $authentication.name"
+                applicationContext.publishEvent( new BannerAuthenticationEvent(dbUser, false, 'BannerAuthenticationProvider -  No authorities found', 'BannerAuthenticationProvider', new Date(), 1) )
                 return null
             }
         }
@@ -85,7 +99,6 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     private def defaultAuthentication( Authentication authentication ) {
         def conn
-
         try {
             authenticationDataSource.setURL( CH?.config?.myDataSource.url )
             conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
@@ -130,7 +143,6 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
 
     public boolean supports( Class clazz ) {
-        log.trace "BannerAuthenticationProvider.supports given ${clazz?.simpleName} and will return ${clazz == UsernamePasswordAuthenticationToken}"
         return clazz == UsernamePasswordAuthenticationToken
     }
 
@@ -195,3 +207,4 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     }
 
 }
+

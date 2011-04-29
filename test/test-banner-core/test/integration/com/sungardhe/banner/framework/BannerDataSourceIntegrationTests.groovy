@@ -74,7 +74,7 @@ public class BannerDataSourceIntegrationTests extends GrailsUnitTestCase {
             sql = new Sql( conn.extractOracleConnection() )
             
             // Retrieve the database role name and password for object STVINTS
-            def row = sql.firstRow( "select * from govurol where govurol_object = 'STVINTS'" )
+            def row = sql.firstRow( "select * from govurol where govurol_object = 'STVINTS' and govurol_userid = 'GRAILS_USER' " )
             
             conn = (dataSource as BannerDataSource).proxyConnection( conn, "grails_user" ) as BannerConnection
             
