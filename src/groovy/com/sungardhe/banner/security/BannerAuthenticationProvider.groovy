@@ -71,8 +71,8 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             applicationContext.publishEvent( new BannerAuthenticationEvent(authentication.name, false, 'BannerAuthenticationProvider - Invalid password tried', 'BannerAuthenticationProvider', new Date(), 1) )
             return null
         }
-
-        applicationContext.publishEvent( new BannerAuthenticationEvent(dbUser, true, '', '', new Date(), '') )
+		//TODO Fix this later for login statistics
+        //applicationContext.publishEvent( new BannerAuthenticationEvent(dbUser, true, '', '', new Date(), '') )
 
         try {
             Collection<GrantedAuthority> authorities = determineAuthorities( dbUser.toUpperCase(), dataSource )
