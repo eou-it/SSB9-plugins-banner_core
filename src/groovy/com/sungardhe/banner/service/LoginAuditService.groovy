@@ -43,16 +43,13 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
             if (count == 0) {
                 sql.execute("""insert into GURLOGN(GURLOGN_USER, GURLOGN_BAN9_LOGON_COUNT, GURLOGN_BAN9_LAST_LOGON_DATE,
                     GURLOGN_BAN9_FIRST_LOGON_DATE) values (?,?,sysdate,sysdate)""", [name, 1])
-                sql.commit()
                 return
             } else if (count == null) {
                 sql.executeUpdate("""update GURLOGN set GURLOGN_BAN9_LOGON_COUNT = ?, GURLOGN_BAN9_LAST_LOGON_DATE = sysdate,
                     GURLOGN_BAN9_FIRST_LOGON_DATE = sysdate where GURLOGN_USER = ?""", [1,  name])
-                sql.commit()
             } else {
                 sql.executeUpdate("""update GURLOGN set GURLOGN_BAN9_LOGON_COUNT = ?, GURLOGN_BAN9_LAST_LOGON_DATE = sysdate
                     where GURLOGN_USER = ?""", [count + 1, name])
-                sql.commit()
             }
         } catch (Exception e) {
             e.printStackTrace()
@@ -70,7 +67,6 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
             java.sql.Date date = new java.sql.Date( System.currentTimeMillis() )
             sql.execute("""insert into bansecr.guralog(GURALOG_OBJECT, GURALOG_USERID, GURALOG_REASON, GURALOG_SEVERITY_LEVEL,
                 GURALOG_ACTIVITY_DATE) values (?,?,?,?,?)""", [event.module, event.userName, event.message, event.severity, date])
-            sql.commit()
         } catch (Exception e) {
             e.printStackTrace()
         } finally {
