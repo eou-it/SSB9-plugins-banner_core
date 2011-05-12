@@ -41,11 +41,11 @@ import org.springframework.security.core.context.SecurityContextHolder
  * 'cannot resolve class' issues when including this plugin.  It is recommended when importing this  
  * class, to import it like: 'import com.sungardhe.banner.db.BannerDS as BannerDataSource'. 
  **/
-public class BannerDS {
+public class BannerDS implements DataSource {
 
     // Delegates all methods not implemented here, to the underlying dataSource injected via Spring.
-    @Delegate
     DataSource underlyingDataSource
+    DataSource underlyingSSBDataSource
 
     def nativeJdbcExtractor  // injected by Spring
 
@@ -206,6 +206,13 @@ public class BannerDS {
 	        url = underlyingDataSource.connection.metaData.URL
 	      }
 	      return url
+	}
+	
+	
+	// -------------------- Pass through methods to delegate ------------------------
+	
+	public Connection getConnection( String username, String password ) {
+	    underlyingDataSource.getConnection( username, password )
 	}
     
 

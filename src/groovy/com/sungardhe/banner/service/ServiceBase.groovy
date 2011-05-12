@@ -567,7 +567,7 @@ class ServiceBase {
      * This method is static to facilitate use from services that do not extend or mixin ServiceBase. 
      **/
     public static boolean isDomainModelInstance( Class domainClass, object ) {
-        (domainClass.isAssignableFrom( object.getClass() ) && !(Map.isAssignableFrom( object.getClass() )))
+        (domainClass.isAssignableFrom( object?.getClass() ) && !(Map.isAssignableFrom( object?.getClass() )))
     }
 
 

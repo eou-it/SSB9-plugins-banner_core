@@ -202,9 +202,6 @@ log4j = {
                 error 'stdout','appLog'
                 additivity = true
             }
-            off 'com.sungardhe.banner.testing.FooController'
-            off 'com.sungardhe.banner.testing.FooService'
-            off 'grails.app.service.com.sungardhe.banner.testing.FooService'
             break
         case 'production':
             root {
@@ -225,11 +222,16 @@ log4j = {
     
     // ******** non-Grails classes (e.g., in src/ or grails-app/utils/) *********
     off 'com.sungardhe.banner.security'
+    off 'com.sungardhe.banner.security.BannerAuthenticationProvider'
+    off 'com.sungardhe.banner.BannerAuthenticationProvider'
+    off 'com.sungardhe.banner.security.BannerAccessDecisionVoter'
+    off 'grails.plugins.springsecurity'
+    off 'org.springframework.security'
+
     off 'com.sungardhe.banner.db'
     
     off 'com.sungardhe.banner.testing.FooController'
     off 'com.sungardhe.banner.testing.FooService'
-    off 'grails.app.service.com.sungardhe.banner.testing.FooService'
     off 'com.sungardhe.banner.service.ServiceBase'    
     
     off 'org.apache.http.headers'
@@ -246,10 +248,6 @@ log4j = {
     off 'org.codehaus.groovy.grails.orm.hibernate'      // hibernate integration
     off 'org.springframework'                           // Spring IoC
     off 'org.hibernate'                                 // hibernate ORM
-    
-    off 'grails.plugins.springsecurity'
-    off 'org.springframework.security'
-    off 'com.sungardhe.banner.security.BannerAccessDecisionVoter'
     
     // Grails provides a convenience for enabling logging within artefacts, using 'grails.app.XXX'.
     // Unfortunately, this configuration is not effective when 'mixing in' methods that perform logging.

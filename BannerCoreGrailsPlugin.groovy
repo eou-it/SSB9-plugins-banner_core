@@ -110,6 +110,9 @@ class BannerCoreGrailsPlugin {
                 underlyingDataSource( JndiObjectFactoryBean ) {
                     jndiName = "java:comp/env/${ConfigurationHolder.config.myDataSource.jndiName}"
                 }
+                underlyingSSBDataSource( JndiObjectFactoryBean ) {
+                    jndiName = "java:comp/env/${ConfigurationHolder.config.bannerSSBDataSource.jndiName}"
+                }
                 break
             default: // we'll use our locally configured dataSource for development and test environments
                 log.info "Using development/test datasource"
@@ -130,6 +133,23 @@ class BannerCoreGrailsPlugin {
                         username = "${ConfigurationHolder.config.myDataSource.username}"
                     }
                 }
+                underlyingSSBDataSource( BasicDataSource ) {
+                    maxActive = 5
+                    maxIdle = 2
+                    defaultAutoCommit = "false"
+                    if (ConfigurationHolder.config.elvyx.ssburl instanceof String || ConfigurationHolder.config.elvyx.ssburl instanceof GStringImpl) {
+                        log.info "Will use the 'elvyx' database driver to allow capture of SQL -- url: ${ConfigurationHolder.config.elvyx.ssburl}"
+                        log.info "Please launch the Elvyx UI to monitor SQL traffic... (see http://www.elvyx.com/ to download)"
+                        driverClassName = "${ConfigurationHolder.config.elvyx.driver}"
+                        url = "${ConfigurationHolder.config.elvyx.ssburl}"
+                    } 
+                    else {
+                        driverClassName = "${ConfigurationHolder.config.ssbDataSource.driver}"
+                        url = "${ConfigurationHolder.config.ssbDataSource.url}"
+                        password = "${ConfigurationHolder.config.ssbDataSource.password}"
+                        username = "${ConfigurationHolder.config.ssbDataSource.username}"
+                    }
+                }
                 break
         }
 
@@ -137,6 +157,7 @@ class BannerCoreGrailsPlugin {
 
         dataSource( BannerDataSource ) {
             underlyingDataSource = ref( underlyingDataSource )
+            underlyingSSBDataSource = ref( underlyingSSBDataSource )
             nativeJdbcExtractor = ref( nativeJdbcExtractor )
         }
 

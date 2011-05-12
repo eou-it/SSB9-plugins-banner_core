@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ © 2010-2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -41,19 +41,16 @@ import org.springframework.context.ApplicationContext
  */
 public class BannerAuthenticationProvider implements AuthenticationProvider {
 
-    private static final Logger log = Logger.getLogger( getClass() )
+    // note: using 'getClass()' here doesn't work -- hierarchical class loader issue?  Anyway, we'll just use a String
+    private static final Logger log = Logger.getLogger( "com.sungardhe.banner.security.BannerAuthenticationProvider" )
 
-    def dataSource // injected by Spring
+    def dataSource                  // injected by Spring
     def authenticationDataSource	// injected by Spring
+    
+    
     public Authentication authenticate( Authentication authentication ) {
-
-        // Determine if database authentication is successful
-         // Determine if database authentication is successful
+        
         def dbUser
-      //  def messageSource = ApplicationHolder.application.parentContext.getBean("messageSource")
-      //  println messageSource.getMessage('sectionBlock.scheduleBlock.tab.enrollment',Locale)
-
-
         
         def authenticationProvider = CH?.config.banner.sso.authenticationProvider
         log.trace "authenticationProvider = $authenticationProvider"
@@ -64,8 +61,8 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             dbUser = defaultAuthentication( authentication )
         }
 
-        def applicationContext = (ApplicationContext)ServletContextHolder.getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
-
+        def applicationContext = (ApplicationContext)ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
+ 
         if (!dbUser) {
             log.warn "BannerAuthenticationProvider was not able to authenticate user."
             return null
@@ -75,8 +72,9 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
             if (authorities) {
                 def user = new BannerUser( dbUser, authentication.credentials as String,
-                        true /*enabled*/, true /*accountNonExpired*/,
-                        true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities as Collection, getFullName( dbUser.toUpperCase(), dataSource ) as String  )
+                                           true /*enabled*/, true /*accountNonExpired*/,
+                                           true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities as Collection, 
+                                           getFullName( dbUser.toUpperCase(), dataSource ) as String  )
                 def token = new BannerAuthenticationToken( user )
                 log.trace "BannerAuthenticationProvider.authenticate authenticated user $user and is returning a token $token"
                 token
@@ -92,28 +90,6 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         }
     }
 
-    private def defaultAuthentication( Authentication authentication ) {
-        def conn
-        try {
-            authenticationDataSource.setURL( CH?.config?.myDataSource.url )
-            conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
-            log.trace "BannerAuthenticationProvider successfully authenticated user ${authentication.name} against data source ${dataSource.url}"
-        } catch (SQLException e) {
-            println e
-            log.error "BannerAuthenticationProvider not able to authenticate user ${authentication.name} against data source ${dataSource.url} due to exception $e.message"
-            return null
-        } finally {
-            conn?.close()
-        }
-        authentication.name
-    }
-
-    private def casAuthentication() {
-        log.trace "BannerAuthenticationProvider doing a cas authentication"
-        def attributeMap = RequestContextHolder.currentRequestAttributes().request.session.getAttribute( AbstractCasFilter.CONST_CAS_ASSERTION ).principal.attributes
-        def assertAttributeValue = attributeMap[CH?.config?.banner.sso.authenticationAssertionAttribute]
-        getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource )
-    }
 
     public static def getMappedDatabaseUserForUdcId( String udcId, def dataSource ) {
         def conn
@@ -123,8 +99,8 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             conn = dataSource.unproxiedConnection
             Sql db = new Sql( conn )
             def sqlStatement = '''SELECT gobeacc_username FROM gobumap, gobeacc
-                                WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
-            db.eachRow( sqlStatement, [udcId] ) {row ->
+                                  WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
+            db.eachRow( sqlStatement, [udcId] ) { row ->
                 dbUser = row.gobeacc_username
             }
         } catch (SQLException e) {
@@ -199,6 +175,31 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
       }
       log.trace "BannerAuthenticationProvider.getFullName is returning $fullName"
       fullName
+    }
+    
+
+    private def defaultAuthentication( Authentication authentication ) {
+        def conn
+        try {
+            authenticationDataSource.setURL( CH?.config?.myDataSource.url )
+            conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
+            log.trace "BannerAuthenticationProvider successfully authenticated user ${authentication.name} against data source ${dataSource.url}"
+        } catch (SQLException e) {
+            println e
+            log.error "BannerAuthenticationProvider not able to authenticate user ${authentication.name} against data source ${dataSource.url} due to exception $e.message"
+            return null
+        } finally {
+            conn?.close()
+        }
+        authentication.name
+    }
+
+
+    private def casAuthentication() {
+        log.trace "BannerAuthenticationProvider doing a cas authentication"
+        def attributeMap = RequestContextHolder.currentRequestAttributes().request.session.getAttribute( AbstractCasFilter.CONST_CAS_ASSERTION ).principal.attributes
+        def assertAttributeValue = attributeMap[CH?.config?.banner.sso.authenticationAssertionAttribute]
+        getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource )
     }
 
 }
