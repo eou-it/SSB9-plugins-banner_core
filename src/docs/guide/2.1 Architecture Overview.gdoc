@@ -13,7 +13,7 @@ The Grails framework is built upon the [Groovy|http://groovy.codehaus.org/] lang
 
 The following diagram provides a high-level depiction of a typical solution using this plugin.  Subsequent paragraphs will describe each of the main components identified within the diagram. 
 
-!horizon_high_level_arch.jpg!
+!high_level_arch.jpg!
 
 
 

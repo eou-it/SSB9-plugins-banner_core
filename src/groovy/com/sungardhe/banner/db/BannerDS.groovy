@@ -60,7 +60,7 @@ public class BannerDS implements DataSource {
     public Connection getConnection() throws SQLException {
         log.trace "BannerDS.getConnection() invoked and will delegate to the underlying dataSource"
 
-        Connection conn = underlyingDataSource.getConnection()
+        Connection conn = getUnderlyingDataSource().getConnection()
         OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
 
         log.debug "BannerDS.getConnection() has attained connection ${oconn} from the underlying dataSource"
@@ -105,7 +105,7 @@ public class BannerDS implements DataSource {
      * and not authorization. Subsequent calls to getConnection() method will unlock roles as appropriate.
      * */
     public Connection getUnproxiedConnection() {
-        Connection conn = underlyingDataSource.getConnection()
+        Connection conn = getUnderlyingDataSource().getConnection()
         OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
         return new BannerConnection( conn, null, this )  // Note that while an IDE may not like this, the delegate supports this type coersion
     }
@@ -201,9 +201,9 @@ public class BannerDS implements DataSource {
 	      try {
 	        //Getting the URL this way works only with Apache DBCP datasource
 	        //This does not work when using Weblogic server as Weblogic server returns a RmiDatasource
-	        url = underlyingDataSource.getUrl()
+	        url = getUnderlyingDataSource().getUrl()
 	      } catch(MissingMethodException e) {
-	        url = underlyingDataSource.connection.metaData.URL
+	        url = getUnderlyingDataSource().connection.metaData.URL
 	      }
 	      return url
 	}
@@ -212,47 +212,52 @@ public class BannerDS implements DataSource {
 	// -------------------- Pass through methods to delegate ------------------------
 	
 	public Connection getConnection( String username, String password ) {
-	    underlyingDataSource.getConnection( username, password )
+	    getUnderlyingDataSource().getConnection( username, password )
 	}
     
 
     public void setLogWriter( PrintWriter printWriter ) {
         log.trace "BannerDS.setLogWriter(printWriter) will set '$printWriter' onto the underyling dataSource"
-        underlyingDataSource.setLogWriter( printWriter )
+        getUnderlyingDataSource().setLogWriter( printWriter )
     }
     
 
     public PrintWriter getLogWriter() {
         log.trace 'BannerDS.getLogWriter() will delegate to underlying dataSource'
-        underlyingDataSource.getLogWriter()
+        getUnderlyingDataSource().getLogWriter()
     }
     
 
     boolean isWrapperFor( Class clazz ) {
         log.trace "BannerDS.isWrapperFor(clazz) was invoked with '$clazz' and will delegate to the underlying dataSource"
-        underlyingDataSource.isWrapperFor( clazz )
+        getUnderlyingDataSource().isWrapperFor( clazz )
     }
     
 
     Object unwrap( Class clazz ) {
         log.trace "BannerDS.unwrap(clazz) was invoked with '$clazz' and will delegate to the underlying dataSource"
-        underlyingDataSource.unwrap( clazz )
+        getUnderlyingDataSource().unwrap( clazz )
     }
     
 
     void setLoginTimeout( int i ) {
         log.trace "setLoginTimeout i = $i"
-        underlyingDataSource.setLoginTimeout( i )
+        getUnderlyingDataSource().setLoginTimeout( i )
     }
     
 
     int getLoginTimeout() {
         log.trace 'getLoginTimeout'
-        underlyingDataSource.getLoginTimeout()
+        getUnderlyingDataSource().getLoginTimeout()
     }
     
 
 // --------------------------- end of public methods ----------------------------
+
+
+    private DataSource getUnderlyingDataSource() {
+        underlyingDataSource // TODO: Pick between underlyingDataSource and underlyingSSBDataSource
+    }
 
 
     private proxy( OracleConnection oconn, userName ) {
