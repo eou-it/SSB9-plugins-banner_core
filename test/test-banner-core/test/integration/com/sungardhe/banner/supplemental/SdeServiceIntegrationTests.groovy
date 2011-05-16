@@ -33,6 +33,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         formContext = ['STVCOLL']
         super.setUp()
         //insertUserDefinedAttrGTVZIPCTable()
+        updateGorsdamTableValidation()
     }
 
 
@@ -150,7 +151,7 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "NUMBER", found.NUMBER."1".dataType
         assertEquals "S", found.NUMBER."1".discType
         assertEquals 1, found.NUMBER."1".validation
-        assertEquals 2, found.NUMBER."1".dataLength
+        assertEquals 6, found.NUMBER."1".dataLength
         assertEquals 2, found.NUMBER."1".dataScale
         assertEquals "with 2 decimal points", found.NUMBER."1".attrInfo
         assertEquals 3, found.NUMBER."1".attrOrder
@@ -494,6 +495,50 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
 
     }
 
+    void testValidationSDE() {
+        def found = Zip.findByCodeAndCity("00001", "newcity")
+
+        found.dataOrigin = "test"
+        found.COMMENTS."1".value = "my comments"
+        found.TEST."1".value = "my test"
+        found.NUMBER."1".value = "105666"
+
+        try {
+            def zip = zipService.update(found)
+            fail "This should have failed"
+        }
+        catch (ApplicationException ae) {
+            if (ae.wrappedException =~ /\*Error\* Invalid Number. Expected format: 999D99/)
+                println "Found correct message code *Error* Invalid Number. Expected format: 999D99"
+            else
+                fail("Did not find expected error code *Error* Invalid Number. Expected format: 999D99, found: ${ae.wrappedException}")
+        }
+    }
+
+
+    void testValidationLov() {
+
+        updateGorsdamTableLov()
+
+        def found = Zip.findByCodeAndCity("00001", "newcity")
+
+        found.dataOrigin = "test"
+        found.COMMENTS."1".value = "1234"
+        found.TEST."1".value = "my test"
+        found.NUMBER."1".value = "10"
+
+        try {
+            def zip = zipService.update(found)
+            fail "This should have failed"
+        }
+        catch (ApplicationException ae) {
+            if (ae.wrappedException =~ /\*Error\* Value 1234 not found in validation table STVTERM./)
+                println "Found correct message code *Error* Value 1234 not found in validation table STVTERM."
+            else
+                fail("Did not find expected error code *Error* Value 1234 not found in validation table STVTERM., found: ${ae.wrappedException}")
+        }
+    }
+
 
 
     private def updateGORSDAVTable() {
@@ -518,6 +563,44 @@ class SdeServiceIntegrationTests extends BaseIntegrationTestCase {
                                  GORSDAM_ATTR_PROMPT, GORSDAM_ACTIVITY_DATE,
                                  GORSDAM_USER_ID,GORSDAM_SDDC_CODE ) values
             ('GTVZIPC', 'USERDEFINED','A',4,'Y','VARCHAR2','User Defined %DISC%',sysdate,user,'cyndy3')
+            """)
+        }
+        finally {
+            sql?.close()  // note that the test will close the connection, since it's our current session's connection
+        }
+    }
+
+
+    private def updateGorsdamTableValidation() {
+        def sql
+        try {
+            sql = new Sql(sessionFactory.getCurrentSession().connection())
+            sql.executeUpdate("""
+            UPDATE GORSDAM
+              SET GORSDAM_ATTR_DATA_LEN = 6,
+                  GORSDAM_ATTR_DATA_SCALE = 2
+            WHERE GORSDAM_TABLE_NAME = 'GTVZIPC'
+              AND GORSDAM_ATTR_NAME = 'NUMBER'
+            """)
+        }
+        finally {
+            sql?.close()  // note that the test will close the connection, since it's our current session's connection
+        }
+    }
+
+    private def updateGorsdamTableLov() {
+        def sql
+        try {
+            sql = new Sql(sessionFactory.getCurrentSession().connection())
+            sql.executeUpdate("""
+                 UPDATE GORSDAM
+                SET GORSDAM_LOV_FORM = 'STVTERM',
+                    GORSDAM_GJAPDEF_VALIDATION = 'LOV_VALIDATION',
+                    GORSDAM_ATTR_DATA_LEN = 20,
+                    GORSDAM_LOV_LOW_SYSDATE_IND = 'N',
+                    GORSDAM_LOV_HIGH_SYSDATE_IND = 'N'
+              WHERE GORSDAM_TABLE_NAME = 'GTVZIPC'
+                AND GORSDAM_ATTR_NAME = 'COMMENTS'
             """)
         }
         finally {

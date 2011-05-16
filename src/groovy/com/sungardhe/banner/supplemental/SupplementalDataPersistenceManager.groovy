@@ -15,6 +15,7 @@ import org.apache.log4j.Logger
 import java.text.SimpleDateFormat
 import java.text.ParseException
 import com.sungardhe.banner.configuration.SupplementalDataUtils
+import com.sungardhe.banner.exceptions.ApplicationException
 
 /**
  * DAO for supplemental data. This strategy works against the
@@ -132,6 +133,39 @@ class SupplementalDataPersistenceManager {
                     }
 
                     if (log.isDebugEnabled()) debug(id, tableName, attributeName, disc, parentTab, dataType, value)
+
+                   // Validation Call
+
+                    sql.call("""
+	                       DECLARE
+
+	                        lv_msg varchar2(2000);
+	                        p_value_as_char_out varchar2(2000);
+
+	                        BEGIN
+
+	                        p_value_as_char_out := ${value};
+
+	                        lv_msg := gp_goksdif.f_validate_value(
+	                            p_table_name => ${tableName},
+	                            p_attr_name => ${attributeName},
+	                            p_disc => ${disc},
+	                            p_pk_parenttab => ${parentTab},
+	                            p_attr_data_type => ${dataType},
+	                            p_form_or_process => 'BANNER',
+	                            p_value_as_char => p_value_as_char_out
+	                        );
+
+	                         ${Sql.VARCHAR} := lv_msg;
+
+	                END ;
+                  """
+                    ) {msg ->
+                        if (msg != "Y")
+                            throw new ApplicationException(model, msg)
+                    }
+
+                    // End Validation
 
                     sql.call("""declare
 					                  l_rowid VARCHAR2(18):= gfksjpa.f_get_row_id(${sdeTableName},${id});
