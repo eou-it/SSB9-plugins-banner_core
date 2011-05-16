@@ -45,7 +45,7 @@ public class BannerDS implements DataSource {
 
     // Delegates all methods not implemented here, to the underlying dataSource injected via Spring.
     DataSource underlyingDataSource
-    DataSource underlyingSSBDataSource
+    DataSource underlyingSsbDataSource
 
     def nativeJdbcExtractor  // injected by Spring
 

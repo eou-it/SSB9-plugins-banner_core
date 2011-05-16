@@ -100,6 +100,8 @@ class BannerCoreGrailsPlugin {
     def doWithWebDescriptor = { xml ->
         // no-op
     }
+    
+    
 
 
     def doWithSpring = {
@@ -110,8 +112,8 @@ class BannerCoreGrailsPlugin {
                 underlyingDataSource( JndiObjectFactoryBean ) {
                     jndiName = "java:comp/env/${ConfigurationHolder.config.myDataSource.jndiName}"
                 }
-                if (ConfigurationHolder.config.bannerSsbDataSource.jndiName instanceof String || ConfigurationHolder.config.bannerSsbDataSource.jndiName instanceof GStringImpl) {
-                    underlyingSSBDataSource( JndiObjectFactoryBean ) {
+                if (isSsbEnabled()) {
+                    underlyingSsbDataSource( JndiObjectFactoryBean ) {
                         jndiName = "java:comp/env/${ConfigurationHolder.config.bannerSsbDataSource.jndiName}"
                     }
                 }
@@ -135,25 +137,27 @@ class BannerCoreGrailsPlugin {
                         username = "${ConfigurationHolder.config.myDataSource.username}"
                     }
                 }
-                if (ConfigurationHolder.config.elvyx.bannerSsbDataSource.url instanceof String || ConfigurationHolder.config.elvyx.bannerSsbDataSource.url instanceof GStringImpl) {
-                    log.info "Will use the 'elvyx' database driver to allow capture of SQL -- url: ${ConfigurationHolder.config.elvyx.bannerSsbDataSource.url}"
-                    log.info "Please launch the Elvyx UI to monitor SQL traffic... (see http://www.elvyx.com/ to download)"
-                    underlyingSSBDataSource( BasicDataSource ) {
-                        maxActive = 5
-                        maxIdle = 2
-                        defaultAutoCommit = "false"
-                        driverClassName = "${ConfigurationHolder.config.elvyx.bannerSsbDataSource.driver}"
-                        url = "${ConfigurationHolder.config.elvyx.bannerSsbDataSource.url}"
-                    }
-                } else if (ConfigurationHolder.config.bannerSsbDataSource.jndiName instanceof String || ConfigurationHolder.config.bannerSsbDataSource.jndiName instanceof GStringImpl) {
-                    underlyingSSBDataSource( BasicDataSource ) {
-                        maxActive = 5
-                        maxIdle = 2
-                        defaultAutoCommit = "false"
-                        driverClassName = "${ConfigurationHolder.config.bannerSsbDataSource.driver}"
-                        url = "${ConfigurationHolder.config.bannerSsbDataSource.url}"
-                        password = "${ConfigurationHolder.config.bannerSsbDataSource.password}"
-                        username = "${ConfigurationHolder.config.bannerSsbDataSource.username}"
+                if (isSsbEnabled()) {
+                    if (ConfigurationHolder.config.elvyx.bannerSsbDataSource.url instanceof String || ConfigurationHolder.config.elvyx.bannerSsbDataSource.url instanceof GStringImpl) {
+                        log.info "Will use the 'elvyx' database driver to allow capture of SQL -- url: ${ConfigurationHolder.config.elvyx.bannerSsbDataSource.url}"
+                        log.info "Please launch the Elvyx UI to monitor SQL traffic... (see http://www.elvyx.com/ to download)"
+                        underlyingSsbDataSource( BasicDataSource ) {
+                            maxActive = 5
+                            maxIdle = 2
+                            defaultAutoCommit = "false"
+                            driverClassName = "${ConfigurationHolder.config.elvyx.bannerSsbDataSource.driver}"
+                            url = "${ConfigurationHolder.config.elvyx.bannerSsbDataSource.url}"
+                        }
+                    } else {
+                        underlyingSsbDataSource( BasicDataSource ) {
+                            maxActive = 5
+                            maxIdle = 2
+                            defaultAutoCommit = "false"
+                            driverClassName = "${ConfigurationHolder.config.bannerSsbDataSource.driver}"
+                            url = "${ConfigurationHolder.config.bannerSsbDataSource.url}"
+                            password = "${ConfigurationHolder.config.bannerSsbDataSource.password}"
+                            username = "${ConfigurationHolder.config.bannerSsbDataSource.username}"
+                        }
                     }
                 }
             break               
@@ -165,8 +169,8 @@ class BannerCoreGrailsPlugin {
         dataSource( BannerDataSource ) {
             underlyingDataSource = ref( underlyingDataSource )
             try {
-                underlyingSSBDataSource = ref( underlyingSSBDataSource )
-            } catch (MissingPropertyException) { } // don't inject this if we haven't configured this datasource
+                underlyingSsbDataSource = ref( underlyingSsbDataSource )
+            } catch (MissingPropertyException) { } // don't inject it if we haven't configured this datasource
             nativeJdbcExtractor = ref( nativeJdbcExtractor )
         }
 
@@ -371,4 +375,10 @@ class BannerCoreGrailsPlugin {
 
         listeners."${typeProperty}" = expandedTypeListeners
     }
+    
+    
+    private def isSsbEnabled() {
+        ConfigurationHolder.config.ssbEnabled instanceof Boolean ? ConfigurationHolder.config.ssbEnabled : false
+    }
+    
 }
