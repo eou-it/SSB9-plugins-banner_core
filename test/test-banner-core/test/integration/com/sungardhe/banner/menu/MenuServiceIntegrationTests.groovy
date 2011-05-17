@@ -41,7 +41,11 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
 
   }
 
+  void testGotoMenu() {
+    String mnu = menuService.gotoMenu()
+    assertNotNull mnu
 
+  }
   void testGetFormName() {
     def pageName
     pageName = menuService.getFormName("basicCourseInformation")
