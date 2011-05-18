@@ -15,6 +15,54 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
  WITHOUT THE WRITTEN PERMISSION OF THE SAID COMPANY
  ****************************************************************************** */
 class DynamicFinder {
+
+    def domainClass
+    def query
+    def tableIdentifier
+    def requiredFields
+    def queryableFields
+    def criteria
+    def pagingAndSortParams
+    def headerMap
+
+    public DynamicFinder( domainClass, query, tableIdentifier, requiredFields, queryableFields, headerMap ) {
+		this.domainClass = domainClass
+		this.query = query
+		this.tableIdentifier = tableIdentifier
+		this.requiredFields = requiredFields
+		this.queryableFields = queryableFields
+		this.headerMap = headerMap
+	}
+
+    public def find( criteria, pagingAndSortParams ){
+       // This is a convenience method to take a more readable multiline string and collapse it down to a one line string
+        String.metaClass.flattenString = {
+            return delegate.replace( "\n", "" ).replaceAll( /  */, " " )
+        }
+
+        def sortColumnName
+        if(pagingAndSortParams.sortColumn){
+            sortColumnName = headerMap.get(pagingAndSortParams.sortColumn)
+        }
+        pagingAndSortParams.put("sortColumn",sortColumnName)
+        def queryString =  com.sungardhe.banner.query.QueryBuilder.buildQuery( query.flattenString(), tableIdentifier, requiredFields, queryableFields ,criteria,pagingAndSortParams )
+
+        def list =  domainClass.findAll( queryString, criteria, pagingAndSortParams )
+
+        return list
+    }
+
+    public def count ( criteria ) {
+        String.metaClass.flattenString = {
+            return delegate.replace( "\n", "" ).replaceAll( /  */, " " )
+        }
+
+        def queryString =  com.sungardhe.banner.query.QueryBuilder.buildCountQuery( query.flattenString(), tableIdentifier, requiredFields, queryableFields ,criteria )
+        def returnListCount = domainClass.executeQuery( queryString, criteria )
+
+        return returnListCount[0]
+    }
+
     public static def fetchAll ( domainClass, query, tableIdentifier, requiredFields, queryableFields, criteria, pagingAndSortParams, headerMap) {
         // This is a convenience method to take a more readable multiline string and collapse it down to a one line string
               String.metaClass.flattenString = {
@@ -32,7 +80,6 @@ class DynamicFinder {
 
         return list
     }
-
 
     public static def countAll (domainClass, query, tableIdentifier, requiredFields, queryableFields, criteria) {
               String.metaClass.flattenString = {
