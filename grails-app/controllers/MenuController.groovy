@@ -13,7 +13,7 @@ class MenuController {
 
     def menuService
     def mnuLabel = "Banner"
-    private static final log = Logger.getLogger(getClass())
+    private final log = Logger.getLogger(getClass())
 
     def data = {
         def menuType

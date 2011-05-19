@@ -17,7 +17,7 @@ class MenuService {
     static transactional = true
     def menuAndToolbarPreferenceService
     def sessionFactory
-    private static final log = Logger.getLogger(getClass())
+    private final log = Logger.getLogger(getClass())
 
 
     /**
