@@ -65,8 +65,10 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
  
         if (!dbUser) {
             log.warn "BannerAuthenticationProvider was not able to authenticate user."
+            applicationContext.publishEvent( new BannerAuthenticationEvent(authentication.name, false, 'BannerAuthenticationProvider - Invalid password tried', 'BannerAuthenticationProvider', new Date(), 1) )
             return null
         }
+        applicationContext.publishEvent( new BannerAuthenticationEvent(dbUser, true, '', '', new Date(), '') )
         try {
             Collection<GrantedAuthority> authorities = determineAuthorities( dbUser.toUpperCase(), dataSource )
 
@@ -81,6 +83,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             }
             else {
                 log.warn "BannerAuthenticationProvider found no authorities for user $authentication.name"
+                applicationContext.publishEvent( new BannerAuthenticationEvent(dbUser, false, 'BannerAuthenticationProvider -  No authorities found', 'BannerAuthenticationProvider', new Date(), 1) )
                 return null
             }
         }

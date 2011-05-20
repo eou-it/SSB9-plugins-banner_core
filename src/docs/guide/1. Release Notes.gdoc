@@ -1,11 +1,14 @@
 
-h4. Version NEXT
+h4.  0.2.33
 
 * The BannerDataSource (see BannerDS) can now set a session 'identifier' and the dbms_application_info 'module' and 'action'. 
 ** ServiceBase CRUD methods now set the 'module' and 'action' to facilitate tracking database connections within the database.
 ** BannerConnection now sets the identifier when it is created (i.e., when it wraps a connection being retrieved from the underlying dataSource)
 * Added KeyBlockHolder as a mechanism to pass key block information to a service, outside of the service invocation. 
 * Added 'setApiContext( String packageName, String contextName, String contextVal )' utility method to ServiceBase, to facilitate setting Banner database API context variables. 
+* Banner General 8.4 SDE Support Validation
+* Fixes for login/violation statistics
+
 
 h4. Version 0.2.31
 

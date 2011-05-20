@@ -127,7 +127,6 @@ class MenuService {
             def clnMenu = true
             if (it.gutmenu_objt_code == "MENU")
                 menuMap.add(it.gutmenu_value)
-            println "Before - " + it.gutmenu_value || it.gubpage_name  ||it.gutmenu_prior_obj
             if ((it.gutmenu_objt_code == "FORM") && (!menuMap.contains(it.gutmenu_prior_obj)))
                 clnMenu = false
             if (clnMenu) {

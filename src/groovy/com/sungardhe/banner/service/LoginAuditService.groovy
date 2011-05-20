@@ -33,24 +33,9 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
         def conn
         def sql
         try {
-            def name = event.userName
             conn = dataSource.unproxiedConnection
             sql = new Sql( conn )
-            def count = 0
-            sql.eachRow("select GURLOGN_BAN9_LOGON_COUNT from GURLOGN where upper(GURLOGN_USER) =upper(?)", [name]) { row ->
-                count = row.GURLOGN_BAN9_LOGON_COUNT
-            }
-            if (count == 0) {
-                sql.execute("""insert into GURLOGN(GURLOGN_USER, GURLOGN_BAN9_LOGON_COUNT, GURLOGN_BAN9_LAST_LOGON_DATE,
-                    GURLOGN_BAN9_FIRST_LOGON_DATE) values (?,?,sysdate,sysdate)""", [name, 1])
-                return
-            } else if (count == null) {
-                sql.executeUpdate("""update GURLOGN set GURLOGN_BAN9_LOGON_COUNT = ?, GURLOGN_BAN9_LAST_LOGON_DATE = sysdate,
-                    GURLOGN_BAN9_FIRST_LOGON_DATE = sysdate where GURLOGN_USER = ?""", [1,  name])
-            } else {
-                sql.executeUpdate("""update GURLOGN set GURLOGN_BAN9_LOGON_COUNT = ?, GURLOGN_BAN9_LAST_LOGON_DATE = sysdate
-                    where GURLOGN_USER = ?""", [count + 1, name])
-            }
+            sql.call("begin g\$_security.g\$_check_logon_rules('BAN9',?); commit; end;",[event.userName])
         } catch (Exception e) {
             e.printStackTrace()
         } finally {
@@ -64,9 +49,7 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
         try {
             conn = dataSource.unproxiedConnection
             sql = new Sql( conn )
-            java.sql.Date date = new java.sql.Date( System.currentTimeMillis() )
-            sql.execute("""insert into bansecr.guralog(GURALOG_OBJECT, GURALOG_USERID, GURALOG_REASON, GURALOG_SEVERITY_LEVEL,
-                GURALOG_ACTIVITY_DATE) values (?,?,?,?,?)""", [event.module, event.userName, event.message, event.severity, date])
+            sql.call("begin g\$_security.g\$_create_log_record(?,?,?,?); commit; end;",[event.userName,event.module,event.message, event.severity])
         } catch (Exception e) {
             e.printStackTrace()
         } finally {
