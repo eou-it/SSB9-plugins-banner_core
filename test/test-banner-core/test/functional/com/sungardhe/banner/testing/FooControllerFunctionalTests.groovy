@@ -41,6 +41,13 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
         assertTitle "Denied"
     }
 
+    // ---- Test for split url format
+    void testSplitUrlFormat() {
+        login()
+        get( "/banner.zul?page=nope" )
+        assertTitle "Denied"
+
+    }
 
     // --------------------- Test HTML Representation, non-RESTfully ------------------------
 

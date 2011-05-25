@@ -19,6 +19,7 @@ import org.springframework.security.access.AccessDecisionVoter
 import org.springframework.security.access.ConfigAttribute
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.FilterInvocation
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * A Spring Security RoleVoter that authorizes a user by determining if any of
@@ -92,6 +93,12 @@ class BannerAccessDecisionVoter extends RoleVoter {
           splitIndex = 3
         }
         def urlParts = lcUrl.split( /\/|\?|\./ ).toList() // note, first element will be empty string (i.e., representing before the first '/')
+
+        if (splitIndex && urlParts[1] != 'api') {
+            def pageName = RequestContextHolder.currentRequestAttributes().request.getParameter("page")?.toLowerCase()
+            return CH.config.formControllerMap[pageName]
+        }
+
         log.debug "BannerAccessDecisionVoter.vote() has parsed url into: $urlParts"
         def result = CH.config.formControllerMap?.find { k, v ->
             if(splitIndex){
