@@ -1,6 +1,5 @@
 /** *****************************************************************************
-
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ © 2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -11,11 +10,20 @@
  ****************************************************************************** */
 package com.sungardhe.banner.security
 
+import org.springframework.web.context.request.RequestContextHolder as RCH
+
+
+/**
+ * A grails filter used to establish a 'Form Context'.  
+ * A FormContext is used to represent the Banner classic Oracle Form for which 
+ * a request corresponds. By establishing a relationship between pages and 
+ * Banner classic Oracle Forms, we can continue to leverage existing 
+ * Banner security configuration. 
+ **/
 class AccessControlFilters {
 
 
     def filters = {
-
 
         /**
          * This filter sets a 'FormContext' (thread local) based upon which controller is being accessed.
@@ -25,11 +33,17 @@ class AccessControlFilters {
         setFormContext( controller:'*', action:'*' ) {
 
             before = {
-                Map formControllerMap = grailsApplication.config.formControllerMap
-                def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
+                
+                if (RCH.currentRequestAttributes().request.getRequestURI() ==~ /ssb/) {
+                    FormContext.set( [ "SELFSERVICE" ] )
+                }
+                else {
+                    Map formControllerMap = grailsApplication.config.formControllerMap
+                    def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
 
-                FormContext.set( associatedFormsList )
-                log.debug "The AccessControl 'setFormContext' before filter has set a form context for controller $controllerName of: $associatedFormsList"
+                    FormContext.set( associatedFormsList )
+                    log.debug "The AccessControl 'setFormContext' before filter has set a form context for controller $controllerName of: $associatedFormsList"
+                }                
             }
 
             after = {
@@ -37,9 +51,7 @@ class AccessControlFilters {
                 log.debug "The AccessControl 'setFormContext' after filter has cleared the form context"
             }
 
-            afterView = {
-
-            }
+            afterView = { }
         }
     }
 

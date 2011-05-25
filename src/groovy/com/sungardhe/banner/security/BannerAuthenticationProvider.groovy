@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010-2011 SunGard Higher Education.  All Rights Reserved.
+ © 2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -10,31 +10,34 @@
  ****************************************************************************** */
 package com.sungardhe.banner.security
 
-
 import com.sungardhe.banner.db.BannerDS
+import com.sungardhe.banner.service.LoginAuditService
 
+import java.sql.SQLException
+
+import javax.sql.DataSource
+
+import groovy.sql.Sql
+
+import oracle.jdbc.pool.OracleDataSource
+
+import org.apache.log4j.Logger
+
+import org.jasig.cas.client.util.AbstractCasFilter
+
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
+
+import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.GrantedAuthorityImpl
-
-import java.sql.SQLException
-
-import groovy.sql.Sql
-
-import org.apache.log4j.Logger
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-
-import oracle.jdbc.pool.OracleDataSource
-import org.jasig.cas.client.util.AbstractCasFilter
 import org.springframework.web.context.request.RequestContextHolder
-import com.sungardhe.banner.service.LoginAuditService
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
-import org.springframework.context.ApplicationContext
+
 
 /**
  * An authentication provider which authenticates a user by logging into the Banner database.
@@ -46,6 +49,12 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     def dataSource                  // injected by Spring
     def authenticationDataSource	// injected by Spring
+
+
+    public boolean supports( Class clazz ) {
+        log.trace "BannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken}"
+        return clazz == UsernamePasswordAuthenticationToken
+    }
     
     
     public Authentication authenticate( Authentication authentication ) {
@@ -53,7 +62,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         def dbUser
         
         def authenticationProvider = CH?.config.banner.sso.authenticationProvider
-        log.trace "authenticationProvider = $authenticationProvider"
+        log.trace "BannerAuthenticationProvider.authenticate invoked, 'authenticationProvider' configuration = $authenticationProvider"
 
         if ('cas'.equalsIgnoreCase( authenticationProvider )) {
             dbUser = casAuthentication()
@@ -61,19 +70,21 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             dbUser = defaultAuthentication( authentication )
         }
 
-        def applicationContext = (ApplicationContext)ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
+        def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
  
         if (!dbUser) {
             log.warn "BannerAuthenticationProvider was not able to authenticate user."
-            applicationContext.publishEvent( new BannerAuthenticationEvent(authentication.name, false, 'BannerAuthenticationProvider - Invalid password tried', 'BannerAuthenticationProvider', new Date(), 1) )
+            applicationContext.publishEvent( new BannerAuthenticationEvent( authentication.name, false, 'BannerAuthenticationProvider - Invalid password tried', 
+                                                                            'BannerAuthenticationProvider', new Date(), 1 ) )
             return null
         }
-        applicationContext.publishEvent( new BannerAuthenticationEvent(dbUser, true, '', '', new Date(), '') )
+        applicationContext.publishEvent( new BannerAuthenticationEvent( dbUser, true, '', '', new Date(), '' ) )
+        
         try {
             Collection<GrantedAuthority> authorities = determineAuthorities( dbUser.toUpperCase(), dataSource )
 
             if (authorities) {
-                def user = new BannerUser( dbUser, authentication.credentials as String,
+                def user = new BannerUser( dbUser, authentication.credentials as String, dbUser, 
                                            true /*enabled*/, true /*accountNonExpired*/,
                                            true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities as Collection, 
                                            getFullName( dbUser.toUpperCase(), dataSource ) as String  )
@@ -83,7 +94,8 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             }
             else {
                 log.warn "BannerAuthenticationProvider found no authorities for user $authentication.name"
-                applicationContext.publishEvent( new BannerAuthenticationEvent(dbUser, false, 'BannerAuthenticationProvider -  No authorities found', 'BannerAuthenticationProvider', new Date(), 1) )
+                applicationContext.publishEvent( new BannerAuthenticationEvent( dbUser, false, 'BannerAuthenticationProvider -  No authorities found', 
+                                                                                'BannerAuthenticationProvider', new Date(), 1 ) )
                 return null
             }
         }
@@ -98,7 +110,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         def conn
         def dbUser
         try {
-            log.trace "BannerAuthenticationProvider mapping for udcId = $udcId"
+            log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId mapping for udcId = $udcId"
             conn = dataSource.unproxiedConnection
             Sql db = new Sql( conn )
             def sqlStatement = '''SELECT gobeacc_username FROM gobumap, gobeacc
@@ -114,13 +126,8 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         }
         dbUser
     }
-
-
-    public boolean supports( Class clazz ) {
-        return clazz == UsernamePasswordAuthenticationToken
-    }
-
-
+    
+    
     public static Collection<GrantedAuthority> determineAuthorities( String name, def dataSource ) {
         def conn = null
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
@@ -141,6 +148,44 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         } finally {
             conn?.close()
         }
+        log.trace "BannerAuthenticationProvider.determineAuthorities is returning $authorities"
+        authorities
+    }
+
+
+/*    public static Collection<GrantedAuthority> determineAuthorities( String oracleUserName, DataSource dataSource ) {
+
+        def conn
+        def db
+        try {
+            // We query the database for all role assignments for the user, using an unproxied connection.
+            // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
+            conn = dataSource.unproxiedConnection
+            db = new Sql( conn )
+log.trace "XXXXXXXXXXXXXXXXXXX determineAuthorities for $oracleUserName will use conn $conn and db $db"
+            return determineAuthorities( oracleUserName, db )
+        } finally {
+log.trace "XXXXXXXXXXXXXXXXXXX determineAuthorities for $oracleUserName will close conn $conn"
+//            db?.close()
+//            conn?.close()
+        }        
+    }
+*/    
+    
+    public static Collection<GrantedAuthority> determineAuthorities( String oracleUserName, Sql db ) {
+        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
+        try {
+            // We query the database for all role assignments for the user, using an unproxied connection.
+            // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
+            db.eachRow( "select * from govurol where govurol_userid = ?", [oracleUserName] ) { row ->
+                def authority = BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, row.GOVUROL_ROLE_PSWD )
+                // log.trace "BannerAuthenticationProvider.determineAuthorities is adding authority $authority"
+                authorities << authority
+            }
+        } catch (SQLException e) {
+            log.error "BannerAuthenticationProvider not able to determine Authorities for user $oracleUserName due to exception $e.message"
+            return null
+        } 
         log.trace "BannerAuthenticationProvider.determineAuthorities is returning $authorities"
         authorities
     }
@@ -186,9 +231,8 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         try {
             authenticationDataSource.setURL( CH?.config?.myDataSource.url )
             conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
-            log.trace "BannerAuthenticationProvider successfully authenticated user ${authentication.name} against data source ${dataSource.url}"
+            log.trace "BannerAuthenticationProvider.defaultAuthentication successfully authenticated user ${authentication.name} against data source ${dataSource.url}"
         } catch (SQLException e) {
-            println e
             log.error "BannerAuthenticationProvider not able to authenticate user ${authentication.name} against data source ${dataSource.url} due to exception $e.message"
             return null
         } finally {
@@ -199,11 +243,10 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
 
     private def casAuthentication() {
-        log.trace "BannerAuthenticationProvider doing a cas authentication"
+        log.trace "BannerAuthenticationProvider.casAuthentication doing CAS authentication"
         def attributeMap = RequestContextHolder.currentRequestAttributes().request.session.getAttribute( AbstractCasFilter.CONST_CAS_ASSERTION ).principal.attributes
         def assertAttributeValue = attributeMap[CH?.config?.banner.sso.authenticationAssertionAttribute]
         getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource )
     }
 
 }
-

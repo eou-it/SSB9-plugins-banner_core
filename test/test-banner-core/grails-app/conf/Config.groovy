@@ -185,7 +185,8 @@ String loggingFileName = "${loggingFileDir}/$environment-${appName}.log".toStrin
 
 log4j = {
     appenders {
-        rollingFile name:'appLog', file:loggingFileName, maxFileSize:"${10*1024*1024}", maxBackupIndex:10, layout:pattern( conversionPattern: '%d{[EEE, dd-MMM-yyyy @ HH:mm:ss.SSS]} [%t] %-5p %c %x - %m%n' )
+        rollingFile name:'appLog', file:loggingFileName, maxFileSize:"${10*1024*1024}", maxBackupIndex:10, 
+                    layout:pattern( conversionPattern: '%d{[EEE, dd-MMM-yyyy @ HH:mm:ss.SSS]} [%t] %-5p %c %x - %m%n' )
     }
     
     switch( environment?.toString() ) {
@@ -222,7 +223,8 @@ log4j = {
     
     // ******** non-Grails classes (e.g., in src/ or grails-app/utils/) *********
     off 'com.sungardhe.banner.security'
-    off 'com.sungardhe.banner.security.BannerAuthenticationProvider'
+    all 'com.sungardhe.banner.security.BannerAuthenticationProvider'
+    all 'com.sungardhe.banner.security.SelfServiceBannerAuthenticationProvider'
     off 'com.sungardhe.banner.BannerAuthenticationProvider'
     off 'com.sungardhe.banner.security.BannerAccessDecisionVoter'
     off 'grails.plugins.springsecurity'
@@ -281,9 +283,9 @@ log4j = {
 // connection is attained and the user has the necessary role, the role is enabled
 // for that user and Banner object.
 formControllerMap = [
-        'foo' : [ 'STVCOLL' ],
-        'foobar' : [ 'STVCOLL' ],
-        'nope' : [ 'NOPE' ], // not a real controller - but we'll never get that far...
+        'foo':    [ 'STVCOLL', 'SELFSERVICE' ],
+        'foobar': [ 'STVCOLL' ],
+        'nope':   [ 'NOPE' ], // not a real controller - used for testing...
 ]
 
 // The following map is used to secure URLs, based upon authentication or role-based authorization.
@@ -291,16 +293,20 @@ formControllerMap = [
 // the corresponding Banner Form/Object (except if their only applicable role ends with '_CONNECT').
 // Please see comments below regarding the special 'ROLE_DETERMINED_DYNAMICALLY' role.
 grails.plugins.springsecurity.interceptUrlMap = [
-        '/': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-        '/zkau/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-        '/zkau**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-        '/login/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-        '/logout/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-        '/js/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-        '/css/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-        '/images/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/':           ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/zkau/**':    ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/zkau**':     ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/login/**':   ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/logout/**':  ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/js/**':      ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/css/**':     ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/images/**':  ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/plugins/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-        '/errors/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/errors/**':  ['IS_AUTHENTICATED_ANONYMOUSLY'],
+
+//        '/ssb/student/**': ['ROLE_SELFSERVICE_STUDENT'], 
+//        '/ssb/alumni/**':  ['ROLE_SELFSERVICE_ALUMNI'], 
+        '/ssb/**':         ['ROLE_SELFSERVICE_WEBUSER'], 
 
          // ALL URIs specified with the BannerAccessDecisionVoter.ROLE_DETERMINED_DYNAMICALLY
          // 'role' (it's not a real role) will result in authorization being determined based
@@ -327,7 +333,7 @@ grails.plugins.springsecurity.interceptUrlMap = [
 // before the normal 'roleVoter' (as we will grant access without requiring roles to be specified per URL
 // within the interceptUrlMap below.)
 grails.plugins.springsecurity.useRequestMapDomainClass = false
-grails.plugins.springsecurity.providerNames = ['bannerAuthenticationProvider']
+grails.plugins.springsecurity.providerNames = [ /*'selfServiceBannerAuthenticationProvider',*/ 'bannerAuthenticationProvider' ]
 grails.plugins.springsecurity.rejectIfNoRule = true
 
 // FYI: grails.plugins.springsecurity.filterChain.chainMap is set programmatically by the banner-core plugin.

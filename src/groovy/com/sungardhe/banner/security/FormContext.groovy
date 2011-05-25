@@ -30,13 +30,18 @@ public class FormContext {
     }
 
 
-    public static void set(List formNames) {
+    public static void set( List formNames ) {
         storage.set formNames
     }
 
 
     public static void clear() {
         storage.set null
+    }
+    
+    
+    public static boolean isSelfService() {
+        storage.get() && storage.get().contains( "SELFSERVICE" )
     }
 
 

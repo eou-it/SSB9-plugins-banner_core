@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ © 2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -12,6 +12,7 @@
 import com.sungardhe.banner.controllers.RestfulControllerMixin
 import com.sungardhe.banner.db.BannerDS as BannerDataSource
 import com.sungardhe.banner.security.BannerAuthenticationProvider
+//import com.sungardhe.banner.security.SelfServiceBannerAuthenticationProvider
 import com.sungardhe.banner.service.ServiceBase
 import com.sungardhe.banner.supplemental.SupplementalDataSupportMixin
 import com.sungardhe.banner.supplemental.SupplementalDataHibernateListener
@@ -53,8 +54,7 @@ import java.util.concurrent.Executors
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access
  * for Banner web applications.
- * */
-@Transactional()
+ **/
 class BannerCoreGrailsPlugin {
 
     // Note: the groupId 'should' be used when deploying this plugin via the 'grails maven-deploy --repository=snapshots' command,
@@ -101,8 +101,6 @@ class BannerCoreGrailsPlugin {
         // no-op
     }
     
-    
-
 
     def doWithSpring = {
 
@@ -137,7 +135,7 @@ class BannerCoreGrailsPlugin {
                         username = "${ConfigurationHolder.config.myDataSource.username}"
                     }
                 }
-                if (isSsbEnabled()) {
+/*                if (isSsbEnabled()) {
                     if (ConfigurationHolder.config.elvyx.bannerSsbDataSource.url instanceof String || ConfigurationHolder.config.elvyx.bannerSsbDataSource.url instanceof GStringImpl) {
                         log.info "Will use the 'elvyx' database driver to allow capture of SQL -- url: ${ConfigurationHolder.config.elvyx.bannerSsbDataSource.url}"
                         log.info "Please launch the Elvyx UI to monitor SQL traffic... (see http://www.elvyx.com/ to download)"
@@ -160,7 +158,7 @@ class BannerCoreGrailsPlugin {
                         }
                     }
                 }
-            break               
+*/            break               
         }
         
 
@@ -209,13 +207,20 @@ class BannerCoreGrailsPlugin {
             authenticationDataSource = ref( authenticationDataSource )
         }
 
+/*        if (isSsbEnabled()) {
+            selfServiceBannerAuthenticationProvider( SelfServiceBannerAuthenticationProvider ) {
+                dataSource = ref( dataSource )
+            }
+        }
+*/
         bannerPreAuthenticatedFilter( BannerPreAuthenticatedFilter ) {
             dataSource = ref( dataSource )
             authenticationManager = ref( authenticationManager )
         }
 
         authenticationManager( ProviderManager ) {
-            providers = [bannerAuthenticationProvider]
+//            if (isSsbEnabled()) providers = [ /*selfServiceBannerAuthenticationProvider,*/ bannerAuthenticationProvider ]
+/*            else  */              providers = [ bannerAuthenticationProvider ]
         }
 
         basicAuthenticationEntryPoint( BasicAuthenticationEntryPoint ) {
@@ -237,7 +242,7 @@ class BannerCoreGrailsPlugin {
             userAttribute = 'anonymousUser,ROLE_ANONYMOUS'
         }
 
-        applicationEventMulticaster(SimpleApplicationEventMulticaster) {
+        applicationEventMulticaster( SimpleApplicationEventMulticaster ) {
             taskExecutor = Executors.newCachedThreadPool()
         }
 

@@ -1,6 +1,5 @@
 /*******************************************************************************
-
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ © 2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -24,7 +23,7 @@ import org.springframework.security.core.authority.GrantedAuthorityImpl
 // handling if this data were centralized and cached for the entire application. 
 // Regardless, this note is here as an indicator that we may want to revist this appraoch. 
 /**
- * An implementation of the Spring Security GrantedAuthority, for Banner.
+ * An implementation of the Spring Security GrantedAuthority for Banner.
  */
 public class BannerGrantedAuthority extends GrantedAuthorityImpl {
 	
@@ -32,20 +31,20 @@ public class BannerGrantedAuthority extends GrantedAuthorityImpl {
 	String roleName
 	String bannerPassword
 	
-	private BannerGrantedAuthority( String authority, String objectName, String roleName, String bannerPassword ) {
-		super( authority )
-		
-		this.objectName = objectName
-		this.roleName = roleName
-		this.bannerPassword = bannerPassword
-	}
-	
 	
 	static public BannerGrantedAuthority create( String objectName, String roleName, String bannerPassword ) {
-		def authority = "ROLE_${objectName}_${roleName}"
+		def authority = "ROLE_${objectName?.toUpperCase()}_${roleName?.toUpperCase()}"
 		new BannerGrantedAuthority( authority, objectName, roleName, bannerPassword )
 	}
 	
+	
+	private BannerGrantedAuthority( String authority, String objectName, String roleName, String bannerPassword ) {
+		super( authority )
+		
+		this.objectName = objectName?.toUpperCase()
+		this.roleName = roleName?.toUpperCase()
+		this.bannerPassword = bannerPassword
+	}
 	
 }
 

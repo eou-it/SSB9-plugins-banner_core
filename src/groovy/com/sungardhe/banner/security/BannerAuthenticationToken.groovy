@@ -1,6 +1,5 @@
 /** *****************************************************************************
-
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ © 2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -17,7 +16,6 @@ import org.springframework.security.core.GrantedAuthority
 /**
  * An authentication token created upon successful authentication.
  */
-
 public class BannerAuthenticationToken implements Authentication {
 
     private BannerUser user
@@ -29,7 +27,7 @@ public class BannerAuthenticationToken implements Authentication {
 
 
     public Collection getAuthorities() {
-        user?.authorities;
+        user?.authorities
     }
 
 
@@ -49,7 +47,7 @@ public class BannerAuthenticationToken implements Authentication {
 
 
     public boolean isAuthenticated() {
-        user != null
+        user && user.enabled && user.accountNonExpired && user.credentialsNonExpired && user.accountNonLocked
     }
 
 
@@ -60,4 +58,9 @@ public class BannerAuthenticationToken implements Authentication {
     public String getName() {
         user?.username
     }
+        
+    public String getOracleUserName() {
+        user?.oracleUserName
+    }
+
 }
