@@ -44,41 +44,49 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
 
     protected void setUp() {
         
-        provider = new SelfServiceBannerAuthenticationProvider()
-        provider.dataSource = dataSource
-        
-        conn = dataSource.getSsbConnection()                
-        db = new Sql( conn )
-        
-        testUser = [ spridenId: 210009105, pidm: 24 ]
-        
-        // retrieve pin for good user by generating a new one. This will be rolled back .         
-        db.call( "{? = call gb_third_party_access.f_proc_pin(?)}", [ Sql.VARCHAR, testUser.pidm ] ) { pin -> 
-            testUser['pin'] = pin
+        if (isSsbEnabled()) {
+            provider = new SelfServiceBannerAuthenticationProvider()
+            provider.dataSource = dataSource
+
+            conn = dataSource.getSsbConnection()                
+            db = new Sql( conn )
+
+            testUser = [ spridenId: 210009105, pidm: 24 ]
+
+            // retrieve pin for good user by generating a new one. This will be rolled back .         
+            db.call( "{? = call gb_third_party_access.f_proc_pin(?)}", [ Sql.VARCHAR, testUser.pidm ] ) { pin -> 
+                testUser['pin'] = pin
+            }
+            super.setUp()
         }
-        super.setUp()
     }
     
     
     protected void tearDown() {
-        conn?.close()
-        db?.close()
+        
+        if (isSsbEnabled()) {
+            conn?.close()
+            db?.close()
+        }
     }
 
 
-    void testGetPidm() {        
+    void testGetPidm() {  
+        if (!isSsbEnabled()) return     
         def pidm = provider.getPidm( new TestAuthenticationRequest( testUser ), db )
         assertEquals testUser.pidm, pidm
     }
 
 
     void testGetOracleUsername() {        
+        if (!isSsbEnabled()) return     
         def oracleUserName = provider.getOracleUsername( testUser.pidm, db )
         assertNotNull oracleUserName
     }
     
     
     void testGetGobtpac() {        
+        if (!isSsbEnabled()) return     
         def gobtpac = provider.getGobtpac( testUser.pidm, db )
         
         assertNull gobtpac.ldap_user    
@@ -95,12 +103,14 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     
     
     void testGetLdapParm() {        
+        if (!isSsbEnabled()) return     
         def ldapParm = provider.getLdapParm( db )
         assertNotNull ldapParm
     }
     
     
     void testGetLdapId() {        
+        if (!isSsbEnabled()) return     
         def gobtpac = provider.getGobtpac( testUser.pidm, db )
         def ldapId = provider.getLdapId( db, gobtpac )
         assertEquals 'eengle', ldapId
@@ -109,6 +119,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     
     @Ignore // TODO: Workaround that underlying PL/SQL function is not accessible
     void testIsValidLdap() {        
+        if (!isSsbEnabled()) return     
         def gobtpac = provider.getGobtpac( testUser.pidm, db )
         def isValidLdapId = provider.isValidLdap( db, testUser.spridenId, gobtpac )
         assertTrue isValidLdapId
@@ -116,6 +127,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     
     
     void testValidatePin() {        
+        if (!isSsbEnabled()) return     
         def gobtpac = provider.getGobtpac( testUser.pidm, db )
         def pinValidation = provider.validatePin( testUser.pidm, testUser.pin, db )
         assertTrue pinValidation.valid
@@ -125,6 +137,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     
     
     void testAuthentication() {
+        if (!isSsbEnabled()) return     
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue auth.isAuthenticated()
         assertEquals testUser.spridenId as String, auth.name
@@ -133,11 +146,20 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         
     
     void testAuthorization() {
+        if (!isSsbEnabled()) return     
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue auth.isAuthenticated()
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE_ALUMNI" }
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE_STUDENT" }
         assertEquals 2, auth.authorities.size()
+    }
+
+
+    //----------------------------- Helper Methods ------------------------------    
+    
+    
+    private def isSsbEnabled() {
+        CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
     }
     
 }

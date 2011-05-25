@@ -41,7 +41,7 @@ public class FormContext {
     
     
     public static boolean isSelfService() {
-        storage.get() && storage.get().contains( "SELFSERVICE" )
+        storage.get() && storage.get()[0].contains( "SELFSERVICE" )
     }
 
 

@@ -67,8 +67,7 @@ public class BannerDS implements DataSource {
         Connection conn 
         def user = SecurityContextHolder?.context?.authentication?.principal
 
-
-        if (!user?.oracleUserName && isSelfServiceRequest()) {
+         if (!user?.oracleUserName && isSelfServiceRequest()) {
             conn = underlyingSsbDataSource.getConnection()
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
@@ -400,16 +399,19 @@ public class BannerDS implements DataSource {
         
         def enabled  = CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false        
         def proxySsb = CH.config.ssbOracleUsersProxied instanceof Boolean ? CH.config.ssbOracleUsersProxied : false 
+        log.trace "BannerDS.shouldProxySsbRequest() will return '${enabled && proxySsb}' (since SSB is ${enabled ? '' : 'not '} enabled and proxy SSB is $proxySsb)"
         enabled && proxySsb   
     }
 
 
     private isSelfServiceRequest() {
+        log.trace "BannerDS.isSelfServiceRequest() will return '${FormContext.isSelfService()}' (FormContext = ${FormContext.get()})"
         FormContext.isSelfService()
     }
 
 
     private isAdministrativeRequest() {
+        log.trace "BannerDS.isAdministrativeRequest() will return '${!FormContext.isSelfService()}' (FormContext = ${FormContext.get()})"
         !FormContext.isSelfService()
     }
 

@@ -12,7 +12,7 @@
 import com.sungardhe.banner.controllers.RestfulControllerMixin
 import com.sungardhe.banner.db.BannerDS as BannerDataSource
 import com.sungardhe.banner.security.BannerAuthenticationProvider
-//import com.sungardhe.banner.security.SelfServiceBannerAuthenticationProvider
+import com.sungardhe.banner.security.SelfServiceBannerAuthenticationProvider
 import com.sungardhe.banner.service.ServiceBase
 import com.sungardhe.banner.supplemental.SupplementalDataSupportMixin
 import com.sungardhe.banner.supplemental.SupplementalDataHibernateListener
@@ -27,7 +27,7 @@ import org.apache.commons.dbcp.BasicDataSource
 import org.apache.commons.logging.LogFactory
 import org.apache.log4j.jmx.HierarchyDynamicMBean
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.runtime.GStringImpl
@@ -108,11 +108,11 @@ class BannerCoreGrailsPlugin {
             case GrailsApplication.ENV_PRODUCTION:
                 log.info "Will use a dataSource configured via JNDI"
                 underlyingDataSource( JndiObjectFactoryBean ) {
-                    jndiName = "java:comp/env/${ConfigurationHolder.config.myDataSource.jndiName}"
+                    jndiName = "java:comp/env/${CH.config.myDataSource.jndiName}"
                 }
                 if (isSsbEnabled()) {
                     underlyingSsbDataSource( JndiObjectFactoryBean ) {
-                        jndiName = "java:comp/env/${ConfigurationHolder.config.bannerSsbDataSource.jndiName}"
+                        jndiName = "java:comp/env/${CH.config.bannerSsbDataSource.jndiName}"
                     }
                 }
                 break
@@ -122,43 +122,43 @@ class BannerCoreGrailsPlugin {
                     maxActive = 5
                     maxIdle = 2
                     defaultAutoCommit = "false"
-                    if (ConfigurationHolder.config.elvyx.url instanceof String || ConfigurationHolder.config.elvyx.url instanceof GStringImpl) {
-                        log.info "Will use the 'elvyx' database driver to allow capture of SQL -- url: ${ConfigurationHolder.config.elvyx.url}"
+                    if (CH.config.elvyx.url instanceof String || CH.config.elvyx.url instanceof GStringImpl) {
+                        log.info "Will use the 'elvyx' database driver to allow capture of SQL -- url: ${CH.config.elvyx.url}"
                         log.info "Please launch the Elvyx UI to monitor SQL traffic... (see http://www.elvyx.com/ to download)"
-                        driverClassName = "${ConfigurationHolder.config.elvyx.driver}"
-                        url = "${ConfigurationHolder.config.elvyx.url}"
+                        driverClassName = "${CH.config.elvyx.driver}"
+                        url = "${CH.config.elvyx.url}"
                     } 
                     else {
-                        driverClassName = "${ConfigurationHolder.config.myDataSource.driver}"
-                        url = "${ConfigurationHolder.config.myDataSource.url}"
-                        password = "${ConfigurationHolder.config.myDataSource.password}"
-                        username = "${ConfigurationHolder.config.myDataSource.username}"
+                        driverClassName = "${CH.config.myDataSource.driver}"
+                        url = "${CH.config.myDataSource.url}"
+                        password = "${CH.config.myDataSource.password}"
+                        username = "${CH.config.myDataSource.username}"
                     }
                 }
-/*                if (isSsbEnabled()) {
-                    if (ConfigurationHolder.config.elvyx.bannerSsbDataSource.url instanceof String || ConfigurationHolder.config.elvyx.bannerSsbDataSource.url instanceof GStringImpl) {
-                        log.info "Will use the 'elvyx' database driver to allow capture of SQL -- url: ${ConfigurationHolder.config.elvyx.bannerSsbDataSource.url}"
+                if (isSsbEnabled()) {
+                    if (CH.config.elvyx.bannerSsbDataSource.url instanceof String || CH.config.elvyx.bannerSsbDataSource.url instanceof GStringImpl) {
+                        log.info "Will use the 'elvyx' database driver to allow capture of SQL -- url: ${CH.config.elvyx.bannerSsbDataSource.url}"
                         log.info "Please launch the Elvyx UI to monitor SQL traffic... (see http://www.elvyx.com/ to download)"
                         underlyingSsbDataSource( BasicDataSource ) {
                             maxActive = 5
                             maxIdle = 2
                             defaultAutoCommit = "false"
-                            driverClassName = "${ConfigurationHolder.config.elvyx.bannerSsbDataSource.driver}"
-                            url = "${ConfigurationHolder.config.elvyx.bannerSsbDataSource.url}"
+                            driverClassName = "${CH.config.elvyx.bannerSsbDataSource.driver}"
+                            url = "${CH.config.elvyx.bannerSsbDataSource.url}"
                         }
                     } else {
                         underlyingSsbDataSource( BasicDataSource ) {
                             maxActive = 5
                             maxIdle = 2
                             defaultAutoCommit = "false"
-                            driverClassName = "${ConfigurationHolder.config.bannerSsbDataSource.driver}"
-                            url = "${ConfigurationHolder.config.bannerSsbDataSource.url}"
-                            password = "${ConfigurationHolder.config.bannerSsbDataSource.password}"
-                            username = "${ConfigurationHolder.config.bannerSsbDataSource.username}"
+                            driverClassName = "${CH.config.bannerSsbDataSource.driver}"
+                            url = "${CH.config.bannerSsbDataSource.url}"
+                            password = "${CH.config.bannerSsbDataSource.password}"
+                            username = "${CH.config.bannerSsbDataSource.username}"
                         }
                     }
                 }
-*/            break               
+            break               
         }
         
 
@@ -207,20 +207,18 @@ class BannerCoreGrailsPlugin {
             authenticationDataSource = ref( authenticationDataSource )
         }
 
-/*        if (isSsbEnabled()) {
-            selfServiceBannerAuthenticationProvider( SelfServiceBannerAuthenticationProvider ) {
-                dataSource = ref( dataSource )
-            }
+        selfServiceBannerAuthenticationProvider( SelfServiceBannerAuthenticationProvider ) {
+            dataSource = ref( dataSource )
         }
-*/
+
         bannerPreAuthenticatedFilter( BannerPreAuthenticatedFilter ) {
             dataSource = ref( dataSource )
             authenticationManager = ref( authenticationManager )
         }
 
         authenticationManager( ProviderManager ) {
-//            if (isSsbEnabled()) providers = [ /*selfServiceBannerAuthenticationProvider,*/ bannerAuthenticationProvider ]
-/*            else  */              providers = [ bannerAuthenticationProvider ]
+            if (isSsbEnabled()) providers = [ selfServiceBannerAuthenticationProvider, bannerAuthenticationProvider ]
+            else                providers = [ bannerAuthenticationProvider ]
         }
 
         basicAuthenticationEntryPoint( BasicAuthenticationEntryPoint ) {
@@ -332,7 +330,7 @@ class BannerCoreGrailsPlugin {
         }
 
         // Define the spring security filters
-        def authenticationProvider = ConfigurationHolder?.config?.banner.sso.authenticationProvider
+        def authenticationProvider = CH?.config?.banner.sso.authenticationProvider
         LinkedHashMap<String, String> filterChain = new LinkedHashMap();
         switch (authenticationProvider) {
             case 'cas':
@@ -383,7 +381,7 @@ class BannerCoreGrailsPlugin {
     
     
     private def isSsbEnabled() {
-        ConfigurationHolder.config.ssbEnabled instanceof Boolean ? ConfigurationHolder.config.ssbEnabled : false
+        CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
     }
     
 }

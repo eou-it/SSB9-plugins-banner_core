@@ -223,9 +223,8 @@ log4j = {
     
     // ******** non-Grails classes (e.g., in src/ or grails-app/utils/) *********
     off 'com.sungardhe.banner.security'
-    all 'com.sungardhe.banner.security.BannerAuthenticationProvider'
-    all 'com.sungardhe.banner.security.SelfServiceBannerAuthenticationProvider'
-    off 'com.sungardhe.banner.BannerAuthenticationProvider'
+    off 'com.sungardhe.banner.security.BannerAuthenticationProvider'
+    off 'com.sungardhe.banner.security.SelfServiceBannerAuthenticationProvider'
     off 'com.sungardhe.banner.security.BannerAccessDecisionVoter'
     off 'grails.plugins.springsecurity'
     off 'org.springframework.security'

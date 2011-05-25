@@ -126,34 +126,9 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         }
         dbUser
     }
-    
-    
-    public static Collection<GrantedAuthority> determineAuthorities( String name, def dataSource ) {
-        def conn = null
-        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
-        name = name.toUpperCase()
-        try {
-            // We query the database for all role assignments for the user, using an unproxied connection.
-            // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
-            conn = dataSource.unproxiedConnection
-            Sql db = new Sql( conn )
-            db.eachRow( "select * from govurol where govurol_userid = ?", [name] ) { row ->
-                def authority = BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, row.GOVUROL_ROLE_PSWD )
-                // log.trace "BannerAuthenticationProvider.determineAuthorities is adding authority $authority"
-                authorities << authority
-            }
-        } catch (SQLException e) {
-            log.error "BannerAuthenticationProvider not able to authenticate user $name due to exception $e.message"
-            return null
-        } finally {
-            conn?.close()
-        }
-        log.trace "BannerAuthenticationProvider.determineAuthorities is returning $authorities"
-        authorities
-    }
 
 
-/*    public static Collection<GrantedAuthority> determineAuthorities( String oracleUserName, DataSource dataSource ) {
+    public static Collection<GrantedAuthority> determineAuthorities( String oracleUserName, DataSource dataSource ) {
 
         def conn
         def db
@@ -162,15 +137,12 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
             conn = dataSource.unproxiedConnection
             db = new Sql( conn )
-log.trace "XXXXXXXXXXXXXXXXXXX determineAuthorities for $oracleUserName will use conn $conn and db $db"
             return determineAuthorities( oracleUserName, db )
         } finally {
-log.trace "XXXXXXXXXXXXXXXXXXX determineAuthorities for $oracleUserName will close conn $conn"
-//            db?.close()
-//            conn?.close()
+            conn?.close()
         }        
     }
-*/    
+    
     
     public static Collection<GrantedAuthority> determineAuthorities( String oracleUserName, Sql db ) {
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
