@@ -84,6 +84,64 @@ grails.plugins.springsecurity.interceptUrlMap = [
 
 As described in the code comments above, URLs may be protected with a special 'ROLE_DETERMINED_DYNAMICALLY' role.  A custom 'role voter' is configured by banner-core that will, when a URL is protected by this special role, determine authorization based upon the formControllerMap. Specifically, if a user has ANY roles corresponding to the Banner Classic Form identified in the formControllerMap for the current request, the user is granted access. (Note: Any roles ending with '_CONNECT' are excluded, and are not used to grant access.)
 
+
+h4. Self Service Banner Security
+banner-core blurs the lines somewhat with respect to administrative and self service Banner.  An application using banner-core may be configured to support either administrative users or self service users, or both, within the same instance.
+
+To enable self service, you must set the following configuration.
+{code}
+/** *****************************************************************************
+ *                                                                              *
+ *                Self Service Endpoint Support Enablement                      *
+ *                                                                              *
+ ***************************************************************************** **/
+
+// Set 'ssbEnabled' to true for instances that expose Self Service Banner endpoints. 
+// If this is set to false, or if this configuration item is missing, the instance 
+// will only support administrative users and not self service users. 
+//
+// If this is enabled, it is important to also ensure the corresponding configuration
+// items for the SSB datasource are configured below. 
+//
+ssbEnabled = true                     // default is 'false'
+//administrativeBannerEnabled = true  // default is 'true' 
+
+// Set 'ssbOracleUsersProxied = true' to ensure that database connections are proxied 
+// when the user has an oracle account.  This allows FGAC even for SSB pages. 
+// Set this to false to instead use database connections that are established 
+// for SSB users who do not have Oracle database accounts.  This setting applies 
+// only to SSB pages. 
+ssbOracleUsersProxied = true
+{code}
+The above configuration enables self service support, and also configures the solution to proxy database connections for users who have an Oracle database account.  Note that this configuration also allows 'administrative' authentication to be disabled, meaning that users would have to authenticate using spriden_id/pin or employ SSO.  Since administrative support is 'true' by default, this configuration is only needed when setting this to 'false'. 
+
+When both self service and administrative Banner are enabled, a SelfServiceBannerAuthenticationProvider is wired into the Spring Security framework.  This provider will attempt to authenticate the user using spriden_id and pin.  If this authentication fails (e.g., because the user does not have a PIDM), then the administrative 'BannerAuthenticationProvider' will attempt authentication based upon Oracle username and password.  
+
+It is important to note that when self service is enabled, a second dataSource must be configured to support self service users as shown below:
+{code}
+/** *****************************************************************************
+ *                                                                              *
+ *                 Self Service User's DataSource Configuration                 *
+ *                                                                              *
+ ***************************************************************************** **/
+
+// It is imperative the self-service datasource be configured if 'ssbEnabled = true'.
+
+// JNDI configuration for use in 'production' environment
+//
+bannerSsbDataSource.jndiName = "jdbc/horizonDataSource"
+
+// Local configuration for use in 'development' and 'test' environments
+//
+bannerSsbDataSource.url      = "jdbc:oracle:thin:@oracledb:1521:ban83" 
+bannerSsbDataSource.username = "baninst1"
+bannerSsbDataSource.password = "u_pick_it"	
+bannerSsbDataSource.driver   = "oracle.jdbc.OracleDriver"
+{code}
+Note the above configuration is not needed for instances where self service is not enabled. 
+
+If the SelfServiceAuthenticationProvider is able to authenticate the user, it will then query the Banner database for the user's web roles. These are converted into Spring Security roles much like the Banner administrative roles.  In addition, if the user has an Oracle database account, the user's Banner administrative roles will also be retrieved and converted to Spring Security roles. In addition,  a special role will be given to the user that will allow access to self service pages and that will unlock the BAN_DEFAULT_ROLE if database connections are proxied. 
+
 \\
 \\
 \\

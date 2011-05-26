@@ -1,4 +1,28 @@
 
+h4. 0.2.34
+
+* banner-core now supports both administrative and self service Banner.  An application instance may be configured to support administrative users, self service users, or both using configuration as follows:
+{code}
+/** *****************************************************************************
+ *                                                                              *
+ *                Self Service Endpoint Support Enablement                      *
+ *                                                                              *
+ ***************************************************************************** **/
+
+// Set 'ssbEnabled' to true for instances that expose Self Service Banner endpoints. 
+// If this is set to false, or if this configuration item is missing, the instance 
+// will only support administrative users and not self service users. 
+//
+// If this is enabled, it is important to also ensure the corresponding configuration
+// items for the SSB datasource are configured below. 
+//
+//ssbEnabled = true                   // default is 'false'
+//administrativeBannerEnabled = true  // default is 'true' 
+{code}
+* Self service users may authenticate using spriden_id and pin.  
+* If a self service user has an oracle database account, all database connections will be proxied for that user. (Note this is different from Banner 8 self service.)
+* If a self service user does not have an oracle account, database connections are not proxied (and use a common self service user).
+
 h4.  0.2.33
 
 * The BannerDataSource (see BannerDS) can now set a session 'identifier' and the dbms_application_info 'module' and 'action'. 
