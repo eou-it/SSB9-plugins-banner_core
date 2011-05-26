@@ -149,9 +149,10 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         if (!isSsbEnabled()) return     
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue auth.isAuthenticated()
-        assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE_ALUMNI" }
-        assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE_STUDENT" }
-        assertEquals 2, auth.authorities.size()
+        assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-ALUMNI_BAN_DEFAULT_M" }
+        assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M" }
+        assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE_BAN_DEFAULT_M" }
+        assertEquals 3, auth.authorities.size()
     }
 
 

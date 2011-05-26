@@ -159,8 +159,7 @@ class BannerCoreGrailsPlugin {
                     }
                 }
             break               
-        }
-        
+        }        
 
         nativeJdbcExtractor( NativeJdbcExtractor )
 
@@ -243,7 +242,6 @@ class BannerCoreGrailsPlugin {
         applicationEventMulticaster( SimpleApplicationEventMulticaster ) {
             taskExecutor = Executors.newCachedThreadPool()
         }
-
 
         
         // ---------------- JMX Mbeans (incl. Logging) ----------------

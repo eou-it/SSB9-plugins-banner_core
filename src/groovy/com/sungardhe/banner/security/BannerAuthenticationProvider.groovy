@@ -52,8 +52,8 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
 
     public boolean supports( Class clazz ) {
-        log.trace "BannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken}"
-        return clazz == UsernamePasswordAuthenticationToken
+        log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isAdministrativeBannerEnabled() == true}"
+        clazz == UsernamePasswordAuthenticationToken && isAdministrativeBannerEnabled() == true
     }
     
     
@@ -195,6 +195,11 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
       }
       log.trace "BannerAuthenticationProvider.getFullName is returning $fullName"
       fullName
+    }
+    
+    
+    private def isAdministrativeBannerEnabled() {
+        CH.config.administrativeBannerEnabled instanceof Boolean ? CH.config.administrativeBannerEnabled : true // default is 'true'
     }
     
 

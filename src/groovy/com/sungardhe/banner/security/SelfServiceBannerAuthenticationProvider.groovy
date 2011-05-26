@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010-2011 SunGard Higher Education.  All Rights Reserved.
+ © 2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -39,20 +39,18 @@ import org.springframework.context.ApplicationContext
 
 /**
  * An authentication provider which authenticates a self service user.  Self service users
- * may not have an oracle login, and are thus authenticated using Banner security versus 
- * logging into the oracle database.
+ * need not have an oracle login..
  */
 public class SelfServiceBannerAuthenticationProvider implements AuthenticationProvider {
 
-    // note: using 'getClass()' here doesn't work -- hierarchical class loader issue?  Anyway, we'll just use a String
     private static final Logger log = Logger.getLogger( "com.sungardhe.banner.security.SelfServiceBannerAuthenticationProvider" )
 
     def dataSource	// injected by Spring
 
 
     public boolean supports( Class clazz ) {
-        log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && CH?.config.ssbEnabled == true}"
-        clazz == UsernamePasswordAuthenticationToken && CH?.config.ssbEnabled == true
+        log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isSsbEnabled() == true}"
+        clazz == UsernamePasswordAuthenticationToken && isSsbEnabled() == true
     }
     
     
@@ -93,21 +91,25 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
 // ------------------------------- Helper Methods ------------------------------
 // (note: many methods are exposed with package-level accessibility to facilitate testing.)    
+
+
+    private def isSsbEnabled() {
+        CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
+    }
     
 
     def selfServiceAuthentication( Authentication authentication, db ) {
         
         try {
             
-            def pidm = getPidm( authentication, db ) 
-            def gobtpac = getGobtpac( pidm, db )
+            def pidm = getPidm( authentication, db )
+            def oracleUserName = getOracleUsername( pidm, db )  
                        
-            def authenticationResults = [ pidm: pidm, oracleUserName: getOracleUsername( pidm, db ), 
-                                          gobtpac: gobtpac ].withDefault { k -> false }
+            def authenticationResults = [ pidm: pidm, oracleUserName: oracleUserName ].withDefault { k -> false }
             
             if (shouldUseLDAP( db )) {
                 log.error "SelfServiceAuthenticationProvider does not currently support LDAP"
-                throw new RuntimeException( "@@r1:not.yet.implemented@@" )
+                throw new RuntimeException( "@@r1:not.yet.implemented@@" )  
             }
                           
             // should not use LDAP                
@@ -309,10 +311,14 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             """, [ pidm: authentictionResults.pidm ] ) 
                     
         rows?.each { row ->    
-            authorities << BannerGrantedAuthority.create( "SELFSERVICE", "$row.TWGRROLE_ROLE", null )
+            authorities << BannerGrantedAuthority.create( "SELFSERVICE-$row.TWGRROLE_ROLE", "BAN_DEFAULT_M", null )
         }
         
         if (authentictionResults.oracleUserName) {
+            // administrative users should be given the 'ROLE_SELFSERVICE_BAN_DEFAULT_M' role to have access to self service pages.
+            // We'll give this faux administrative priviledge if the user has 'real' web roles.
+            if (authorities.size() > 0) authorities << BannerGrantedAuthority.create( "SELFSERVICE", "BAN_DEFAULT_M", null )
+            
             Collection<GrantedAuthority> adminAuthorities = BannerAuthenticationProvider.determineAuthorities( authentictionResults.oracleUserName, db )
             authorities.addAll( adminAuthorities )
         }

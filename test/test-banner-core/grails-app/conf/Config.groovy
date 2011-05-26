@@ -305,7 +305,7 @@ grails.plugins.springsecurity.interceptUrlMap = [
 
 //        '/ssb/student/**': ['ROLE_SELFSERVICE_STUDENT'], 
 //        '/ssb/alumni/**':  ['ROLE_SELFSERVICE_ALUMNI'], 
-        '/ssb/**':         ['ROLE_SELFSERVICE_WEBUSER'], 
+        '/ssb/**':         ['ROLE_SELFSERVICE_BAN_DEFAULT_M'], 
 
          // ALL URIs specified with the BannerAccessDecisionVoter.ROLE_DETERMINED_DYNAMICALLY
          // 'role' (it's not a real role) will result in authorization being determined based
