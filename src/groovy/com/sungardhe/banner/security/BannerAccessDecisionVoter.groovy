@@ -19,6 +19,7 @@ import org.springframework.security.access.AccessDecisionVoter
 import org.springframework.security.access.ConfigAttribute
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.FilterInvocation
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
@@ -165,5 +166,23 @@ class BannerAccessDecisionVoter extends RoleVoter {
         // To allow based upon IP address...
         //        WebAuthenticationDetails details = (WebAuthenticationDetails) authentication.getDetails()
         //        String remoteIPAddress = details.getRemoteAddress();
+    }
+
+      public static boolean isUserAuthorized( String pageName ) {
+          println "$pageName"
+          List formNames = CH.config.formControllerMap[ pageName ]
+        //  def user = SecurityContextHolder?.context?.authentication?.principal
+          //println "user $user"
+          def authentication = SecurityContextHolder.getContext().getAuthentication() 
+          println authentication
+
+          List applicableAuthorities = []
+          formNames?.each { form ->
+              def authoritiesForForm = authentication.principal.authorities.findAll { it.authority ==~ /\w+_${form}_\w+/ }
+              authoritiesForForm.each { applicableAuthorities << it }
+          }
+          applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
+          println applicableAuthorities.size()
+          applicableAuthorities.size() > 0
     }
 }
