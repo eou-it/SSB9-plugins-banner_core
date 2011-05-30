@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ ï¿½ 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -170,7 +170,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
       public static boolean isUserAuthorized( String pageName ) {
           println "$pageName"
-          List formNames = CH.config.formControllerMap[ pageName ]
+          List formNames = CH.config.formControllerMap[ pageName.toLowerCase() ]
         //  def user = SecurityContextHolder?.context?.authentication?.principal
           //println "user $user"
           def authentication = SecurityContextHolder.getContext().getAuthentication() 
