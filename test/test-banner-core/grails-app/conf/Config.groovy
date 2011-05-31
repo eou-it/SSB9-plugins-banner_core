@@ -332,7 +332,7 @@ grails.plugins.springsecurity.interceptUrlMap = [
 // before the normal 'roleVoter' (as we will grant access without requiring roles to be specified per URL
 // within the interceptUrlMap below.)
 grails.plugins.springsecurity.useRequestMapDomainClass = false
-grails.plugins.springsecurity.providerNames = [ /*'selfServiceBannerAuthenticationProvider',*/ 'bannerAuthenticationProvider' ]
+grails.plugins.springsecurity.providerNames = [ 'selfServiceBannerAuthenticationProvider', 'bannerAuthenticationProvider' ]
 grails.plugins.springsecurity.rejectIfNoRule = true
 
 // FYI: grails.plugins.springsecurity.filterChain.chainMap is set programmatically by the banner-core plugin.

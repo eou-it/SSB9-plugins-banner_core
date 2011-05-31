@@ -27,6 +27,14 @@ class UrlMappings {
         "/api/$controller/$id" {
             action = [ GET: "show", PUT: "update", DELETE: "destroy" ]
         }
+        
+        
+        // --------------------- Self Service End Points --------------------        
+
+        "/ssb/foobar/$action?/$id?"( controller: "foo" ) { }        
+
+        
+        "/ssb/$controller/$action?/$id?" { }        
 
 
         // --------------------- Non-API End Points --------------------
