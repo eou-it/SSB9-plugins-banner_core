@@ -23,8 +23,6 @@ import oracle.jdbc.pool.OracleDataSource
 
 import org.apache.log4j.Logger
 
-import org.jasig.cas.client.util.AbstractCasFilter
-
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -53,81 +51,69 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     public boolean supports( Class clazz ) {
         log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isAdministrativeBannerEnabled() == true}"
-        clazz == UsernamePasswordAuthenticationToken && isAdministrativeBannerEnabled() == true
+        clazz == UsernamePasswordAuthenticationToken && isAdministrativeBannerEnabled()
     }
     
     
+    /**
+     * Authenticates the user.
+     * @param authentication an Authentication object containing a user's credentials
+     * @return Authentication an authentication object providing authentication results and holding the user's authorities, or null
+     **/
     public Authentication authenticate( Authentication authentication ) {
-        
-        def dbUser
-        
-        def authenticationProvider = CH?.config.banner.sso.authenticationProvider
-        log.trace "BannerAuthenticationProvider.authenticate invoked, 'authenticationProvider' configuration = $authenticationProvider"
+                
+        log.trace "BannerAuthenticationProvider.authenticate invoked"
 
-        if ('cas'.equalsIgnoreCase( authenticationProvider )) {
-            dbUser = casAuthentication()
-        } else {
-            dbUser = defaultAuthentication( authentication )
-        }
-
-        def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
- 
-        if (!dbUser) {
-            log.warn "BannerAuthenticationProvider was not able to authenticate user."
-            applicationContext.publishEvent( new BannerAuthenticationEvent( authentication.name, false, 'BannerAuthenticationProvider - Invalid password tried', 
-                                                                            'BannerAuthenticationProvider', new Date(), 1 ) )
-            return null
-        }
-        applicationContext.publishEvent( new BannerAuthenticationEvent( dbUser, true, '', '', new Date(), '' ) )
-        
         try {
-            Collection<GrantedAuthority> authorities = determineAuthorities( dbUser.toUpperCase(), dataSource )
-
-            if (authorities) {
-                def user = new BannerUser( dbUser, authentication.credentials as String, dbUser, 
-                                           true /*enabled*/, true /*accountNonExpired*/,
-                                           true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities as Collection, 
-                                           getFullName( dbUser.toUpperCase(), dataSource ) as String  )
-                def token = new BannerAuthenticationToken( user )
-                log.trace "BannerAuthenticationProvider.authenticate authenticated user $user and is returning a token $token"
-                token
-            }
-            else {
-                log.warn "BannerAuthenticationProvider found no authorities for user $authentication.name"
-                applicationContext.publishEvent( new BannerAuthenticationEvent( dbUser, false, 'BannerAuthenticationProvider -  No authorities found', 
+            def authenticationResults = defaultAuthentication( authentication )
+            def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
+            
+            if (!authenticationResults['oracleUserName']) {
+                log.warn "BannerAuthenticationProvider was not able to authenticate user."
+                applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults.name, false, 'BannerAuthenticationProvider - Invalid password tried', 
                                                                                 'BannerAuthenticationProvider', new Date(), 1 ) )
                 return null
             }
+            applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults['oracleUserName'], true, '', '', new Date(), '' ) )
+
+            authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults['oracleUserName'].toUpperCase(), dataSource )
+            authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String            
+            newAuthenticationToken( this, authenticationResults )
         }
         catch (Exception e) {
-            log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name due to exception: ${e.message}"
-            return null
+            log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${e.message}"
+            return null // note this is a rare situation where we want to bury the exception - we need to return null
         }
     }
 
-
-    public static def getMappedDatabaseUserForUdcId( String udcId, def dataSource ) {
-        def conn
-        def dbUser
-        try {
-            log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId mapping for udcId = $udcId"
-            conn = dataSource.unproxiedConnection
-            Sql db = new Sql( conn )
-            def sqlStatement = '''SELECT gobeacc_username FROM gobumap, gobeacc
-                                  WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
-            db.eachRow( sqlStatement, [udcId] ) { row ->
-                dbUser = row.gobeacc_username
-            }
-        } catch (SQLException e) {
-            log.error "BannerAuthenticationProvider not able to map udcId $udcId to db user"
-            return null
-        } finally {
-            conn?.close()
-        }
-        dbUser
+    
+    /**
+     * Returns a new authentication object based upon the supplied arguments.
+     * @param provider the provider who needs to create a token (used for logging purposes)
+     * @param authentication the initial authentication object containing credentials
+     * @param authentictionResults the authentication results, including the user's Oracle database username 
+     * @param authorities the user's authorities that must be included in the new authentication object
+     **/
+    public static def newAuthenticationToken( provider, authenticationResults ) {  
+        def user = new BannerUser( authenticationResults.name,                       // username
+                                   authenticationResults.credentials as String,      // password
+                                   authenticationResults.oracleUserName,             // oracle username (note this may be null)
+                                   !authenticationResults.disabled,                  // enabled (account)
+                                   true,                                             // accountNonExpired
+                                   !authenticationResults.expired,                   // credentialsNonExpired 
+                                   true,                                             // accountNonLocked 
+                                   authenticationResults.authorities as Collection, 
+                                   authenticationResults.fullName )
+                                   
+        def token = new BannerAuthenticationToken( user )
+        log.trace "${provider?.class?.simpleName}.newAuthenticationToken is returning token $token"
+        token
     }
 
 
+    /**
+     * Returns the authorities granted for the identified user.
+     **/
     public static Collection<GrantedAuthority> determineAuthorities( String oracleUserName, DataSource dataSource ) {
 
         def conn
@@ -144,6 +130,9 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     }
     
     
+    /**
+     * Returns the authorities granted for the identified user.
+     **/
     public static Collection<GrantedAuthority> determineAuthorities( String oracleUserName, Sql db ) {
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
         try {
@@ -156,14 +145,17 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             }
         } catch (SQLException e) {
             log.error "BannerAuthenticationProvider not able to determine Authorities for user $oracleUserName due to exception $e.message"
-            return null
+            return new ArrayList<GrantedAuthority>()
         } 
         log.trace "BannerAuthenticationProvider.determineAuthorities is returning $authorities"
         authorities
     }
 
 
-    public static getFullName ( String name, def dataSource ) {
+    /**
+     * Returns the user's full name.
+     **/
+    public static getFullName( String name, def dataSource ) {
       def conn = null
       def fullName
       Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
@@ -208,22 +200,17 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         try {
             authenticationDataSource.setURL( CH?.config?.myDataSource.url )
             conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
+            def authenticationResults = [name: authentication.name, 
+                                         credentials: authentication.credentials, 
+                                         oracleUserName: authentication.name].withDefault { k -> false }
             log.trace "BannerAuthenticationProvider.defaultAuthentication successfully authenticated user ${authentication.name} against data source ${dataSource.url}"
+            authenticationResults
         } catch (SQLException e) {
-            log.error "BannerAuthenticationProvider not able to authenticate user ${authentication.name} against data source ${dataSource.url} due to exception $e.message"
+            log.error "BannerAuthenticationProvider not able to perform default authentication for $authentication.name and authentication results $authenticationResults due to exception $e.message"
             return null
         } finally {
             conn?.close()
         }
-        authentication.name
-    }
-
-
-    private def casAuthentication() {
-        log.trace "BannerAuthenticationProvider.casAuthentication doing CAS authentication"
-        def attributeMap = RequestContextHolder.currentRequestAttributes().request.session.getAttribute( AbstractCasFilter.CONST_CAS_ASSERTION ).principal.attributes
-        def assertAttributeValue = attributeMap[CH?.config?.banner.sso.authenticationAssertionAttribute]
-        getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource )
     }
 
 }

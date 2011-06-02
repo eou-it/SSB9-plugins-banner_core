@@ -12,6 +12,7 @@
 import com.sungardhe.banner.controllers.RestfulControllerMixin
 import com.sungardhe.banner.db.BannerDS as BannerDataSource
 import com.sungardhe.banner.security.BannerAuthenticationProvider
+import com.sungardhe.banner.security.CasAuthenticationProvider
 import com.sungardhe.banner.security.SelfServiceBannerAuthenticationProvider
 import com.sungardhe.banner.service.ServiceBase
 import com.sungardhe.banner.supplemental.SupplementalDataSupportMixin
@@ -210,14 +211,18 @@ class BannerCoreGrailsPlugin {
             dataSource = ref( dataSource )
         }
 
+        casBannerAuthenticationProvider( CasAuthenticationProvider ) {
+            dataSource = ref( dataSource )
+        }
+
         bannerPreAuthenticatedFilter( BannerPreAuthenticatedFilter ) {
             dataSource = ref( dataSource )
             authenticationManager = ref( authenticationManager )
         }
 
         authenticationManager( ProviderManager ) {
-            if (isSsbEnabled()) providers = [ selfServiceBannerAuthenticationProvider, bannerAuthenticationProvider ]
-            else                providers = [ bannerAuthenticationProvider ]
+            if (isSsbEnabled()) providers = [ casBannerAuthenticationProvider, selfServiceBannerAuthenticationProvider, bannerAuthenticationProvider ]
+            else                providers = [ casBannerAuthenticationProvider, bannerAuthenticationProvider ]
         }
 
         basicAuthenticationEntryPoint( BasicAuthenticationEntryPoint ) {

@@ -1,6 +1,5 @@
 /** *****************************************************************************
-
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ © 2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -9,7 +8,6 @@
  NOR USED FOR ANY PURPOSE OTHER THAN THAT WHICH IT IS SPECIFICALLY PROVIDED
  WITHOUT THE WRITTEN PERMISSION OF THE SAID COMPANY
  ****************************************************************************** */
-
 package com.sungardhe.banner.security
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
@@ -32,20 +30,26 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
 
 
     public void doFilter( ServletRequest request, ServletResponse response,
-                         FilterChain chain ) throws IOException, ServletException {
+                          FilterChain chain ) throws IOException, ServletException {
 
+                log.debug "BannerPreAuthenticatedFilter.doFilter invoked with request $request"
         HttpServletRequest req = (HttpServletRequest) request
         def assertAttributeValue = req.getHeader( CH?.config?.banner.sso.authenticationAssertionAttribute )
 
         if (assertAttributeValue) {
             if (!SecurityContextHolder.context?.authentication) {
-                log.debug "assertAttributeValue is $assertAttributeValue"
+                log.debug "BannerPreAuthenticatedFilter.doFilter found assertAttributeValue $assertAttributeValue"
                 def dbUser = BannerAuthenticationProvider.getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource )
-                log.debug "dbUser for assertAttributeValue $assertAttributeValue is $dbUser"
+                log.debug "BannerPreAuthenticatedFilter.doFilter found Oracle database user $dbUser for assertAttributeValue $assertAttributeValue"
                 Collection<GrantedAuthority> authorities = BannerAuthenticationProvider.determineAuthorities( dbUser, dataSource )
-                def user = new BannerUser( dbUser, dbUser,
-                        true /*enabled*/, true /*accountNonExpired*/,
-                        true /*credentialsNonExpired*/, true /*accountNonLocked*/, authorities)
+                def user = new BannerUser( dbUser,       // username
+                                           'none',       // password
+                                           dbUser,       // oracle username (note this may be null)
+                                           true,         // enabled (account)
+                                           true,         // accountNonExpired
+                                           true,         // credentialsNonExpired 
+                                           true,         // accountNonLocked 
+                                           authorities)
                 def token = new BannerAuthenticationToken( user )
                 SecurityContextHolder.context.setAuthentication( token )
             }
@@ -55,11 +59,11 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
 
 
     protected Object getPreAuthenticatedPrincipal( HttpServletRequest request ) {
-       log.info "getPreAuthenticatedPrincipal method called"
+       log.info "BannerPreAuthenticatedFilter.getPreAuthenticatedPrincipal method called"
     }
 
     protected Object getPreAuthenticatedCredentials( HttpServletRequest request ) {
-       log.info "getPreAuthenticatedCredentials method called"
+       log.info "BannerPreAuthenticatedFilter.getPreAuthenticatedCredentials method called"
     }
 
 }

@@ -51,12 +51,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
             conn = dataSource.getSsbConnection()                
             db = new Sql( conn )
 
-            testUser = [ spridenId: 210009105, pidm: 24 ]
-
-            // retrieve pin for good user by generating a new one. This will be rolled back .         
-            db.call( "{? = call gb_third_party_access.f_proc_pin(?)}", [ Sql.VARCHAR, testUser.pidm ] ) { pin -> 
-                testUser['pin'] = pin
-            }
+            testUser = newUserMap( '210009105' )
             super.setUp()
         }
     }
@@ -121,7 +116,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     void testIsValidLdap() {        
         if (!isSsbEnabled()) return     
         def gobtpac = provider.getGobtpac( testUser.pidm, db )
-        def isValidLdapId = provider.isValidLdap( db, testUser.spridenId, gobtpac )
+        def isValidLdapId = provider.isValidLdap( db, testUser.id, gobtpac )
         assertTrue isValidLdapId
     }
     
@@ -140,8 +135,9 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         if (!isSsbEnabled()) return     
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue auth.isAuthenticated()
-        assertEquals testUser.spridenId as String, auth.name
+        assertEquals auth.name, testUser.id as String
         assertNotNull auth.oracleUserName
+        assertTrue auth.details.credentialsNonExpired
     }
         
     
@@ -154,6 +150,36 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE_BAN_DEFAULT_M" }
         assertEquals 3, auth.authorities.size()
     }
+    
+    
+    void testValidateExpiredPin() {        
+        if (!isSsbEnabled()) return 
+        
+        def expiredPinUser = newUserMap( 'HOSS002' )    
+        def pinValidation = provider.validatePin( expiredPinUser.pidm, expiredPinUser.pin, db )
+        assertTrue pinValidation.expired
+        assertTrue pinValidation.valid
+        assertFalse pinValidation.disabled
+    }
+    
+    
+    void testExpiredPin() {
+        if (!isSsbEnabled()) return 
+        
+        def expiredPinUser = newUserMap( 'HOSS002' )
+        def auth = provider.authenticate( new TestAuthenticationRequest( expiredPinUser ) )
+        assertFalse auth.isAuthenticated()
+        assertFalse auth.details.credentialsNonExpired
+    }
+        
+    
+    @Ignore // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
+    void testAuthenticateWithSocialSecurity() {
+        db.executeUpdate "update twgbparm set twgbparm_param_value = 'Y' where twgbparm_param_name = 'ALLOWSSNLOGIN'"
+        def user = newUserMap( 'HOSS001' )
+        def auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: user.pin ] ) )
+        assertTrue auth.isAuthenticated()
+    }
 
 
     //----------------------------- Helper Methods ------------------------------    
@@ -161,6 +187,18 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     
     private def isSsbEnabled() {
         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
+    }
+    
+    
+    private def newUserMap( id ) {
+        def expiredPinUser = [ id: id ]
+        expiredPinUser['pidm'] = provider.getPidm( new TestAuthenticationRequest( expiredPinUser ), db )
+
+        // retrieve pin for good user by generating a new one. This will be rolled back .         
+        db.call( "{? = call gb_third_party_access.f_proc_pin(?)}", [ Sql.VARCHAR, expiredPinUser.pidm ] ) { pin -> 
+            expiredPinUser['pin'] = pin
+        }
+        expiredPinUser
     }
     
 }
@@ -180,7 +218,7 @@ class TestAuthenticationRequest implements Authentication {
     public Object getPrincipal() { user }
     public boolean isAuthenticated() { false }
     public void setAuthenticated( boolean b ) { }
-    public String getName() { user.spridenId }
+    public String getName() { user.id }
     public Object getPidm() { user.pidm }
     public Object getOracleUserName() { user.oracleUserName }
 }

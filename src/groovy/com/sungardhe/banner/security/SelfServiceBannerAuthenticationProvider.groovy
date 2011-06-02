@@ -49,8 +49,8 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
 
     public boolean supports( Class clazz ) {
-        log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isSsbEnabled() == true}"
-        clazz == UsernamePasswordAuthenticationToken && isSsbEnabled() == true
+        log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isSsbEnabled() && !isCasEnabled()}"
+        clazz == UsernamePasswordAuthenticationToken && isSsbEnabled() && !isCasEnabled()
     }
     
     
@@ -71,11 +71,12 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             conn = dataSource.getSsbConnection()                
             Sql db = new Sql( conn ) 
             
-            def authentictionResults = selfServiceAuthentication( authentication, db )
-            Collection<GrantedAuthority> authorities = determineAuthorities( authentication, authentictionResults, db )
-            newAuthenticationToken( authentication, authentictionResults, authorities )
+            def authenticationResults = selfServiceAuthentication( authentication, db ) 
+            authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authentication, authenticationResults, db )
+            authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
+            newAuthenticationToken( authenticationResults )
         }
-        catch (Exception e) {
+        catch (e) {
             log.error "SelfServiceBannerAuthenticationProvider.authenticate was not able to authenticate user $authentication.name due to exception: ${e.message}"
             return null // note this is a rare situation where we want to bury the exception - we need to return null
         } finally {
@@ -93,8 +94,14 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 // (note: many methods are exposed with package-level accessibility to facilitate testing.)    
 
 
-    private def isSsbEnabled() {
+    public static def isSsbEnabled() {
         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
+    }
+    
+    
+    public static def isCasEnabled() {
+        def ssoConfig = CH.config.banner.sso.authenticationProvider instanceof String || CH.config.banner.sso.authenticationProvider instanceof GString ? CH.config.ssbEnabled : ''
+        'cas' == ssoConfig
     }
     
 
@@ -105,7 +112,8 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             def pidm = getPidm( authentication, db )
             def oracleUserName = getOracleUsername( pidm, db )  
                        
-            def authenticationResults = [ pidm: pidm, oracleUserName: oracleUserName ].withDefault { k -> false }
+            def authenticationResults = [ name: authentication.name, credentials: authentication.credentials,
+                                          pidm: pidm, oracleUserName: oracleUserName ].withDefault { k -> false }
             
             if (shouldUseLDAP( db )) {
                 log.error "SelfServiceAuthenticationProvider does not currently support LDAP"
@@ -114,36 +122,19 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                           
             // should not use LDAP                
             def validationResult = validatePin( pidm, authentication.credentials, db ) 
-            authenticationResults << [ 'validationResult': validationResult ]
+            authenticationResults << validationResult
             log.trace "SelfServiceAuthenticationProvider.selfServiceAuthentication will return $authenticationResults"
                                     
             authenticationResults
-        } catch (SQLException e) {
+        } catch (e) {
             log.error "SelfServiceBannerAuthenticationProvider.selfServiceAuthentication not able to authenticate user ${authentication.name} against data source ${dataSource.url} due to exception $e.message", e
-            throw e
+            return null
         }
     }
     
     
-    def newAuthenticationToken( authentication, authentictionResults, authorities ) {  
-        if (authorities) {
-            def user = new BannerUser( authentication.name, 
-                                       authentication.credentials as String,
-                                       authentictionResults.oracleUserName, 
-                                       !authentictionResults.validationResult.disabled /*non-disabled*/, 
-                                       !authentictionResults.validationResult.expired  /*non-expired*/,
-                                       true                           /*credentialsNonExpired*/, 
-                                       true                           /*accountNonLocked*/, 
-                                       authorities as Collection, 
-                                       getFullName( authentication.name.toUpperCase(), dataSource ) as String  )
-            def token = new BannerAuthenticationToken( user )
-            log.trace "SelfServiceBannerAuthenticationProvider.newAuthenticationToken is returning token $token"
-            token
-        }
-        else {
-            log.warn "SelfServiceBannerAuthenticationProvider found no authorities for user $authentication.name"
-            return null
-        }       
+    def newAuthenticationToken( authentictionResults ) {  
+        BannerAuthenticationProvider.newAuthenticationToken( this, authentictionResults )       
     }
     
     

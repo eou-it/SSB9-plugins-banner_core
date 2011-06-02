@@ -47,7 +47,8 @@ public class BannerAuthenticationToken implements Authentication {
 
 
     public boolean isAuthenticated() {
-        user && user.enabled && user.accountNonExpired && user.credentialsNonExpired && user.accountNonLocked
+        (user && user.enabled && user.accountNonExpired && user.credentialsNonExpired 
+         && user.accountNonLocked && user.authorities && user.authorities.size() > 0)
     }
 
 

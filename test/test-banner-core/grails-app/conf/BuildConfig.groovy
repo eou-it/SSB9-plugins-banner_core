@@ -47,10 +47,21 @@ grails.project.dependency.resolution = {
 
 	plugins {
 		compile 'com.sungardhe:banner-codenarc:0.1.3'
+        compile 'com.sungardhe:spring-security-cas:1.0.2'
 	}
 
+
     dependencies {
-         build 'org.codehaus.groovy:http-builder:0.5.0'  // needed for FooClient, a script that interacts with the Foo resource
+        // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
+
+        // Note: elvyx-1.0.24_beta.jar remains in the lib/ directory of the project as it is not available in a public repo due to licensing issues.
+        build 'org.codehaus.groovy:http-builder:0.5.0',  // needed for FooClient, a script that interacts with the Foo resource
+              'org.antlr:antlr:3.2',
+              'com.thoughtworks.xstream:xstream:1.2.1',
+              'javassist:javassist:3.8.0.GA',
+              'com.oracle:ojdbc6:11.1.0.6'
+              
+        runtime "javax.servlet:jstl:1.1.2"
     }
 
 }
