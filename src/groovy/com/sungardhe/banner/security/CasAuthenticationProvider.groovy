@@ -68,26 +68,36 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate( Authentication authentication ) {
         log.trace "CasAuthenticationProvider.authenticate invoked for ${authentication.name}"
 
-        def authenticationResults = casAuthentication( authentication )
-
-        def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
- 
-        if (!authenticationResults.oracleUserName) {
-            log.warn "CasAuthenticationProvider was not able to authenticate user."
-            applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults.name, false, 'CasAuthenticationProvider - CAS user not mapped to Oracle user', 
-                                                                            'CasAuthenticationProvider', new Date(), 1 ) )
-            return null
-        }
-        applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults.name, true, '', '', new Date(), '' ) )
-        
+        def conn
         try {
-            authenticationResults['authorities'] = (Collection<GrantedAuthority>) BannerAuthenticationProvider.determineAuthorities( authenticationResults.oracleUserName.toUpperCase(), dataSource )
+            conn = dataSource.unproxiedConnection
+            Sql db = new Sql( conn ) 
+            
+            def authenticationResults = casAuthentication( authentication, db )
+    
+            def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
+      
+            if (authenticationResults.oracleUserName) {
+                authenticationResults['authorities'] = (Collection<GrantedAuthority>) BannerAuthenticationProvider.determineAuthorities( authenticationResults.oracleUserName.toUpperCase(), dataSource )
+            } 
+            else if (isSsbEnabled() && authenticationResults['pidm']) {
+                authenticationResults['authorities'] = SelfServiceBannerAuthenticationProvider.determineAuthorities( authentication, authentictionResults, db )                    
+            } else {
+                log.warn "CasAuthenticationProvider was not able to authenticate (no mapping found to a database user or spriden_id) "
+                applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults.name, false, 'CasAuthenticationProvider - CAS user not mapped to Oracle user or spriden_id', 
+                                                                                'CasAuthenticationProvider', new Date(), 1 ) )
+                return null
+            }
+            applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults.name, true, '', '', new Date(), '' ) )
+            
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
             newAuthenticationToken( authenticationResults )
         }
         catch (Exception e) {
             log.warn "CasAuthenticationProvider was not able to authenticate user $authenticationResults.name due to exception: ${e.message}"
             return null
+        } finally {
+            conn?.close()
         }
     }
     
@@ -102,13 +112,24 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
     }
 
 
-    public static def getMappedDatabaseUserForUdcId( String udcId, def dataSource ) {
+    public static def getMappedDatabaseUserForUdcId( String udcId, DataSource dataSource ) {
         def conn
         def dbUser
         try {
-            log.trace "CasAuthenticationProvider.getMappedDatabaseUserForUdcId mapping for udcId = $udcId"
             conn = dataSource.unproxiedConnection
             Sql db = new Sql( conn )
+            return getMappedDatabaseUserForUdcId( udcId, db )
+        } finally {
+            conn?.close()
+        }
+        dbUser
+    }
+
+
+    public static def getMappedDatabaseUserForUdcId( String udcId, Sql db ) {
+        def dbUser
+        try {
+            log.trace "CasAuthenticationProvider.getMappedDatabaseUserForUdcId mapping for udcId = $udcId"
             def sqlStatement = '''SELECT gobeacc_username FROM gobumap, gobeacc
                                   WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
             db.eachRow( sqlStatement, [udcId] ) { row ->
@@ -117,19 +138,25 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
         } catch (SQLException e) {
             log.error "CasAuthenticationProvider not able to map udcId $udcId to db user"
             return null
-        } finally {
-            conn?.close()
         }
         dbUser
     }
     
     
-    private def casAuthentication( authentication ) {
+    private def casAuthentication( authentication, db ) {
         log.trace "CasAuthenticationProvider.casAuthentication doing CAS authentication"
         def attributeMap = RequestContextHolder.currentRequestAttributes().request.session.getAttribute( AbstractCasFilter.CONST_CAS_ASSERTION ).principal.attributes
         def assertAttributeValue = attributeMap[CH?.config?.banner.sso.authenticationAssertionAttribute]
-        def oracleUserName = getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource )
-        def authenticationResults = [ name: oracleUserName ? oracleUserName : assertAttributeValue, oracleUserName: oracleUserName ].withDefault { k -> false }
+        def oracleUserName = getMappedDatabaseUserForUdcId( assertAttributeValue, db )
+        def authenticationResults  
+        if (oracleUserName) {
+            authenticationResults = [ name: oracleUserName, oracleUserName: oracleUserName ].withDefault { k -> false } 
+        } else {
+            // if the assertAttributeValue is a spriden_id, we should be able to get the PIDM
+            def pidm = SelfServiceBannerAuthenticationProvider.getPidm( authentication, db )
+            authenticationResults = [ name: authentication.name, pidm: pidm ].withDefault { k -> false } 
+        }
+        
         log.trace "CasAuthenticationProvider.casAuthentication results are $authenticationResults"
         authenticationResults
     }
