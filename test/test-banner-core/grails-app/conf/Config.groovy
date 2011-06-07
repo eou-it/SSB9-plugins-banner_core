@@ -30,7 +30,7 @@ def locationAdder = ConfigFinder.&addLocation.curry( grails.config.locations )
 // 3. Load the configuration file if its location was specified as a system environment variable
 //
 // Map [ environment variable or -D command line argument name : file path ]
-[ bannerGrailsAppConfig:      "${userHome}/.grails/banner_on_grails-local-config.groovy",
+[ bannerGrailsAppConfig:      "${userHome}/.grails/banner_configuration.groovy",
   customRepresentationConfig: "grails-app/conf/CustomRepresentationConfig.groovy",
   releaseInfo:                "release_info.groovy",
 ].each { envName, defaultFileName -> locationAdder( envName, defaultFileName ) }

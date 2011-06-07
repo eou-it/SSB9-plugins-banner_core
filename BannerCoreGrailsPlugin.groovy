@@ -70,7 +70,7 @@ class BannerCoreGrailsPlugin {
     // independent of deploying a new plugin build to Nexus.
     //
 //    String version = "0.1-SNAPSHOT"
-    String version = "0.2.36"
+    String version = "0.2.37"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
@@ -108,7 +108,7 @@ class BannerCoreGrailsPlugin {
             case GrailsApplication.ENV_PRODUCTION:
                 log.info "Will use a dataSource configured via JNDI"
                 underlyingDataSource( JndiObjectFactoryBean ) {
-                    jndiName = "java:comp/env/${CH.config.myDataSource.jndiName}"
+                    jndiName = "java:comp/env/${CH.config.bannerDataSource.jndiName}"
                 }
                 if (isSsbEnabled()) {
                     underlyingSsbDataSource( JndiObjectFactoryBean ) {
@@ -129,10 +129,10 @@ class BannerCoreGrailsPlugin {
                         url = "${CH.config.elvyx.url}"
                     } 
                     else {
-                        driverClassName = "${CH.config.myDataSource.driver}"
-                        url = "${CH.config.myDataSource.url}"
-                        password = "${CH.config.myDataSource.password}"
-                        username = "${CH.config.myDataSource.username}"
+                        driverClassName = "${CH.config.bannerDataSource.driver}"
+                        url = "${CH.config.bannerDataSource.url}"
+                        password = "${CH.config.bannerDataSource.password}"
+                        username = "${CH.config.bannerDataSource.username}"
                     }
                 }
                 if (isSsbEnabled()) {

@@ -206,7 +206,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     private def defaultAuthentication( Authentication authentication ) {
         def conn
         try {
-            authenticationDataSource.setURL( CH?.config?.myDataSource.url )
+            authenticationDataSource.setURL( CH?.config?.bannerDataSource.url )
             conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
             log.trace "BannerAuthenticationProvider.defaultAuthentication successfully authenticated user ${authentication.name} against data source ${dataSource.url}"
         } catch (SQLException e) {
