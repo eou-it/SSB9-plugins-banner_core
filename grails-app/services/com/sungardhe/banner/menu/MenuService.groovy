@@ -46,6 +46,7 @@ class MenuService {
 
     def personalMenuMap() {
         def dataMap = []
+		def mnuPrf = getMnuPref()
         Sql sql
         def parent
         log.debug("Personal Menu started")
@@ -61,7 +62,7 @@ class MenuService {
 
         mnu.pageName = it.gubpage_name
         mnu.caption = it.gutpmnu_label
-        if (getMnuPref())
+        if (mnuPrf)
             mnu.caption = it.gutpmnu_label + " (" + mnu.formName + ")"
         mnu.level = it.gutpmnu_level
         mnu.type = it.gutpmnu_value.split("\\|")[0]
@@ -115,6 +116,7 @@ class MenuService {
     private def processMenu() {
         def dataMap = []
         def menuMap = []
+		def mnuPrf = getMnuPref()
         Sql sql
         log.debug("Process Menu started")
         sql = new Sql(sessionFactory.getCurrentSession().connection())
@@ -134,7 +136,7 @@ class MenuService {
                 mnu.pageName = it.gubpage_name
                 if (it.gutmenu_desc != null)  {
                     mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
-                    if (getMnuPref())
+                    if (mnuPrf)
                         mnu.caption = mnu.caption + " (" + mnu.formName + ")"
                 }
                 mnu.level = it.gutmenu_level
@@ -165,6 +167,7 @@ class MenuService {
     */
     def gotoMenu() {
         def dataMap = []
+		def mnuPrf = getMnuPref()
         Sql sql
         log.debug("Goto Menu started")
         sql = new Sql(sessionFactory.getCurrentSession().connection())
@@ -178,7 +181,7 @@ class MenuService {
         mnu.pageName = it.gubpage_name
         if (it.gutmenu_desc != null)  {
             mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
-            if (getMnuPref())
+            if (mnuPrf)
                 mnu.caption = mnu.caption + " (" + mnu.formName + ")"
         }
         dataMap.add(mnu)
