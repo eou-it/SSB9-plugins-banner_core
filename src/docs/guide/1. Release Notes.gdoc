@@ -1,8 +1,8 @@
 
 h4. 0.2.37
 
-* Config changes to replace myData with bannerData specific values
-* Renamed config file to banner_configuration.groovy fro
+* Config changes to replace myData with bannerData specific datasource values.
+* Renamed config file to banner_configuration.groovy.
 
 h4. 0.2.34
 
