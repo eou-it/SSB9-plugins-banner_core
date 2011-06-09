@@ -27,9 +27,17 @@ class KeyBlockHolder {
 
     private static ThreadLocal storage = new ThreadLocal()
 
-
-    public static Map get() {
-        storage.get() as Map
+    
+    /**
+     * Returns the keyBlock held within this holder or supplied map.
+     * If the keyBlock is not found in the holder, the supplied map will be checked.
+     * @param map an optional parameter, that may contain a keyBlock
+     * @return Map a keyBlock map or null if one was not found
+     **/
+    public static Map get( Map map = null ) {
+        def kb = storage.get() as Map
+        if (!kb && map) kb = map.keyBlock
+        kb
     }
 
 
@@ -40,6 +48,7 @@ class KeyBlockHolder {
 
     public static void clear() {
         storage.set null
-    }   
+    }  
+     
     
 }

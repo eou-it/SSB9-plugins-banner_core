@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ © 2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -194,7 +194,13 @@ class ServiceBase {
                 
                 log.trace "${this.class.simpleName}.update will now invoke the 'preUpdate' callback if it exists"
                 if (this.respondsTo( 'preUpdate' )) {
-                    this.preUpdate( domainModelOrMap )
+                    def preUpdateParam
+                    if (domainModelOrMap instanceof Map && !domainModelOrMap.domainModel) {
+                        preUpdateParam = domainModelOrMap << [ domainModel: domainObject ] 
+                    } else {
+                        preUpdateParam = domainModelOrMap
+                    }                   
+                    this.preUpdate( preUpdateParam )
                     domainObject.properties = extractParams( getDomainClass(), domainModelOrMap, log ) // re-apply changes
                 }                    
                                     
@@ -746,6 +752,10 @@ class ServiceBase {
         
     
     protected def getBannerConnection() {
+        if (!sessionFactory) {
+            ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+            sessionFactory = ctx.getBean( 'sessionFactory' )
+        }
         sessionFactory.getCurrentSession().connection()
     }
 
@@ -813,6 +823,9 @@ class ServiceBase {
 
     /**
      * Persists supplemental data for the supplied modelInstance, if needed.
+     * Note that we persist this explicitly within the insert and update methods, since supplemental data 
+     * may be the only data changed in the object.  That is, since the object may not be 'dirty' we can 
+     * not rely on hibernate listeners or events. 
      **/
     protected def persistSupplementalDataFor( modelInstance ) {
         if (getSupplementalDataService().supportsSupplementalProperties( modelInstance.class )) {
