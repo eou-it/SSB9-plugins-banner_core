@@ -169,12 +169,10 @@ class BannerAccessDecisionVoter extends RoleVoter {
     }
 
       public static boolean isUserAuthorized( String pageName ) {
-          println "$pageName"
           List formNames = CH.config.formControllerMap[ pageName.toLowerCase() ]
         //  def user = SecurityContextHolder?.context?.authentication?.principal
           //println "user $user"
-          def authentication = SecurityContextHolder.getContext().getAuthentication() 
-          println authentication
+          def authentication = SecurityContextHolder.getContext().getAuthentication()
 
           List applicableAuthorities = []
           formNames?.each { form ->
@@ -182,7 +180,6 @@ class BannerAccessDecisionVoter extends RoleVoter {
               authoritiesForForm.each { applicableAuthorities << it }
           }
           applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
-          println applicableAuthorities.size()
           applicableAuthorities.size() > 0
     }
 }

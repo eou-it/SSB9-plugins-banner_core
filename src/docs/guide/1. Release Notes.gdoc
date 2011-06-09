@@ -1,4 +1,9 @@
 
+h4. 0.2.37
+
+* Config changes to replace myData with bannerData specific values
+* Renamed config file to banner_configuration.groovy fro
+
 h4. 0.2.34
 
 * banner-core now supports both administrative and self service Banner.  An application instance may be configured to support administrative users, self service users, or both using configuration as follows:
