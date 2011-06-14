@@ -42,7 +42,7 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
   }
 
   void testGotoMenu() {
-    String mnu = menuService.gotoMenu()
+    String mnu = menuService.gotoMenu('SCA')
     assertNotNull mnu
 
   }
