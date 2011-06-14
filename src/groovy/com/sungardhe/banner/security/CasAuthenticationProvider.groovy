@@ -152,9 +152,14 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
         if (oracleUserName) {
             authenticationResults = [ name: oracleUserName, oracleUserName: oracleUserName ].withDefault { k -> false } 
         } else {
-            // if the assertAttributeValue is a spriden_id, we should be able to get the PIDM
-            def pidm = SelfServiceBannerAuthenticationProvider.getPidm( authentication, db )
-            authenticationResults = [ name: authentication.name, pidm: pidm ].withDefault { k -> false } 
+            def spridenId
+            def pidm
+            def sqlStatement = '''SELECT gobumap_spriden_id, gobumap_pidm FROM gobumap WHERE gobumap_udc_id = ?'''
+            db.eachRow( sqlStatement, [assertAttributeValue] ) { row ->
+                spridenId = row.gobumap_spriden_id
+                pidm = row.gobumap_pidm
+            }
+            authenticationResults = [ name: spridenId, pidm: pidm ].withDefault { k -> false } 
         }
         
         log.trace "CasAuthenticationProvider.casAuthentication results are $authenticationResults"

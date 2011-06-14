@@ -107,12 +107,20 @@ class ServiceBase {
 
         setDbmsApplicationInfo "${this.class.simpleName}.create()" 
                 
-        try {        
-            log.trace "${this.class.simpleName}.create will now invoke the preCreate callback if it exists"
-            if (this.respondsTo( 'preCreate' )) this.preCreate( domainModelOrMap )
-            
+        try {            
             def domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap )
-            
+                    
+            log.trace "${this.class.simpleName}.create will now invoke the preCreate callback if it exists"
+            if (this.respondsTo( 'preCreate' )) {
+                def preCreateParam
+                if (domainModelOrMap instanceof Map && !domainModelOrMap.domainModel) {
+                    preCreateParam = domainModelOrMap << [ domainModel: domainObject ] 
+                } else {
+                    preCreateParam = domainModelOrMap
+                }                   
+                this.preCreate( preCreateParam )
+            }
+                        
             log.trace "${this.class.simpleName}.create will now save the ${getDomainClass()}"
             def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
             

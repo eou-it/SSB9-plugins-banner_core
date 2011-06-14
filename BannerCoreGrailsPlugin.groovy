@@ -22,6 +22,10 @@ import com.sungardhe.banner.supplemental.SupplementalDataPersistenceManager
 
 import grails.util.GrailsUtil
 
+import java.util.concurrent.Executors
+
+import javax.servlet.Filter
+
 import oracle.jdbc.pool.OracleDataSource
 
 import org.apache.commons.dbcp.BasicDataSource
@@ -33,6 +37,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.runtime.GStringImpl
 
+import org.springframework.context.event.SimpleApplicationEventMulticaster
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jmx.support.MBeanServerFactoryBean
 import org.springframework.jmx.export.MBeanExporter
@@ -43,14 +48,13 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.transaction.annotation.Transactional
+
 import com.sungardhe.banner.service.AuditTrailPropertySupportHibernateListener
 import com.sungardhe.banner.representations.ResourceRepresentationRegistry
 import com.sungardhe.banner.security.BannerPreAuthenticatedFilter
-import javax.servlet.Filter
 import com.sungardhe.banner.security.BannerAccessDecisionVoter
 import com.sungardhe.banner.service.LoginAuditService
-import org.springframework.context.event.SimpleApplicationEventMulticaster
-import java.util.concurrent.Executors
+
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access
