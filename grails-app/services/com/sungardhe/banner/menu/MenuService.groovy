@@ -165,29 +165,31 @@ class MenuService {
     * This returns map of all menu item for searching in goto
     * @return Map of menu objects that a user has access
     */
-    def gotoMenu() {
+    def gotoMenu( String searchVal ) {
+        searchVal = searchVal.toUpperCase()
         def dataMap = []
-		def mnuPrf = getMnuPref()
         Sql sql
         log.debug("Goto Menu started")
-        sql = new Sql(sessionFactory.getCurrentSession().connection())
-        log.debug(sql.useConnection.toString())
-        sql.execute("Begin gukmenu.p_bld_prod_menu; End;")
+        sql = new Sql( sessionFactory.getCurrentSession().connection() )
+        log.debug( sql.useConnection.toString() )
+        sql.execute( "Begin gukmenu.p_bld_prod_menu; End;" )
         sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name " +
-            " from gutmenu,gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
-            " gubobjs_name = gutmenu_value AND gubobjs_ban9_flag = 'A'  ", {
-        def mnu = new Menu()
-        mnu.formName = it.gutmenu_value
-        mnu.pageName = it.gubpage_name
-        if (it.gutmenu_desc != null)  {
-            mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
-            if (mnuPrf)
-                mnu.caption = mnu.caption + " (" + mnu.formName + ")"
-        }
-        dataMap.add(mnu)
+                " from gutmenu,gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
+                " gubobjs_name = gutmenu_value AND gubobjs_ban9_flag = 'A'  AND " +
+                " (upper(gutmenu_value) like '%$searchVal%' OR upper(gutmenu_desc) like '%$searchVal%' OR upper(gubpage_name) like '%$searchVal%' )", {
+            def mnu = new Menu()
+            mnu.formName = it.gutmenu_value
+            mnu.pageName = it.gubpage_name
+            if (it.gutmenu_desc != null) {
+                mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
+                if (getMnuPref())
+                    mnu.caption = mnu.caption + " (" + mnu.formName + ")"
+            }
+            dataMap.add( mnu )
         });
-        log.debug("GotoMenu executed" )
+        log.debug( "GotoMenu executed" )
         sql.connection.close()
         return dataMap
     }
+
 }

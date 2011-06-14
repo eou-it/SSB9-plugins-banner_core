@@ -21,6 +21,9 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.web.FilterInvocation
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import org.springframework.context.ApplicationContext
 
 /**
  * A Spring Security RoleVoter that authorizes a user by determining if any of
@@ -144,7 +147,10 @@ class BannerAccessDecisionVoter extends RoleVoter {
     	        if (applicableAuthorities.size() > 0) {
     	            log.debug "BannerAccessDecisionVoter.vote() has found an applicable authority and will grant access"
     	            return AccessDecisionVoter.ACCESS_GRANTED
-    	        } 
+    	        }
+
+                //Since user doesn't have access to url now log it in violation table.
+                logViolation( authentication, forms, url )
             }
     	    log.debug "BannerAccessDecisionVoter.vote() did NOT find any applicable authorities, and will DENY access"
     	    return AccessDecisionVoter.ACCESS_DENIED    	        
@@ -168,10 +174,22 @@ class BannerAccessDecisionVoter extends RoleVoter {
         //        String remoteIPAddress = details.getRemoteAddress();
     }
 
+    private logViolation( def authentication, def forms, def url ) {
+        def urlParts = url.split(/\/|\?|\./).toList()
+        String message = "User ${authentication.name} is not authorized to access "
+        if (url.contains("?page=") && urlParts[1] != 'api') {
+            def pageName = RequestContextHolder.currentRequestAttributes()?.request?.getParameter( "page" )?.toLowerCase()
+            if (pageName)
+            message = message + "$pageName(${forms[0]})"
+            else
+                message = message + "${url}"
+        }
+        def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
+        applicationContext.publishEvent( new BannerAuthenticationEvent( authentication.name, false, message, forms[0], new Date(), 1 ) )
+    }
+
       public static boolean isUserAuthorized( String pageName ) {
           List formNames = CH.config.formControllerMap[ pageName.toLowerCase() ]
-        //  def user = SecurityContextHolder?.context?.authentication?.principal
-          //println "user $user"
           def authentication = SecurityContextHolder.getContext().getAuthentication()
 
           List applicableAuthorities = []
