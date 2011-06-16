@@ -72,6 +72,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             Sql db = new Sql( conn ) 
             
             def authenticationResults = selfServiceAuthentication( authentication, db ) 
+
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authentication, authenticationResults, db )
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
             newAuthenticationToken( authenticationResults )
@@ -127,8 +128,12 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                                     
             authenticationResults
         } catch (e) {
-            log.error "SelfServiceBannerAuthenticationProvider.selfServiceAuthentication not able to authenticate user ${authentication.name} against data source ${dataSource.url} due to exception $e.message", e
-            return null
+            // It's not a 'real' error if this provider cannot authenticate a user due to an exception. 
+            // This may occur if the user logging in is an administrative user. In that case, since we return 
+            // null, the 'next' provider will be given the opportunity to authenticate the user. 
+            log.warn "SelfServiceBannerAuthenticationProvider.selfServiceAuthentication not able to authenticate user ${authentication.name} due to exception $e.message"
+
+            return null  // this is a rare situation where we want to bury the exception - we *need* to return null
         }
     }
     
@@ -251,7 +256,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                         lv_disable_ind VARCHAR2(1);
                     begin
                         lv_boolResult := gb_third_party_access.f_validate_pin( lv_pidm, lv_pin, lv_expire_ind, lv_disable_ind );
-                        IF (lv_boolResult) THEN
+                        IF lv_boolResult THEN
                           lv_result := 1;
                         ELSE
                           lv_result := 0;
@@ -262,6 +267,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                     end;
                  """
                ) { result, expiredInd, disabledInd ->
+                     log.trace "...gb_third_party_access.f_validate_pin returned valid=$result, expired=$expiredInd, disabled=$disabledInd "
                      pinValidation << [ valid: (result == 1 ? true : false ), 
                                         expired: (expiredInd == 'Y' ? true : false), 
                                         disabled: (disabledInd == 'Y' ? true : false) ]

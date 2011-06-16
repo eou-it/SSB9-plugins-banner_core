@@ -110,17 +110,8 @@ class ServiceBase {
         try {            
             def domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap )
                     
-            log.trace "${this.class.simpleName}.create will now invoke the preCreate callback if it exists"
-            if (this.respondsTo( 'preCreate' )) {
-                def preCreateParam
-                if (domainModelOrMap instanceof Map && !domainModelOrMap.domainModel) {
-                    preCreateParam = domainModelOrMap << [ domainModel: domainObject ] 
-                } else {
-                    preCreateParam = domainModelOrMap
-                }                   
-                this.preCreate( preCreateParam )
-            }
-                        
+            domainObject = invokeServicePreCreate( domainModelOrMap, domainObject )
+                                    
             log.trace "${this.class.simpleName}.create will now save the ${getDomainClass()}"
             def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
             
@@ -173,8 +164,7 @@ class ServiceBase {
     public def update( domainModelOrMap, flushImmediately = true ) {
 
         log.debug "${this.class.simpleName}.update invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
-        log.trace "${this.class.simpleName}.update transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
-        
+        log.trace "${this.class.simpleName}.update transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"        
         setDbmsApplicationInfo "${this.class.simpleName}.update()"     
         
         def content      // we'll extract the domainModelOrMap into a params map of the properties
@@ -200,18 +190,8 @@ class ServiceBase {
                 // throw a RuntimeException if any properties identified as 'readonly' within the model are dirty
                 validateReadOnlyPropertiesNotDirty( domainObject ) 
                 
-                log.trace "${this.class.simpleName}.update will now invoke the 'preUpdate' callback if it exists"
-                if (this.respondsTo( 'preUpdate' )) {
-                    def preUpdateParam
-                    if (domainModelOrMap instanceof Map && !domainModelOrMap.domainModel) {
-                        preUpdateParam = domainModelOrMap << [ domainModel: domainObject ] 
-                    } else {
-                        preUpdateParam = domainModelOrMap
-                    }                   
-                    this.preUpdate( preUpdateParam )
-                    domainObject.properties = extractParams( getDomainClass(), domainModelOrMap, log ) // re-apply changes
-                }                    
-                                    
+                domainObject = invokeServicePreUpdate( domainModelOrMap, domainObject )
+                                                    
                 log.trace "${this.class.simpleName}.update applied updates and will save $domainObject"
                 updatedModel = domainObject.save( failOnError: true, flush: flushImmediately )
             }
@@ -328,7 +308,6 @@ class ServiceBase {
         
         log.debug "${this.class.simpleName}.delete invoked with domainModelOrMapOrId = $domainModelOrMapOrId and flushImmediately = $flushImmediately"
         log.trace "${this.class.simpleName}.delete transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
-
         setDbmsApplicationInfo "${this.class.simpleName}.delete()" 
 
         def domainObject
@@ -367,8 +346,7 @@ class ServiceBase {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def read( id ) {
 
-        log.trace "${this.class.simpleName}.read, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
-        
+        log.trace "${this.class.simpleName}.read, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"        
         setDbmsApplicationInfo "${this.class.simpleName}.read()" 
 
         try {
@@ -395,8 +373,7 @@ class ServiceBase {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def get( id ) {
 
-        log.trace "${this.class.simpleName}.get, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
-        
+        log.trace "${this.class.simpleName}.get, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"        
         setDbmsApplicationInfo "${this.class.simpleName}.get()" 
 
         try {
@@ -423,8 +400,7 @@ class ServiceBase {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def list( args ) {
 
-        log.trace "${this.class.simpleName}.list, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}" 
-               
+        log.trace "${this.class.simpleName}.list, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"                
         setDbmsApplicationInfo "${this.class.simpleName}.list()" 
 
         try {
@@ -446,8 +422,7 @@ class ServiceBase {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def count( args = null ) {  // args are ignored -- TODO: Remove from signature
 
-        log.trace "${this.class.simpleName}.count, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}" 
-               
+        log.trace "${this.class.simpleName}.count, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"                
         setDbmsApplicationInfo "${this.class.simpleName}.count()" 
 
         try {
@@ -468,8 +443,7 @@ class ServiceBase {
      **/
     public def flush() {
         
-        log.trace "${this.class.simpleName}.flush invoked"
-        
+        log.trace "${this.class.simpleName}.flush invoked"        
         try {
             getDomainClass().withSession { session ->
                 session.flush()
@@ -495,6 +469,7 @@ class ServiceBase {
      * Specifically, this calls the gb_common.p_set_context(?,?,?) procedure.
      **/
     public void setApiContext( String packageName, String contextName, String contextVal ) { 
+        
         def sessionFactory = ApplicationHolder.getApplication().getMainContext().sessionFactory
         def sql = new Sql( sessionFactory?.currentSession?.connection() ) 
         sql.call( "{call gb_common.p_set_context( ?, ?, ?)}", [ packageName, contextName, contextVal ] )  
@@ -524,7 +499,9 @@ class ServiceBase {
      * which must therefore be 'refreshed' to attain the modified database values. 
      **/ 
     public boolean isDirty( model ) {
+        
         if (!(model?.isDirty())) return false
+        
         log.trace "Model ${model?.class} with id=${model?.id} has GORM-reported dirty properties:  ${model?.getDirtyPropertyNames()}" 
         if (model?.getDirtyPropertyNames()?.size() > 0) { 
             // check the list, as some test models always return 'isDirty = true' even when there are no dirty fields
@@ -601,6 +578,7 @@ class ServiceBase {
      * Returns a model instance based upon the supplied domainModel instance.
      **/
     public def assignOrInstantiate( domainClass, domainModel ) {
+        
         if (isDomainModelInstance( domainClass, domainModel )) {
             domainModel
         } else {
@@ -629,6 +607,7 @@ class ServiceBase {
      * This method is static to facilitate use from services that do not extend or mixin ServiceBase. 
      **/
     public static def extractParams( domainClass, domainObject, log = null ) {
+        
         if (isDomainModelInstance( domainClass, domainObject )) {
             def paramsMap = domainObject.properties
             if (domainObject.version) paramsMap.version = domainObject.version // version is not included in bulk asisgnments
@@ -654,6 +633,7 @@ class ServiceBase {
      * otherwise the supplied string will be returned. 
      **/
     public def extractId( domainClass, String idString ) {
+        
         if (idString.isNumber()) {
             // note: we'll 'assume' we can coerce a number into a long -- given our use of long for IDs, this should not be too risky...
             //       but this note is included here in case there are issues -- note the use of isNumber and toLong
@@ -682,6 +662,7 @@ class ServiceBase {
      * Returns an 'id' based on the supplied inputObject, which is expected to be a domain model instance. 
      **/
     public def extractId( domainClass, inputObject ) {
+        
         if (isDomainModelInstance( domainClass, inputObject )) {
             extractId( domainClass, inputObject.id )
         } 
@@ -701,6 +682,7 @@ class ServiceBase {
      * Returns a model of the identified domain class that has the supplied 'id'. 
      **/
     public def fetch( domainClass, id, log ) {
+        
         log.debug "Going to fetch a $domainClass using id $id"
         if (id == null) {
             throw new NotFoundException( id: id, entityClassName: domainClass.simpleName )
@@ -740,6 +722,7 @@ class ServiceBase {
      * @content a map contianing updated fields
      **/
     public def checkOptimisticLock( domainObject, content, log ) {
+        
         if (domainObject.hasProperty( 'version' )) {
             if (content.version != null) {
                 int ver = content.version instanceof String ? content.version.toInteger() : content.version
@@ -784,11 +767,8 @@ class ServiceBase {
      * @return the keyblock if it exists, or null if there is no keyblock
      **/
     protected def getKeyBlock( domainModelOrMap ) {
-        def kb = KeyBlockHolder.get()
-        if (!kb && domainModelOrMap instanceof Map) {
-            kb = domainModelOrMap.keyBlock
-        }
-        kb
+        if (domainModelOrMap instanceof Map) KeyBlockHolder.get( domainModelOrMap )
+        else                                 KeyBlockHolder.get()
     }
 
 
@@ -852,6 +832,44 @@ class ServiceBase {
             getSupplementalDataService().persistSupplementalDataFor( modelInstance )
         }
     }
+    
+    
+    private def invokeServicePreCreate( domainModelOrMap, domainObject ) {
+        
+        log.trace "${this.class.simpleName}.create will now invoke the preCreate callback if it exists"
+        if (this.respondsTo( 'preCreate' )) {
+            def preCreateParam
+            if (domainModelOrMap instanceof Map && !domainModelOrMap.domainModel) {
+                preCreateParam = domainModelOrMap << [ domainModel: domainObject ] 
+            } else {
+                preCreateParam = domainModelOrMap
+            }                   
+            this.preCreate( preCreateParam )
+            domainObject?.discard() // we'll re-create since the domainModelOrMap may have been modified
+            domainObject = assignOrInstantiate( getDomainClass(), domainModelOrMap )
+            domainObject
+        }
+        else {
+            domainObject
+        }
+    }
+    
+    
+    private def invokeServicePreUpdate( domainModelOrMap, domainObject ) {
+        
+        log.trace "${this.class.simpleName}.update will now invoke the 'preUpdate' callback if it exists"
+        if (this.respondsTo( 'preUpdate' )) {
+            def preUpdateParam
+            if (domainModelOrMap instanceof Map && !domainModelOrMap.domainModel) {
+                preUpdateParam = domainModelOrMap << [ domainModel: domainObject ] 
+            } else {
+                preUpdateParam = domainModelOrMap
+            }                   
+            this.preUpdate( preUpdateParam )
+            domainObject.properties = extractParams( getDomainClass(), domainModelOrMap, log ) // re-apply changes
+        }                    
+        domainObject
+    }
 
 
     /**
@@ -859,6 +877,7 @@ class ServiceBase {
      * properties are found to be dirty, a runtime exception is thrown.
      **/
     private def validateReadOnlyPropertiesNotDirty( domainObject ) {
+        
         def readonlyProperties = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue( domainObject, 'readonlyProperties' )
         if (readonlyProperties) {
             def dirtyProperties = domainObject.getDirtyPropertyNames()

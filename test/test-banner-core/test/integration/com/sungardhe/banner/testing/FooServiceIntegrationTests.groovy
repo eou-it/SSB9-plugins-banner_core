@@ -298,6 +298,21 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     }
     
     
+    void testKeyBlockIsOptional() {
+        KeyBlockHolder.clear()
+        assertFalse KeyBlockHolder.isOptional()
+        assertNotNull KeyBlockHolder.get()
+
+        KeyBlockHolder.markAsOptional()
+        assertTrue KeyBlockHolder.isOptional()
+        assertNull KeyBlockHolder.get()
+        
+        KeyBlockHolder.clear()
+        assertFalse KeyBlockHolder.isOptional()
+        assertNotNull KeyBlockHolder.get()
+    }
+    
+    
     void testApiContextVariableUsage() {
         Foo.withTransaction {
             fooService.setApiContext( 'GB_MEDICAL', 'CHECK_HR_SECURITY', 'Y' )

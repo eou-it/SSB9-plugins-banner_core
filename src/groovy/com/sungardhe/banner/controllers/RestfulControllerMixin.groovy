@@ -14,6 +14,7 @@ import com.sungardhe.banner.exceptions.*
 import com.sungardhe.banner.representations.RepresentationBuilder
 import com.sungardhe.banner.representations.ResourceRepresentationHandler
 import com.sungardhe.banner.representations.ResourceRepresentationRegistry
+import com.sungardhe.banner.service.KeyBlockHolder as KBH
 
 import grails.converters.JSON
 import grails.converters.XML
@@ -195,19 +196,22 @@ class RestfulControllerMixin {
     def create = {
 
         log.trace "${this.class.simpleName}.create invoked with params $params and format $request.format"
+        
+        KBH.markAsOptional() // REST APIs do not expose or use a KeyBlock
+        
         def extractedParams = extractParams()
         def entity
         log.trace "${this.class.simpleName}.create will invoke ${serviceName}.create( $extractedParams ) - service"
         try {
             entity = this."${getServiceName()}".create( extractedParams )
 	        log.trace "${this.class.simpleName}.create has created entity $entity?.class (id - $entity?.id) and will prepare the response"
-            def successReturnMap = [ success: true,
-                                     data: entity,
-                                     refBase: refBase( request ),
+            def successReturnMap = [ success:          true,
+                                     data:             entity,
+                                     refBase:          refBase( request ),
                                      supplementalData: entity.hasSupplementalProperties() ? entity.supplementalProperties : null,
-                                     message:  localizer( code: 'default.created.message',
-                                                          args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ),
-                                                                  entity.id ] ) ]
+                                     message:          localizer( code: 'default.created.message',
+                                                                  args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ),
+                                                                          entity.id ] ) ]
 			log.debug  "${this.class.simpleName}.create will create response from map: $successReturnMap"
             this.response.status = 201 // the 'created' code
             def result = representationBuilderFor( "create" ).buildRepresentation( successReturnMap )
@@ -225,23 +229,29 @@ class RestfulControllerMixin {
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
             render( defaultErrorRenderMap( e, entity, 'default.not.created.message' ) )
         }
+        finally {
+            KBH.clear()    
+        }
     }
 
 
     def update = {
 
         log.trace "${this.class.simpleName}.update invoked with params $params and format $request.format"
+        
+        KBH.markAsOptional() // REST APIs do not expose or use a KeyBlock
+        
         def extractedParams = extractParams()
         def entity
         try {
             entity = this."${getServiceName()}".update( extractedParams )
-            def successReturnMap = [ success: true,
-                                     data: entity,
-                                     refBase: refBase( request ),
+            def successReturnMap = [ success:          true,
+                                     data:             entity,
+                                     refBase:          refBase( request ),
                                      supplementalData: entity.hasSupplementalProperties() ? entity.supplementalProperties : null,
-                                     message:  localizer( code: 'default.updated.message',
-                                                          args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ),
-                                                                  entity.id ] ) ]
+                                     message:          localizer( code: 'default.updated.message',
+                                                                  args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ),
+                                                                          entity.id ] ) ]
             this.response.status = 200
             def result = representationBuilderFor( "update" ).buildRepresentation( successReturnMap )
             log.debug "${this.class.simpleName}.update will render $result"
@@ -258,12 +268,18 @@ class RestfulControllerMixin {
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
             render( defaultErrorRenderMap( e, entity, 'default.not.updated.message' ) )
         }
+        finally {
+            KBH.clear()    
+        }
     }
 
 
     def destroy = {
 
         log.trace "${this.class.simpleName}.destroy invoked with params $params and format $request.format"
+        
+        KBH.markAsOptional() // REST APIs do not expose or use a KeyBlock
+        
         if (params?.size() < 1) {
             extractParams()
             log.warn "destroy() required explicit extraction of params -- this is normally not needed as the id is provided within the URI"
@@ -273,8 +289,8 @@ class RestfulControllerMixin {
         // Instead, we should expect the 'id' to be mapped for us, as it is provided as part of the URI.
         try {
             this."${getServiceName()}".delete( params )
-            def successReturnMap = [ success: true,
-                                     data: null,
+            def successReturnMap = [ success:  true,
+                                     data:     null,
                                      message:  localizer( code: 'default.deleted.message',
                                                           args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ),
                                                                   params.id ] ) ]
@@ -294,11 +310,17 @@ class RestfulControllerMixin {
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
             render( defaultErrorRenderMap( e, entity, 'default.not.deleted.message' ) )
         }
+        finally {
+            KBH.clear()    
+        }
     }
 
 
     def show = {
+        
         log.trace "${this.class.simpleName}.show invoked with params $params and format $request.format"
+        
+        KBH.markAsOptional() // REST APIs do not expose or use a KeyBlock
         def entity
 
         if (params?.size() < 1) {
@@ -307,12 +329,12 @@ class RestfulControllerMixin {
         }
         try {
             entity = this."${getServiceName()}".read( params.id )
-            def successReturnMap = [ success: true,
-                                     data: entity,
-                                     refBase: refBase( request ),
+            def successReturnMap = [ success:         true,
+                                     data:             entity,
+                                     refBase:          refBase( request ),
                                      supplementalData: entity.hasSupplementalProperties() ? entity.supplementalProperties : null,
-                                     message:  localizer( code: 'default.show.message',
-                                                          args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
+                                     message:          localizer( code: 'default.show.message',
+                                                                  args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
             this.response.status = 200
             def result = representationBuilderFor( "show" ).buildRepresentation( successReturnMap )
             log.debug "${this.class.simpleName}.show will render $result"
@@ -330,13 +352,18 @@ class RestfulControllerMixin {
             this.response.setStatus( 500 )
             render( defaultErrorRenderMap( e, entity, 'default.not.shown.message' ) )
         }
+        finally {
+            KBH.clear()    
+        }
     }
 
 
-    // TODO: Add support for supplemental data when returning lists of entities
     def list = {
 
         log.trace "${this.class.simpleName}.list invoked with params $params and format $request.format"
+        
+        KBH.markAsOptional() // REST APIs do not expose or use a KeyBlock
+
         if (params?.size() < 1) {
             extractParams()
             log.warn "list() required explicit extraction of params -- this is normally not needed as the id is provided within the URI"
@@ -347,14 +374,14 @@ class RestfulControllerMixin {
         try {
             entities = this."${getServiceName()}".list( params )
             totalCount = this."${getServiceName()}".count( params )
-            def successReturnMap = [ success: true,
-                                     data: entities,
-                                     totalCount: totalCount,
-                                     pageOffset: params.offset ? params?.offset : 0,
+            def successReturnMap = [ success:     true,
+                                     data:        entities,
+                                     totalCount:  totalCount,
+                                     pageOffset:  params.offset ? params?.offset : 0,
                                      pageMaxSize: params.max ? params?.max : totalCount,
-                                     refBase: refBase( request ),
-                                     message: localizer( code: 'default.list.message',
-                                                         args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
+                                     refBase:     refBase( request ),
+                                     message:     localizer( code: 'default.list.message',
+                                                             args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ) ]
             this.response.status = 200
             def result = representationBuilderFor( "list" ).buildRepresentation( successReturnMap )
             log.debug "${this.class.simpleName}.list will render $result"
@@ -371,6 +398,9 @@ class RestfulControllerMixin {
             log.error "Caught unexpected exception ${e.class.simpleName} which may be a candidate for wrapping in a ApplicationException, message: ${e.message}", e
             render( defaultErrorRenderMap( e, entities, 'default.not.listed.message' ) )
         }
+        finally {
+            KBH.clear()    
+        }
     }
 
 
@@ -378,11 +408,11 @@ class RestfulControllerMixin {
 
 
     private Map defaultErrorRenderMap( e, data, messageCode ) {
-        [ data: data,
-          success: false,
-          message: localizer( code: messageCode,
-                              args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
-          errors: (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
+        [ data:                   data,
+          success:                false,
+          message:                localizer( code: messageCode,
+                                             args: [ localizer( code: "${domainSimpleName}.label", default: "${domainSimpleName}" ) ] ),
+          errors:                 (e.hasProperty( 'errors' ) ? e.errors?.allErrors?.collect { localizer( error: it ) } : null),
           underlyingErrorMessage: e.message ]
     }
 
@@ -400,11 +430,9 @@ class RestfulControllerMixin {
 
         if (extractor) {
 	        log.debug "extractParams() found an extractor within the registry"
-        } else {
-            if (this.class.metaClass.respondsTo( this.class, "getParamsExtractor" )) {
-                log.debug "extractParams() will now see if the controller provides support, by calling ${this.class}.getParamsExtractor()"
-                extractor = this.getParamsExtractor()
-            }
+        } else if (this.class.metaClass.respondsTo( this.class, "getParamsExtractor" )) {
+            log.debug "extractParams() will now see if the controller provides support, by calling ${this.class}.getParamsExtractor()"
+            extractor = this.getParamsExtractor()
         }
 
         if (!extractor) {

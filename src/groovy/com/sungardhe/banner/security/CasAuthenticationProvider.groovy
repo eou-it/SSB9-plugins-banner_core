@@ -95,7 +95,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
         }
         catch (Exception e) {
             log.warn "CasAuthenticationProvider was not able to authenticate user $authenticationResults.name due to exception: ${e.message}"
-            return null
+            return null // this is a rare situation where we want to bury the exception - we *need* to return null
         } finally {
             conn?.close()
         }
@@ -150,7 +150,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
         def oracleUserName = getMappedDatabaseUserForUdcId( assertAttributeValue, db )
         def authenticationResults  
         if (oracleUserName) {
-            authenticationResults = [ name: oracleUserName, oracleUserName: oracleUserName ].withDefault { k -> false } 
+            authenticationResults = [ name: oracleUserName, oracleUserName: oracleUserName, valid: true ].withDefault { k -> false } 
         } else {
             def spridenId
             def pidm
@@ -159,7 +159,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
                 spridenId = row.gobumap_spriden_id
                 pidm = row.gobumap_pidm
             }
-            authenticationResults = [ name: spridenId, pidm: pidm ].withDefault { k -> false } 
+            authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm) ].withDefault { k -> false } 
         }
         
         log.trace "CasAuthenticationProvider.casAuthentication results are $authenticationResults"

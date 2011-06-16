@@ -66,6 +66,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
         try {
             def authenticationResults = defaultAuthentication( authentication )
+            
             def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
             
             if (!authenticationResults['oracleUserName']) {
@@ -82,7 +83,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         }
         catch (Exception e) {
             log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${e.message}"
-            return null // note this is a rare situation where we want to bury the exception - we need to return null
+            return null // this is a rare situation where we want to bury the exception - we *need* to return null
         }
     }
 
@@ -95,11 +96,12 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
      * @param authorities the user's authorities that must be included in the new authentication object
      **/
     public static def newAuthenticationToken( provider, authenticationResults ) {  
+        
         def user = new BannerUser( authenticationResults.name,                       // username
                                    authenticationResults.credentials as String,      // password
                                    authenticationResults.oracleUserName,             // oracle username (note this may be null)
                                    !authenticationResults.disabled,                  // enabled (account)
-                                   true,                                             // accountNonExpired
+                                   authenticationResults.valid,                      // accountNonExpired - using this for 'valid credential'
                                    !authenticationResults.expired,                   // credentialsNonExpired 
                                    true,                                             // accountNonLocked 
                                    authenticationResults.authorities as Collection, 
@@ -147,7 +149,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             log.error "BannerAuthenticationProvider not able to determine Authorities for user $oracleUserName due to exception $e.message"
             return new ArrayList<GrantedAuthority>()
         } 
-        log.trace "BannerAuthenticationProvider.determineAuthorities is returning $authorities"
+        log.trace "BannerAuthenticationProvider.determineAuthorities is returning ${authorities?.size()} authorities. "
         authorities
     }
 
@@ -197,20 +199,27 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     private def defaultAuthentication( Authentication authentication ) {
         def conn
+        def authenticationResults
         try {
+            log.trace "BannerAuthenticationProvider.defaultAuthentication invoked..."
             authenticationDataSource.setURL( CH?.config?.bannerDataSource.url )
             conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
-            def authenticationResults = [name: authentication.name, 
-                                         credentials: authentication.credentials, 
-                                         oracleUserName: authentication.name].withDefault { k -> false }
-            log.trace "BannerAuthenticationProvider.defaultAuthentication successfully authenticated user ${authentication.name} against data source ${dataSource.url}"
-            authenticationResults
-        } catch (SQLException e) {
-            log.error "BannerAuthenticationProvider not able to perform default authentication for $authentication.name and authentication results $authenticationResults due to exception $e.message"
-            return null
+            log.trace "BannerAuthenticationProvider.defaultAuthentication was able to connect, and will create authenticationResults..."
+            authenticationResults = [ name:           authentication.name, 
+                                      credentials:    authentication.credentials, 
+                                      oracleUserName: authentication.name,
+                                      valid:          true ].withDefault { k -> false }
+            log.trace "BannerAuthenticationProvider.defaultAuthentication successfully authenticated user ${authentication.name}"
+            
+        } catch (e) {
+            e.printStackTrace()
+            log.error "BannerAuthenticationProvider not able to perform default authentication for $authentication.name due to exception $e.message"
+            authenticationResults = [ name: authentication.name, credentials: authentication.credentials, valid: false ]
         } finally {
             conn?.close()
         }
+        log.trace "BannerAuthenticationProvider.defaultAuthentication will return $authenticationResults"
+        authenticationResults
     }
 
 }
