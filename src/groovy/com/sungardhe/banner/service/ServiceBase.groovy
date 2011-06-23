@@ -540,13 +540,21 @@ class ServiceBase {
         
     
     /**
+     * Returns true if the supplied model is annotated to indicate that the database may alter state.
+     **/
+    public boolean databaseMayAlterPropertiesOf( model ) {
+        model.class.getAnnotation( DatabaseModifiesState.class ) ? true : false
+    }
+        
+    
+    /**
      * Refreshes the supplied model if that model has the '@DatabaseModifiesState' annatation.
      * Models that are backed by APIs (often indirectly, via a database view with 'instead of' triggers) usually (always?) have their 'activity date' 
      * (i.e., lastModified property) modified within the database, and may modify other fields.  This method will refresh the model 
      * if it is identified as one that may be modified in the database (specifically, if it is annotated with the 'DatabaseModifiesState' annotation).
      **/
     public refreshIfNeeded( model ) {
-        if (model.class.getAnnotation( DatabaseModifiesState.class )) {
+        if (databaseMayAlterPropertiesOf( model )) {
             log.debug "Model ${model.class} is identified as a model that may be modified within the database, and will therefore be refreshed" 
             model.refresh()
         }    
