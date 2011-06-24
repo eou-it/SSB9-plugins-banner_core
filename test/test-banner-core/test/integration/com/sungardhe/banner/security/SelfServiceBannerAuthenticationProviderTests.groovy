@@ -25,6 +25,11 @@ import org.junit.Ignore
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
+import org.springframework.security.authentication.AccountExpiredException
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.CredentialsExpiredException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.LockedException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 
@@ -84,7 +89,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         if (!isSsbEnabled()) return     
         def gobtpac = provider.getGobtpac( testUser.pidm, db )
         
-        assertNull gobtpac.ldap_user    
+        assertNull    gobtpac.ldap_user    
         assertNotNull gobtpac.external_user
         assertEquals  'N', gobtpac.disabled_ind 
         // assertNotNull gobtpac.pin_exp_date 
@@ -125,7 +130,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         if (!isSsbEnabled()) return     
         def gobtpac = provider.getGobtpac( testUser.pidm, db )
         def pinValidation = provider.validatePin( testUser.pidm, testUser.pin, db )
-        assertTrue pinValidation.valid
+        assertTrue  pinValidation.valid
         assertFalse pinValidation.expired
         assertFalse pinValidation.disabled
     }
@@ -134,31 +139,31 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     void testAuthentication() {
         if (!isSsbEnabled()) return     
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
-        assertTrue auth.isAuthenticated()
-        assertEquals auth.name, testUser.id as String
+        assertTrue    auth.isAuthenticated()
+        assertEquals  auth.name, testUser.id as String
         assertNotNull auth.oracleUserName
-        assertTrue auth.details.credentialsNonExpired
+        assertTrue    auth.details.credentialsNonExpired
     }
         
     
     void testAuthorization() {
         if (!isSsbEnabled()) return     
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
-        assertTrue auth.isAuthenticated()
+        assertTrue    auth.isAuthenticated()
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-ALUMNI_BAN_DEFAULT_M" }
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M" }
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE_BAN_DEFAULT_M" }
-        assertEquals 3, auth.authorities.size()
+        assertEquals  3, auth.authorities.size()
     }
     
     
-    void testValidateExpiredPin() {        
+    void testValidatePinForExpiredPin() {        
         if (!isSsbEnabled()) return 
         
         def expiredPinUser = newUserMap( 'HOSS002' )    
         def pinValidation = provider.validatePin( expiredPinUser.pidm, expiredPinUser.pin, db )
-        assertTrue pinValidation.expired
-        assertTrue pinValidation.valid
+        assertTrue  pinValidation.expired
+        assertTrue  pinValidation.valid
         assertFalse pinValidation.disabled
     }
     
@@ -167,9 +172,30 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         if (!isSsbEnabled()) return 
         
         def expiredPinUser = newUserMap( 'HOSS002' )
-        def auth = provider.authenticate( new TestAuthenticationRequest( expiredPinUser ) )
-        assertFalse auth.isAuthenticated()
-        assertFalse auth.details.credentialsNonExpired
+        shouldFail( CredentialsExpiredException ) {
+            provider.authenticate( new TestAuthenticationRequest( expiredPinUser ) )
+        }
+    }
+    
+    
+    void testValidatePinForDisabledAccount() {        
+        if (!isSsbEnabled()) return 
+        
+        def disabledUser = newUserMap( 'HOSS003' )    
+        def pinValidation = provider.validatePin( disabledUser.pidm, disabledUser.pin, db )
+        assertFalse pinValidation.expired
+        assertTrue  pinValidation.valid
+        assertTrue  pinValidation.disabled
+    }
+    
+    
+    void testDisabledAccount() {
+        if (!isSsbEnabled()) return 
+        
+        def disabledUser = newUserMap( 'HOSS003' )
+        shouldFail( DisabledException ) {
+            provider.authenticate( new TestAuthenticationRequest( disabledUser ) )
+        }
     }
         
     

@@ -12,30 +12,38 @@ package com.sungardhe.banner.security
 
 
 import com.sungardhe.banner.db.BannerDS
+import com.sungardhe.banner.service.LoginAuditService
 
 import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.AccountExpiredException
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.CredentialsExpiredException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.LockedException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.GrantedAuthorityImpl
+import org.springframework.web.context.request.RequestContextHolder
 
 import java.sql.SQLException
 
 import groovy.sql.Sql
 
-import org.apache.log4j.Logger
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-
 import oracle.jdbc.pool.OracleDataSource
 import oracle.jdbc.driver.OracleTypes
-import org.jasig.cas.client.util.AbstractCasFilter
-import org.springframework.web.context.request.RequestContextHolder
-import com.sungardhe.banner.service.LoginAuditService
+
+import org.apache.log4j.Logger
+
 import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
+
+import org.jasig.cas.client.util.AbstractCasFilter
+
 import org.springframework.context.ApplicationContext
+
 
 /**
  * An authentication provider which authenticates a self service user.  Self service users
@@ -71,15 +79,37 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             conn = dataSource.getSsbConnection()                
             Sql db = new Sql( conn ) 
             
-            def authenticationResults = selfServiceAuthentication( authentication, db ) 
-
+            def authenticationResults = selfServiceAuthentication( authentication, db ) // may throw exceptions, like SQLException
+        
+            // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
+            // Note that we execute this outside of a try-catch block, to let the exceptions be caught by the filter
+            BannerAuthenticationProvider.verifyAuthenticationResults authenticationResults        
+        
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authentication, authenticationResults, db )
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
             newAuthenticationToken( authenticationResults )
         }
+        catch (DisabledException de) {
+            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${de.message}"
+            throw de
+        }
+        catch (CredentialsExpiredException ce) {
+            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${ce.message}"
+            throw ce
+        }
+        catch (LockedException le) {
+            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${le.message}"
+            throw le
+        }
+        catch (BadCredentialsException be) {
+            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${be.message}"
+            return null // Other providers follow this one, and returning null will give them an opportunity to authenticate the user
+        }
         catch (e) {
-            log.error "SelfServiceBannerAuthenticationProvider.authenticate was not able to authenticate user $authentication.name due to exception: ${e.message}"
-            return null // note this is a rare situation where we want to bury the exception - we need to return null
+            // We'll bury other exceptions (e.g., we'll get a SQLException because the user couldn't be found) 
+            // Returning null will allow other providers to attempt authentication
+            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${e.message}"
+            return null // this is a rare situation where we want to bury the exception - we'll return null to allow other providers a chance...
         } finally {
             conn?.close()
         }
@@ -108,33 +138,23 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
     def selfServiceAuthentication( Authentication authentication, db ) {
         
-        try {
-            
-            def pidm = getPidm( authentication, db )
-            def oracleUserName = getOracleUsername( pidm, db )  
-                       
-            def authenticationResults = [ name: authentication.name, credentials: authentication.credentials,
-                                          pidm: pidm, oracleUserName: oracleUserName ].withDefault { k -> false }
-            
-            if (shouldUseLDAP( db )) {
-                log.error "SelfServiceAuthenticationProvider does not currently support LDAP"
-                throw new RuntimeException( "@@r1:not.yet.implemented@@" )  
-            }
-                          
-            // should not use LDAP                
-            def validationResult = validatePin( pidm, authentication.credentials, db ) 
-            authenticationResults << validationResult
-            log.trace "SelfServiceAuthenticationProvider.selfServiceAuthentication will return $authenticationResults"
-                                    
-            authenticationResults
-        } catch (e) {
-            // It's not a 'real' error if this provider cannot authenticate a user due to an exception. 
-            // This may occur if the user logging in is an administrative user. In that case, since we return 
-            // null, the 'next' provider will be given the opportunity to authenticate the user. 
-            log.warn "SelfServiceBannerAuthenticationProvider.selfServiceAuthentication not able to authenticate user ${authentication.name} due to exception $e.message"
-
-            return null  // this is a rare situation where we want to bury the exception - we *need* to return null
+        def pidm = getPidm( authentication, db )
+        def oracleUserName = getOracleUsername( pidm, db )  
+                   
+        def authenticationResults = [ name: authentication.name, credentials: authentication.credentials,
+                                      pidm: pidm, oracleUserName: oracleUserName ].withDefault { k -> false }
+        
+        if (shouldUseLDAP( db )) {
+            log.error "SelfServiceAuthenticationProvider does not currently support LDAP"
+            throw new RuntimeException( "@@r1:not.yet.implemented@@" )  
         }
+                      
+        // should not use LDAP                
+        def validationResult = validatePin( pidm, authentication.credentials, db ) 
+        authenticationResults << validationResult
+        log.trace "SelfServiceAuthenticationProvider.selfServiceAuthentication will return authenticationResults including $validationResult"
+                                
+        authenticationResults
     }
     
     

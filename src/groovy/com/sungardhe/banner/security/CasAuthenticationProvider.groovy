@@ -29,6 +29,11 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 
 import org.springframework.context.ApplicationContext
+import org.springframework.security.authentication.AccountExpiredException
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.CredentialsExpiredException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.LockedException
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -74,6 +79,10 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
             Sql db = new Sql( conn ) 
             
             def authenticationResults = casAuthentication( authentication, db )
+            
+            // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
+            // Note that we execute this outside of a try-catch block, to let the exceptions be caught by the filter
+            BannerAuthenticationProvider.verifyAuthenticationResults authenticationResults        
     
             def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
       
@@ -93,9 +102,26 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
             newAuthenticationToken( authenticationResults )
         }
-        catch (Exception e) {
-            log.warn "CasAuthenticationProvider was not able to authenticate user $authenticationResults.name due to exception: ${e.message}"
-            return null // this is a rare situation where we want to bury the exception - we *need* to return null
+        catch (DisabledException de) {
+            log.warn "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${de.message}"
+            throw de
+        }
+        catch (CredentialsExpiredException ce) {
+            log.warn "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${ce.message}"
+            throw ce
+        }
+        catch (LockedException le) {
+            log.warn "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${le.message}"
+            throw le
+        }
+        catch (BadCredentialsException be) {
+            log.warn "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${be.message}"
+            throw be // NOTE: If we decide to add another provider after this one, we 'may' want to return null here...
+        }
+        catch (e) {
+            // We don't expect an exception here, as failed authentication should be reported via the above exceptions
+            log.error "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${e.message}"
+            return null // this is a rare situation where we want to bury the exception 
         } finally {
             conn?.close()
         }

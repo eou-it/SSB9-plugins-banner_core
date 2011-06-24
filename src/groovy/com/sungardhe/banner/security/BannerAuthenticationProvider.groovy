@@ -29,6 +29,11 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 
 import org.springframework.context.ApplicationContext
+import org.springframework.security.authentication.AccountExpiredException
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.CredentialsExpiredException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.LockedException
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -64,9 +69,14 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
                 
         log.trace "BannerAuthenticationProvider.authenticate invoked"
 
+        def authenticationResults
         try {
-            def authenticationResults = defaultAuthentication( authentication )
-            
+            authenticationResults = defaultAuthentication( authentication )
+        
+            // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
+            // Note that when we execute this inside a try-catch block, we need to re-throw exceptions we want caught by the filter
+            verifyAuthenticationResults authenticationResults
+           
             def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
             
             if (!authenticationResults['oracleUserName']) {
@@ -81,35 +91,76 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String            
             newAuthenticationToken( this, authenticationResults )
         }
-        catch (Exception e) {
-            log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${e.message}"
+        catch (DisabledException de) {
+            log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${de.message}"
+            throw de
+        }
+        catch (CredentialsExpiredException ce) {
+            log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${ce.message}"
+            throw ce
+        }
+        catch (LockedException le) {
+            log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${le.message}"
+            throw le
+        }
+        catch (BadCredentialsException be) {
+            log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${be.message}"
+            throw be // NOTE: If we decide to add another provider after this one, we 'may' want to return null here...
+        }
+        catch (e) {
+            // We don't expect an exception here, as failed authentication should be reported via the above exceptions
+            log.error "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${e.message}"
             return null // this is a rare situation where we want to bury the exception - we *need* to return null
         }
+    }
+    
+    
+    /**
+     * Throws appropriate Spring Security exceptions for disabled accounts, locked accounts, expired pin, 
+     * @throws DisabledException if account is disabled
+     * @throws CredentialsExpiredException if credential is expired
+     * @throws LockedException if the user account has been locked
+     * @throws RuntimeException if the pin was invalid or the id was incorrect (i.e., the default error)
+     **/
+    public static verifyAuthenticationResults( authenticationResults ) {
+        // These will be localized later, by the LoginController
+        if (authenticationResults.disabled) throw new DisabledException( '' )
+        if (authenticationResults.expired)  throw new CredentialsExpiredException( '' )
+        if (authenticationResults.locked)   throw new LockedException( '' )
+        if (!authenticationResults.valid)   throw new BadCredentialsException( '' )
     }
 
     
     /**
-     * Returns a new authentication object based upon the supplied arguments.
+     * Returns a new authentication object based upon the supplied arguments.  
+     * This method, when used within other providers, should NOT catch the exceptions but should let them be caught by the filter.
      * @param provider the provider who needs to create a token (used for logging purposes)
      * @param authentication the initial authentication object containing credentials
      * @param authentictionResults the authentication results, including the user's Oracle database username 
      * @param authorities the user's authorities that must be included in the new authentication object
+     * @throws AuthenticationException various AuthenticationException types may be thrown, and should NOT be caught by providers using this method
      **/
-    public static def newAuthenticationToken( provider, authenticationResults ) {  
+    public static def newAuthenticationToken( provider, authenticationResults ) { 
         
-        def user = new BannerUser( authenticationResults.name,                       // username
-                                   authenticationResults.credentials as String,      // password
-                                   authenticationResults.oracleUserName,             // oracle username (note this may be null)
-                                   !authenticationResults.disabled,                  // enabled (account)
-                                   authenticationResults.valid,                      // accountNonExpired - using this for 'valid credential'
-                                   !authenticationResults.expired,                   // credentialsNonExpired 
-                                   true,                                             // accountNonLocked 
-                                   authenticationResults.authorities as Collection, 
-                                   authenticationResults.fullName )
-                                   
-        def token = new BannerAuthenticationToken( user )
-        log.trace "${provider?.class?.simpleName}.newAuthenticationToken is returning token $token"
-        token
+        try {
+            def user = new BannerUser( authenticationResults.name,                       // username
+                                       authenticationResults.credentials as String,      // password
+                                       authenticationResults.oracleUserName,             // oracle username (note this may be null)
+                                       !authenticationResults.disabled,                  // enabled (account)
+                                       true,                                             // accountNonExpired - NOT USED
+                                       !authenticationResults.expired,                   // credentialsNonExpired 
+                                       true,                                             // accountNonLocked - NOT USED (YET)
+                                       authenticationResults.authorities as Collection, 
+                                       authenticationResults.fullName )
+
+            def token = new BannerAuthenticationToken( user )
+            log.trace "${provider?.class?.simpleName}.newAuthenticationToken is returning token $token"
+            token
+        } catch (e) {
+            // We don't expect an exception when simply constructing the user and token, so we'll report this as an error
+            log.error "BannerAuthenticationProvider.newAuthenticationToken was not able to construct a token for user $authenticationResults.name, due to exception: ${e.message}"
+            return null // this is a rare situation where we want to bury the exception - we *need* to return null to allow other providers a chance...
+        }        
     }
 
 
@@ -209,17 +260,17 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
                                       credentials:    authentication.credentials, 
                                       oracleUserName: authentication.name,
                                       valid:          true ].withDefault { k -> false }
-            log.trace "BannerAuthenticationProvider.defaultAuthentication successfully authenticated user ${authentication.name}"
-            
-        } catch (e) {
-            e.printStackTrace()
-            log.error "BannerAuthenticationProvider not able to perform default authentication for $authentication.name due to exception $e.message"
-            authenticationResults = [ name: authentication.name, credentials: authentication.credentials, valid: false ]
-        } finally {
+            log.trace "BannerAuthenticationProvider.defaultAuthentication successfully authenticated user ${authentication.name} and will return $authenticationResults"
+            authenticationResults
+        } 
+        catch (SQLException e) {
+            log.warn "BannerAuthenticationProvider not able to perform default authentication for $authentication.name due to exception $e.message"
+            if (e.getErrorCode() == 01017) throw new BadCredentialsException( e.message )
+            else                            throw e
+        } 
+        finally {
             conn?.close()
         }
-        log.trace "BannerAuthenticationProvider.defaultAuthentication will return $authenticationResults"
-        authenticationResults
     }
 
 }

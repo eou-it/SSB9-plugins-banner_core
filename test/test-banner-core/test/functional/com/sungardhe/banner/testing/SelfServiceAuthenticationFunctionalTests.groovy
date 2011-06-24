@@ -37,54 +37,89 @@ class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
     }
 
 
-    // Test ability to access a self service URL. 
-    void testSelfServiceAuthentication() {
+    // Tests ability to access a self service URL. 
+    void testSelfServiceUserAccess() {
          if (isSsbEnabled()) {
-             def conn
-             def db
              
-             try {
-                 def testUser = [ spridenId: 210009105, pidm: 24 ]
-                 
-                 conn = getDataSource().getSsbConnection()                
-                 db = new Sql( conn )
-                 
-                 // retrieve pin for good user by generating a new one. This will be rolled back .         
-                 db.call( "{? = call gb_third_party_access.f_proc_pin(?)}", [ Sql.VARCHAR, testUser.pidm ] ) { pin -> 
-                     testUser['pin'] = pin
-                 }
-                 
-                 login( "${testUser.spridenId}", "${testUser.pin}" )
-                 get( "/ssb/foobar/view" )
-                 
-                 assertStatus 200
-                 assertEquals 'text/html', page?.webResponse?.contentType
-                 
-                 def stringContent = page?.webResponse?.contentAsString
-                 assertTrue stringContent ==~ /.*If I had a UI.*/
-             } finally {
-                 conn?.close()
-                 db?.close()
-             }
+            loginSelfServiceUser( [ spridenId: 210009105, pidm: 24 ] )
+             
+            get "/ssb/foobar/view"
+            
+            assertStatus 200
+            assertEquals 'text/html', page?.webResponse?.contentType
+            
+            def stringContent = page?.webResponse?.contentAsString
+            assertTrue stringContent ==~ /.*If I had a UI.*/
          }
     }
-
-
-     //----------------------------- Helper Methods ------------------------------    
-
-
-     private def isSsbEnabled() {
-         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
-     }
-     
-     
-     protected def getDataSource() {
-         if (!dataSource) {
-             ApplicationContext ctx = (ApplicationContext) AH.getApplication().getMainContext()
-             dataSource = (DataSource) ctx.getBean( 'dataSource' )
+    
+    
+    void testSelfServiceExpiredPin() {
+         if (isSsbEnabled()) {
+             
+            loginSelfServiceUser( [ spridenId: 'HOSS002', pidm: 49528 ] )
+             
+            get "/ssb/foobar/view"
+            
+            assertTitle 'Login'             
+            assertStatus 200
+            assertEquals 'text/html', page?.webResponse?.contentType
          }
-         dataSource
+    }
+    
+    
+    void testSelfServiceDisabled() {
+         if (isSsbEnabled()) {
+             
+            loginSelfServiceUser( [ spridenId: 'HOSS003', pidm: 49529 ] )
+             
+            get "/ssb/foobar/view"
+            
+            assertTitle 'Login'             
+            assertStatus 200
+            assertEquals 'text/html', page?.webResponse?.contentType
+         }
+    }
+    
+
+    //----------------------------- Helper Methods ------------------------------    
+
+
+    // Expects a map like: [ spridenId: #########, pidm: ### ]
+    def loginSelfServiceUser( Map user_credentials ) { 
+        def conn
+        def db
+        
+        try {             
+            conn = getDataSource().getSsbConnection()                
+            db = new Sql( conn )
+            
+            // retrieve pin for user by generating a new one. This will be rolled back.         
+            db.call( "{? = call gb_third_party_access.f_proc_pin(?)}", 
+                     [ Sql.VARCHAR, user_credentials.pidm ] ) { 
+                pin -> user_credentials['pin'] = pin 
+            }             
+            login "${user_credentials.spridenId}", "${user_credentials.pin}"
+        } 
+        finally {
+            conn?.close()
+            db?.close()
+        }         
      }
+
+
+    private def isSsbEnabled() {
+        CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
+    }
+     
+     
+    protected def getDataSource() {
+        if (!dataSource) {
+            ApplicationContext ctx = (ApplicationContext) AH.getApplication().getMainContext()
+            dataSource = (DataSource) ctx.getBean( 'dataSource' )
+        }
+        dataSource
+    }
      
 
 }

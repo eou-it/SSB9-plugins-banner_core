@@ -81,6 +81,7 @@ class LoginController {
 		def username = session[UsernamePasswordAuthenticationFilter.SPRING_SECURITY_LAST_USERNAME_KEY]
 		String msg = ''
 		def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+
 		if (exception) {
 			if (exception instanceof AccountExpiredException) {
 				msg = SpringSecurityUtils.securityConfig.errors.login.expired
