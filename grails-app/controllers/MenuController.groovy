@@ -24,8 +24,12 @@ class MenuController {
             mnuLabel = "My Banner"
             mnuParams = "type=Personal"
         }
-        if (request.parameterMap["pageName"] != null)
-            list = getCrumb((request.parameterMap["pageName"][0]), menuType)
+        if (request.parameterMap["pageName"] != null) {
+            def seq
+            if(request.parameterMap["seq"] != null)
+               seq = request.parameterMap["seq"][0]
+            list = getCrumb( (request.parameterMap["pageName"][0]), menuType, seq )
+        }
         else
         if (request.parameterMap["menuName"] != null) {
             def seq1 = request.parameterMap["seq"][0]
@@ -117,14 +121,22 @@ class MenuController {
     /**
     * This method returns simgle navigational entry as breadcrumb
     */
-    private def getCrumb(String pageName, String menuType) {
+    private def getCrumb(String pageName, String menuType, def seq) {
         def mnuList
         log.debug("Menu Controller getcrumb")
         if (menuType == null)
             mnuList = getMenu()
         else
             mnuList = getPersonalMenu()
-        def childMenu = mnuList.find{a -> a.pageName == pageName }
+        def childMenu
+        if(seq){
+            childMenu = mnuList.find{a ->
+                (a.pageName == pageName && a.seq == seq as int)
+            }
+        }
+        else {
+            childMenu = mnuList.find{a -> a.pageName == pageName}
+        }
         childMenu.each {a -> a.menu = getParent(mnuList, a, mnuLabel)}
         return childMenu
     }
