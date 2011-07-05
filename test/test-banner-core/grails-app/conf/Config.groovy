@@ -303,6 +303,7 @@ grails.plugins.springsecurity.interceptUrlMap = [
         '/images/**':  ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/plugins/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/errors/**':  ['IS_AUTHENTICATED_ANONYMOUSLY'],
+        '/help/**':  ['IS_AUTHENTICATED_ANONYMOUSLY'],
 
 //        '/ssb/student/**': ['ROLE_SELFSERVICE_STUDENT'], 
 //        '/ssb/alumni/**':  ['ROLE_SELFSERVICE_ALUMNI'], 
