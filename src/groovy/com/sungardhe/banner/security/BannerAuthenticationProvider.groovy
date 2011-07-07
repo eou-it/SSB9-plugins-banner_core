@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2011 SunGard Higher Education.  All Rights Reserved.
+ ï¿½ 2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -253,7 +253,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         def authenticationResults
         try {
             log.trace "BannerAuthenticationProvider.defaultAuthentication invoked..."
-            authenticationDataSource.setURL( dataSource?.connection?.metaData?.URL )
+            authenticationDataSource.setURL( CH?.config?.bannerDataSource.url )
             conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
             log.trace "BannerAuthenticationProvider.defaultAuthentication was able to connect, and will create authenticationResults..."
             authenticationResults = [ name:           authentication.name, 
