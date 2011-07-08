@@ -63,7 +63,7 @@ class MenuService {
         mnu.pageName = it.gubpage_name
         mnu.caption = it.gutpmnu_label
         if (mnuPrf)
-            mnu.caption = it.gutpmnu_label + " (" + mnu.formName + ")"
+            mnu.caption = it.gutpmnu_label + " \n(" + mnu.formName + ")"
         mnu.level = it.gutpmnu_level
         mnu.type = it.gutpmnu_value.split("\\|")[0]
         mnu.module = it.gubmodu_name
@@ -137,7 +137,7 @@ class MenuService {
                 if (it.gutmenu_desc != null)  {
                     mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
                     if (mnuPrf)
-                        mnu.caption = mnu.caption + " (" + mnu.formName + ")"
+                        mnu.caption = mnu.caption + " \n(" + mnu.formName + ")"
                 }
                 mnu.level = it.gutmenu_level
                 mnu.type = it.gutmenu_objt_code
