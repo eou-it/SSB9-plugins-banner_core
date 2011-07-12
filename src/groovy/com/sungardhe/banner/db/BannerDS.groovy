@@ -51,6 +51,7 @@ public class BannerDS implements DataSource {
     DataSource underlyingSsbDataSource
 
     def nativeJdbcExtractor  // injected by Spring
+    def dataSourceUrl
 
     private final Logger log = Logger.getLogger( getClass() )
 
@@ -225,9 +226,16 @@ public class BannerDS implements DataSource {
      * Returns the jdbcUrl of the underlying DataSource.
      */
 	public String getUrl() {
-
-        getUnderlyingDataSource().connection.metaData.URL
-        
+        def conn
+        if(! dataSourceUrl) {
+            try {
+                conn = getUnderlyingDataSource().connection
+                dataSourceUrl = conn.metaData.URL
+            } finally {
+                conn?.close()
+            }
+        }
+        dataSourceUrl
 	}
 	
 	

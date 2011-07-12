@@ -253,7 +253,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         def authenticationResults
         try {
             log.trace "BannerAuthenticationProvider.defaultAuthentication invoked..."
-            authenticationDataSource.setURL( CH?.config?.bannerDataSource.url )
+            authenticationDataSource.setURL( dataSource.getUrl() )
             conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
             log.trace "BannerAuthenticationProvider.defaultAuthentication was able to connect, and will create authenticationResults..."
             authenticationResults = [ name:           authentication.name, 
