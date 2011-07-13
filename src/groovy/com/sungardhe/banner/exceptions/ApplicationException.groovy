@@ -89,8 +89,8 @@ class ApplicationException extends RuntimeException {
         this( entityClassOrName, e )
         this.id = id
     }
-    
-    
+
+
     public String getMessage() {
         wrappedException?.message
     }
@@ -151,6 +151,10 @@ class ApplicationException extends RuntimeException {
                 }
             } else if (name == 'UncategorizedDataAccessException') {
                 name = 'UnknownException'
+            } else if (name == 'HibernateSystemException') {
+                if (wrappedException.getMessage().contains( 'transaction timeout' )) {
+                    name = 'TransactionTimeoutException'
+                }
             }
             friendlyName = name
         }
@@ -358,6 +362,18 @@ class ApplicationException extends RuntimeException {
                               errors: null
                             ]
                         }
+        ],
+
+        'TransactionTimeoutException': [
+            httpStatusCode: 400,
+            returnMap: { localize ->
+                 [ message: translate( localize: localize,
+                                                  code: "row.locking.failure",
+                                                  args: [ localize( code: "${entityClassName}.label",
+                                                                    default: getUserFriendlyName() ) ] ) as String,
+                              errors: null
+                 ]
+            }
         ],
 
         'AnyOtherException':  [
