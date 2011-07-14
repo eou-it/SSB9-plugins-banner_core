@@ -31,6 +31,9 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 
+import com.sungardhe.banner.mep.MultiEntityProcessingService
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.springframework.context.ApplicationContext
 
 /**
  * A dataSource that wraps an 'underlying' datasource.  When this datasource is asked for a 
@@ -52,6 +55,8 @@ public class BannerDS implements DataSource {
 
     def nativeJdbcExtractor  // injected by Spring
     def dataSourceUrl
+
+    MultiEntityProcessingService multiEntityProcessingService
 
     private final Logger log = Logger.getLogger( getClass() )
 
@@ -80,6 +85,8 @@ public class BannerDS implements DataSource {
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
             proxy( oconn, user?.oracleUserName )
             setRoles( oconn, user?.oracleUserName, applicableAuthorities )
+
+            setMep(conn, user)
         } 
         else {
             conn = underlyingDataSource.getConnection()
@@ -415,6 +422,23 @@ public class BannerDS implements DataSource {
         log.trace "BannerDS.isAdministrativeRequest() will return '${!FormContext.isSelfService()}' (FormContext = ${FormContext.get()})"
         !FormContext.isSelfService()
     }
+
+    private setMep(conn, user){
+             ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+             multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean( "multiEntityProcessingService" )
+
+              if ( multiEntityProcessingService.isMEP(conn)){
+                if (!user?.mepHomeContext){
+                      multiEntityProcessingService.setMepOnAccess(user?.oracleUserName.toString().toUpperCase(), conn)
+                      user?.mepHomeContext = multiEntityProcessingService.getHomeContext(conn)
+                      user?.mepProcessContext = user?.mepHomeContext
+                  } else{
+                      multiEntityProcessingService.setHomeContext(user?.mepHomeContext, conn)
+                      multiEntityProcessingService.setProcessContext(user?.mepProcessContext, conn)
+                 }
+              }
+      }
+
 
 }
 

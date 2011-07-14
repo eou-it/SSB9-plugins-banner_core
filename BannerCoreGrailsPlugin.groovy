@@ -19,6 +19,7 @@ import com.sungardhe.banner.supplemental.SupplementalDataSupportMixin
 import com.sungardhe.banner.supplemental.SupplementalDataHibernateListener
 import com.sungardhe.banner.supplemental.SupplementalDataService
 import com.sungardhe.banner.supplemental.SupplementalDataPersistenceManager
+import com.sungardhe.banner.mep.MultiEntityProcessingService
 
 import grails.util.GrailsUtil
 
@@ -195,6 +196,12 @@ class BannerCoreGrailsPlugin {
             dataSource = ref( dataSource )
             sessionFactory = ref( sessionFactory )
             supplementalDataPersistenceManager = ref( supplementalDataPersistenceManager )
+            bean.initMethod = 'init'
+        }
+
+        multiEntityProcessingService( MultiEntityProcessingService ) { bean ->
+            dataSource = ref( dataSource )
+            sessionFactory = ref( sessionFactory )
             bean.initMethod = 'init'
         }
 

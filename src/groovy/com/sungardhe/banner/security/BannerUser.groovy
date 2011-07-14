@@ -1,6 +1,6 @@
 /** *****************************************************************************
 
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ ï¿½ 2010 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -24,6 +24,8 @@ public class BannerUser extends GrailsUser {
 
     String fullName
     String oracleUserName
+    public String mepHomeContext
+    public String mepProcessContext
     
     public BannerUser( final String username, final String password, 
                        final String oracleUserName, final boolean enabled,
