@@ -181,7 +181,7 @@ class MultiEntityProcessingService {
          declare
            c_cursor SYS_REFCURSOR;
           begin
-          gspvpdi.get_mif_codes_for_user(${userName},c_cursor);
+          gspvpdi.get_mif_codes_for_user(${userName.toString().toUpperCase()},c_cursor);
 
           ${Sql.out OracleTypes.CURSOR} := c_cursor;
 

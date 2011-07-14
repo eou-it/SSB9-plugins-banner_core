@@ -75,7 +75,7 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
 
     void testGetUserHomeCodes() {
         def homes
-        homes = multiEntityProcessingService.getUserHomeCodes("GRAILS_USER")
+        homes = multiEntityProcessingService.getUserHomeCodes("grails_user")
         assertTrue homes.size() == 2
         assertEquals "BANNER", homes[0].code
     }
@@ -88,7 +88,7 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
     }
 
     void testGetUserHomesCount() {
-        assertTrue multiEntityProcessingService.getUserHomesCount("GRAILS_USER") == 2
+        assertTrue multiEntityProcessingService.getUserHomesCount("grails_user") == 2
     }
 
 
