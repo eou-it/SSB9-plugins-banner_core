@@ -78,8 +78,9 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         homes = multiEntityProcessingService.getUserHomeCodes("grails_user")
         assertTrue homes.size() == 2
         assertEquals "BANNER", homes[0].code
+        assertEquals "Banner College", homes[0].desc
+        assertTrue "Default MEP error", homes[0].default
     }
-
 
     void testGetMepHomeCodes() {
         def homes

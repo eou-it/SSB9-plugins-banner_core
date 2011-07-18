@@ -178,22 +178,23 @@ class MultiEntityProcessingService {
 
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         sql.call("""
-         declare
-           c_cursor SYS_REFCURSOR;
-          begin
-          gspvpdi.get_mif_codes_for_user(${userName.toString().toUpperCase()},c_cursor);
+          declare
+            c_cursor SYS_REFCURSOR;
+           begin
+           gspvpdi.get_mif_home_codes_for_user(${userName.toString().toUpperCase()},c_cursor);
 
-          ${Sql.out OracleTypes.CURSOR} := c_cursor;
+           ${Sql.out OracleTypes.CURSOR} := c_cursor;
 
-          end;
-             """
+           end;
+              """
         ) {cursor ->
             cursor.eachRow() {
 
                 def mepHome = [:]
 
-                mepHome.code = it.GTVVPDI_CODE
+                mepHome.code = it.GURUSRI_VPDI_CODE
                 mepHome.desc = it.GTVVPDI_DESC
+                mepHome.default = it.GURUSRI_USER_DEF_INST_IND.toString().toBoolean()
 
                 mepHomes << mepHome
             }
@@ -202,6 +203,7 @@ class MultiEntityProcessingService {
         return mepHomes
 
     }
+
 
     def getMepHomeCodes() {
 
