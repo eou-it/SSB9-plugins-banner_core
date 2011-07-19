@@ -56,7 +56,7 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "T", MenuAndToolbarPreference.dbaseInstitutionCb
         assertEquals "T", MenuAndToolbarPreference.dateTimeCb
         assertEquals "T", MenuAndToolbarPreference.requiredItemCb
-        assertTrue MenuAndToolbarPreference.formnameDisplayIndicator
+        assertEquals "Y", MenuAndToolbarPreference.formnameDisplayIndicator
         
 		//Update the entity
 		def testDate = new Date()
@@ -71,7 +71,7 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
 		MenuAndToolbarPreference.requiredItemCb = "U"
 		MenuAndToolbarPreference.linescrnXPosition = 0
 		MenuAndToolbarPreference.linebtnXPosition = 0
-		MenuAndToolbarPreference.formnameDisplayIndicator = false
+		MenuAndToolbarPreference.formnameDisplayIndicator = "N"
 		MenuAndToolbarPreference.lastModified = testDate
 		MenuAndToolbarPreference.lastModifiedBy = "test"
 		MenuAndToolbarPreference.dataOrigin = "Banner"
@@ -90,7 +90,7 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "U", MenuAndToolbarPreference.requiredItemCb
         assertEquals 0, MenuAndToolbarPreference.linescrnXPosition
         assertEquals 0, MenuAndToolbarPreference.linebtnXPosition
-        assertEquals false, MenuAndToolbarPreference.formnameDisplayIndicator
+        assertEquals "N", MenuAndToolbarPreference.formnameDisplayIndicator
 	}
 
     void testOptimisticLock() { 
@@ -116,7 +116,7 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
 		MenuAndToolbarPreference.requiredItemCb="U"
 		MenuAndToolbarPreference.linescrnXPosition= 0
 		MenuAndToolbarPreference.linebtnXPosition= 0
-		MenuAndToolbarPreference.formnameDisplayIndicator= false
+		MenuAndToolbarPreference.formnameDisplayIndicator= "Y"
 		MenuAndToolbarPreference.lastModified= new Date()
 		MenuAndToolbarPreference.lastModifiedBy="test"
 		MenuAndToolbarPreference.dataOrigin= "Banner"
@@ -192,7 +192,7 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
     		requiredItemCb: "T", 
     		linescrnXPosition: 1, 
     		linebtnXPosition: 1, 
-    		formnameDisplayIndicator: true,
+    		formnameDisplayIndicator:"Y",
             lastModified: new Date(),
 			lastModifiedBy: "test", 
 			dataOrigin: "Banner"

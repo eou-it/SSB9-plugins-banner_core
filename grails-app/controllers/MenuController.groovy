@@ -41,7 +41,7 @@ class MenuController {
         render(contentType: "text/xml") {
         NavigationEntries {
         for (a in list) {
-            NavigationEntryValueObject(id: a.seq, menu: a.menu, form: a.formName, path: a.pageName + ".zul", name: a.formName, caption: a.caption, type: a.type, url: a.url, parent: a.parent, params: mnuParams)
+            NavigationEntryValueObject(id: a.seq, menu: a.menu, form: a.formName, path: a.pageName + ".zul", name: a.formName, caption: a.caption, type: a.type, url: a.url, parent: a.parent, params: mnuParams, captionProperty: a.captionProperty)
         }
       }
      }

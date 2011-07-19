@@ -13,7 +13,7 @@
 package com.sungardhe.banner.general.utility
 import com.sungardhe.banner.testing.BaseIntegrationTestCase
 
-
+import org.springframework.security.core.context.SecurityContextHolder
 
 
 class MenuAndToolbarPreferenceServiceIntegrationTests extends BaseIntegrationTestCase {
@@ -54,7 +54,7 @@ class MenuAndToolbarPreferenceServiceIntegrationTests extends BaseIntegrationTes
 	def irequiredItemCb = "X"
 	def ilinescrnXPosition = 9 
 	def ilinebtnXPosition = 9 
-	def iformnameDisplayIndicator = false
+	def iformnameDisplayIndicator = "Y"
 
     // change the values 
 	MenuAndToolbarPreference.tlbBtn = itlbBtn
@@ -109,7 +109,7 @@ class MenuAndToolbarPreferenceServiceIntegrationTests extends BaseIntegrationTes
     		requiredItemCb: "T", 
     		linescrnXPosition: 1,
             linebtnXPosition: 1,
-            formnameDisplayIndicator: true
+            formnameDisplayIndicator: "Y"
 
     )
     return MenuAndToolbarPreference

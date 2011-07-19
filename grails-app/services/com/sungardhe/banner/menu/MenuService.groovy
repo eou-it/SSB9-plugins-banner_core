@@ -63,14 +63,15 @@ class MenuService {
         mnu.pageName = it.gubpage_name
         mnu.caption = it.gutpmnu_label
         if (mnuPrf)
-            mnu.caption = it.gutpmnu_label + " \n(" + mnu.formName + ")"
-        mnu.level = it.gutpmnu_level
-        mnu.type = it.gutpmnu_value.split("\\|")[0]
-        mnu.module = it.gubmodu_name
-        mnu.url = it.gubmodu_url
-        mnu.seq = it.gutpmnu_seq_no
-        mnu.parent = setParent(mnu.level,dataMap)
-        dataMap.add(mnu)
+            mnu.caption = it.gutpmnu_label + " (" + mnu.formName + ")"
+            mnu.level = it.gutpmnu_level
+            mnu.type = it.gutpmnu_value.split("\\|")[0]
+            mnu.module = it.gubmodu_name
+            mnu.url = it.gubmodu_url
+            mnu.seq = it.gutpmnu_seq_no
+            mnu.parent = setParent(mnu.level,dataMap)
+            mnu.captionProperty = mnuPrf
+            dataMap.add(mnu)
         }
     );
 
@@ -137,7 +138,7 @@ class MenuService {
                 if (it.gutmenu_desc != null)  {
                     mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
                     if (mnuPrf)
-                        mnu.caption = mnu.caption + " \n(" + mnu.formName + ")"
+                        mnu.caption = mnu.caption + " (" + mnu.formName + ")"
                 }
                 mnu.level = it.gutmenu_level
                 mnu.type = it.gutmenu_objt_code
@@ -145,6 +146,7 @@ class MenuService {
                 mnu.module = it.gubmodu_name
                 mnu.url = it.gubmodu_url
                 mnu.seq = it.gutmenu_seq_no
+                mnu.captionProperty = mnuPrf
                 dataMap.add(mnu)
             }
         });
@@ -158,7 +160,11 @@ class MenuService {
     * @return Map of menu objects that a user has access
     */
     private def getMnuPref() {
-        return menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).formnameDisplayIndicator
+        if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).formnameDisplayIndicator  == 'B' ||
+            menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).formnameDisplayIndicator  == 'Y')
+            true
+        else
+            false
     }
 
     /**
@@ -168,6 +174,7 @@ class MenuService {
     def gotoMenu( String searchVal ) {
         searchVal = searchVal.toUpperCase()
         def dataMap = []
+        def mnuPrf = getMnuPref()
         Sql sql
         log.debug("Goto Menu started")
         sql = new Sql( sessionFactory.getCurrentSession().connection() )
@@ -180,6 +187,7 @@ class MenuService {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.pageName = it.gubpage_name
+            mnu.captionProperty = mnuPrf
             if (it.gutmenu_desc != null) {
                 mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
                 if (getMnuPref())

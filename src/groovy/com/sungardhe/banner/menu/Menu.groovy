@@ -30,5 +30,6 @@ public class Menu implements Serializable {
     def parent
     def type
     def path
+    def captionProperty
 }
 

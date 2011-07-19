@@ -124,9 +124,8 @@ class MenuAndToolbarPreference implements Serializable {
 	/**
 	 * Tool bar button properties
 	 */
-	@Type(type = "yes_no")
 	@Column(name="GURTPRF_FORMNAME_DISPLAY_IND")
-	Boolean formnameDisplayIndicator
+	String formnameDisplayIndicator
 
 	/**
 	 * Version column which is used as a optimistic lock token for GURTPRF
