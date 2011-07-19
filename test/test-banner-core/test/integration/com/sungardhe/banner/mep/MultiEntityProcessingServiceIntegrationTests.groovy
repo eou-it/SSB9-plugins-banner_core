@@ -104,6 +104,11 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         assertTrue "Mep is not set up correctly",  mep
     }
 
+    void testGetMepDescription() {
+        def desc = multiEntityProcessingService.getMepDescription("BANNER")
+        assertEquals "Banner College",  desc
+    }
+
 
     private setMepLogon() {
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())

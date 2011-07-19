@@ -276,4 +276,27 @@ class MultiEntityProcessingService {
         mep
     }
 
+
+    def getMepDescription(mep) {
+        def desc
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.eachRow("select * from gtvvpdi where gtvvpdi_code = ?", [mep]) {
+            desc = it.gtvvpdi_desc
+        }
+
+        desc
+
+    }
+
+    def getMepDescription(mep, con) {
+        def desc
+        Sql sql = new Sql(con)
+        sql.eachRow("select * from gtvvpdi where gtvvpdi_code = ?", [mep]) {
+            desc = it.gtvvpdi_desc
+        }
+
+        desc
+
+    }
+
 }

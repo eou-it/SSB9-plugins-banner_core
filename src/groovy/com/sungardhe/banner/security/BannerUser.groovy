@@ -26,6 +26,7 @@ public class BannerUser extends GrailsUser {
     String oracleUserName
     public String mepHomeContext
     public String mepProcessContext
+    public String mepHomeContextDescription
     
     public BannerUser( final String username, final String password, 
                        final String oracleUserName, final boolean enabled,

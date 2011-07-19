@@ -46,7 +46,7 @@ import org.springframework.context.ApplicationContext
  * Note this class is named 'BannerDS' versus 'BannerDataSource' to circumvent 
  * 'cannot resolve class' issues when including this plugin.  It is recommended when importing this  
  * class, to import it like: 'import com.sungardhe.banner.db.BannerDS as BannerDataSource'. 
- **/
+ * */
 public class BannerDS implements DataSource {
 
     // Delegates all methods not implemented here, to the underlying dataSource injected via Spring.
@@ -58,8 +58,7 @@ public class BannerDS implements DataSource {
 
     MultiEntityProcessingService multiEntityProcessingService
 
-    private final Logger log = Logger.getLogger( getClass() )
-
+    private final Logger log = Logger.getLogger(getClass())
 
     /**
      * Returns a proxied connection for the current logged in user, from the underlying connection pool.
@@ -67,51 +66,50 @@ public class BannerDS implements DataSource {
      * (based upon the configuration within govurol).
      * */
     public Connection getConnection() throws SQLException {
-        
+
         log.trace "BannerDS.getConnection() invoked and will delegate to an underlying dataSource"
 
-        Connection conn 
+        Connection conn
         def user = SecurityContextHolder?.context?.authentication?.principal
 
-         if (!user?.oracleUserName && isSelfServiceRequest()) {
+        if (!user?.oracleUserName && isSelfServiceRequest()) {
             conn = underlyingSsbDataSource.getConnection()
-            OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
+            OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
-        } 
+        }
         else if (user?.oracleUserName && shouldProxy()) {
-            List applicableAuthorities = extractApplicableAuthorities( user?.authorities )
+            List applicableAuthorities = extractApplicableAuthorities(user?.authorities)
             conn = underlyingDataSource.getConnection()
-            OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
+            OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
-            proxy( oconn, user?.oracleUserName )
-            setRoles( oconn, user?.oracleUserName, applicableAuthorities )
+            proxy(oconn, user?.oracleUserName)
+            setRoles(oconn, user?.oracleUserName, applicableAuthorities)
 
             setMep(conn, user)
-        } 
+        }
         else {
             conn = underlyingDataSource.getConnection()
-            OracleConnection oconn = nativeJdbcExtractor.getNativeConnection( conn )
+            OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
         }
-        
-        new BannerConnection( conn, user?.username, this )  // Note that while an IDE may not like this, the delegate supports this type coersion
+
+        new BannerConnection(conn, user?.username, this)  // Note that while an IDE may not like this, the delegate supports this type coersion
     }
-    
 
     // Note: This method is used for Integration Tests.
-    public Connection proxyAndSetRolesFor( BannerConnection bconn, userName, password ) {
-        
+
+    public Connection proxyAndSetRolesFor(BannerConnection bconn, userName, password) {
+
         def user
         if (SecurityContextHolder?.context?.authentication) {
             user = SecurityContextHolder.context.authentication.principal
             if (user?.username && user?.password) {
-                List applicableAuthorities = extractApplicableAuthorities( user?.authorities )
-                proxyConnection( bconn, userName )
-                setRoles(bconn.extractOracleConnection(), user?.username, applicableAuthorities )
+                List applicableAuthorities = extractApplicableAuthorities(user?.authorities)
+                proxyConnection(bconn, userName)
+                setRoles(bconn.extractOracleConnection(), user?.username, applicableAuthorities)
             }
         }
     }
-    
 
     // Note: This method should be used only for initial authentication, and for testing purposes.
     /**
@@ -122,25 +120,23 @@ public class BannerDS implements DataSource {
      * will be proxied (this method should not be used to explicitly pass the username and password).
      * Note that this method does NOT set password protected roles, as it is intended solely for authentication
      * and not authorization. Subsequent calls to getConnection() method will unlock roles as appropriate.
-     **/
+     * */
     public Connection getUnproxiedConnection() {
-        
-        Connection conn = underlyingDataSource.connection
-        new BannerConnection( conn, null, this )  // Note that while an IDE may not like this, the delegate supports this type coersion
-    }
 
+        Connection conn = underlyingDataSource.connection
+        new BannerConnection(conn, null, this)  // Note that while an IDE may not like this, the delegate supports this type coersion
+    }
 
     // Note: This method should be used only for initial authentication, and for testing purposes.
     /**
      * This method serves the self service banner authentication provider, by returning an unproxied connection that may be used
      * to retrive authorities for a user. 
-     **/
+     * */
     public Connection getSsbConnection() {
-        
+
         Connection conn = underlyingSsbDataSource.getConnection()
-        new BannerConnection( conn, null, this )  // Note that while an IDE may not like this, the delegate supports this type coersion
+        new BannerConnection(conn, null, this)  // Note that while an IDE may not like this, the delegate supports this type coersion
     }
-    
 
     // Note: This method should be used only for initial authentication, and for testing purposes.
     // WARNING: This method MUTATES the supplied connection by proxying it for the identified user.
@@ -150,52 +146,49 @@ public class BannerDS implements DataSource {
      * will be proxied (this method should not be used to explicitly pass the username and password).
      * Note that this method does NOT set password protected roles, as it is intended solely for authentication
      * and not authorization. Subsequent calls to getConnection() method will unlock roles as appropriate.
-     **/
-    public Connection proxyConnection( BannerConnection bconn, userName ) {
-        
-        proxy( bconn.extractOracleConnection(), userName )
+     * */
+    public Connection proxyConnection(BannerConnection bconn, userName) {
+
+        proxy(bconn.extractOracleConnection(), userName)
         bconn.proxyUserName = userName
         bconn
     }
 
 
-    public void closeProxySession( BannerConnection conn, String proxiedUserName ) {
-        
+    public void closeProxySession(BannerConnection conn, String proxiedUserName) {
+
         log.trace "${super.toString()}.closeProxySession() will close proxy session for $conn"
-                
+
         if (conn.extractOracleConnection().isProxySession()) {
-            conn.extractOracleConnection().close( OracleConnection.PROXY_SESSION )
+            conn.extractOracleConnection().close(OracleConnection.PROXY_SESSION)
         }
     }
 
-
-    // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session 
+    // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session
     /**
      * Sets the identifer into DBMS_SESSION. 
      * @param conn the connection upon which to set the dbms session identifer
      * @param identifer the identifier to set
-     **/
-    public void setIdentifier( conn, identifier ) {
-        
-        log.trace "BannerConnection.setIdentifier will execute 'dbms_session.set_identifier' using identifer '$identifier' for '$conn'" 
-        Sql db = new Sql( conn ) 
-        db.call( "{call dbms_session.set_identifier(?)}", [ identifier ] ) 
+     * */
+    public void setIdentifier(conn, identifier) {
+
+        log.trace "BannerConnection.setIdentifier will execute 'dbms_session.set_identifier' using identifer '$identifier' for '$conn'"
+        Sql db = new Sql(conn)
+        db.call("{call dbms_session.set_identifier(?)}", [identifier])
     }
-    
-    
+
     // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session 
     /**
      * Clears the identifer from the DBMS_SESSION.  This should be called when 'closing' the connection. 
      * @param conn the connection upon which to clear the dbms session identifer
-     **/
-    public void clearIdentifer( conn ) {
-        
-        log.trace "BannerConnection.clearIdentifier will execute 'dbms_session.set_identifier' using a null value, for '$conn'" 
-        Sql db = new Sql( conn ) 
-        db.call( "{call dbms_session.set_identifier( NULL )}" ) 
+     * */
+    public void clearIdentifer(conn) {
+
+        log.trace "BannerConnection.clearIdentifier will execute 'dbms_session.set_identifier' using a null value, for '$conn'"
+        Sql db = new Sql(conn)
+        db.call("{call dbms_session.set_identifier( NULL )}")
     }
-    
-    
+
     // note: This method would ideally be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session 
     /**
      * Sets the 'module' and 'action' into the 'DBMS_APPLICATION_INFO'. This method should be called by services, when  
@@ -203,38 +196,36 @@ public class BannerDS implements DataSource {
      * @param conn the connection upon which to set DBMS application info
      * @param module The 'module' to be set, which will be populated from the FormContext threadlocal if not provided
      * @param action the 'action' to set, which will be NULL if not provided 
-     **/
-    public void setDbmsApplicationInfo( conn, module = null, action = null ) {
-        
+     * */
+    public void setDbmsApplicationInfo(conn, module = null, action = null) {
+
         String mod = module ?: (FormContext.get() ? FormContext.get()[0] : null) // FormContext returns a list, but we'll just use the first entry        
-        log.trace "BannerConnection.setDbmsApplicationInfo will call Oracle 'dbms_application_info.set_module' using module = '$mod' and action = '$action' for '$conn'" 
-    
-        Sql db = new Sql( conn )        
-        db.call( "{call dbms_application_info.set_module(?,?)}", [ mod, action ] ) 
+        log.trace "BannerConnection.setDbmsApplicationInfo will call Oracle 'dbms_application_info.set_module' using module = '$mod' and action = '$action' for '$conn'"
+
+        Sql db = new Sql(conn)
+        db.call("{call dbms_application_info.set_module(?,?)}", [mod, action])
         // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
     }
-    
-    
+
     // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session 
     /**
      * Clears the DBMS application information.  This should be invoked when 'committing' the transaction. 
      * @param conn the connection upon which to clear DBMS application info
-     **/
-    public void clearDbmsApplicationInfo( conn ) {
-        
-        log.trace "BannerConnection.clearDbmsApplicationInfo will call Oracle 'dbms_application_info.set_module' with null values, for '$conn'" 
-        Sql db = new Sql( conn )        
+     * */
+    public void clearDbmsApplicationInfo(conn) {
+
+        log.trace "BannerConnection.clearDbmsApplicationInfo will call Oracle 'dbms_application_info.set_module' with null values, for '$conn'"
+        Sql db = new Sql(conn)
         db.call "{call dbms_application_info.set_module( NULL,NULL )}"
         // Note: Don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
     }
-    
 
     /**
      * Returns the jdbcUrl of the underlying DataSource.
      */
-	public String getUrl() {
+    public String getUrl() {
         def conn
-        if(! dataSourceUrl) {
+        if (!dataSourceUrl) {
             try {
                 conn = getUnderlyingDataSource().connection
                 dataSourceUrl = conn.metaData.URL
@@ -243,58 +234,56 @@ public class BannerDS implements DataSource {
             }
         }
         dataSourceUrl
-	}
-	
-	
-	// -------------------- Pass through methods to delegate ------------------------
-	
-	
-	public Connection getConnection( String username, String password ) {	    
-	    getUnderlyingDataSource().getConnection( username, password )
-	}
-    
-
-    public void setLogWriter( PrintWriter printWriter ) {
-        log.trace "BannerDS.setLogWriter(printWriter) will set '$printWriter' onto the underyling dataSource"
-        getUnderlyingDataSource().setLogWriter( printWriter )
     }
-    
+
+    // -------------------- Pass through methods to delegate ------------------------
+
+
+    public Connection getConnection(String username, String password) {
+        getUnderlyingDataSource().getConnection(username, password)
+    }
+
+
+    public void setLogWriter(PrintWriter printWriter) {
+        log.trace "BannerDS.setLogWriter(printWriter) will set '$printWriter' onto the underyling dataSource"
+        getUnderlyingDataSource().setLogWriter(printWriter)
+    }
+
 
     public PrintWriter getLogWriter() {
         log.trace 'BannerDS.getLogWriter() will delegate to underlying dataSource'
         getUnderlyingDataSource().getLogWriter()
     }
-    
 
-    boolean isWrapperFor( Class clazz ) {
+
+    boolean isWrapperFor(Class clazz) {
         log.trace "BannerDS.isWrapperFor(clazz) was invoked with '$clazz' and will delegate to the underlying dataSource"
-        getUnderlyingDataSource().isWrapperFor( clazz )
+        getUnderlyingDataSource().isWrapperFor(clazz)
     }
-    
 
-    Object unwrap( Class clazz ) {
+
+    Object unwrap(Class clazz) {
         log.trace "BannerDS.unwrap(clazz) was invoked with '$clazz' and will delegate to the underlying dataSource"
-        getUnderlyingDataSource().unwrap( clazz )
+        getUnderlyingDataSource().unwrap(clazz)
     }
-    
 
-    void setLoginTimeout( int i ) {
+
+    void setLoginTimeout(int i) {
         log.trace "setLoginTimeout i = $i"
-        getUnderlyingDataSource().setLoginTimeout( i )
+        getUnderlyingDataSource().setLoginTimeout(i)
     }
-    
+
 
     int getLoginTimeout() {
         log.trace 'getLoginTimeout'
         getUnderlyingDataSource().getLoginTimeout()
     }
-    
 
 // --------------------------- end of public methods ----------------------------
-    
 
-    private proxy( OracleConnection oconn, userName ) {
-        
+
+    private proxy(OracleConnection oconn, userName) {
+
         log.trace "BannerDS.proxyConnection invoked with $oconn, $userName"
 
         Properties properties = new Properties()
@@ -305,15 +294,15 @@ public class BannerDS implements DataSource {
         // properties.put( OracleConnection.PROXY_USER_NAME, ("${userName}/${password}" as String) )
         // We proxy connections without authenticating via password.  This is required in a
         // claims-based authentication approach.
-        properties.put( OracleConnection.PROXY_USER_NAME, ("${userName}" as String) )
+        properties.put(OracleConnection.PROXY_USER_NAME, ("${userName}" as String))
 
-        oconn.openProxySession( OracleConnection.PROXYTYPE_USER_NAME, properties )
+        oconn.openProxySession(OracleConnection.PROXYTYPE_USER_NAME, properties)
         log.debug "in BannerDS.proxyConnection - proxied connection for $userName and connection $oconn"
     }
 
 
-    private List extractApplicableAuthorities( grantedAuthorities ) {
-        
+    private List extractApplicableAuthorities(grantedAuthorities) {
+
         if (!grantedAuthorities) return []
 
         List formContext = FormContext.get()
@@ -325,50 +314,49 @@ public class BannerDS implements DataSource {
             def authoritiesForForm = grantedAuthorities.findAll { it.authority ==~ /\w+_${form}_\w+/ }
             authoritiesForForm.each { applicableAuthorities << it }
         }
-        log.debug "Given FormContext of ${formContext?.join(',')}, the user's applicable authorities are $applicableAuthorities" 
+        log.debug "Given FormContext of ${formContext?.join(',')}, the user's applicable authorities are $applicableAuthorities"
         applicableAuthorities
     }
 
 
-    private setRoles( OracleConnection oconn, String proxiedUserName, applicableAuthorities ) {
-        
-        log.debug "BannerDS will set applicable role(s): ${applicableAuthorities*.authority}" 
+    private setRoles(OracleConnection oconn, String proxiedUserName, applicableAuthorities) {
+
+        log.debug "BannerDS will set applicable role(s): ${applicableAuthorities*.authority}"
 
         try {
             log.trace "BannerDS.setRoles - will unlock role(s) for the connection proxied for $proxiedUserName"
-            applicableAuthorities?.each { auth -> unlockRole( oconn, (BannerGrantedAuthority) auth ) }
+            applicableAuthorities?.each { auth -> unlockRole(oconn, (BannerGrantedAuthority) auth) }
             log.trace "BannerDS.setRoles unlocked role(s) for the connection proxied for $proxiedUserName"
         }
         catch (e) {
             //if we cannot unlock a role, abort the proxy session and rollback
             log.error "Failed to unlock role for proxy session for Oracle connection $oconn  Exception: $e "
-            closeProxySession( oconn, proxiedUserName )
+            closeProxySession(oconn, proxiedUserName)
             throw e
         }
     }
 
 
-    private unlockRole( Connection conn, BannerGrantedAuthority bannerAuth ) throws SQLException {
-        
+    private unlockRole(Connection conn, BannerGrantedAuthority bannerAuth) throws SQLException {
+
         switch (bannerAuth.bannerPassword) {
-            case null:        log.trace "BannerDS.unlockRole will not unlock any roles -- the password was null"
-                              return // nothing to do... no roles need to be set
-                              
+            case null: log.trace "BannerDS.unlockRole will not unlock any roles -- the password was null"
+                return // nothing to do... no roles need to be set
+
             case 'INSECURED': log.trace "BannerDS.unlockRole will not unlock a role -- the password was 'INSECURED'"
-                              return // nothing to do... no roles need to be set
-                              
-            case 'ABORT':     log.trace "BannerDS.unlockRole will throw an exception -- the password was 'ABORT'"
-                              throw new RuntimeException( "ABORT Banner Role encountered!" )
+                return // nothing to do... no roles need to be set
+
+            case 'ABORT': log.trace "BannerDS.unlockRole will throw an exception -- the password was 'ABORT'"
+                throw new RuntimeException("ABORT Banner Role encountered!")
         }
-        
+
         // still here? We will now try to set the role...
         String stmt = "set role \"${bannerAuth.roleName}\" identified by \"${bannerAuth.bannerPassword}\"" as String
-        log.trace "BannerDS.unlockRole will set role '${bannerAuth.roleName}' for connection $conn" 
-        
-        Sql db = new Sql( conn )        
-        db.execute( stmt ) // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
-    }
+        log.trace "BannerDS.unlockRole will set role '${bannerAuth.roleName}' for connection $conn"
 
+        Sql db = new Sql(conn)
+        db.execute(stmt) // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
+    }
 
     /**
      * Returns an underlying dataSource.
@@ -378,37 +366,35 @@ public class BannerDS implements DataSource {
      * If the user does not have an Oracle username and the request is for a self service page, 
      * the dataSource returned is the Spring 'underlyingSsbDataSource' bean. 
      * If the user is not authenticated, the underlyingDataSource bean is returned.
-     **/
+     * */
     private DataSource getUnderlyingDataSource() {
-        
+
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (user) {
             if (user.oracleUserName && shouldProxy()) return underlyingDataSource
-            else                                      return underlyingSsbDataSource            
+            else return underlyingSsbDataSource
         }
         else {
             underlyingDataSource // we'll return the INB datasource if no user is authenticated
         }
     }
-    
-    
+
     /**
      * Returns true if the current request is for an administrative page or if the solution is configured to proxy connections for SSB users.
-     **/
-    private boolean shouldProxy() {        
+     * */
+    private boolean shouldProxy() {
         isAdministrativeRequest() || shouldProxySsbRequest()
     }
-    
-    
-    /** 
+
+    /**
      * Returns true if SSB support is enabled and configured to proxy connections for SSB users.
-     **/
+     * */
     private boolean shouldProxySsbRequest() {
-        
-        def enabled  = CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false        
-        def proxySsb = CH.config.ssbOracleUsersProxied instanceof Boolean ? CH.config.ssbOracleUsersProxied : false 
+
+        def enabled = CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
+        def proxySsb = CH.config.ssbOracleUsersProxied instanceof Boolean ? CH.config.ssbOracleUsersProxied : false
         log.trace "BannerDS.shouldProxySsbRequest() will return '${enabled && proxySsb}' (since SSB is ${enabled ? '' : 'not '} enabled and proxy SSB is $proxySsb)"
-        enabled && proxySsb   
+        enabled && proxySsb
     }
 
 
@@ -423,21 +409,23 @@ public class BannerDS implements DataSource {
         !FormContext.isSelfService()
     }
 
-    private setMep(conn, user){
-             ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
-             multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean( "multiEntityProcessingService" )
+    private setMep(conn, user) {
+        ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+        multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
 
-              if ( multiEntityProcessingService.isMEP(conn)){
-                if (!user?.mepHomeContext){
-                      multiEntityProcessingService.setMepOnAccess(user?.oracleUserName.toString().toUpperCase(), conn)
-                      user?.mepHomeContext = multiEntityProcessingService.getHomeContext(conn)
-                      user?.mepProcessContext = user?.mepHomeContext
-                  } else{
-                      multiEntityProcessingService.setHomeContext(user?.mepHomeContext, conn)
-                      multiEntityProcessingService.setProcessContext(user?.mepProcessContext, conn)
-                 }
-              }
-      }
+        if (multiEntityProcessingService.isMEP(conn)) {
+            if (!user?.mepHomeContext) {
+                multiEntityProcessingService.setMepOnAccess(user?.oracleUserName.toString().toUpperCase(), conn)
+                user?.mepHomeContext = multiEntityProcessingService.getHomeContext(conn)
+                user?.mepProcessContext = user?.mepHomeContext
+                user?.mepHomeContextDescription = multiEntityProcessingService.getMepDescription(user?.mepHomeContext, conn)
+            } else {
+                multiEntityProcessingService.setHomeContext(user?.mepHomeContext, conn)
+                multiEntityProcessingService.setProcessContext(user?.mepProcessContext, conn)
+                user?.mepHomeContextDescription = multiEntityProcessingService.getMepDescription(user?.mepHomeContext, conn)
+            }
+        }
+    }
 
 
 }
