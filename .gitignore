@@ -20,3 +20,4 @@ grails-banner-core*.zip
 test/**/cobertura.ser
 test/**/release_info.groovy
 test/**/release_info.groovy.old
+plugin.xml
