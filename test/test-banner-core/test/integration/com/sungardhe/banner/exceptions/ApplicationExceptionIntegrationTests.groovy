@@ -21,6 +21,8 @@ import groovy.sql.Sql
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
 import org.springframework.dao.DataIntegrityViolationException as ConstraintException
 
+import org.springframework.security.core.context.SecurityContextHolder as SCH
+
 /**
  * An integration test for a ApplicationException.
  **/
@@ -263,6 +265,17 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 	    assertTrue returnMap.underlyingErrorMessage ==~ /.*::this is the first error::::this is the second error::::this is the third one::.*/
     }
 
+    public void testOracleVpdPolicySaveException() {
+        SCH.context?.authentication?.principal?.mepProcessContext = "BANNER"
+        SQLException e = new SQLException( "policy with check option violation", "0", -28115 )
+		def ae = new ApplicationException( Foo, e )
+
+        def returnMap = ae.returnMap( controller.localizer )
+		assertFalse returnMap.success
+
+		assertTrue "Message not as expected, but was: ${returnMap.message}", returnMap.message.contains( "can not be saved with the process context BANNER" )
+
+    }
 
     public void testWrappedResourceCodeEncodedBannerApiException() {
         SQLException e = new SQLException( "@@r1:test.banner.api.exception:groovy:grails@@", "0", -20200 )

@@ -205,7 +205,7 @@ class MultiEntityProcessingService {
     }
 
 
-    def getMepHomeCodes() {
+    def getMepCodes() {
 
         def mepHomes = []
 

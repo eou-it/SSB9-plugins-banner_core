@@ -21,6 +21,8 @@ import org.apache.log4j.Logger
 
 import org.springframework.jdbc.UncategorizedSQLException
 
+import org.springframework.security.core.context.SecurityContextHolder as SCH
+
 /**
  * A runtime exception thrown from services (and other artifacts as necessary).
  * This exception often wraps underlying runtime exceptions thrown by various libraries
@@ -454,14 +456,19 @@ class ApplicationException extends RuntimeException {
             // The following codes indicate a Banner API exception that may contain multiple 'pre-localized' error messages within it.
             // In this case, we return the returnMap with a default localized message and return the pre-localized message(s) as the errors list.
             case -20100 : // handled below
-            case  20100 : // handled below
-            case -28115 : // handled below
-            case  28115 : // Banner API exceptions that contain full messages (localized per Banner) banner.api.error
-                return [ message: translate( localize: localize,
+            case  20100 :
+                 return [ message: translate( localize: localize,
                                              code: "banner.api.error",
                                              args: [ localize( code: "${entityClassName}.label", default: getUserFriendlyName() ) ] ) as String,
                          errors: extractErrorMessages( sqlException.getMessage() )
                        ]
+            case -28115 : // handled below
+            case  28115 : // ORA-28115: policy with check option violation
+                  return [message: translate(localize: localize,
+                        code: "mep.policy.save.error.message",
+                        args: [localize(code: "${entityClassName}.label", default: getUserFriendlyName()), SCH.context?.authentication?.principal?.mepProcessContext]) as String,
+                        errors: null
+                ]
 
             default :
                 return [ message: translate( localize: localize,

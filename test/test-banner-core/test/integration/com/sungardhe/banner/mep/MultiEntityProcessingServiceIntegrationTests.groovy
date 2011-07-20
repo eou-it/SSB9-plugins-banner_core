@@ -82,9 +82,9 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         assertTrue "Default MEP error", homes[0].default
     }
 
-    void testGetMepHomeCodes() {
+    void testGetMepCodes() {
         def homes
-        homes = multiEntityProcessingService.getMepHomeCodes()
+        homes = multiEntityProcessingService.getMepCodes()
         assertTrue homes.size() == 2
     }
 
