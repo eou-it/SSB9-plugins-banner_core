@@ -22,7 +22,7 @@
       <form action='${postUrl}' method='POST' id='loginForm'>
 		<div class="userName"><span><input type='text'  name='j_username' id='j_username' /></span></div>
 		<div class="password"><span><input type='password' name='j_password' id='j_password' /></span></div>
-		<div><input type='submit' value='Login' /></div>
+		<div><input type='submit' value='Sign In' id='login_button'/></div>
       </form>
 	</div>
 	<div class="copyright">
