@@ -3,6 +3,7 @@
 <head>
 <title>Login</title>
 <link rel="stylesheet" href="${resource(dir: 'css', file: 'login.css')}"/>
+<!--<link rel="stylesheet" href="${resource(dir: 'css', file: 'rtl-login.css')}"/>-->
 <!--[if IE 7]>
 	<link href="fix-ie7.css" rel="stylesheet" type="text/css" />
 <![endif]-->
@@ -16,13 +17,13 @@
         <div class='loginMsg'>${flash.message}</div>
     </g:if>
     <g:else test='${flash.message}'>
-	  <div class="loginMsg">Please login</div>
+	  <div class="loginMsg">&nbsp;</div>
     </g:else>
 	<div class="logIn">
       <form action='${postUrl}' method='POST' id='loginForm'>
 		<div class="userName"><span><input type='text'  name='j_username' id='j_username' /></span></div>
 		<div class="password"><span><input type='password' name='j_password' id='j_password' /></span></div>
-		<div><input type='submit' value='Sign In' id='login_button'/></div>
+		<div><input type='submit' value='Sign In' id="sign-in-btn" /></div>
       </form>
 	</div>
 	<div class="copyright">
