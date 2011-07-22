@@ -17,7 +17,7 @@
         <div class='loginMsg'>${flash.message}</div>
     </g:if>
     <g:else test='${flash.message}'>
-	  <div class="loginMsg">&nbsp;</div>
+	  <div class="loginMsg">Enter your user name and password.</div>
     </g:else>
 	<div class="logIn">
       <form action='${postUrl}' method='POST' id='loginForm'>
