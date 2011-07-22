@@ -12,7 +12,7 @@ LOG IN
 }
 
 .splashBg {
-	background:url(../images/splash-bg-light.png) no-repeat 0 0;
+	background:url(../images/splash-bg-light-rtl.png) no-repeat 0 0;
 	height:404px;
 	width:704px;
 	margin:140px auto 0px;
@@ -23,15 +23,15 @@ LOG IN
 
 .splashBg .appName {
 	color:#FFF;
-	text-align:right;
-	margin:0px 53px 0px 0px;
+	text-align:left;
+	margin:0px 0px 0px 50px;
 	padding-top:81px;
 	font-size:1.4em;
-	font-weight: bold;
+	font-weight:bold;
 }
 
 .splashBg .logIn {
-	margin:47px 0px 0px 254px;
+	margin:47px 254px 0px 0px;
 	float:none;
 }
 
@@ -40,44 +40,50 @@ LOG IN
 }
 
 .splashBg div span input {
-	width:136px;
+	width:121px;
 	outline:none;
 	border-style:none;
 	border:0;
+	margin-left: -16px;
+	direction: rtl;
 	padding:0;
-	margin:5px 0 0 -17px;
+	margin:3px 0 0 -17px;
 }
 
 .splashBg .userName {
-	background:url(../images/textbox-sprites.png) no-repeat left -25px;
+	background:url(../images/textbox-sprites-rtl.png) no-repeat left -25px;
 	padding:0px 0px 0px 20px;
-	margin-right:10px;
+	margin-right:0px;
 	height:23px;
-	width:141px;
+	width:125px;
+	position: relative;
+	left: 290px;
 }
 
 .splashBg .userName span {
 	display:block;
-	background:url(../images/textbox-sprites.png) no-repeat right 0;
+	background:url(../images/textbox-sprites-rtl.png) no-repeat right 0;
 	padding-right:10px;
 	height:23px;
 }
 
 .splashBg .password {
-	background:url(../images/textbox-sprites.png) no-repeat left 0;
+	background:url(../images/textbox-sprites-rtl.png) no-repeat left 0;
 	padding:0px 0px 0px 20px;
-	margin-right:10px;
+	margin-right:0px;
 	height:23px;
-	width:141px;
+	width:125px;
+	position: relative;
+	left: -7px;
 }
 
 .splashBg .password span {
 	display:block;
-	background:url(../images/textbox-sprites.png) no-repeat right 0;
+	background:url(../images/textbox-sprites-rtl.png) no-repeat right 0;
 	padding-right:10px;
 	height:23px;
 }
-
+/*
 .splashBg a:link, .splashBg a:visited, .splashBg .submit-button {
 
 	background:url(../images/login-button-bg.png) no-repeat 0 0;
@@ -93,20 +99,21 @@ LOG IN
 	position:relative;
 	top:-4px;
 }
-
+*/
 .splashBg .copyright {
 	clear:both;
-	margin:0px 53px 0px 106px;
+	margin:0px 160px 0px 42px;
 	font-size:0.75em;
 	color:#FFF;
 	padding-top:36px;
+	text-align: right;
 }
 
 .loginMsg {
-	text-align:right;
+	text-align:left;
 	color:#FFF;
 	padding-top:20px;
-	margin-right:50px;
+	margin-left:51px;
 	background-image:url(../images/icon-error-16x16.png) left top no-repeat;
 }
 input[type="submit"] {
@@ -117,20 +124,17 @@ input[type="submit"] {
     color: #FFF;
     line-height: 32px;
     font-weight: bold;
-    padding-bottom: 3px;
     position: relative;
     bottom: 4px;
-}    
-input[type="submit"]:hover {
-    background: url('../images/login-button-sprite.png') no-repeat 0 -37px;
-    width: 78px;
-    height: 32px;
-    color: #FFF;
-    line-height: 32px;
-    font-weight: bold;
+    left:-240px;   
 }
 
-#sign-in-btn  {
+input[type="submit"]:hover {
+    background: url('../images/login-button-sprite.png') no-repeat 0 -37px;  
+}
+
+#sign-in-btn {
 	padding:0px;
-}       
+}
+        
   
