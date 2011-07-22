@@ -31,5 +31,6 @@ public class Menu implements Serializable {
     def type
     def path
     def captionProperty
+    def pageCaption
 }
 
