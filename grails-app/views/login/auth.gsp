@@ -16,7 +16,7 @@
         <div class='loginMsg'>${flash.message}</div>
     </g:if>
     <g:else test='${flash.message}'>
-	  <div class="loginMsg">Please login</div>
+	  <div class="loginMsg"><g:message code="com.sungardhe.banner.login.prompt"/></div>
     </g:else>
 	<div class="logIn">
       <form action='${postUrl}' method='POST' id='loginForm'>
@@ -26,8 +26,8 @@
       </form>
 	</div>
 	<div class="copyright">
-		<p>&copy; 2000 - 2011 SunGard. All rights reserved.</p>
-		<p>This software contains confidential and proprietary information of SunGard and its subsidiaries. Use of this software is limited to SunGard Higher Education licensees, and is subject to the terms and conditions of one or more written license agreements between SunGard Higher Education and the licensee in question.</p>
+		<p>&copy; <g:message code="com.sungardhe.banner.login.copyright1"/></p>
+		<p><g:message code="com.sungardhe.banner.login.copyright2"/></p>
 	</div>
 </div>
 
