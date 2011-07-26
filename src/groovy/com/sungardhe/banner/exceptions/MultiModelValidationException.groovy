@@ -62,6 +62,7 @@ import org.springframework.validation.Errors
      **/
     public MultiModelValidationException( Errors errors = null ) {
         modelValidationErrorsMaps = []
+        if (errors) addErrors( errors )
     }
     
     

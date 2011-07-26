@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ © 2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -10,8 +10,13 @@
  ****************************************************************************** */
 package com.sungardhe.banner.configuration
 
+import grails.util.GrailsUtil
+
+import org.apache.log4j.Logger
+
 import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 
 /**
@@ -19,6 +24,9 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
  */
 abstract
 class ApplicationConfigurationUtils {
+
+
+    private static final Logger log = Logger.getLogger( "com.sungardhe.banner.configuration.ApplicationConfigurationUtils" )
 
 
     /**
@@ -36,26 +44,49 @@ class ApplicationConfigurationUtils {
         releaseNum
     }
 
+
+    /** 
+     * Loads a configuration file, using the following search order.
+     * 1. Load the configuration file if its location was specified on the command line using -DmyEnvName=myConfigLocation
+     * 2. (If NOT Grails production env) Load the configuration file if it exists within the user's .grails directory (i.e., convenient for developers)
+     * 3. Load the configuration file if its location was specified as a system environment variable
+     * 4. Load from the classpath (e.g., load file from /WEB-INF/classes within the war file). The installer is used to copy configurations
+     *    to this location, so that war files 'may' be self contained (yet can still be overriden using external configuration files)
+     **/
+    public static void addLocation( List locations, String propertyName, String fileName ) {
+        try {
+            def filePathName = getFilePath( System.getProperty( propertyName ) ) 
+
+            if (GrailsUtil.environment != GrailsApplication.ENV_PRODUCTION) {
+                filePathName = filePathName ?: getFilePath( "${System.getProperty( 'user.home' )}/.grails/${fileName}" )
+                filePathName = filePathName ?: getFilePath( "${fileName}" ) 
+                filePathName = filePathName ?: getFilePath( "grails-app/conf/${fileName}" ) 
+            }
+            
+            filePathName = filePathName ?: getFilePath( System.getenv( propertyName ) )
+
+            if (filePathName) {
+                locations << "file:${filePathName}"        
+            } 
+            else {
+                log.warn "Could not find external configuration file $fileName"
+                def fileInClassPath = Thread.currentThread().getContextClassLoader().getResource( "$fileName" )?.toURI() 
+                if (fileInClassPath) {
+                    log.warn "...but found ($fileName) on the classpath (e.g., within the war)"
+                    locations << "classpath:$fileName"
+                }
+            }
+        } 
+        catch (e) {
+            log.warn "Caught exception while loading configuration files (depending on current grails target, this may be ok): ${e.message}"
+        }
+    }
     
-    // Loads a configuration file, using the following search order:
-    // 1. Load the configuration file if its location was specified on the command line using -DmyEnvName=myConfigLocation
-    // 2. Load the configuration file if it exists within the user's .grails directory (i.e., convenient for developers)
-    // 3. Load the configuration file if its location was specified as a system environment variable
-    public static void addLocation( List locations, String envName, String filePathName ) {
-        if (System.getProperty( envName ) && new File( System.getProperty( envName ) ).exists()) {
-            println "Including configuration file specified on command line: ${System.getProperty( envName )}."
-            locations << "file:" + System.getProperty( envName )
-        }
-        else if (new File( "${filePathName}").exists()) {
-            println "Including user-specific configuration file: ${filePathName}."
-            locations << "file:${filePathName}"
-        }
-        else if (System.getenv( envName ) && new File( System.getenv( envName ) ).exists()) {
-            println "Including System Environment specified configuration file: ${System.getenv( envName )}."
-            locations << "file:" + System.getenv( envName )
-        }
-        else {
-            println "*** WARNING *** --> Could not find configuration file using either environment name $envName or file name $filePathName"
+
+    private static String getFilePath( filePath ) {
+        if (filePath && new File( filePath ).exists()) {
+            log.info "Including external configuration file: $filePath"
+            "${filePath}"
         }
     }
 

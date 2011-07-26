@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ © 2011 SunGard Higher Education.  All Rights Reserved.
 
  CONFIDENTIAL BUSINESS INFORMATION
 
@@ -24,45 +24,34 @@ def locationAdder = ConfigFinder.&addLocation.curry( grails.config.locations )
 //                       +++ EXTERNALIZED CONFIGURATION +++
 //
 // ******************************************************************************
-// config locations should be added to the following map. They will be loaded based upon this search order:
-// 1. Load the configuration file if its location was specified on the command line using -DmyEnvName=myConfigLocation
-// 2. Load the configuration file if it exists within the user's .grails directory (i.e., convenient for developers)
+// Configuration file locations should be added to the following map. 
+// They will be loaded based upon this search order:
+// Loads a configuration file, using the following search order:
+//
+// 1. Load the configuration file if its location was specified on the command line using -DmyEnvName=myConfigLocation. 
+//    An easy way to do this on linux is to export the desired configuration locations prior to starting up the container. 
+//    e.g.:  export JAVA_OPTS="-DBANNER_APP_CONFIG=/banner_test_homes/shared_configs/banner_configuration.groovy \
+//                   -DBANNER_TEST_APP_CONFIG=/banner_test_homes/catalog_TEST/test-banner-core_configuration.groovy"
+//
+// 2. (If NOT Grails production env) Load the configuration file if it exists within the user's .grails directory. 
+//    This option is convenient for developers running in development mode. Note that by default, war files are 
+//    configured for 'production' mode.  To allow use of the user's home directory, the war must be created
+//    or be modified to run in either the test or development mode. A Grails defect in Grails 1.3.5 precludes 
+//    war creation in development mode, but 'grails test war' is functional.  You may also edit the application.properties
+//    within the expanded war file to change the environment mode. 
+//
 // 3. Load the configuration file if its location was specified as a system environment variable
 //
+// 4. Load from the classpath (e.g., load file from /WEB-INF/classes within the war file). The installer is used to copy configurations
+//    to this location, so that war files 'may' be self contained (yet can still be overriden using external configuration files)
+//
 // Map [ environment variable or -D command line argument name : file path ]
-[ bannerGrailsAppConfig:      "${userHome}/.grails/banner_configuration.groovy",
-  customRepresentationConfig: "grails-app/conf/CustomRepresentationConfig.groovy",
-  releaseInfo:                "release_info.groovy",
+//
+[ BANNER_APP_CONFIG:              "banner_configuration.groovy",
+  BANNER_TEST_APP_CONFIG:         "${appName}_configuration.groovy",
+  customRepresentationConfig:     "CustomRepresentationConfig.groovy",
+  releaseInfo:                    "release_info.groovy",
 ].each { envName, defaultFileName -> locationAdder( envName, defaultFileName ) }
-
-
-// ******************************************************************************
-//
-//                    +++ INSTANCE-SPECIFIC CONFIGURATION +++
-//
-// ******************************************************************************
-//
-// Developers: You should create a small configuration file that contains your own specific
-// configuration (e.g., URIs, usernames, etc.) and that resides at the location specified here:
-//     ${userHome}/.grails/banner_on_grails-local-config.groovy
-//
-/* ***************************** EXAMPLE local file ******************************
-// JNDI configuration for use in 'production' environment
-myDataSource.jndiName = "jdbc/horizonDataSource"
-
-// Local configuration for use in 'development' and 'test' environments
-myDataSource.username = "banproxy"
-myDataSource.password = "u_pick_it"	
-myDataSource.driver = "oracle.jdbc.OracleDriver"
-myDataSource.url = "jdbc:oracle:thin:@oracledb:1521:ban83" //myDataSource.url = "jdbc:oracle:thin:@winxp-50174ccec:1521:ban83"
-
-// Local configuration for using elvyx to view SQL statements that are bound. To enable this driver, simply uncomment the 
-// elvyx driver and url below. Do NOT comment out the 'myDataSource.url' above -- it is still needed for the authentication data source.
-// To use elvyx, download from "http://www.elvyx.com", unzip, and run from it's top-level directory: java -jar lib/elvyx-1.0.24.jar 
-//
-//elvyx.driver = "com.elvyx.Driver" 
-//elvyx.url = "jdbc:elvyx://localhost:4448/?elvyx.real_driver=${myDataSource.driver}&elvyx.real_jdbc=${myDataSource.url}&user=${myDataSource.username}&password=${myDataSource.password}"
-********************************************************************************* */
 
 
 
@@ -83,8 +72,8 @@ myDataSource.url = "jdbc:oracle:thin:@oracledb:1521:ban83" //myDataSource.url = 
 //
 // DO NOT EDIT THIS UUID UNLESS YOU ARE AUTHORIZED TO DO SO AND KNOW WHAT YOU ARE DOING
 //
-build.number.uuid = "cb0f9ca1-0857-4a2f-a3f8-8b530f3edb2e"
-build.number.base.url="http://maldevl2.sungardhe.com:8080/BuildNumberServer/buildNumber?method=getNextBuildNumber&uuid="
+build.number.uuid     = "cb0f9ca1-0857-4a2f-a3f8-8b530f3edb2e"
+build.number.base.url = "http://maldevl2.sungardhe.com:8080/BuildNumberServer/buildNumber?method=getNextBuildNumber&uuid="
 
 
 
@@ -93,18 +82,18 @@ build.number.base.url="http://maldevl2.sungardhe.com:8080/BuildNumberServer/buil
 //                       +++ General Grails Configuration +++
 //
 // ******************************************************************************
-
+//
 grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
 grails.mime.use.accept.header = false
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
-                      xml: ['text/xml', 'application/xml', 'application/vnd.sungardhe.student.v0.01+xml'],
+                      xml:  ['text/xml', 'application/xml', 'application/vnd.sungardhe.student.v0.01+xml'],
                       text: 'text/plain',
-                      js: 'text/javascript',
-                      rss: 'application/rss+xml',
+                      js:   'text/javascript',
+                      rss:  'application/rss+xml',
                       atom: 'application/atom+xml',
-                      css: 'text/css',
-                      csv: 'text/csv',
-                      all: '*/*',
+                      css:  'text/css',
+                      csv:  'text/csv',
+                      all:  '*/*',
                       json: ['application/json','text/json'],
                       form: 'application/x-www-form-urlencoded',
                       multipartForm: 'multipart/form-data'
@@ -114,10 +103,10 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
 
 // The default codec used to encode data with ${}
 grails.views.default.codec = "html" // none, html, base64  **** Setting this to html will ensure html is escaped, to prevent XSS attack ****
-grails.views.gsp.encoding = "UTF-8"
+grails.views.gsp.encoding  = "UTF-8"
 
 grails.converters.domain.include.version = true
-grails.converters.encoding = "UTF-8"
+grails.converters.encoding  = "UTF-8"
 grails.converters.json.date = "javascript"
 grails.converters.json.pretty.print = true
 
@@ -152,6 +141,7 @@ environments {
 // within the database. The lastModifiedBy uses the username of the logged in user,
 // the lastModified uses the current timestamp, and the dataOrigin uses the value
 // specified here:
+//
 dataOrigin = "Banner"
 
 
@@ -167,7 +157,7 @@ dataOrigin = "Banner"
 
 // If we specify a 'logFileDir' as a system property, we'll write the file to that directory. 
 // Otherwise, we'll log to the target/logs directory. 
-String loggingFileDir = System.properties['logFileDir'] ? "${System.properties['logFileDir']}" : "target/logs"
+String loggingFileDir  = System.properties['logFileDir'] ? "${System.properties['logFileDir']}" : "target/logs"
 String loggingFileName = "${loggingFileDir}/$environment-${appName}.log".toString() 
 
 
@@ -211,6 +201,7 @@ log4j = {
             }
             warn 'grails.app.service'
             warn 'grails.app.controller'
+            info 'com.sungardhe.banner.configuration.ApplicationConfigurationUtils'
             info 'com.sungardhe.banner.representations'
             info 'com.sungardhe.banner.supplemental.SupplementalDataService'
             break
