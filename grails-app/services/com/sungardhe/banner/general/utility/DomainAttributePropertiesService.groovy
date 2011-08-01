@@ -96,7 +96,12 @@ class DomainAttributePropertiesService {
                 def maxSize
 
                 if (!constraintProperty?.maxSize) {
-                    maxSize = getCharLengthForColumn(tableName, entityMap.attributes."${constraintProperty?.propertyName}"?.columnName)
+                    if (ClassUtils.getShortClassName(constraintProperty?.propertyType?.name) == "String" ||
+                                                     constraintProperty?.propertyType?.name.indexOf("com.") == 0 ) { //association atributes
+                        maxSize = getCharLengthForColumn(tableName, entityMap.attributes."${constraintProperty?.propertyName}"?.columnName)
+                    } else {
+                        maxSize = getDataLengthForColumn(tableName, entityMap.attributes."${constraintProperty?.propertyName}"?.columnName)
+                    }
                 } else {
                     maxSize = constraintProperty?.maxSize
                 }
@@ -140,6 +145,26 @@ class DomainAttributePropertiesService {
 
         sql.eachRow("""
                      SELECT CHAR_LENGTH
+                       FROM ALL_TAB_COLUMNS
+                       WHERE TABLE_NAME = ?
+                       AND COLUMN_NAME = ?
+                   """, [tableName, columnName]) {
+
+            maxSize = it[0]
+
+        };
+
+        maxSize
+    }
+
+    def getDataLengthForColumn(tableName, columnName) {
+
+        def maxSize
+
+        def sql = new Sql(sessionFactory.getCurrentSession().connection())
+
+        sql.eachRow("""
+                     SELECT DATA_LENGTH
                        FROM ALL_TAB_COLUMNS
                        WHERE TABLE_NAME = ?
                        AND COLUMN_NAME = ?

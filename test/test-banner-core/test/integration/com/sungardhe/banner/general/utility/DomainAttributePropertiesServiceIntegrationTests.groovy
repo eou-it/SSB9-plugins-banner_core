@@ -37,8 +37,9 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertEquals "GTVZIPC_CODE", classMetadata.attributes.code.columnName
         assertEquals "GTVZIPC_CITY", classMetadata.attributes.city.columnName
         assertFalse "GTVZIPC_CODE", classMetadata.attributes.city.nullable
+        assertEquals 30, classMetadata.attributes.code.maxSize
         assertEquals 50, classMetadata.attributes.city.maxSize
-        assertEquals 0, classMetadata.attributes.lastModified.maxSize
+        assertEquals 7, classMetadata.attributes.lastModified.maxSize
         assertEquals "String", classMetadata.attributes.city.propertyType
 
         // CourseLaborDistribution
@@ -57,6 +58,10 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertEquals "STVTERM_ACYR_CODE", classMetadata.attributes.academicYear.columnName
         assertEquals 4, classMetadata?.attributes?.academicYear?.maxSize
         assertEquals "AcademicYear", classMetadata?.attributes?.academicYear?.propertyType
+
+        assertEquals "STVTERM_ACTIVITY_DATE", classMetadata.attributes.lastModified.columnName
+        assertEquals 7, classMetadata?.attributes?.lastModified?.maxSize
+        assertEquals "Date", classMetadata?.attributes?.lastModified?.propertyType
 
 
         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("foo")
