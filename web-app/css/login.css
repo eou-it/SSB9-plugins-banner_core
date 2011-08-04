@@ -40,19 +40,19 @@ LOG IN
 }
 
 .splashBg div span input {
-	width:136px;
+	width:135px;
 	outline:none;
 	border-style:none;
 	border:0;
 	padding:0;
-	margin:5px 0 0 -17px;
+	margin:5px 0 0 0px;
 }
 
 .splashBg .userName {
 	background:url(../images/textbox-sprites.png) no-repeat left -25px;
 	padding:0px 0px 0px 20px;
 	margin-right:10px;
-	height:23px;
+	height:24px;
 	width:141px;
 }
 
@@ -60,7 +60,7 @@ LOG IN
 	display:block;
 	background:url(../images/textbox-sprites.png) no-repeat right 0;
 	padding-right:10px;
-	height:23px;
+	height:24px;
 }
 
 .splashBg .password {
