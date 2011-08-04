@@ -27,7 +27,23 @@ class UrlMappings {
         "/api/$controller/$id" {
             action = [ GET: "show", PUT: "update", DELETE: "destroy" ]
         }
-        
+
+
+        // The following tests accessing a resource while already authenticated in a session.  I.e. doesn't require basic auth.
+        "/resource/$controller" {
+            action = [ GET: "list", POST: "create" ]
+        }
+
+        "/resource/$controller/batch" {
+            action = [ POST: "processBatch" ]
+        }
+
+        "/resource/$controller/$id?" {
+            action = [ GET: "show", PUT: "update", DELETE: "destroy" ]
+            constraints {
+                id(matches:/[0-9]+/)
+            }
+        }
         
         // --------------------- Self Service End Points --------------------        
 

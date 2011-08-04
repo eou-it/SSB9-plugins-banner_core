@@ -91,25 +91,30 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
     // The FormContext is not yet set (we haven't even reached the Dispatcher yet!), so we'll have to do our own work..
     private List getCorrespondingFormNamesFor( String url ) {
+
+        def base = [ "api", "resource" ]
+
         String lcUrl = url.toLowerCase()
+
         def splitIndex
-        if(url.contains("?page=")){
+        if (url.contains("?page=")){
           splitIndex = 3
         }
+
         def urlParts = lcUrl.split( /\/|\?|\./ ).toList() // note, first element will be empty string (i.e., representing before the first '/')
 
-        if (splitIndex && urlParts[1] != 'api') {
+        if (splitIndex && !(urlParts[1] in base)) {
             def pageName = RequestContextHolder.currentRequestAttributes().request.getParameter("page")?.toLowerCase()
             return CH.config.formControllerMap[pageName]
         }
 
         log.debug "BannerAccessDecisionVoter.vote() has parsed url into: $urlParts"
         def result = CH.config.formControllerMap?.find { k, v ->
-            if(splitIndex){
-                k == (urlParts[1] == 'api' ? urlParts[2] : urlParts[urlParts.size()- splitIndex]) // we may have to ignore '/api/' if found within the uri
+            if (splitIndex) {
+                k == (urlParts[1] in base ? urlParts[2] : urlParts[urlParts.size() - splitIndex]) // we may have to ignore '/api/' if found within the uri
             }
-            else{
-                k == (urlParts[1] == 'api' ? urlParts[2] : urlParts[1]) // we may have to ignore '/api/' if found within the uri
+            else {
+                k == (urlParts[1] in base ? urlParts[2] : urlParts[1]) // we may have to ignore '/api/' if found within the uri
             }
         }
         result?.value

@@ -106,6 +106,23 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
     }
 
 
+    void testListResource_JSON() {
+        login()
+
+        def pageSize = 5
+        get( "/resource/foo?max=$pageSize" ) {
+            headers[ 'Content-Type' ] = 'application/json'
+        }
+        assertStatus 200
+        assertEquals 'application/json', page?.webResponse?.contentType
+
+        def stringContent = page?.webResponse?.contentAsString
+        def data = JSON.parse( stringContent )
+        assertTrue 45 <= data.totalCount
+        assertEquals 5, data.data.size()
+    }
+
+
     void testShow_JSON() {
 
         get( "/api/foobar/1" ) {
