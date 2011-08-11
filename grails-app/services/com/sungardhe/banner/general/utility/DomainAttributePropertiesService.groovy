@@ -15,7 +15,6 @@ import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import com.sungardhe.banner.configuration.SupplementalDataUtils
-import org.hibernate.persister.entity.SingleTableEntityPersister
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.apache.commons.lang.ClassUtils
 
@@ -28,6 +27,7 @@ class DomainAttributePropertiesService {
     def dataSource                         // injected by Spring
     def sessionFactory                     // injected by Spring
     def grailsApplication                  // injected by Spring
+    def defaultDateFormat
 
     public extractClass(domainName) {
 
@@ -96,11 +96,17 @@ class DomainAttributePropertiesService {
                 def maxSize
 
                 if (!constraintProperty?.maxSize) {
-                    maxSize = getCharLengthForColumn(tableName, entityMap.attributes."${constraintProperty?.propertyName}"?.columnName)
+                    if (ClassUtils.getShortClassName(constraintProperty?.propertyType?.name) == "String" ||
+                            constraintProperty?.propertyType?.name.indexOf("com.") == 0) { //association atributes
+                        maxSize = getCharLengthForColumn(tableName, entityMap.attributes."${constraintProperty?.propertyName}"?.columnName)
+                    } else if (ClassUtils.getShortClassName(constraintProperty?.propertyType?.name) == "Date") {
+                        maxSize = getDefaultDateFormat()
+                    } else {
+                        maxSize = getDataLengthForColumn(tableName, entityMap.attributes."${constraintProperty?.propertyName}"?.columnName)
+                    }
                 } else {
                     maxSize = constraintProperty?.maxSize
                 }
-
 
                 entityMap.attributes."${constraintProperty?.propertyName}"?.nullable = constraintProperty?.nullable
                 entityMap.attributes."${constraintProperty?.propertyName}"?.maxSize = maxSize
@@ -133,22 +139,71 @@ class DomainAttributePropertiesService {
 
 
     def getCharLengthForColumn(tableName, columnName) {
-
         def maxSize
-
         def sql = new Sql(sessionFactory.getCurrentSession().connection())
 
-        sql.eachRow("""
+        try {
+            sql.eachRow("""
                      SELECT CHAR_LENGTH
                        FROM ALL_TAB_COLUMNS
                        WHERE TABLE_NAME = ?
                        AND COLUMN_NAME = ?
                    """, [tableName, columnName]) {
 
-            maxSize = it[0]
+                maxSize = it[0]
 
-        };
+            };
+
+        } finally {
+            sql?.close()
+        }
 
         maxSize
+    }
+
+
+    def getDataLengthForColumn(tableName, columnName) {
+        def maxSize
+        def sql = new Sql(sessionFactory.getCurrentSession().connection())
+
+        try {
+            sql.eachRow("""
+                     SELECT DATA_LENGTH
+                       FROM ALL_TAB_COLUMNS
+                       WHERE TABLE_NAME = ?
+                       AND COLUMN_NAME = ?
+                   """, [tableName, columnName]) {
+
+                maxSize = it[0]
+
+            };
+        } finally {
+            sql?.close()
+        }
+
+        maxSize
+    }
+
+
+    def getDefaultDateFormat() {
+        if (defaultDateFormat) {
+            defaultDateFormat
+        } else {
+
+            def sql = new Sql(sessionFactory.getCurrentSession().connection())
+
+            try {
+                sql.eachRow("""
+                    select length(g\$_date.get_nls_date_format) from dual
+                   """) {
+
+                    defaultDateFormat = it[0]
+
+                };
+            } finally {
+                sql?.close()
+            }
+            defaultDateFormat
+        }
     }
 }

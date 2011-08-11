@@ -38,13 +38,15 @@ class MenuController {
         }
         else
             list = getFirstList(menuType)
-        render(contentType: "text/xml") {
-        NavigationEntries {
-        for (a in list) {
-            NavigationEntryValueObject(id: a.seq, menu: a.menu, form: a.formName, path: a.pageName + ".zul", name: a.formName, caption: a.caption, type: a.type, url: a.url, parent: a.parent, params: mnuParams, captionProperty: a.captionProperty)
-        }
-      }
-     }
+            def sw = new StringWriter()
+            def xml = new groovy.xml.MarkupBuilder(sw)
+            xml.NavigationEntries{
+              list.each { a ->
+                  def pageName = a.pageName ? a.pageName : "null"
+                  NavigationEntryValueObject(id: a.seq, menu: a.menu, form: a.formName, path: pageName + ".zul", name: a.formName, caption: a.caption, type: a.type, url: a.url, parent: a.parent, params: mnuParams,captionProperty: a.captionProperty, pageCaption: a.pageCaption)
+              }
+            }
+            render(text:sw.toString(),contentType:"text/xml",encoding:"UTF-8")
     }
     /**
     * Driver for banner menu

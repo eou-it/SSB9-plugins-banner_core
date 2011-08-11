@@ -40,8 +40,8 @@ class KeyBlockHolder {
      * @param map an optional parameter, that may contain a keyBlock
      * @return Map a keyBlock map or either null or a dummy map if one was not found
      **/
-    public static Map get( Map map = null ) {
-        def kb = keyBlockStorage.get() as Map
+    public static def get( Map map = null ) {
+        def kb = keyBlockStorage.get() 
         if (!kb && map) kb = map.keyBlock
         // if a keyBlock is required and we don't have one, we'll return a map with 
         // something in it (so it can be used in booleans that conditionally validate 
@@ -54,7 +54,7 @@ class KeyBlockHolder {
     /**
      * Sets a map representing keyBlock information into this holder. 
      **/
-    public static void set( Map keyBlock ) {
+    public static void set( keyBlock ) {
         keyBlockStorage.set keyBlock
     }
 

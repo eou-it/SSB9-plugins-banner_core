@@ -1,4 +1,23 @@
 
+h4. 0.3.7
+
+Changed how configuration files are loaded, as follows:
+
+* Use a system property (as identified within the project's Config.groovy) if one is set
+* If NOT in production mode, then
+** look for the configuration file in the user's home '.grails' directory
+** then look for the configuration file within the project's root directory
+** and then look for the configuration file within the project's grails-app/conf directory
+* Next, if an environment variable is set (again, using the name configured in Config.groovy), then use that
+* Lastly, look for the configuration file on the classpath.
+
+The installer 'systool' is able to re-package the war file with configuration copied into WEB-INF/classes (hence the new option to load 'external' configuration from within the classpath). This allows war files to be more self-contained.  Given the load sequence identified above, it is still possible to override the configuration by using a system property (and in that case, the file within the classpath will not be loaded). 
+
+When creating a war file using Grails, it is by default configured for 'production mode'. To reduce the opportunity for human error, when running in production mode the solution will no longer support configuration files found within the user's home .grails directory (~/.grails directory). However, one can modify the war (or expanded war) by editing the application.properties to indicate either 'test' or 'development' mode, so that configuration in the home directory will be found when using a deployed war.  In general, however, using the home directory is recommended as a convenience for developers. 
+
+In addition, configuration separated into multiple configuration files is now supported, and is expected to be the normal practice.  Specifically, the 'banner_configuration.groovy' file will be treated as a 'global' configuration file (i.e., shared by Banner 9 modules within a particular environment, like TEST or PROD).  An '\{appName\}_configuration.groovy' file will be expected to hold module-specific configuration (for an environment), such as Logging configuration, CAS configuration, etc.   The installer will support the configuration files in this manner.  Developers working on a single project may still keep all external configuration within a single 'banner_configuration.groovy' file. 
+
+
 h4. 0.2.37
 
 * Config changes to replace myData with bannerData specific datasource values.

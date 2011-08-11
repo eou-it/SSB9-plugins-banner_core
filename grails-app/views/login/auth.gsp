@@ -3,7 +3,6 @@
 <head>
 <title>Login</title>
 <link rel="stylesheet" href="${resource(dir: 'css', file: 'login.css')}"/>
-<!--<link rel="stylesheet" href="${resource(dir: 'css', file: 'rtl-login.css')}"/>-->
 <!--[if IE 7]>
 	<link href="fix-ie7.css" rel="stylesheet" type="text/css" />
 <![endif]-->
@@ -23,7 +22,7 @@
       <form action='${postUrl}' method='POST' id='loginForm'>
 		<div class="userName"><span><input type='text'  name='j_username' id='j_username' /></span></div>
 		<div class="password"><span><input type='password' name='j_password' id='j_password' /></span></div>
-		<div><input type='submit' value='Sign In' id="sign-in-btn" /></div>
+		<div><input type='submit' value='Login' /></div>
       </form>
 	</div>
 	<div class="copyright">

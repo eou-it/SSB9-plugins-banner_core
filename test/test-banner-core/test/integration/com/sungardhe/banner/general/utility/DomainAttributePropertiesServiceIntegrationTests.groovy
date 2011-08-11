@@ -37,16 +37,22 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertEquals "GTVZIPC_CODE", classMetadata.attributes.code.columnName
         assertEquals "GTVZIPC_CITY", classMetadata.attributes.city.columnName
         assertFalse "GTVZIPC_CODE", classMetadata.attributes.city.nullable
+        assertEquals 30, classMetadata.attributes.code.maxSize
         assertEquals 50, classMetadata.attributes.city.maxSize
-        assertEquals 0, classMetadata.attributes.lastModified.maxSize
+        assertEquals 11, classMetadata.attributes.lastModified.maxSize
         assertEquals "String", classMetadata.attributes.city.propertyType
 
         // CourseLaborDistribution
         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("courseLaborDistribution")
         assertNotNull classMetadata
         assertEquals "SCRCLBD_SEQ_NO", classMetadata.attributes.sequenceNumber.columnName
-        assertEquals 999, classMetadata.attributes.sequenceNumber.max
+        assertEquals new Integer(999), classMetadata.attributes.sequenceNumber.max
+        assertEquals new Integer(-999), classMetadata.attributes.sequenceNumber.min
         assertEquals "Integer", classMetadata.attributes.sequenceNumber.propertyType
+
+        assertEquals "SCRCLBD_CRSE_NUMB", classMetadata.attributes.courseNumber.columnName
+        assertEquals 5, classMetadata.attributes.courseNumber.maxSize
+        assertEquals "String", classMetadata.attributes.courseNumber.propertyType
 
         // Term
         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("term")
@@ -57,6 +63,17 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertEquals "STVTERM_ACYR_CODE", classMetadata.attributes.academicYear.columnName
         assertEquals 4, classMetadata?.attributes?.academicYear?.maxSize
         assertEquals "AcademicYear", classMetadata?.attributes?.academicYear?.propertyType
+
+        assertEquals "STVTERM_ACTIVITY_DATE", classMetadata.attributes.lastModified.columnName
+        assertEquals 11, classMetadata?.attributes?.lastModified?.maxSize
+        assertEquals "Date", classMetadata?.attributes?.lastModified?.propertyType
+
+        assertEquals "STVTERM_FA_END_PERIOD", classMetadata.attributes.financialEndPeriod?.columnName
+        assertEquals 22, classMetadata?.attributes?.financialEndPeriod?.maxSize
+        assertEquals "Integer", classMetadata?.attributes?.financialEndPeriod?.propertyType
+        assertNull classMetadata.attributes.financialEndPeriod?.max
+        assertNull classMetadata.attributes.financialEndPeriod?.min
+
 
 
         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("foo")

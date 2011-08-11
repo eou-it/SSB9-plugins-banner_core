@@ -64,6 +64,7 @@ class MenuService {
         mnu.caption = it.gutpmnu_label
         if (mnuPrf)
             mnu.caption = it.gutpmnu_label + " (" + mnu.formName + ")"
+            mnu.pageCaption = it.gutpmnu_label
             mnu.level = it.gutpmnu_level
             mnu.type = it.gutpmnu_value.split("\\|")[0]
             mnu.module = it.gubmodu_name
@@ -137,6 +138,7 @@ class MenuService {
                 mnu.pageName = it.gubpage_name
                 if (it.gutmenu_desc != null)  {
                     mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
+                    mnu.pageCaption = mnu.caption
                     if (mnuPrf)
                         mnu.caption = mnu.caption + " (" + mnu.formName + ")"
                 }
@@ -190,6 +192,7 @@ class MenuService {
             mnu.captionProperty = mnuPrf
             if (it.gutmenu_desc != null) {
                 mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
+                mnu.pageCaption = mnu.caption
                 if (getMnuPref())
                     mnu.caption = mnu.caption + " (" + mnu.formName + ")"
             }
