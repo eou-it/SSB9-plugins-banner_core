@@ -106,7 +106,6 @@ body{
     color:#FFF;
     padding-top:20px;
     margin-right:50px;
-    background-image:url(../images/icon-error-16x16.png), url(left), url(top), url(no-repeat);
 }
 
 input[type="submit"]{
@@ -133,5 +132,40 @@ input[type="submit"]:hover{
 
 #sign-in-btn{
     padding:0px;
+}
+
+.icon-error {
+    background: url(../images/icon-error-16x16.png) no-repeat scroll 0 bottom transparent;
+    padding-left: 1.5em;
+}
+
+.splashBg .userName-error-state {
+	background:url(../images/textbox-sprites.png) no-repeat left -76px;
+	padding:0px 0px 0px 20px;
+	margin-right:10px;
+	height:24px;
+	width:141px;
+}
+
+.splashBg .userName-error-state span {
+	display:block;
+	background:url(../images/textbox-sprites.png) no-repeat right -76px;
+	padding-right:10px;
+	height:24px;
+}
+
+.splashBg .password-error-state {
+	background:url(../images/textbox-sprites.png) no-repeat left -51px;
+	padding:0px 0px 0px 20px;
+	margin-right:10px;
+	height:23px;
+	width:141px;
+}
+
+.splashBg .password-error-state span {
+	display:block;
+	background:url(../images/textbox-sprites.png) no-repeat right -51px;
+	padding-right:10px;
+	height:23px;
 }
 

@@ -14,15 +14,21 @@
 <div class="splashBg">
 	<div class="appName">Banner 9.0</div>
     <g:if test='${flash.message}'>
-        <div class='loginMsg'>${flash.message}</div>
+        <div class='loginMsg'><span class="icon-error"></span>${flash.message}</div>
     </g:if>
     <g:else test='${flash.message}'>
 	  <div class="loginMsg"><g:message code="com.sungardhe.banner.login.prompt"/></div>
     </g:else>
 	<div class="logIn">
       <form action='${postUrl}' method='POST' id='loginForm'>
-		<div class="userName"><span><input type='text'  name='j_username' id='j_username' /></span></div>
-		<div class="password"><span><input type='password' name='j_password' id='j_password' /></span></div>
+		<g:if test='${flash.message}'>
+		    <div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' /></span></div>
+		    <div class="password-error-state"><span><input type='password' name='j_password' id='j_password' /></span></div>
+        </g:if>
+        <g:else>
+            <div class="userName"><span><input type='text'  name='j_username' id='j_username' /></span></div>
+		    <div class="password"><span><input type='password' name='j_password' id='j_password' /></span></div>
+        </g:else>
 		<div><input type='submit' value='Sign In' id="sign-in-btn" /></div>
       </form>
 	</div>
