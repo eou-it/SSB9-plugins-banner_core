@@ -18,6 +18,7 @@ import javax.xml.transform.stream.StreamSource
 /**
  * Functional tests of the Foo Controller.
  */
+// TODO  revert this change to RESTful invocations ( added logfin() )
 class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
 
@@ -72,6 +73,8 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
     void testList_JSON() {
 
+        login()
+
         def pageSize = 5
         get( "/api/foobar?max=$pageSize" ) {
             headers[ 'Content-Type' ] = 'application/json'
@@ -125,6 +128,8 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
     void testShow_JSON() {
 
+        login()
+
         get( "/api/foobar/1" ) {
             headers[ 'Content-Type' ] = 'application/json'
             headers[ 'Authorization' ] = authHeader()
@@ -141,6 +146,8 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
     void testCreateUpdateAndDelete_JSON() {
         def id
         try {
+            login()
+
             post("/api/foobar") {   // 'POST' /api/foobar => 'create'
                 headers[ 'Content-Type' ] = 'application/json'
                 headers[ 'Authorization' ] = authHeader()
@@ -186,6 +193,7 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
             assertEquals "Expected description 'Updated' but got ${data.description}", 'Updated', data.description
         }
         finally {
+
             delete( "/api/foobar/$id" ) {
                 headers[ 'Content-Type' ] = 'application/json'
                 headers[ 'Authorization' ] = authHeader()
@@ -212,6 +220,8 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
     void testShow_XML() {
 
+        login()
+
         get( "/api/foobar/1" ) {  // 'GET' /api/foobar/id => 'show'
             headers[ 'Content-Type' ] = 'text/xml'
             headers[ 'Authorization' ] = authHeader()
@@ -227,6 +237,8 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
 
     void testList_XML() {
+
+        login()
 
         def pageSize = 15
         get( "/api/foobar?max=$pageSize" ) {
@@ -250,6 +262,9 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
     void testCreateUpdateAndDelete_XML() {
         def id
         try {
+
+            login()
+
             def code = 'Z#'
             def xmlBody = new Foo( code: code, description: "Desc_${code}" ) as XML
 
@@ -390,6 +405,8 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
     private void runTestList_VND( contentType, validateXML = true ) {
 
+        login()
+
         def pageSize = 15
         get("/api/foobar?max=$pageSize") {
             headers[ 'Content-Type' ]  = contentType
@@ -424,6 +441,8 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
 
     private void runTestShow_VND( contentType ) {
 
+        login()
+
         get( "/api/foobar/1" ) {  // 'GET' /api/foobar/id => 'show'
             headers[ 'Content-Type' ]  = contentType
             headers[ 'Accept' ]  = contentType
@@ -444,6 +463,8 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
     // Note this test repeats its assertions for multiple representations.
     private void runTestCreateUpdateAndDelete_VND( contentType ) {
         def id
+
+        login()
 
         try {
             post( "/api/foobar" ) {   // 'POST' /api/foobar => 'create'
