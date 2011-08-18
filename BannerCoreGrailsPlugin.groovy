@@ -55,7 +55,7 @@ import com.sungardhe.banner.representations.ResourceRepresentationRegistry
 import com.sungardhe.banner.security.BannerPreAuthenticatedFilter
 import com.sungardhe.banner.security.BannerAccessDecisionVoter
 import com.sungardhe.banner.service.LoginAuditService
-
+import com.sungardhe.banner.service.DefaultLoaderService
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access
@@ -210,6 +210,10 @@ class BannerCoreGrailsPlugin {
         authenticationDataSource( OracleDataSource )
 
         loginAuditService( LoginAuditService) {
+             dataSource = ref( dataSource )
+        }
+
+        defaultLoaderService( DefaultLoaderService ) {
              dataSource = ref( dataSource )
         }
 
