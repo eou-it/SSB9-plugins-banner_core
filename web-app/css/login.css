@@ -45,7 +45,7 @@ body{
     border-style:none;
     border:0;
     padding:0;
-	margin:4px 0 0 0px;
+	margin:3px 0 0 0px;
 }
 
 .splashBg .userName{
@@ -155,7 +155,7 @@ input[type="submit"]:hover{
 }
 
 .splashBg .password-error-state {
-	background:url(../images/textbox-sprites.png) no-repeat left -51px;
+	background:url(../images/textbox-sprites.png) no-repeat left -50px;
 	padding:0px 0px 0px 20px;
 	margin-right:10px;
 	height:23px;
@@ -164,7 +164,7 @@ input[type="submit"]:hover{
 
 .splashBg .password-error-state span {
 	display:block;
-	background:url(../images/textbox-sprites.png) no-repeat right -51px;
+	background:url(../images/textbox-sprites.png) no-repeat right -50px;
 	padding-right:10px;
 	height:23px;
 }
