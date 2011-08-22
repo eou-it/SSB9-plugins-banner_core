@@ -42,9 +42,9 @@ public class DefaultLoaderService {
             }
             def strDate
             if(lastLogonDate){
-                strDate = lastLogonDate.format("MM/dd/yyyy HH:mm aaa")
+                strDate = lastLogonDate.format("dd-MMM-yyyy")
             } else {
-                strDate = new Date().format("MM/dd/yyyy HH:mm aaa")
+                strDate = new Date().format("dd-MMM-yyyy")
             }
             defaultMap.LAST_LOGON_DATE = strDate
 
