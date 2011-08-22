@@ -31,7 +31,7 @@ body{
 }
 
 .splashBg .logIn{
-    margin:47px 0px 0px 254px;
+    margin:42px 0px 0px 254px;
     float:none;
 }
 
@@ -49,11 +49,11 @@ body{
 }
 
 .splashBg .userName{
-    background:url(../images/textbox-sprites.png) no-repeat left -25px;
+    background:url(../images/textbox-sprites.png) no-repeat left -27px;
     padding:0px 0px 0px 20px;
     margin-right:10px;
     height:24px;
-    width:141px;
+    width:139px;
 }
 
 .splashBg .userName span{
@@ -66,16 +66,16 @@ body{
 .splashBg .password{
     background:url(../images/textbox-sprites.png) no-repeat left 0;
     padding:0px 0px 0px 20px;
-    margin-right:10px;
-    height:23px;
-    width:141px;
+    height:24px;
+    width:139px;
+	margin-right:10px;
 }
 
 .splashBg .password span{
     display:block;
     background:url(../images/textbox-sprites.png) no-repeat right 0;
     padding-right:10px;
-    height:23px;
+    height:24px;
 }
 
 .splashBg a:link, .splashBg a:visited, .splashBg .submit-button{
@@ -95,7 +95,7 @@ body{
 
 .splashBg .copyright{
     clear:both;
-    margin:0px 53px 0px 106px;
+    margin:0px 53px 0px 93px;
     font-size:0.75em;
     color:#FFF;
     padding-top:36px;
@@ -119,6 +119,7 @@ input[type="submit"]{
     padding-bottom:3px;
     position:relative;
     bottom:4px;
+	vertical-align: text-top;
 }
 
 input[type="submit"]:hover{
@@ -128,6 +129,7 @@ input[type="submit"]:hover{
     color:#FFF;
     line-height:32px;
     font-weight:bold;
+	vertical-align: text-top;
 }
 
 #sign-in-btn{
@@ -140,32 +142,36 @@ input[type="submit"]:hover{
 }
 
 .splashBg .userName-error-state {
-	background:url(../images/textbox-sprites.png) no-repeat left -76px;
+	background:url(../images/textbox-sprites.png) no-repeat left -81px;
 	padding:0px 0px 0px 20px;
 	margin-right:10px;
 	height:24px;
-	width:141px;
+	width:139px;
 }
 
 .splashBg .userName-error-state span {
 	display:block;
-	background:url(../images/textbox-sprites.png) no-repeat right -76px;
+	background:url(../images/textbox-sprites.png) no-repeat right -81px;
 	padding-right:10px;
 	height:24px;
 }
 
 .splashBg .password-error-state {
-	background:url(../images/textbox-sprites.png) no-repeat left -50px;
+	background:url(../images/textbox-sprites.png) no-repeat left -54px;
 	padding:0px 0px 0px 20px;
-	margin-right:10px;
-	height:23px;
-	width:141px;
+	height:24px;
+	width:139px;
+	margin-right: 10px;
 }
 
 .splashBg .password-error-state span {
 	display:block;
-	background:url(../images/textbox-sprites.png) no-repeat right -50px;
+	background:url(../images/textbox-sprites.png) no-repeat right -54px;
 	padding-right:10px;
-	height:23px;
+	height:24px;
 }
 
+.signin-btn {
+	position: relative;
+	top: -2px;
+}
