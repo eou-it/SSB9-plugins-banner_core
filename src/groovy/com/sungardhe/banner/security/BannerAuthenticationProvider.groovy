@@ -85,8 +85,8 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
                                                                                 'BannerAuthenticationProvider', new Date(), 1 ) )
                 return null
             }
+            loadDefault( applicationContext, authenticationResults['oracleUserName'] )
             applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults['oracleUserName'], true, '', '', new Date(), '' ) )
-            loadDefault( applicationContext )
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults['oracleUserName'].toUpperCase(), dataSource )
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String            
             newAuthenticationToken( this, authenticationResults )
@@ -273,8 +273,8 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         }
     }
 
-    private void loadDefault( ApplicationContext appContext ) {
-        appContext.getBean("defaultLoaderService").loadDefault()
+    private void loadDefault( ApplicationContext appContext, def userName ) {
+        appContext.getBean("defaultLoaderService").loadDefault( userName )
     }
 
 }

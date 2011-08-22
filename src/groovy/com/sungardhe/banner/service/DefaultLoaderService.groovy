@@ -20,7 +20,7 @@ public class DefaultLoaderService {
     def dataSource                  // injected by Spring
     def dateFormatMap = [ 1:"MDY", 2:"DMY", 3:"YMD" ]
 
-    public void loadDefault() {
+    public void loadDefault( def userName ) {
         def conn
         def sql
         def defaultMap = new HashMap()
@@ -31,12 +31,17 @@ public class DefaultLoaderService {
             sql.eachRow("select GUBINST_DATE_DEFAULT_FORMAT from gubinst ") { row ->
                 dateFormat = row.GUBINST_DATE_DEFAULT_FORMAT
             }
-
             def mappedDateFormat
             if(dateFormat)
                 mappedDateFormat = dateFormatMap[ dateFormat ]
-
             defaultMap.DATE_DEFAULT_FORMAT = mappedDateFormat
+
+            def lastLogonDate = ""
+            sql.eachRow( "select gurlogn_hrzn_last_logon_date from gurlogn where gurlogn_user = ?", [ userName.toUpperCase()]) { row ->
+                lastLogonDate = row.gurlogn_hrzn_last_logon_date
+            }
+            defaultMap.LAST_LOGON_DATE = lastLogonDate
+
             RequestContextHolder.currentRequestAttributes().request.session.setAttribute("DEFAULTS", defaultMap)
         } catch(Exception e) {
             e.printStackTrace()

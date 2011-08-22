@@ -26,7 +26,7 @@ class DefaultLoaderServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     void testDefaultDataLoad(){
-        defaultLoaderService.loadDefault()
+        defaultLoaderService.loadDefault('grails_user')
         assertNotNull( RequestContextHolder.currentRequestAttributes().request.session.getAttribute("DEFAULTS") )
     }
 

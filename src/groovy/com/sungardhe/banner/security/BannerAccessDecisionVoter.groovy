@@ -189,8 +189,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
             else
                 message = message + "${url}"
         }
-        def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
-        applicationContext.publishEvent( new BannerAuthenticationEvent( authentication.name, false, message, forms[0], new Date(), 1 ) )
+        publishViolation(authentication, message, forms)
     }
 
       public static boolean isUserAuthorized( String pageName ) {
@@ -203,6 +202,16 @@ class BannerAccessDecisionVoter extends RoleVoter {
               authoritiesForForm.each { applicableAuthorities << it }
           }
           applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
-          applicableAuthorities.size() > 0
+          if( ! (applicableAuthorities.size() > 0) ) {
+              String message = "User ${authentication.name} is not authorized to access ${pageName}(${formNames[0]})"
+              publishViolation( authentication, message, formNames )
+              return false
+          }
+          return true
+    }
+
+    private static def publishViolation( def authentication, String message, def forms ) {
+        def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
+        applicationContext.publishEvent( new BannerAuthenticationEvent(authentication.name, false, message, forms[0], new Date(), 1) )
     }
 }
