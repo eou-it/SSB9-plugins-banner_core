@@ -36,11 +36,17 @@ public class DefaultLoaderService {
                 mappedDateFormat = dateFormatMap[ dateFormat ]
             defaultMap.DATE_DEFAULT_FORMAT = mappedDateFormat
 
-            def lastLogonDate = ""
+            Date lastLogonDate
             sql.eachRow( "select gurlogn_hrzn_last_logon_date from gurlogn where gurlogn_user = ?", [ userName.toUpperCase()]) { row ->
                 lastLogonDate = row.gurlogn_hrzn_last_logon_date
             }
-            defaultMap.LAST_LOGON_DATE = lastLogonDate
+            def strDate
+            if(lastLogonDate){
+                strDate = lastLogonDate.format("MM/dd/yyyy HH:mm aaa")
+            } else {
+                strDate = new Date().format("MM/dd/yyyy HH:mm aaa")
+            }
+            defaultMap.LAST_LOGON_DATE = strDate
 
             RequestContextHolder.currentRequestAttributes().request.session.setAttribute("DEFAULTS", defaultMap)
         } catch(Exception e) {
