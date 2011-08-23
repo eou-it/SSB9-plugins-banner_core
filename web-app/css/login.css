@@ -25,7 +25,7 @@ body{
     color:#FFF;
     text-align:right;
     margin:0px 50px 0px 0px;
-    padding-top:81px;
+    padding-top:20px;
     font-size:1.4em;
     font-weight:bold;
 }
@@ -174,4 +174,30 @@ input[type="submit"]:hover{
 .signin-btn {
 	position: relative;
 	top: -2px;
+}
+
+.ie-warning {
+    background: url(../images/icon-warning-24x24.png) no-repeat 7px scroll transparent #f7eca3;
+    color: #ffffff;
+    font-family: Arial;
+    font-size: 0.917em;
+    margin: 15px 15px 0 15px;
+    border: 1px solid #ffcc33;
+    text-align: left;
+    visibility: hidden;
+    vertical-align: middle;
+    border-radius: 2px; /* for IE 9 */
+}
+
+.ie-warning div {
+    color: #333333;
+    margin: 10px;
+    padding-left: 30px;
+    vertical-align: middle;
+}
+
+.ie-warning span {
+    text-decoration: underline;
+    cursor: pointer;
+    color: #2200C1;
 }

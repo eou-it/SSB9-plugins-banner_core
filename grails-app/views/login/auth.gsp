@@ -12,6 +12,12 @@
 <body class="pageBg">
 
 <div class="splashBg">
+   <div class="ie-warning" id="ieWarningMessage">
+        <div>
+            Your browser is set to an incompatible mode. For optimal viewing experience, please adjust your browser mode to
+            <span onclick="openWindow()">Internet Explorer 8 Standards.</span>
+        </div>
+    </div>
 	<div class="appName">Banner 9.0</div>
     <g:if test='${flash.message}'>
         <div class='loginMsg'><span class="icon-error"></span>${flash.message}</div>
@@ -41,9 +47,32 @@
 </div>
 
 <script type='text/javascript'>
-(function(){
-	document.forms['loginForm'].elements['j_username'].focus();
-})();
+	(function(){
+		document.forms['loginForm'].elements['j_username'].focus();
+
+		if (isIe() && (getIEDocMode() < 8)) {
+            document.getElementById("ieWarningMessage").style.visibility = "visible";
+		}
+	})();
+
+	function isIe() {
+	    return (navigator.appName == 'Microsoft Internet Explorer');
+	}
+
+	function getIEDocMode() {
+	    // If we are in IE 8 (any mode) or previous versions of IE,
+	    // we check for the documentMode or compatMode for pre 8 versions
+	    return (document.documentMode)
+		? document.documentMode
+		: (document.compatMode && document.compatMode == "CSS1Compat")
+		    ? 7
+		    : 5; // default to quirks mode IE5
+	}
+
+    function openWindow() {
+        window.open("${resource(dir:'html', file:'iecompatibilitydoc.html', plugin:'banner-core')}" , '_blank');
+        return false;
+    }
 </script>
 
 </body>
