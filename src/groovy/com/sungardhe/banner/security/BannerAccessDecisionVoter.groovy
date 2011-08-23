@@ -97,7 +97,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
         String lcUrl = url.toLowerCase()
 
         def splitIndex
-        if (url.contains("?page=")){
+        if (url.contains("banner.zul")){
           splitIndex = 3
         }
 
@@ -105,6 +105,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
         if (splitIndex && !(urlParts[1] in base)) {
             def pageName = RequestContextHolder.currentRequestAttributes().request.getParameter("page")?.toLowerCase()
+            if (!pageName) pageName="mainpage"
             return CH.config.formControllerMap[pageName]
         }
 
