@@ -70,7 +70,9 @@
 	}
 
     function openWindow() {
-        window.open("${resource(dir:'html', file:'iecompatibilitydoc.html', plugin:'banner-core')}" , '_blank');
+	<g:set var="onLineHelpUrl" value="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.onLineHelp.url}" />
+
+        window.open("${onLineHelpUrl}?productName=general&formName=login" , '_blank');
         return false;
     }
 </script>
