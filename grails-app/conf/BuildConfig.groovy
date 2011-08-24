@@ -26,7 +26,7 @@ grails.project.dependency.resolution = {
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
 
      plugins {
-        compile 'com.sungardhe:spring-security-core:1.2'
+        compile 'com.sungardhe:spring-security-core:1.0.1'
         compile 'com.sungardhe:spring-security-cas:1.0.2' // Note: Also update version within 'application.properties'=
     }
     
