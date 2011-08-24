@@ -14,8 +14,8 @@
 <div class="splashBg">
    <div class="ie-warning" id="ieWarningMessage">
         <div>
-            Your browser is set to an incompatible mode. For optimal viewing experience, please adjust your browser mode to
-            <span onclick="openWindow()">Internet Explorer 8 Standards.</span>
+            Your browser is set to an incompatible mode. For optimal viewing experience, please adjust your browser mode to Internet Explorer 8 Standards.
+            Please refer to online help for detailed instructions.
         </div>
     </div>
 	<div class="appName">Banner 9.0</div>
