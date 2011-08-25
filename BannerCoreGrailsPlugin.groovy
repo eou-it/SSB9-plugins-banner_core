@@ -56,6 +56,7 @@ import com.sungardhe.banner.security.BannerPreAuthenticatedFilter
 import com.sungardhe.banner.security.BannerAccessDecisionVoter
 import com.sungardhe.banner.service.LoginAuditService
 import com.sungardhe.banner.service.DefaultLoaderService
+import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access
@@ -76,7 +77,7 @@ class BannerCoreGrailsPlugin {
     // independent of deploying a new plugin build to Nexus.
     //
 //    String version = "0.1-SNAPSHOT"
-    String version = "0.3.14"
+    String version = "0.3.15"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
@@ -235,9 +236,16 @@ class BannerCoreGrailsPlugin {
             authenticationManager = ref( authenticationManager )
         }
 
-        authenticationManager( ProviderManager ) {
-            if (isSsbEnabled()) providers = [ casBannerAuthenticationProvider, selfServiceBannerAuthenticationProvider, bannerAuthenticationProvider ]
-            else                providers = [ casBannerAuthenticationProvider, bannerAuthenticationProvider ]
+        if (isSsbEnabled()) {
+            SpringSecurityUtils.registerProvider 'casBannerAuthenticationProvider'
+            SpringSecurityUtils.registerProvider 'selfServiceBannerAuthenticationProvider'
+            SpringSecurityUtils.registerProvider 'bannerAuthenticationProvider'
+        }
+        else {
+             if(isCasEnabled())
+                SpringSecurityUtils.registerProvider 'casBannerAuthenticationProvider'
+             else
+                SpringSecurityUtils.registerProvider 'bannerAuthenticationProvider'
         }
 
         basicAuthenticationEntryPoint( BasicAuthenticationEntryPoint ) {
@@ -404,6 +412,10 @@ class BannerCoreGrailsPlugin {
     
     private def isSsbEnabled() {
         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
+    }
+
+     private def isCasEnabled(){
+       'cas'.equalsIgnoreCase(CH?.config?.banner.sso.authenticationProvider)
     }
     
 }
