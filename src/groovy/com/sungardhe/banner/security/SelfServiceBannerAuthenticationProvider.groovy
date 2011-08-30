@@ -187,8 +187,8 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             ) { user_name, outPidm, spiden_id ->
             oracleUserName = user_name 
         }
-        log.trace "SelfServiceAuthenticationProvider.getOracleUsername found oracle username $oracleUserName for user with PIDM $pidm"
-        oracleUserName
+        log.trace "SelfServiceAuthenticationProvider.getOracleUsername found oracle username $oracleUserName for user with PIDM $pidm ${oracleUserName == "NONE" ? ", setting 'NONE' oracle username to null" : ""}"
+        oracleUserName == "NONE" ? null : oracleUserName
     }
     
     
