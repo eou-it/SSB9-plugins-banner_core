@@ -18,7 +18,7 @@
             Please refer to online help for detailed instructions.
         </div>
     </div>
-	<div class="appName">Banner 9.0</div>
+	<div class="appName">Banner</div>
     <g:if test='${flash.message}'>
         <div class='loginMsg'><span class="icon-error"></span>${flash.message}</div>
     </g:if>
