@@ -13,10 +13,9 @@
 
 <div class="splashBg">
    <div class="ie-warning" id="ieWarningMessage">
-        <div>
-            Your browser is set to an incompatible mode. For optimal viewing experience, please adjust your browser mode to Internet Explorer 8 Standards.
-            Please refer to online help for detailed instructions.
-        </div>
+       <div>
+         <g:message code="com.sungardhe.banner.login.warning"/>
+       </div>
     </div>
 	<div class="appName">Banner</div>
     <g:if test='${flash.message}'>
@@ -36,7 +35,7 @@
 				<div class="userName"><span><input type='text'  name='j_username' id='j_username' /></span></div>
 				<div class="password"><span><input type='password' name='j_password' id='j_password' /></span></div>
 			</g:else>
-			<div class="signin-btn"><input type='submit' value='Sign In' id="sign-in-btn" height="32px"/></div>
+			<div class="signin-btn"><input type='submit' value="${message(code: 'com.sungardhe.banner.login.signin', default: 'Sign In')}" id="sign-in-btn" height="32px"/></div>
 		</div>
       </form>
 	</div>
