@@ -265,9 +265,18 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         } 
         catch (SQLException e) {
             log.warn "BannerAuthenticationProvider not able to perform default authentication for $authentication.name due to exception $e.message"
-            if (e.getErrorCode() == 01017) throw new BadCredentialsException( e.message )
-            else                            throw e
-        } 
+
+            switch (e.getErrorCode()) {
+            case 1017 : // 'Invalid userName/password'
+                throw new BadCredentialsException(e.message)
+            case 28000 : // 'Locked account'
+                throw new LockedException(e.message)
+            case 28001 : // 'Expired password'
+                throw new CredentialsExpiredException(e.message)
+            default :
+                throw e
+         }
+        }
         finally {
             conn?.close()
         }

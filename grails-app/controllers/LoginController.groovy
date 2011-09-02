@@ -3,6 +3,7 @@ import grails.converters.JSON
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 
 import org.springframework.security.authentication.AccountExpiredException
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.LockedException
@@ -82,23 +83,26 @@ class LoginController {
 		String msg = ''
 		def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
 
-		if (exception) {
-			if (exception instanceof AccountExpiredException) {
-				msg = SpringSecurityUtils.securityConfig.errors.login.expired
-			}
-			else if (exception instanceof CredentialsExpiredException) {
-				msg = SpringSecurityUtils.securityConfig.errors.login.passwordExpired
-			}
-			else if (exception instanceof DisabledException) {
-				msg = SpringSecurityUtils.securityConfig.errors.login.disabled
-			}
-			else if (exception instanceof LockedException) {
-				msg = SpringSecurityUtils.securityConfig.errors.login.locked
-			}
-			else {
-				msg = SpringSecurityUtils.securityConfig.errors.login.fail
-			}
-		}
+        if (exception) {
+            if (exception instanceof AccountExpiredException) {
+                msg = SpringSecurityUtils.securityConfig.errors.login.expired
+            }
+            else if (exception instanceof CredentialsExpiredException) {
+                msg = message(code:"com.sungardhe.banner.errors.login.expired")
+            }
+            else if (exception instanceof DisabledException) {
+                msg = SpringSecurityUtils.securityConfig.errors.login.disabled
+            }
+            else if (exception instanceof LockedException) {
+                msg = message(code:"com.sungardhe.banner.errors.login.locked")
+            }
+            else if (exception instanceof BadCredentialsException) {
+                msg = message(code:"com.sungardhe.banner.errors.login.fail")
+            }
+            else {
+                msg = SpringSecurityUtils.securityConfig.errors.login.fail
+            }
+        }
 
 		if (springSecurityService.isAjax(request)) {
 			render([error: msg] as JSON)
