@@ -232,7 +232,7 @@ class MultiEntityProcessingService {
             }
         }
 
-        return mepHomes
+        return mepHomes.sort{it.code}
 
     }
 

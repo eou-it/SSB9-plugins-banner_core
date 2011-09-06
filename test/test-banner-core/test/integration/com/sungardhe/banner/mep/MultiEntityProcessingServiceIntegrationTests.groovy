@@ -86,6 +86,7 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         def homes
         homes = multiEntityProcessingService.getMepCodes()
         assertTrue homes.size() == 2
+        assertTrue homes[0].code == "BANNER"
     }
 
     void testGetUserHomesCount() {
