@@ -136,6 +136,10 @@ class SupplementalDataPersistenceManager {
 
                    // Validation Call
 
+                    if (value && value.getAt(0) == "0" && value.getAt(1)== "." ){  // Decimal
+                        value = value.substring(1)
+                    }
+
                     sql.call("""
 	                       DECLARE
 
