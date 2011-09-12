@@ -180,7 +180,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
         } else {
             def spridenId
             def pidm
-            def sqlStatement = '''SELECT gobumap_spriden_id, gobumap_pidm FROM gobumap WHERE gobumap_udc_id = ?'''
+            def sqlStatement = '''SELECT gobumap_spriden_id, gobumap_pidm FROM gobumap,spriden WHERE spriden_pidm = gobumap_pidm AND spriden_change_ind is null AND gobumap_udc_id = ?'''
             db.eachRow( sqlStatement, [assertAttributeValue] ) { row ->
                 spridenId = row.gobumap_spriden_id
                 pidm = row.gobumap_pidm
