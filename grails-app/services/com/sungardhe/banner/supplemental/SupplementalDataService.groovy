@@ -1,5 +1,5 @@
 /** *****************************************************************************
- © 2010 SunGard Higher Education.  All Rights Reserved.
+ ï¿½ 2010 SunGard Higher Education.  All Rights Reserved.
  CONFIDENTIAL BUSINESS INFORMATION
  THIS PROGRAM IS PROPRIETARY INFORMATION OF SUNGARD HIGHER EDUCATION
  AND IS NOT TO BE COPIED, REPRODUCED, LENT, OR DISPOSED OF,
@@ -51,6 +51,22 @@ class SupplementalDataService {
         }
         log.info "SupplementalDataService initialization complete."
     }
+
+    /**
+     * Resets the sde attributes if they are altered in run time
+     * @param domain
+     */
+    public def refreshSdeForDomain(domain) {
+        def clazz = domain?.getClass()
+        def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(domain?.getClass())?.tableName?.toUpperCase())
+        def listOrigin = domain?.supplementalProperties?.keySet()?.asList()?.sort()
+        def listUpdated = supplementalDataConfiguration?."${clazz.name}"?.keySet()?.asList()?.sort()
+        if (!listOrigin.equals(listUpdated)) {
+            supplementalDataConfiguration.remove("${clazz.name}")
+            resetSDE(domain?.getClass().getName(), tableName)
+        }
+    }
+
 
     /**
      * Appends additional supplemental data configuration for a model. This is used for testing purposes.
@@ -168,6 +184,29 @@ class SupplementalDataService {
             println "ERROR: Could not establish role set up to the database. ${e.message}"
         } finally {
             db?.close()
+        }
+    }
+
+    private resetSDE(entityName, tableName) {
+
+        boolean found = false
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+
+        def model = [:]
+        def properties = [:]
+        def sde = [:]
+
+        sql.eachRow("SELECT gorsdam_attr_name, gorsdam_attr_reqd_ind, gorsdam_attr_data_type FROM gorsdam WHERE gorsdam_table_name= ?", [tableName]) {
+            found = true
+            properties.required = it[1]
+            def attrName = "${it[0]}"
+            model."${attrName}" = properties
+        }
+
+        if (found) {
+            sde."${entityName}" = model
+            appendSupplementalDataConfiguration(sde)
+            log.debug "SDE Table: ${tableName}"
         }
     }
 }
