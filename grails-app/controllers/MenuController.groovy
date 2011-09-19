@@ -39,6 +39,7 @@ class MenuController {
             def seq
             if(request.parameterMap["seq"] != null)
                seq = request.parameterMap["seq"][0]
+            list = getCrumb( (request.parameterMap["pageName"][0]), menuType, seq )
             if (list == null) {
                  list = getCrumb( (request.parameterMap["pageName"][0]), "Personal", seq )
             }
