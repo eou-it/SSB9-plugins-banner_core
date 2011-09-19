@@ -17,7 +17,7 @@
          <g:message code="com.sungardhe.banner.login.warning"/>
        </div>
     </div>
-	<div class="appName">Banner®</div>
+	<div class="appName">Banner<span> &reg;</span></div>
     <g:if test='${flash.message}'>
         <div class='loginMsg'><span class="icon-error"></span>${flash.message}</div>
     </g:if>

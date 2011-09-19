@@ -21,18 +21,18 @@ body{
     box-shadow:0px 0px 8px #16577F;
 }
 
-.splashBg .appName{
-    color:#FFF;
-    text-align:right;
-    margin:0px 50px 0px 0px;
-    padding-top:20px;
-    font-size:1.4em;
-    font-weight:bold;
+.splashBg .appName {
+    color: #FFFFFF;
+    font-size: 1.4em;
+    font-weight: bold;
+    margin: -10px 50px 0 0;
+    padding-top: 4px;
+    text-align: right;
 }
 
-.splashBg .logIn{
-    margin:42px 0px 0px 254px;
-    float:none;
+.splashBg .logIn {
+    float: none;
+    margin: 53px 0 0 254px;
 }
 
 .splashBg .logIn div{
@@ -93,12 +93,18 @@ body{
     top:-4px;
 }
 
-.splashBg .copyright{
-    clear:both;
-    margin:0px 53px 0px 93px;
-    font-size:0.75em;
-    color:#FFF;
-    padding-top:36px;
+
+.splashBg .copyright {
+    clear: both;
+    color: #FFFFFF;
+    font-size: 0.75em;
+    margin: 0 50px 0 93px;
+    padding-top: 36px;
+}
+
+.splashBg .appName span {
+    font-size: 14px;
+    vertical-align: top;
 }
 
 .loginMsg{
