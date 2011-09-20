@@ -1,4 +1,4 @@
-/*********************************************************************************
+/** *******************************************************************************
  Copyright 2009-2011 SunGard Higher Education. All Rights Reserved.
  This copyrighted software contains confidential and proprietary information of 
  SunGard Higher Education and its subsidiaries. Any use of this software is limited 
@@ -8,7 +8,7 @@
  trademark of SunGard Data Systems in the U.S.A. and/or other regions and/or countries.
  Banner and Luminis are either registered trademarks or trademarks of SunGard Higher 
  Education in the U.S.A. and/or other regions and/or countries.
- **********************************************************************************/
+ ********************************************************************************* */
 package com.sungardhe.banner.supplemental
 
 import groovy.sql.Sql
@@ -137,9 +137,9 @@ class SupplementalDataPersistenceManager {
 
                     if (log.isDebugEnabled()) debug(id, tableName, attributeName, disc, parentTab, dataType, value)
 
-                   // Validation Call
+                    // Validation Call
 
-                    if (value && value.getAt(0) == "0" && value.getAt(1)== "." ){  // Decimal
+                    if (value && value.getAt(0) == "0" && value.getAt(1) == ".") {  // Decimal
                         value = value.substring(1)
                     }
 
@@ -184,14 +184,16 @@ class SupplementalDataPersistenceManager {
                 }
             }
 
-            sql.executeUpdate("""
+            if (disc && disc.isNumber()) {
+                sql.executeUpdate("""
                                    update GORSDAV
                                       set GORSDAV_DISC = rownum
                                     where  GORSDAV_TABLE_NAME = ${tableName}
                                       and GORSDAV_PK_PARENTTAB = ${parentTab}
                                       and GORSDAV_ATTR_NAME = ${attributeName}
                                    """
-            )
+                )
+            }
 
             loadSupplementalDataFor(model)
         } catch (e) {
@@ -225,7 +227,7 @@ class SupplementalDataPersistenceManager {
          end ;
          """
          ){key ->
-         log.info "ROWID:" +	key}**************************************************************  */
+         log.info "ROWID:" +	key}**************************************************************   */
     }
 
 
@@ -275,7 +277,7 @@ class SupplementalDataPersistenceManager {
         if (!supplementalProperties."${attributeName}") supplementalProperties."${attributeName}" = [:]
         resultSet.each() {
 
-          if (!it[9]?.isInteger())
+            if (!it[9]?.isInteger())
                 it[9] = '1'
 
             SupplementalPropertyDiscriminatorContent discProp =

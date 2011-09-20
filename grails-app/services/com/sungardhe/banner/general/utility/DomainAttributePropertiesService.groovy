@@ -57,7 +57,7 @@ class DomainAttributePropertiesService {
         if (domainClass == null)
             return null
 
-        def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(domainClass?.getClazz())?.tableName.toUpperCase())
+        def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(domainClass?.getClazz())?.tableName?.toUpperCase())
 
         def clazz = sessionFactory.getClassMetadata(domainClass?.getClazz().name)
         def entityMap = [:]
@@ -72,7 +72,7 @@ class DomainAttributePropertiesService {
             def column = [:]
 
             def a = clazz.getPropertyNames()[j]
-            def b = clazz.getPropertyColumnNames(j)[0].toUpperCase()
+            def b = clazz.getPropertyColumnNames(j)[0]?.toUpperCase()
 
             column.columnName = b
 
