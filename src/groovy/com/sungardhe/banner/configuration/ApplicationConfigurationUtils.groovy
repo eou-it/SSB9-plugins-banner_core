@@ -14,6 +14,7 @@ package com.sungardhe.banner.configuration
 import grails.util.GrailsUtil
 
 import org.apache.log4j.Logger
+import org.apache.commons.logging.LogFactory
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
@@ -23,11 +24,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 /**
  * Utilities for application configuration.
  */
-abstract
 class ApplicationConfigurationUtils {
-
-
-    private static final Logger log = Logger.getLogger( "com.sungardhe.banner.configuration.ApplicationConfigurationUtils" )
 
 
     /**
@@ -57,36 +54,47 @@ class ApplicationConfigurationUtils {
     public static void addLocation( List locations, String propertyName, String fileName ) {
         try {
             def filePathName = getFilePath( System.getProperty( propertyName ) ) 
+            if (filePathName) LogFactory.getLog(this).info "Using configuration file specified by system property '$propertyName'"
 
             if (GrailsUtil.environment != GrailsApplication.ENV_PRODUCTION) {
-                filePathName = filePathName ?: getFilePath( "${System.getProperty( 'user.home' )}/.grails/${fileName}" )
-                filePathName = filePathName ?: getFilePath( "${fileName}" ) 
-                filePathName = filePathName ?: getFilePath( "grails-app/conf/${fileName}" ) 
+                if (!filePathName) {
+                    filePathName = getFilePath( "${System.getProperty( 'user.home' )}/.grails/${fileName}" )
+                    if (filePathName) LogFactory.getLog(this).info "Using configuration file '\$HOME/.grails/$fileName'"
+                }
+                if (!filePathName) {
+                    filePathName = getFilePath( "${fileName}" ) 
+                    if (filePathName) LogFactory.getLog(this).info "Using configuration file '$fileName'"
+                }
+                if (!filePathName) {
+                    filePathName = getFilePath( "grails-app/conf/$fileName" ) 
+                    if (filePathName) LogFactory.getLog(this).info "Using configuration file 'grails-app/conf/$fileName'"
+                }
             }
             
-            filePathName = filePathName ?: getFilePath( System.getenv( propertyName ) )
+            if (!filePathName) {
+                filePathName = getFilePath( System.getenv( propertyName ) )
+                if (filePathName) LogFactory.getLog(this).info "Using configuration file specified by environment variable '$propertyName'"
+            }
 
             if (filePathName) {
                 locations << "file:${filePathName}"        
             } 
             else {
-                log.warn "Could not find external configuration file $fileName"
                 def fileInClassPath = Thread.currentThread().getContextClassLoader().getResource( "$fileName" )?.toURI() 
                 if (fileInClassPath) {
-                    log.warn "...but found ($fileName) on the classpath (e.g., within the war)"
+                    LogFactory.getLog(this).info "Using configuration file $fileName from the classpath (e.g., from within the war file)"
                     locations << "classpath:$fileName"
                 }
             }
         } 
         catch (e) {
-            log.warn "Caught exception while loading configuration files (depending on current grails target, this may be ok): ${e.message}"
+            LogFactory.getLog(this).warn "NOTICE: Caught exception while loading configuration files (depending on current grails target, this may be ok): ${e.message}"
         }
     }
     
 
     private static String getFilePath( filePath ) {
         if (filePath && new File( filePath ).exists()) {
-            log.info "Including external configuration file: $filePath"
             "${filePath}"
         }
     }
