@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.plugins.springsecurity.GrailsUser
  * users, the domainClass field is set to null.
  */
 public class BannerUser extends GrailsUser {
-
+    Integer pidm
     String fullName
     String oracleUserName
     public String mepHomeContext
@@ -32,7 +32,8 @@ public class BannerUser extends GrailsUser {
                        final String oracleUserName, final boolean enabled,
 			           final boolean accountNonExpired, final boolean credentialsNonExpired,
 			           final boolean accountNonLocked, final Collection<GrantedAuthority> authorities, 
-			           final String fullName ) throws IllegalArgumentException {
+			           final String fullName
+                       ) throws IllegalArgumentException {
    
         // Note: The spring-security-core plugin now includes an 'id' property, which is normally used to retrieve the user versus keeping the 
         // user in the session context (as doing so is too heavy).  We do not do this anyway -- as we don't really have a 'User' model at all.
@@ -41,6 +42,18 @@ public class BannerUser extends GrailsUser {
 		super( username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities as Collection<GrantedAuthority>, null /* id */ )
         this.fullName = fullName
         this.oracleUserName = oracleUserName
+	}
+
+
+     public BannerUser( final String username, final String password,
+                       final String oracleUserName, final boolean enabled,
+			           final boolean accountNonExpired, final boolean credentialsNonExpired,
+			           final boolean accountNonLocked, final Collection<GrantedAuthority> authorities,
+			           final String fullName, final Integer pidm
+                       ) throws IllegalArgumentException {
+
+        BannerUser(username, password, oracleUserName, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities, fullName)
+        this.pidm = pidm
 	}
 
 
