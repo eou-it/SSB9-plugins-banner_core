@@ -152,7 +152,8 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
                                        !authenticationResults.expired,                   // credentialsNonExpired 
                                        true,                                             // accountNonLocked - NOT USED (YET)
                                        authenticationResults.authorities as Collection, 
-                                       authenticationResults.fullName )
+                                       authenticationResults.fullName
+                                       )
 
             def token = new BannerAuthenticationToken( user )
             log.trace "${provider?.class?.simpleName}.newAuthenticationToken is returning token $token"

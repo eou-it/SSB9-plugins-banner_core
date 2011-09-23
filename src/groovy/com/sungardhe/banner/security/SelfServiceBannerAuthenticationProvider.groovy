@@ -76,19 +76,22 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             if ('cas'.equalsIgnoreCase( CH?.config.banner.sso.authenticationProvider )) {
                 log.trace "SelfServiceBannerAuthenticationProvider will not authenticate user since CAS is enabled"
                 return null
-            } 
+            }
             conn = dataSource.getSsbConnection()                
             Sql db = new Sql( conn ) 
             
             def authenticationResults = selfServiceAuthentication( authentication, db ) // may throw exceptions, like SQLException
+
+            println(' the restuls is ' + authenticationResults)
         
             // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
             // Note that we execute this outside of a try-catch block, to let the exceptions be caught by the filter
-            BannerAuthenticationProvider.verifyAuthenticationResults authenticationResults        
-        
+            BannerAuthenticationProvider.verifyAuthenticationResults authenticationResults
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authentication, authenticationResults, db )
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
-            newAuthenticationToken( authenticationResults )
+            def token = newAuthenticationToken( authenticationResults )
+            println(' the token is ' + token)
+            token
         }
         catch (DisabledException de) {
             log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${de.message}"
@@ -137,30 +140,101 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     }
     
 
-    def selfServiceAuthentication( Authentication authentication, db ) {
+    def selfServiceAuthentication( Authentication authentication, db )  {
+        def pidm
+        def errorStatus
+        def expirationDate
+        def displayUsage
+        def oracleUserName
+        def valid
         
-        def pidm = getPidm( authentication, db )
-        def oracleUserName = getOracleUsername( pidm, db )  
-                   
+        db.call( "{call gokauth.p_authenticate(?,?,?,?,?,?,?)}",
+            [ authentication.name,
+              authentication.credentials,
+              Sql.INTEGER, // pidm
+              Sql.INTEGER, // status
+              Sql.DATE,    //expirationDate
+              Sql.VARCHAR,  //displayUsage
+              Sql.VARCHAR   // Oracle username
+            ]
+            ) { out_pidm, status, expiration_date,display_usage,user_name ->
+            pidm = out_pidm
+            errorStatus = status
+            expirationDate = expiration_date
+            displayUsage = display_usage
+            oracleUserName = user_name
+        }
+
         def authenticationResults = [ name: authentication.name, credentials: authentication.credentials,
                                       pidm: pidm, oracleUserName: oracleUserName ].withDefault { k -> false }
-        
-        if (shouldUseLDAP( db )) {
-            log.error "SelfServiceAuthenticationProvider does not currently support LDAP"
-            throw new RuntimeException( "@@r1:not.yet.implemented@@" )  
+        switch (errorStatus) {
+            case -20101:
+                log.error "SelfServiceAuthenticationProvider failed on invalid login id/pin"
+                authenticationResults.valid = false
+                break
+            case -20112:
+                log.error "SelfServiceAuthenticationProvider failed on deceased user"
+                authenticationResults.deceased = true
+                break
+            case -20105:
+                log.error "SelfServiceAuthenticationProvider failed on disabled pin"
+                authenticationResults.disabled = true
+                break
+            case -20901:
+                log.error "SelfServiceAuthenticationProvider failed on expired pin"
+                authenticationResults.expired = true
+                break
+            case -20903:
+                log.error "SelfServiceAuthenticationProvider failed on ldap authentication"
+                authenticationResults.valid = false
+                break
+            case 0:
+                authenticationResults.valid = true
+                break
         }
-                      
-        // should not use LDAP                
-        def validationResult = validatePin( pidm, authentication.credentials, db ) 
-        authenticationResults << validationResult
-        log.trace "SelfServiceAuthenticationProvider.selfServiceAuthentication will return authenticationResults including $validationResult"
-                                
+
         authenticationResults
     }
     
     
-    def newAuthenticationToken( authentictionResults ) {  
-        BannerAuthenticationProvider.newAuthenticationToken( this, authentictionResults )       
+    def newAuthenticationToken( authenticationResults ) {
+  //      BannerAuthenticationProvider.newAuthenticationToken( this, authentictionResults )
+        newAuthenticationToken(  this, authenticationResults )
+    }
+
+
+      /**
+     * Returns a new authentication object based upon the supplied arguments.
+     * This method, when used within other providers, should NOT catch the exceptions but should let them be caught by the filter.
+     * @param provider the provider who needs to create a token (used for logging purposes)
+     * @param authentication the initial authentication object containing credentials
+     * @param authentictionResults the authentication results, including the user's Oracle database username
+     * @param authorities the user's authorities that must be included in the new authentication object
+     * @throws AuthenticationException various AuthenticationException types may be thrown, and should NOT be caught by providers using this method
+     **/
+    public static def newAuthenticationToken( provider, authenticationResults ) {
+
+        try {
+            def user = new BannerUser( authenticationResults.name,                       // username
+                                       authenticationResults.credentials as String,      // password
+                                       authenticationResults.oracleUserName,             // oracle username (note this may be null)
+                                       !authenticationResults.disabled,                  // enabled (account)
+                                       true,                                             // accountNonExpired - NOT USED
+                                       !authenticationResults.expired,                   // credentialsNonExpired
+                                       true,                                             // accountNonLocked - NOT USED (YET)
+                                       authenticationResults.authorities as Collection,
+                                       authenticationResults.fullName,
+                                       authenticationResults.pidm
+                                       )
+
+            def token = new BannerAuthenticationToken( user )
+            log.trace "${provider?.class?.simpleName}.newAuthenticationToken is returning token $token"
+            token
+        } catch (e) {
+            // We don't expect an exception when simply constructing the user and token, so we'll report this as an error
+            log.error "BannerAuthenticationProvider.newAuthenticationToken was not able to construct a token for user $authenticationResults.name, due to exception: ${e.message}"
+            return null // this is a rare situation where we want to bury the exception - we *need* to return null to allow other providers a chance...
+        }
     }
     
     
@@ -173,128 +247,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         if (!pidm) throw new RuntimeException( "No PIDM found for ${authentication.name}")
         log.trace "SelfServiceAuthenticationProvider.getPidm found PIDM $pidm for user ${authentication.name}"
         pidm
-    }
-    
-    
-    // if the SSB user has an Oracle username, we'll want to proxy the user's database connections
-    def getOracleUsername( pidm, db ) {
-        
-        def oracleUserName         
-        db.call( "{call gokeacc.p_getgobeaccinfo(?,?,?)}", 
-            [ Sql.inout( Sql.VARCHAR( "" ) ),   // Oracle username (we want the OUT value)
-              Sql.inout( Sql.INTEGER( pidm ) ), // pidm
-              Sql.VARCHAR                       // spriden_id
-            ] 
-            ) { user_name, outPidm, spiden_id ->
-            oracleUserName = user_name 
-        }
-        log.trace "SelfServiceAuthenticationProvider.getOracleUsername found oracle username $oracleUserName for user with PIDM $pidm ${oracleUserName == "NONE" ? ", setting 'NONE' oracle username to null" : ""}"
-        oracleUserName == "NONE" ? null : oracleUserName
-    }
-    
-    
-    def getGobtpac( pidm, db ) {
-        
-         def gobtpac // will hold a single Banner GOBTPAC record
-         db.call( """declare result SYS_REFCURSOR;
-                      begin
-                          result := gb_third_party_access.f_query_one( $pidm );
-                          ${Sql.out OracleTypes.CURSOR} := result;
-                      end;
-                   """
-                ) { results ->
-                    // Developer note:
-                    // Per Rajesh, this proc may be returning more than one record and we'd have to loop
-                    // through to get the latest. Since we don't support LDAP in this implementation, and 
-                    // this will be replaced with a new PL/SQL API to do this, we won't bother changing this 
-                    // implementation.  Again, this method is under test but not used, as it applies to LDAP only. 
-             results?.each() { row ->
-                 row.next()
-                 gobtpac = [ pin:           row.GOBTPAC_PIN, 
-                             ldap_user:     row.GOBTPAC_LDAP_USER, 
-                             external_user: row.GOBTPAC_EXTERNAL_USER, 
-                             disabled_ind:  row.GOBTPAC_PIN_DISABLED_IND, 
-                             pin_exp_date:  row.GOBTPAC_PIN_EXP_DATE ]
-             }
-        }
-        log.trace "SelfServiceAuthenticationProvider.getGobtpac found GOBTPAC record for PIDM $pidm:  $gobtpac"
-        gobtpac
-    }
-    
-    
-    boolean shouldUseLDAP( db ) {
-        def protocol = db.firstRow( "select twgbldap_protocol from twgbldap" )
-        log.trace "SelfServiceAuthenticationProvider.shouldUseLDAP will return ${protocol ==~ /^LDAP/}"
-        protocol ==~ /^LDAP/
-    }
-    
-    
-    def getLdapParm( db ) {
-        
-        def ldapParm
-        db.call( "{? = call twbkwbis.f_fetchWTParam('LDAPMAPUSER')}", [ Sql.VARCHAR ] ) { ldap_parm  ->
-           ldapParm = ldap_parm 
-        }
-        log.trace "SelfServiceAuthenticationProvider.getLdapParm found 'ldapparm' $ldapParm"
-        ldapParm
-    }
-    
-    
-    def getLdapId( db, gobtpac ) {
-        
-        def ldapId
-        def ldapParm = getLdapParm( db )
-        
-        switch (ldapParm) {
-            case 'LDAPUSER'     : ldapId = gobtpac.ldap_user
-                                  break
-            case 'EXTERNALUSER' : ldapId = gobtpac.external_user
-                                  break
-            default             : ldapId = authentication.name
-        }
-        log.trace "SelfServiceAuthenticationProvider.getLdapId found LDAP ID $ldapId"
-        ldapId
-    }
-    
-        
-    def isValidLdap( db, loginId, gobtpac ) {
-        log.warn "****WARNING - isValidLdap currently hardcoded to return false ***** "
-        false // TODO: Support LDAP - twbklogn.f_validate_ldap is not accessible         
-    }
-    
-    
-    /**
-     * Returns either 'valid', 'expired', 'disabled', or 'invalid'.
-     */
-    def validatePin( pidm, pin, db ) {
-        def pinValidation = [:]
-        db.call( """declare 
-                        lv_boolResult BOOLEAN;
-                        lv_result NUMBER;
-                        lv_pidm VARCHAR2(8) := $pidm;
-                        lv_pin gobtpac.gobtpac_pin%TYPE := $pin;
-                        lv_expire_ind VARCHAR2(1);
-                        lv_disable_ind VARCHAR2(1);
-                    begin
-                        lv_boolResult := gb_third_party_access.f_validate_pin( lv_pidm, lv_pin, lv_expire_ind, lv_disable_ind );
-                        IF lv_boolResult THEN
-                          lv_result := 1;
-                        ELSE
-                          lv_result := 0;
-                        END IF;                        
-                        ${Sql.out OracleTypes.NUMBER} := lv_result;
-                        ${Sql.VARCHAR} := lv_expire_ind;
-                        ${Sql.VARCHAR} := lv_disable_ind;
-                    end;
-                 """
-               ) { result, expiredInd, disabledInd ->
-                     log.trace "...gb_third_party_access.f_validate_pin returned valid=$result, expired=$expiredInd, disabled=$disabledInd "
-                     pinValidation << [ valid: (result == 1 ? true : false ), 
-                                        expired: (expiredInd == 'Y' ? true : false), 
-                                        disabled: (disabledInd == 'Y' ? true : false) ]
-                 }
-        log.trace "SelfServiceAuthenticationProvider.validatePin will return $pinValidation"
-        pinValidation  
     }
     
     
