@@ -64,6 +64,10 @@ public class BannerAuthenticationToken implements Authentication {
     public String getOracleUserName() {
         user?.oracleUserName
     }
+
+    public Integer getPidm() {
+        user?.pidm
+    }
     
     public String toString() {
         "${super.toString()}[isAuthenticated()=${isAuthenticated()}, user=$user]"

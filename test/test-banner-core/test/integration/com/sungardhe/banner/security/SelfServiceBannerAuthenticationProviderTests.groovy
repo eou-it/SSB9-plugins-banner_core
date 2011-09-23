@@ -79,64 +79,6 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     }
 
 
-    void testGetOracleUsername() {        
-        if (!isSsbEnabled()) return     
-        def oracleUserName = provider.getOracleUsername( testUser.pidm, db )
-        assertNotNull oracleUserName
-    }
-    
-    
-    void testGetGobtpac() {        
-        if (!isSsbEnabled()) return     
-        def gobtpac = provider.getGobtpac( testUser.pidm, db )
-        
-        assertNull    gobtpac.ldap_user    
-        assertNotNull gobtpac.external_user
-        assertEquals  'N', gobtpac.disabled_ind 
-        // assertNotNull gobtpac.pin_exp_date 
-        
-        db.call( "{? = call gb_third_party_access.f_get_pinhash(?,?)}", 
-                 [ Sql.VARCHAR, testUser.pidm, testUser.pin ] ) { hash -> 
-            testUser['pinHash'] = hash    
-        } 
-        assertEquals  testUser.pinHash, gobtpac.pin               
-    }
-    
-    
-    void testGetLdapParm() {        
-        if (!isSsbEnabled()) return     
-        def ldapParm = provider.getLdapParm( db )
-        assertNotNull ldapParm
-    }
-    
-    
-    void testGetLdapId() {        
-        if (!isSsbEnabled()) return     
-        def gobtpac = provider.getGobtpac( testUser.pidm, db )
-        def ldapId = provider.getLdapId( db, gobtpac )
-        assertEquals 'eengle', ldapId
-    }
-    
-    
-    @Ignore // TODO: Workaround that underlying PL/SQL function is not accessible
-    void testIsValidLdap() {        
-        if (!isSsbEnabled()) return     
-        def gobtpac = provider.getGobtpac( testUser.pidm, db )
-        def isValidLdapId = provider.isValidLdap( db, testUser.id, gobtpac )
-        assertTrue isValidLdapId
-    }
-    
-    
-    void testValidatePin() {        
-        if (!isSsbEnabled()) return     
-        def gobtpac = provider.getGobtpac( testUser.pidm, db )
-        def pinValidation = provider.validatePin( testUser.pidm, testUser.pin, db )
-        assertTrue  pinValidation.valid
-        assertFalse pinValidation.expired
-        assertFalse pinValidation.disabled
-    }
-    
-    
     void testAuthentication() {
         if (!isSsbEnabled()) return     
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
@@ -144,6 +86,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         assertEquals  auth.name, testUser.id as String
         assertNotNull auth.oracleUserName
         assertTrue    auth.details.credentialsNonExpired
+        assertEquals  auth.pidm,testUser.pidm
     }
         
     
@@ -157,38 +100,15 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         assertEquals  3, auth.authorities.size()
     }
     
-    
-    void testValidatePinForExpiredPin() {        
-        if (!isSsbEnabled()) return 
-        
-        def expiredPinUser = newUserMap( 'HOSS002' )    
-        def pinValidation = provider.validatePin( expiredPinUser.pidm, expiredPinUser.pin, db )
-        assertTrue  pinValidation.expired
-        assertTrue  pinValidation.valid
-        assertFalse pinValidation.disabled
-    }
-    
-    
+
     void testExpiredPin() {
-        if (!isSsbEnabled()) return 
-        
+        if (!isSsbEnabled()) return
         def expiredPinUser = newUserMap( 'HOSS002' )
         shouldFail( CredentialsExpiredException ) {
             provider.authenticate( new TestAuthenticationRequest( expiredPinUser ) )
         }
     }
-    
-    
-    void testValidatePinForDisabledAccount() {        
-        if (!isSsbEnabled()) return 
-        
-        def disabledUser = newUserMap( 'HOSS003' )    
-        def pinValidation = provider.validatePin( disabledUser.pidm, disabledUser.pin, db )
-        assertFalse pinValidation.expired
-        assertTrue  pinValidation.valid
-        assertTrue  pinValidation.disabled
-    }
-    
+
     
     void testDisabledAccount() {
         if (!isSsbEnabled()) return 
@@ -198,6 +118,15 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
             provider.authenticate( new TestAuthenticationRequest( disabledUser ) )
         }
     }
+
+
+       void testInvalidAccount() {
+        if (!isSsbEnabled()) return
+
+        def disabledUser = newUserMap( 'HOSS003' )
+        disabledUser['pin'] = disabledUser.pin + '1'
+        assertNull(provider.authenticate( new TestAuthenticationRequest( disabledUser ) ))   
+    }
         
     
     @Ignore // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
@@ -206,6 +135,30 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         def user = newUserMap( 'HOSS001' )
         def auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: user.pin ] ) )
         assertTrue auth.isAuthenticated()
+    }
+
+
+        @Ignore // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
+    void testDisableOnInvalidLogins() {
+         def user = newUserMap( 'HOSS001' )
+         shouldFail( BadCredentialsException ){
+          def auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+         }
+         shouldFail( BadCredentialsException ) {
+           auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+         }
+         shouldFail( BadCredentialsException ) {
+            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+        }
+         shouldFail( BadCredentialsException ) {
+             auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+        }
+        shouldFail( BadCredentialsException ) {
+             auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+        }
+          shouldFail( DisabledException) {
+              auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+          }
     }
 
 

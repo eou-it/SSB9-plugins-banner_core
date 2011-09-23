@@ -198,12 +198,12 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     
     
     def newAuthenticationToken( authenticationResults ) {
-  //      BannerAuthenticationProvider.newAuthenticationToken( this, authentictionResults )
-        newAuthenticationToken(  this, authenticationResults )
+   //    BannerAuthenticationProvider.newAuthenticationToken( this, authenticationResults )
+        newSelfServiceAuthenticationToken(  this, authenticationResults )
     }
 
 
-      /**
+         /**
      * Returns a new authentication object based upon the supplied arguments.
      * This method, when used within other providers, should NOT catch the exceptions but should let them be caught by the filter.
      * @param provider the provider who needs to create a token (used for logging purposes)
@@ -212,7 +212,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
      * @param authorities the user's authorities that must be included in the new authentication object
      * @throws AuthenticationException various AuthenticationException types may be thrown, and should NOT be caught by providers using this method
      **/
-    public static def newAuthenticationToken( provider, authenticationResults ) {
+    public static def newSelfServiceAuthenticationToken( provider, authenticationResults ) {
 
         try {
             def user = new BannerUser( authenticationResults.name,                       // username

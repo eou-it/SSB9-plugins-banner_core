@@ -42,7 +42,7 @@ class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
     void testSelfServiceUserAccess() {
          if (isSsbEnabled()) {
              
-            loginSelfServiceUser( [ spridenId: 210009105, pidm: 24 ] )
+            loginSelfServiceUser( [ spridenId: '210009105' ] )
              
             get "/ssb/foobar/view"
             
@@ -90,14 +90,16 @@ class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
     def loginSelfServiceUser( Map user_credentials ) { 
         def conn
         def db
+        def pidm = getPidm(user_credentials.spridenId)
         
         try {             
             conn = getDataSource().getSsbConnection()                
             db = new Sql( conn )
+
             
             // retrieve pin for user by generating a new one. This will be rolled back.         
             db.call( "{? = call gb_third_party_access.f_proc_pin(?)}", 
-                     [ Sql.VARCHAR, user_credentials.pidm ] ) { 
+                     [ Sql.VARCHAR, pidm ] ) {
                 pin -> user_credentials['pin'] = pin 
             }             
             login "${user_credentials.spridenId}", "${user_credentials.pin}"
@@ -120,6 +122,32 @@ class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
             dataSource = (DataSource) ctx.getBean( 'dataSource' )
         }
         dataSource
+    }
+
+
+      private def getPidm(id) {
+        def pidm
+          def conn
+        def sql 
+  
+        try {
+            conn = getDataSource().getSsbConnection()
+            sql = new Sql( conn )
+            sql.eachRow("""
+                     SELECT SPRIDEN_PIDM
+                       FROM SPRIDEN
+                       WHERE SPRIDEN_ID = ?
+                   """, [id]) {
+
+                pidm = it[0]
+
+            };
+
+        } finally {
+            sql?.close()
+        }
+
+        pidm
     }
      
 
