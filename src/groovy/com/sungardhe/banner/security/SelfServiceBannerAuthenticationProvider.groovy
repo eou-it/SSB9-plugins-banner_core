@@ -55,7 +55,11 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     private static final Logger log = Logger.getLogger( "com.sungardhe.banner.security.SelfServiceBannerAuthenticationProvider" )
 
     def dataSource	// injected by Spring
-
+    
+    
+    // a cached map of web roles to their configured timeout values, that is populated on first need
+    private static roleBasedTimeOutsCache = [:]
+    private static Integer defaultWebSessionTimeout // will be read from configuration
 
     public boolean supports( Class clazz ) {
         log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isSsbEnabled() && !isCasEnabled()}"
@@ -82,16 +86,15 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             
             def authenticationResults = selfServiceAuthentication( authentication, db ) // may throw exceptions, like SQLException
 
-            println(' the restuls is ' + authenticationResults)
-        
             // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
             // Note that we execute this outside of a try-catch block, to let the exceptions be caught by the filter
             BannerAuthenticationProvider.verifyAuthenticationResults authenticationResults
+            
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authentication, authenticationResults, db )
-            authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
-            def token = newAuthenticationToken( authenticationResults )
-            println(' the token is ' + token)
-            token
+            authenticationResults['webTimeout']  = getWebTimeOut( authenticationResults, db ) 
+            setWebSessionTimeout( authenticationResults['webTimeout'] )
+            authenticationResults['fullName']    = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
+            newAuthenticationToken( authenticationResults )
         }
         catch (DisabledException de) {
             log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${de.message}"
@@ -106,14 +109,13 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             throw le
         }
         catch (BadCredentialsException be) {
-            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${be.message}"
+            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, but another provider may be able to..."
             return null // Other providers follow this one, and returning null will give them an opportunity to authenticate the user
         }
         catch (e) {
             // We'll bury other exceptions (e.g., we'll get a SQLException because the user couldn't be found) 
-            // Returning null will allow other providers to attempt authentication
-            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${e.message}"
-            return null // this is a rare situation where we want to bury the exception - we'll return null to allow other providers a chance...
+            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, but another provider may be able to..."
+            return null // again, we'll return null to allow other providers a chance to authenticate the user
         } finally {
             conn?.close()
         }
@@ -126,7 +128,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
 
 // ------------------------------- Helper Methods ------------------------------
-// (note: many methods are exposed with package-level accessibility to facilitate testing.)    
 
 
     public static def isSsbEnabled() {
@@ -151,13 +152,13 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         db.call( "{call gokauth.p_authenticate(?,?,?,?,?,?,?)}",
             [ authentication.name,
               authentication.credentials,
-              Sql.INTEGER, // pidm
-              Sql.INTEGER, // status
-              Sql.DATE,    //expirationDate
-              Sql.VARCHAR,  //displayUsage
+              Sql.INTEGER,  // pidm
+              Sql.INTEGER,  // status
+              Sql.DATE,     // expirationDate
+              Sql.VARCHAR,  // displayUsage
               Sql.VARCHAR   // Oracle username
             ]
-            ) { out_pidm, status, expiration_date,display_usage,user_name ->
+            ) { out_pidm, status, expiration_date, display_usage,user_name ->
             pidm = out_pidm
             errorStatus = status
             expirationDate = expiration_date
@@ -192,7 +193,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                 authenticationResults.valid = true
                 break
         }
-
         authenticationResults
     }
     
@@ -224,7 +224,8 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                                        true,                                             // accountNonLocked - NOT USED (YET)
                                        authenticationResults.authorities as Collection,
                                        authenticationResults.fullName,
-                                       authenticationResults.pidm
+                                       authenticationResults.pidm,
+                                       authenticationResults.webTimeout
                                        )
 
             def token = new BannerAuthenticationToken( user )
@@ -244,7 +245,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         db.call( "{? = call twbkslib.f_fetchpidm(?)}", [ Sql.INTEGER, authentication.name ] ) { fetchedPidm ->
            pidm = fetchedPidm
         }
-        if (!pidm) throw new RuntimeException( "No PIDM found for ${authentication.name}")
+        if (!pidm) throw new RuntimeException( "No PIDM found for ${authentication.name}" )
         log.trace "SelfServiceAuthenticationProvider.getPidm found PIDM $pidm for user ${authentication.name}"
         pidm
     }
@@ -294,7 +295,53 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         }
         log.trace "SelfServiceAuthenticationProvider.determineAuthorities will return $authorities"
         authorities 
-    }    
+    }  
+    
+       
+    public setWebSessionTimeout( Integer timeoutSeconds ) {
+        RequestContextHolder.currentRequestAttributes().session.setMaxInactiveInterval( timeoutSeconds )
+    }
+    
+    
+    public int getDefaultWebSessionTimeout() {
+        
+        if (!defaultWebSessionTimeout) {
+            def configuredTimeout = CH.config.defaultWebSessionTimeout 
+            defaultWebSessionTimeout = configuredTimeout instanceof Map ? 1500 : configuredTimeout        
+        }
+        defaultWebSessionTimeout
+    } 
+    
+    
+    def getWebTimeOut( authenticationResults, db ) {
+        
+        if (roleBasedTimeOutsCache.size() == 0) retrieveRoleBasedTimeOuts( db )
+        
+        // Grrrr... the 'findResults' method isn't available until Groovy 1.8.1  
+        // def timeoutsForUser = authenticationResults['authorities']?.findResults { authority -> 
+        //     roleBasedTimeOutsCache[authority.roleName]
+        // }
+        // So, we'll have to do this using each...
+        
+        def timeoutsForUser = [ getDefaultWebSessionTimeout() ]
+        authenticationResults['authorities']?.each { authority -> 
+            def timeout = roleBasedTimeOutsCache[authority.roleName]
+            if (timeout) timeoutsForUser << timeout * 60 // Convert minutes to seconds....
+        }                
+        timeoutsForUser.max()
+    }
+    
+    
+    def retrieveRoleBasedTimeOuts( db ) {
+        
+        def rows = db.rows( "select twtvrole_code, twtvrole_time_out from twtvrole" ) 
+        rows?.each { row ->    
+            roleBasedTimeOutsCache << [ "${row.TWTVROLE_CODE}": row.TWTVROLE_TIME_OUT ]
+        }
+        log.debug "retrieveRoleBasedTimeOuts() has cached web role timeouts: ${roleBasedTimeOutsCache}"    
+        roleBasedTimeOutsCache // we'll return this to facilitate testing of this method 
+    }
+      
 
 }
 

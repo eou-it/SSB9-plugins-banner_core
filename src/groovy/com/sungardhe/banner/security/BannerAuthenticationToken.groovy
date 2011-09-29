@@ -69,6 +69,10 @@ public class BannerAuthenticationToken implements Authentication {
         user?.pidm
     }
     
+    public Integer getWebTimeout() {
+        user?.webTimeout
+    }
+    
     public String toString() {
         "${super.toString()}[isAuthenticated()=${isAuthenticated()}, user=$user]"
     }

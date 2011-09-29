@@ -72,7 +72,16 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     }
 
 
+    void testRetrievalOfRoleBasedTimeouts() {
+
+        if (!isSsbEnabled()) return     
+        def timeouts = provider.retrieveRoleBasedTimeOuts( db )
+        assertTrue timeouts.size() > 0
+    }
+
+
     void testGetPidm() {  
+        
         if (!isSsbEnabled()) return     
         def pidm = provider.getPidm( new TestAuthenticationRequest( testUser ), db )
         assertEquals testUser.pidm, pidm
@@ -80,6 +89,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
 
 
     void testAuthentication() {
+        
         if (!isSsbEnabled()) return     
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
@@ -87,10 +97,12 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         assertNotNull auth.oracleUserName
         assertTrue    auth.details.credentialsNonExpired
         assertEquals  auth.pidm,testUser.pidm
+        assertTrue    auth.webTimeout >= 30
     }
         
     
     void testAuthorization() {
+        
         if (!isSsbEnabled()) return     
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
@@ -102,6 +114,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     
 
     void testExpiredPin() {
+        
         if (!isSsbEnabled()) return
         def expiredPinUser = newUserMap( 'HOSS002' )
         shouldFail( CredentialsExpiredException ) {
@@ -111,8 +124,8 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
 
     
     void testDisabledAccount() {
-        if (!isSsbEnabled()) return 
         
+        if (!isSsbEnabled()) return         
         def disabledUser = newUserMap( 'HOSS003' )
         shouldFail( DisabledException ) {
             provider.authenticate( new TestAuthenticationRequest( disabledUser ) )
@@ -120,9 +133,9 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     }
 
 
-       void testInvalidAccount() {
+    void testInvalidAccount() {
+           
         if (!isSsbEnabled()) return
-
         def disabledUser = newUserMap( 'HOSS003' )
         disabledUser['pin'] = disabledUser.pin + '1'
         assertNull(provider.authenticate( new TestAuthenticationRequest( disabledUser ) ))   
@@ -131,6 +144,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     
     @Ignore // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
     void testAuthenticateWithSocialSecurity() {
+        
         db.executeUpdate "update twgbparm set twgbparm_param_value = 'Y' where twgbparm_param_name = 'ALLOWSSNLOGIN'"
         def user = newUserMap( 'HOSS001' )
         def auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: user.pin ] ) )
@@ -138,27 +152,30 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
     }
 
 
-        @Ignore // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
+    @Ignore // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
     void testDisableOnInvalidLogins() {
-         def user = newUserMap( 'HOSS001' )
-         shouldFail( BadCredentialsException ){
-          def auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
-         }
-         shouldFail( BadCredentialsException ) {
-           auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
-         }
-         shouldFail( BadCredentialsException ) {
+        
+        def auth
+        def user = newUserMap( 'HOSS001' )
+        
+        shouldFail( BadCredentialsException ) {
             auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
         }
-         shouldFail( BadCredentialsException ) {
-             auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+        shouldFail( BadCredentialsException ) {
+            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
         }
         shouldFail( BadCredentialsException ) {
-             auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
         }
-          shouldFail( DisabledException) {
-              auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
-          }
+        shouldFail( BadCredentialsException ) {
+            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+        }
+        shouldFail( BadCredentialsException ) {
+            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+        }
+        shouldFail( DisabledException) {
+            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+        }
     }
 
 
