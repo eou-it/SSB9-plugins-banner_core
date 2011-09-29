@@ -51,7 +51,7 @@ def locationAdder = ConfigFinder.&addLocation.curry( grails.config.locations )
 [ BANNER_APP_CONFIG:              "banner_configuration.groovy",
   BANNER_TEST_APP_CONFIG:         "${appName}_configuration.groovy",
   customRepresentationConfig:     "CustomRepresentationConfig.groovy",
-  releaseInfo:                    "release_info.groovy",
+  releaseProperties:              "release.properties",
 ].each { envName, defaultFileName -> locationAdder( envName, defaultFileName ) }
 
 

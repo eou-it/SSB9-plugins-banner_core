@@ -13,7 +13,6 @@
 grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir	= "target/test-reports"
-//grails.project.war.file = "target/${appName}-${appVersion}.war"
 
 grails.plugin.location.'banner-core' = "../.."
 
@@ -21,14 +20,12 @@ grails.plugin.location.'banner-core' = "../.."
 // result in the all-too-familiar exception:
 // "Cannot cast object 'oracle.jdbc.driver.T4CConnection@6469adc7'... to class 'oracle.jdbc.OracleConnection'
 grails.war.resources = { stagingDir ->
-  delete( file:"${stagingDir}/WEB-INF/lib/ojdbc6.jar" )
+    delete( file:"${stagingDir}/WEB-INF/lib/ojdbc6.jar" )
 }
 
 grails.project.dependency.resolution = {
-    // inherit Grails' default dependencies
+    
     inherits( "global" ) {
-        // uncomment to disable ehcache
-        // excludes 'ehcache'
     }
 
     log "error" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
@@ -49,6 +46,7 @@ grails.project.dependency.resolution = {
 	plugins {
 		compile 'com.sungardhe:banner-codenarc:0.1.3'
         compile 'com.sungardhe:spring-security-cas:1.0.2'
+        build   'com.sungardhe:banner-packaging:1.0.2'
 	}
 
 

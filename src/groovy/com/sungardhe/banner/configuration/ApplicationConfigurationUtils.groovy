@@ -27,6 +27,9 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 class ApplicationConfigurationUtils {
 
 
+    private static String releaseNum
+    
+
     /**
      * Returns the release number that may be displayed to the user. 
      * The 'release number' is the grails metadata 'app.version' + buildNumber, 
@@ -35,9 +38,12 @@ class ApplicationConfigurationUtils {
      * a build number.
      **/
     public static String getReleaseNumber() {
-        def releaseNum = CH.config.application.build.version
-        if (!(releaseNum instanceof String)) {
-            releaseNum = AH.application.metadata[ 'app.version' ] + "-DEVELOPMENT"
+        if (!releaseNum) {
+            def buildNum = CH.config.application.build.number
+            if (!(buildNum instanceof String)) {
+                buildNum = "DEVELOPMENT"
+            }
+            releaseNum = "${AH.application.metadata['app.version']}-${buildNum}"
         }
         releaseNum
     }

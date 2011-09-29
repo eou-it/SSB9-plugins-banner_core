@@ -28,12 +28,14 @@ public class ReleaseInfoIntegrationTests extends GrailsUnitTestCase {
 
     void testBuildNumber() {
         def appVersion = AH.application.metadata[ 'app.version' ] 
-        def releaseInfo = new File( "release_info.groovy" )
-        if (releaseInfo.exists()) {
-            // the release_info.groovy file exists, so we should expect to have a 'real' build number  
-            assertTrue CH.config.application.build.version.contains( appVersion )
+        def releasePropertiesFile = new File( "target/classes/release.properties" )
+        if (releasePropertiesFile.exists()) {
+            // the release.properties file exists, so we should expect to have a 'real' build number  
+            assertTrue CH.config.application.version.contains( appVersion )
+            assertTrue CH.config.application.build.number.isInteger()
             assertNotNull CH.config.build.number.url
             assertTrue ReleaseVersionHolder.getReleaseNumber()?.contains( appVersion )
+            assertTrue ReleaseVersionHolder.getReleaseNumber()?.contains( "-${CH.config.application.build.number}" )
             assertFalse ReleaseVersionHolder.getReleaseNumber()?.contains( "-DEVELOPMENT" )
         } else {
             assertTrue ReleaseVersionHolder.getReleaseNumber() == "$appVersion-DEVELOPMENT"  
