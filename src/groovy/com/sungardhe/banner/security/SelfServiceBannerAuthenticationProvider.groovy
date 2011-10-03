@@ -198,8 +198,8 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     
     
     def newAuthenticationToken( authenticationResults ) {
-   //    BannerAuthenticationProvider.newAuthenticationToken( this, authenticationResults )
-        newSelfServiceAuthenticationToken(  this, authenticationResults )
+       BannerAuthenticationProvider.newAuthenticationToken( this, authenticationResults )
+     //   newSelfServiceAuthenticationToken(  this, authenticationResults )
     }
 
 
