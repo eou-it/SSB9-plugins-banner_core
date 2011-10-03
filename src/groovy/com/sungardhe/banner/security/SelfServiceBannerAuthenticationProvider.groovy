@@ -285,14 +285,19 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             authorities << BannerGrantedAuthority.create( "SELFSERVICE-$row.TWGRROLE_ROLE", "BAN_DEFAULT_M", null )
         }
         
-        if (authentictionResults.oracleUserName) {
-            // administrative users should be given the 'ROLE_SELFSERVICE_BAN_DEFAULT_M' role to have access to self service pages.
-            // We'll give this faux administrative priviledge if the user has 'real' web roles.
-            if (authorities.size() > 0) authorities << BannerGrantedAuthority.create( "SELFSERVICE", "BAN_DEFAULT_M", null )
-            
+        def selfServiceRolePassword
+        if (authentictionResults.oracleUserName) {            
             Collection<GrantedAuthority> adminAuthorities = BannerAuthenticationProvider.determineAuthorities( authentictionResults.oracleUserName, db )
+            if (adminAuthorities.size() > 0) {
+                selfServiceRolePassword = adminAuthorities[0].bannerPassword // we'll just grab the password from the first administrative role...
+            }
             authorities.addAll( adminAuthorities )
         }
+        
+        // Users should be given the 'ROLE_SELFSERVICE_BAN_DEFAULT_M' role to have access to self service pages
+        // that are associated to the 'SELFSERVICE' FormContext. 
+        if (authorities.size() > 0) authorities << BannerGrantedAuthority.create( "SELFSERVICE", "BAN_DEFAULT_M", selfServiceRolePassword ) 
+        
         log.trace "SelfServiceAuthenticationProvider.determineAuthorities will return $authorities"
         authorities 
     }  

@@ -11,6 +11,8 @@
  **********************************************************************************/
 package com.sungardhe.banner.security
 
+import org.apache.commons.logging.LogFactory
+
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
 
@@ -19,10 +21,13 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
  * A FormContext is used to represent the Banner classic Oracle Form for which 
  * a request corresponds. By establishing a relationship between pages and 
  * Banner classic Oracle Forms, we can continue to leverage existing 
- * Banner security configuration. 
+ * Banner security configuration.  Note this is only effective for URLs mapped to 
+ * Controllers -- not Composers.  The FormContext for the ZK user interface 
+ * is set by the sghe zk plugin. 
  **/
 class AccessControlFilters {
 
+    def dlog = LogFactory.getLog( getClass() ) // workaround for logging issues when using grails injected log
 
     def filters = {
 
@@ -33,24 +38,24 @@ class AccessControlFilters {
          */
         setFormContext( controller:'*', action:'*' ) {
 
+            def theUrl
+                        
             before = {
                 
-                if (RCH.currentRequestAttributes().request.getRequestURI() ==~ /ssb/) {
+                theUrl = RCH.currentRequestAttributes().request.forwardURI  // This shows the 'real' URL versus request.getRequestURI(), which shows the '.dispatch'
+                if ("$theUrl" =~ /ssb/) {
+                    dlog.debug "AccessControlFilters.setFormContext 'before filter' for URL $theUrl will set a FormContext to '[SELFSERVICE] (it was '${FormContext.get()}), controller=$controllerName and action=$actionName). "              
                     FormContext.set( [ "SELFSERVICE" ] )
                 }
                 else {
                     Map formControllerMap = grailsApplication.config.formControllerMap
                     def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
-
+                    dlog.debug "AccessControlFilters.setFormContext 'before filter' for URL $theUrl will set a FormContext with ${associatedFormsList?.size()} forms. (controller=$controllerName and action=$actionName). "              
                     FormContext.set( associatedFormsList )
-                    log.debug "The AccessControl 'setFormContext' before filter has set a form context for controller $controllerName of: $associatedFormsList"
-                }                
+                }  
             }
 
-            after = {
-                FormContext.clear()
-                log.debug "The AccessControl 'setFormContext' after filter has cleared the form context"
-            }
+            after = { }
 
             afterView = { }
         }
