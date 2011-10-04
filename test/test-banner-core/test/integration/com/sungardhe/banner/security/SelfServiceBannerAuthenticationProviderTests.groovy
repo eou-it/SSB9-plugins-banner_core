@@ -149,6 +149,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         def user = newUserMap( 'HOSS001' )
         def auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: user.pin ] ) )
         assertTrue auth.isAuthenticated()
+        assertTrue auth.pidm = user.pidm
     }
 
 

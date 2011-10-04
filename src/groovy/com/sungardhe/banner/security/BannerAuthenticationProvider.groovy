@@ -154,8 +154,11 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
                                        authenticationResults.authorities as Collection, 
                                        authenticationResults.fullName
                                        )
-            user.webTimeout = authenticationResults?.webTimeout
-         //   user.pidm = authenticationResults?.pidm
+              if (authenticationResults?.webTimeout)  
+                user.webTimeout = authenticationResults.webTimeout;
+              if (authenticationResults?.pidm)
+                user.pidm = authenticationResults.pidm
+      
 
 
             def token = new BannerAuthenticationToken( user )
