@@ -42,17 +42,18 @@ class AccessControlFilters {
                         
             before = {
                 
-                theUrl = RCH.currentRequestAttributes().request.forwardURI  // This shows the 'real' URL versus request.getRequestURI(), which shows the '.dispatch'
-                if ("$theUrl" =~ /ssb/) {
-                    dlog.debug "AccessControlFilters.setFormContext 'before filter' for URL $theUrl will set a FormContext to '[SELFSERVICE] (it was '${FormContext.get()}), controller=$controllerName and action=$actionName). "              
-                    FormContext.set( [ "SELFSERVICE" ] )
+                Map formControllerMap = grailsApplication.config.formControllerMap
+                def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
+                
+                if (!associatedFormsList?.contains( "SELFSERVICE" )) {
+                    theUrl = RCH.currentRequestAttributes().request.forwardURI  // This shows the 'real' URL versus request.getRequestURI(), which shows the '.dispatch'
+                    if ("$theUrl" =~ /ssb/) {
+                        associatedFormsList?.add( 0, "SELFSERVICE" )
+                    }
                 }
-                else {
-                    Map formControllerMap = grailsApplication.config.formControllerMap
-                    def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
-                    dlog.debug "AccessControlFilters.setFormContext 'before filter' for URL $theUrl will set a FormContext with ${associatedFormsList?.size()} forms. (controller=$controllerName and action=$actionName). "              
-                    FormContext.set( associatedFormsList )
-                }  
+                
+                dlog.debug "AccessControlFilters.setFormContext 'before filter' for URL $theUrl will set a FormContext with ${associatedFormsList?.size()} forms. (controller=$controllerName and action=$actionName). "              
+                FormContext.set( associatedFormsList )
             }
 
             after = { }
