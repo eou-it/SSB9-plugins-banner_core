@@ -13,6 +13,7 @@
 package com.sungardhe.banner.general.utility
 
 import com.sungardhe.banner.testing.BaseIntegrationTestCase
+import com.sungardhe.banner.testing.InstructorQueryView
 
 class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTestCase {
 
@@ -26,6 +27,33 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
     protected void tearDown() {
         super.tearDown()
     }
+
+    void testGetClassMetadataByEntityNameWithoutConstraintProperties() {
+
+         def classMetadata
+         // facultyScheduleQueryView
+         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("facultyScheduleQueryView")
+
+         assertNotNull classMetadata
+         assertEquals "SIVASGQ_END_TIME", classMetadata.attributes.endTime.columnName
+         assertEquals 4, classMetadata.attributes.endTime.maxSize
+         assertEquals "String", classMetadata.attributes.endTime.propertyType
+
+     }
+
+
+     void testGetClassMetadataByPojo() {
+
+         def classMetadata
+         // InstructorQueryView
+         def instructorQueryView = new InstructorQueryView()
+
+         classMetadata = domainAttributePropertiesService.extractClassMetadataByPojo(instructorQueryView)
+
+         assertNotNull classMetadata
+         assertNotNull classMetadata.attributes.facultyContractType
+         assertEquals "String", classMetadata.attributes.facultyContractType.propertyType
+     }
 
 
     void testGetClassMetadataByEntityName() {
