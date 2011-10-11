@@ -251,7 +251,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     }
     
     
-    def determineAuthorities( authentication, authentictionResults, db ) {
+     public static Collection<GrantedAuthority>determineAuthorities( Authentication authentication, Map authentictionResults, Sql db ) {
 
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
         
@@ -259,25 +259,25 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             """select twgrrole_pidm,twgrrole_role from twgrrole 
                        where twgrrole_pidm = :pidm
                 union
-                select govrole_pidm,twtvrole_desc from govrole,twtvrole,twgrrole 
+                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
                        where govrole_faculty_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FACULTY'
                 union
-                select govrole_pidm,twtvrole_desc from govrole,twtvrole,twgrrole 
+                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
                        where govrole_student_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'STUDENT'
                 union
-                select govrole_pidm,twtvrole_desc from govrole,twtvrole,twgrrole 
+                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
                        where govrole_employee_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'EMPLOYEE'
                 union
-                select govrole_pidm,twtvrole_desc from govrole,twtvrole,twgrrole 
+                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
                        where govrole_alumni_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'ALUMNI'
                 union
-                select govrole_pidm,twtvrole_desc from govrole,twtvrole,twgrrole 
+                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
                        where govrole_friend_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FRIEND'
                 union
-                select govrole_pidm,twtvrole_desc from govrole,twtvrole,twgrrole 
+                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
                        where govrole_finaid_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINAID'
                 union
-                select govrole_pidm,twtvrole_desc from govrole,twtvrole,twgrrole 
+                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole 
                        where govrole_finance_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINANCE'
             """, [ pidm: authentictionResults.pidm ] ) 
                     

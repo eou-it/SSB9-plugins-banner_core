@@ -91,7 +91,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
                 authenticationResults['authorities'] = (Collection<GrantedAuthority>) BannerAuthenticationProvider.determineAuthorities( authenticationResults.oracleUserName.toUpperCase(), dataSource )
             } 
             else if (isSsbEnabled() && authenticationResults['pidm']) {
-                authenticationResults['authorities'] = SelfServiceBannerAuthenticationProvider.determineAuthorities( authentication, authentictionResults, db )                    
+                authenticationResults['authorities'] = SelfServiceBannerAuthenticationProvider.determineAuthorities( authentication, authenticationResults, db )                    
             } else {
                 log.warn "CasAuthenticationProvider was not able to authenticate (no mapping found to a database user or spriden_id) "
                 applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults.name, false, 'CasAuthenticationProvider - CAS user not mapped to Oracle user or spriden_id', 
@@ -181,9 +181,9 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
         } else {
             def spridenId
             def pidm
-            def sqlStatement = '''SELECT gobumap_spriden_id, gobumap_pidm FROM gobumap,spriden WHERE spriden_pidm = gobumap_pidm AND spriden_change_ind is null AND gobumap_udc_id = ?'''
+            def sqlStatement = '''SELECT spriden_id, gobumap_pidm FROM gobumap,spriden WHERE spriden_pidm = gobumap_pidm AND spriden_change_ind is null AND gobumap_udc_id = ?'''
             db.eachRow( sqlStatement, [assertAttributeValue] ) { row ->
-                spridenId = row.gobumap_spriden_id
+                spridenId = row.spriden_id
                 pidm = row.gobumap_pidm
             }
             authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm) ].withDefault { k -> false } 
