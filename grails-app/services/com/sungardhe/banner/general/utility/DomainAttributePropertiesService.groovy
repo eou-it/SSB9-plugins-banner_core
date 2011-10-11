@@ -90,11 +90,10 @@ class DomainAttributePropertiesService {
         grailsDomainClass.properties.each {
 
             def propName = it.name
+            def maxSize
 
             def constraintProperty = grailsDomainClass.constrainedProperties."$propName"
             if (constraintProperty?.propertyName) {
-
-                def maxSize
 
                 if (!constraintProperty?.maxSize) {
                     if (ClassUtils.getShortClassName(constraintProperty?.propertyType?.name) == "String" ||
@@ -117,11 +116,54 @@ class DomainAttributePropertiesService {
                 entityMap.attributes."${constraintProperty?.propertyName}"?.scale = constraintProperty?.scale
                 entityMap.attributes."${constraintProperty?.propertyName}"?.propertyType = ClassUtils.getShortClassName(constraintProperty?.propertyType?.name)
 
+            }  else {
+                entityMap.attributes."${it.name}"?.propertyType = ClassUtils.getShortClassName(it.type)
+
+                if (ClassUtils.getShortClassName(it.type) == "String" ||
+                        it.name.indexOf("com.") == 0) { //association atributes
+                    maxSize = getCharLengthForColumn(tableName, entityMap.attributes."${it.name}"?.columnName)
+                } else if (ClassUtils.getShortClassName(it.type) == "Date") {
+                    maxSize = getDefaultDateFormat()
+                } else {
+                    maxSize = getDataLengthForColumn(tableName, entityMap.attributes."${it.name}"?.columnName)
+                }
+
+                entityMap.attributes."${it.name}"?.maxSize = maxSize
             }
         }
 
         return entityMap
 
+    }
+
+
+    public extractClassMetadataByPojo(pojo) {
+        def entityMap = [:]
+
+        entityMap.class = pojo?.getClass()
+        entityMap.className = pojo?.getClass().name
+        entityMap.entityName = ClassUtils.getShortClassName(pojo.getClass())
+
+        def mapAttributes = [:]
+        pojo.metaClass.getProperties().each {
+            if (it.getType().equals(String.class) || it.getType().equals(Integer.class) ||
+                    it.getType().equals(Date.class) || it.getType().equals(BigDecimal.class)) {
+
+                def column = [:]
+
+                def a = it.name
+                def b = it.name
+
+                column.columnName = b
+                column.propertyType = ClassUtils.getShortClassName(it.getType())
+
+                mapAttributes."${a}" = column
+            }
+        }
+
+        entityMap.attributes = mapAttributes
+
+        return entityMap
     }
 
 
