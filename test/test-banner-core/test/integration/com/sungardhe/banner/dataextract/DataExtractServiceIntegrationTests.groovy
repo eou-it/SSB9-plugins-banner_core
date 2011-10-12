@@ -29,13 +29,17 @@ class DataExtractServiceIntegrationTests extends BaseIntegrationTestCase {
 
     void testDataExtract() {
         def dataExtractScheduleEvaluation = dataExtractService.hasDataExtract("scheduleEvaluation")
-        assertFalse "DataExtract is not setup", dataExtractScheduleEvaluation
+        assertNull "DataExtract is not setup", dataExtractScheduleEvaluation
 
         def dataExtractSchedule = dataExtractService.hasDataExtract("schedule")
-        assertTrue "DataExtract is not setup", dataExtractSchedule
+        assertEquals "B", dataExtractSchedule
+
+        def dataExtractScheduleOverride = dataExtractService.hasDataExtract("scheduleOverride")
+         assertEquals "D", dataExtractScheduleOverride
+
 
         def dataExtractPageDoesNotExist = dataExtractService.hasDataExtract("pageDoesNotExist")
-        assertFalse "DataExtract is not setup", dataExtractPageDoesNotExist
+        assertNull "DataExtract is not setup", dataExtractPageDoesNotExist
     }
 
     private def updateGUBOBJSTable() {
@@ -47,6 +51,15 @@ class DataExtractServiceIntegrationTests extends BaseIntegrationTestCase {
                 SET GUBOBJS_EXTRACT_ENABLED_IND = 'B'
               WHERE GUBOBJS_NAME = 'SSASECT'
             """)
+
+
+            sql = new Sql(sessionFactory.getCurrentSession().connection())
+             sql.executeUpdate("""
+                  UPDATE GUBOBJS
+                 SET GUBOBJS_EXTRACT_ENABLED_IND = 'D'
+               WHERE GUBOBJS_NAME = 'SSAOVRR'
+             """)
+
 
             sql.executeUpdate("""
                  UPDATE GUBOBJS

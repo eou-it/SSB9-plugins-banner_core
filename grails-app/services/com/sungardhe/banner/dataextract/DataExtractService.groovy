@@ -25,7 +25,7 @@ class DataExtractService {
 
 
     def hasDataExtract(id) {
-        def dataExtract = false
+        def dataExtract
         def objName
 
         if (id == null)
@@ -36,12 +36,13 @@ class DataExtractService {
         sql.eachRow("select * from gubpage where gubpage_name = ?", [id]) {
             objName = it.gubpage_code
         }
+
         if (objName) {
             def session = sessionFactory.getCurrentSession()
             def resultSet = session.createSQLQuery("SELECT GUBOBJS_EXTRACT_ENABLED_IND FROM GUBOBJS WHERE GUBOBJS_NAME = :objName and GUBOBJS_EXTRACT_ENABLED_IND != 'N'").setString("objName", objName).list()
 
             resultSet.each() {
-                dataExtract = true
+                dataExtract = it
             }
         }
         dataExtract
