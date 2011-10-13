@@ -40,7 +40,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.GrantedAuthorityImpl
-import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.RequestContextHolder as RCH
 
 
 /**
@@ -48,7 +48,7 @@ import org.springframework.web.context.request.RequestContextHolder
  */
 public class CasAuthenticationProvider implements AuthenticationProvider {
 
-    // note: using 'getClass()' here doesn't work -- hierarchical class loader issue?  Anyway, we'll just use a String
+    // note: using 'getClass()' here doesn't work
     private static final Logger log = Logger.getLogger( "com.sungardhe.banner.security.CasAuthenticationProvider" )
 
     def dataSource  // injected by Spring
@@ -56,7 +56,14 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
 
     public boolean supports( Class clazz ) {
         log.trace "CasBannerAuthenticationProvider.supports( $clazz ) will return ${isCasEnabled()}"
-        isCasEnabled()
+        isCasEnabled() && isNotExcludedFromSSO()
+    }
+    
+    
+    public boolean isNotExcludedFromSSO() {
+        def theUrl = RCH.currentRequestAttributes().request.forwardURI
+        def excludedUrlPattern = CH?.config.banner.sso.excludedUrlPattern // e.g., 'guest'
+        !("$theUrl".contains( excludedUrlPattern ))
     }
     
     
@@ -82,43 +89,26 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
             def authenticationResults = casAuthentication( authentication, db )
             
             // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
-            // Note that we execute this outside of a try-catch block, to let the exceptions be caught by the filter
-            BannerAuthenticationProvider.verifyAuthenticationResults authenticationResults        
-    
+            BannerAuthenticationProvider.verifyAuthenticationResults this, authentication, authenticationResults        
+        
             def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
       
-            if (authenticationResults.oracleUserName) {
-                authenticationResults['authorities'] = (Collection<GrantedAuthority>) BannerAuthenticationProvider.determineAuthorities( authenticationResults.oracleUserName.toUpperCase(), dataSource )
+            if (isSsbEnabled()) {
+                authenticationResults['authorities'] = SelfServiceBannerAuthenticationProvider.determineAuthorities( authenticationResults, db )
             } 
-            else if (isSsbEnabled() && authenticationResults['pidm']) {
-                authenticationResults['authorities'] = SelfServiceBannerAuthenticationProvider.determineAuthorities( authentication, authenticationResults, db )                    
-            } else {
-                log.warn "CasAuthenticationProvider was not able to authenticate (no mapping found to a database user or spriden_id) "
-                applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults.name, false, 'CasAuthenticationProvider - CAS user not mapped to Oracle user or spriden_id', 
-                                                                                'CasAuthenticationProvider', new Date(), 1 ) )
-                return null
+            else {
+                authenticationResults['authorities'] = BannerAuthenticationProvider.determineAuthorities( authenticationResults, db )                    
             }
+            
             applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults.name, true, '', '', new Date(), '' ) )
             
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
             newAuthenticationToken( authenticationResults )
         }
-        catch (DisabledException de) {
-            log.warn "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${de.message}"
-            throw de
-        }
-        catch (CredentialsExpiredException ce) {
-            log.warn "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${ce.message}"
-            throw ce
-        }
-        catch (LockedException le) {
-            log.warn "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${le.message}"
-            throw le
-        }
-        catch (BadCredentialsException be) {
-            log.warn "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${be.message}"
-            throw be // NOTE: If we decide to add another provider after this one, we 'may' want to return null here...
-        }
+        catch (DisabledException de)           { throw de }
+        catch (CredentialsExpiredException ce) { throw ce }
+        catch (LockedException le)             { throw le }
+        catch (BadCredentialsException be)     { throw be }
         catch (e) {
             // We don't expect an exception here, as failed authentication should be reported via the above exceptions
             log.error "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${e.message}"
@@ -172,7 +162,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
     
     private def casAuthentication( authentication, db ) {
         log.trace "CasAuthenticationProvider.casAuthentication doing CAS authentication"
-        def attributeMap = RequestContextHolder.currentRequestAttributes().request.session.getAttribute( AbstractCasFilter.CONST_CAS_ASSERTION ).principal.attributes
+        def attributeMap = RCH.currentRequestAttributes().request.session.getAttribute( AbstractCasFilter.CONST_CAS_ASSERTION ).principal.attributes
         def assertAttributeValue = attributeMap[CH?.config?.banner.sso.authenticationAssertionAttribute]
         def oracleUserName = getMappedDatabaseUserForUdcId( assertAttributeValue, db )
         def authenticationResults  

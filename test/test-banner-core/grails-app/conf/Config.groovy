@@ -394,8 +394,8 @@ bannerRepresentationHandlerMap =
                                 if (xml.DistrictDivision?.text())              props.districtDivision   = xml.DistrictDivision?.text()
                                 props
                             },
-              singleBuilder: { renderDataMap -> [ template: "/foo/single.v1.0.xml",
-                                                   model: [ foo: renderDataMap.data, refBase: renderDataMap.refBase ] ] },
+              singleBuilder:     { renderDataMap -> [ template: "/foo/single.v1.0.xml",
+                                                      model: [ foo: renderDataMap.data, refBase: renderDataMap.refBase ] ] },
               collectionBuilder: { renderDataMap -> [ template: "/foo/list.v1.0.xml",
                                                       model: [ fooList: renderDataMap.data, totalCount: renderDataMap.totalCount,
                                                                refBase: renderDataMap.refBase ] ] }

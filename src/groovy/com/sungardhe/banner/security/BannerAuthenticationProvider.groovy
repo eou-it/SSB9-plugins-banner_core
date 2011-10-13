@@ -18,13 +18,15 @@ import java.sql.SQLException
 
 import javax.sql.DataSource
 
+import grails.util.GrailsNameUtils
+
 import groovy.sql.Sql
 
 import oracle.jdbc.pool.OracleDataSource
 
 import org.apache.log4j.Logger
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
@@ -48,15 +50,17 @@ import org.springframework.web.context.request.RequestContextHolder
  */
 public class BannerAuthenticationProvider implements AuthenticationProvider {
 
-    // note: using 'getClass()' here doesn't work -- hierarchical class loader issue?  Anyway, we'll just use a String
+    // note: using 'getClass()' here doesn't work -- we'll just use a String
     private static final Logger log = Logger.getLogger( "com.sungardhe.banner.security.BannerAuthenticationProvider" )
+
+    private static def applicationContext // set lazily via 'getApplicationContext()'
 
     def dataSource                  // injected by Spring
     def authenticationDataSource	// injected by Spring
 
 
     public boolean supports( Class clazz ) {
-        log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isAdministrativeBannerEnabled() == true}"
+        log.trace "BannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isAdministrativeBannerEnabled() == true}"
         clazz == UsernamePasswordAuthenticationToken && isAdministrativeBannerEnabled()
     }
     
@@ -70,49 +74,38 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
                 
         log.trace "BannerAuthenticationProvider.authenticate invoked"
 
-        def authenticationResults
         try {
-            authenticationResults = defaultAuthentication( authentication )
+            def authenticationResults = defaultAuthentication( authentication )
         
             // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
             // Note that when we execute this inside a try-catch block, we need to re-throw exceptions we want caught by the filter
-            verifyAuthenticationResults authenticationResults
+            verifyAuthenticationResults this, authentication, authenticationResults
            
-            def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT )
+            loadDefault( getApplicationContext(), authenticationResults['oracleUserName'] )
+            getApplicationContext().publishEvent( new BannerAuthenticationEvent( authenticationResults['oracleUserName'], true, '', '', new Date(), '' ) )
             
-            if (!authenticationResults['oracleUserName']) {
-                log.warn "BannerAuthenticationProvider was not able to authenticate user."
-                applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults.name, false, 'BannerAuthenticationProvider - Invalid password tried', 
-                                                                                'BannerAuthenticationProvider', new Date(), 1 ) )
-                return null
-            }
-            loadDefault( applicationContext, authenticationResults['oracleUserName'] )
-            applicationContext.publishEvent( new BannerAuthenticationEvent( authenticationResults['oracleUserName'], true, '', '', new Date(), '' ) )
-            authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults['oracleUserName'].toUpperCase(), dataSource )
-            authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String            
+            authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, dataSource )
+            authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String  
+                      
             newAuthenticationToken( this, authenticationResults )
         }
-        catch (DisabledException de) {
-            log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${de.message}"
-            throw de
-        }
-        catch (CredentialsExpiredException ce) {
-            log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${ce.message}"
-            throw ce
-        }
-        catch (LockedException le) {
-            log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${le.message}"
-            throw le
-        }
-        catch (BadCredentialsException be) {
-            log.warn "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${be.message}"
-            throw be // NOTE: If we decide to add another provider after this one, we 'may' want to return null here...
-        }
+        catch (DisabledException de)           { throw de }
+        catch (CredentialsExpiredException ce) { throw ce }
+        catch (LockedException le)             { throw le }
+        catch (BadCredentialsException be)     { throw be } // NOTE: If we decide to add another provider after this one, we 'may' want to return null here...
         catch (e) {
             // We don't expect an exception here, as failed authentication should be reported via the above exceptions
             log.error "BannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${e.message}"
             return null // this is a rare situation where we want to bury the exception - we *need* to return null
         }
+    }
+    
+    
+    public static def getApplicationContext() {
+        if (!applicationContext) {
+            applicationContext = (ApplicationContext) AH.getApplication().getMainContext()
+        }
+        applicationContext
     }
     
     
@@ -123,21 +116,33 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
      * @throws LockedException if the user account has been locked
      * @throws RuntimeException if the pin was invalid or the id was incorrect (i.e., the default error)
      **/
-    public static verifyAuthenticationResults( authenticationResults ) {
-        // These will be localized later, by the LoginController
-        if (authenticationResults.disabled) throw new DisabledException( '' )
-        if (authenticationResults.expired)  throw new CredentialsExpiredException( '' )
-        if (authenticationResults.locked)   throw new LockedException( '' )
-        if (!authenticationResults.valid)   throw new BadCredentialsException( '' )
+    public static verifyAuthenticationResults( AuthenticationProvider provider, Authentication authentication, Map authenticationResults ) {
+        
+        def report = BannerAuthenticationProvider.&handleFailure.curry( provider, authentication, authenticationResults )
+        
+        if (authenticationResults.disabled) report( new DisabledException('') )
+        if (authenticationResults.expired)  report( new CredentialsExpiredException('') )
+        if (authenticationResults.locked)   report( new LockedException('') )
+        if (!authenticationResults.valid)   report( new BadCredentialsException('') )
     }
-
+    
+    
+    private static handleFailure( provider, authentication, authenticationResults, exception ) { 
+        
+        log.warn "${provider.class.simpleName} was not able to authenticate user $authentication.name due to exception ${exception.class.simpleName}: ${exception.message} " 
+        def msg = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( exception.class.simpleName, "Exception" ) )
+        def module = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( provider.class.simpleName, "AuthenticationProvider" ) )
+        getApplicationContext().publishEvent( new BannerAuthenticationEvent( authentication.name, false, msg, module, new Date(), 1 ) )
+        throw exception 
+    }
+    
     
     /**
      * Returns a new authentication object based upon the supplied arguments.  
      * This method, when used within other providers, should NOT catch the exceptions but should let them be caught by the filter.
      * @param provider the provider who needs to create a token (used for logging purposes)
      * @param authentication the initial authentication object containing credentials
-     * @param authentictionResults the authentication results, including the user's Oracle database username 
+     * @param authenticationResults the authentication results, including the user's Oracle database username 
      * @param authorities the user's authorities that must be included in the new authentication object
      * @throws AuthenticationException various AuthenticationException types may be thrown, and should NOT be caught by providers using this method
      **/
@@ -154,12 +159,8 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
                                        authenticationResults.authorities as Collection, 
                                        authenticationResults.fullName
                                        )
-              if (authenticationResults?.webTimeout)  
-                user.webTimeout = authenticationResults.webTimeout;
-              if (authenticationResults?.pidm)
-                user.pidm = authenticationResults.pidm
-      
-
+            if (authenticationResults?.webTimeout) user.webTimeout = authenticationResults.webTimeout
+            if (authenticationResults?.pidm) user.pidm = authenticationResults.pidm
 
             def token = new BannerAuthenticationToken( user )
             log.trace "${provider?.class?.simpleName}.newAuthenticationToken is returning token $token"
@@ -175,7 +176,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     /**
      * Returns the authorities granted for the identified user.
      **/
-    public static Collection<GrantedAuthority> determineAuthorities( String oracleUserName, DataSource dataSource ) {
+    public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, DataSource dataSource ) {
 
         def conn
         def db
@@ -184,7 +185,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
             conn = dataSource.unproxiedConnection
             db = new Sql( conn )
-            return determineAuthorities( oracleUserName, db )
+            return determineAuthorities( authenticationResults, db )
         } finally {
             conn?.close()
         }        
@@ -194,18 +195,21 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     /**
      * Returns the authorities granted for the identified user.
      **/
-    public static Collection<GrantedAuthority> determineAuthorities( String oracleUserName, Sql db ) {
+    public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, Sql db ) {
+        
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
+        if (!authenticationResults.oracleUserName) return authorities // empty list
+        
         try {
             // We query the database for all role assignments for the user, using an unproxied connection.
             // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
-            db.eachRow( "select * from govurol where govurol_userid = ?", [oracleUserName] ) { row ->
+            db.eachRow( "select * from govurol where govurol_userid = ?", [authenticationResults.oracleUserName.toUpperCase()] ) { row ->
                 def authority = BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, row.GOVUROL_ROLE_PSWD )
                 // log.trace "BannerAuthenticationProvider.determineAuthorities is adding authority $authority"
                 authorities << authority
             }
         } catch (SQLException e) {
-            log.error "BannerAuthenticationProvider not able to determine Authorities for user $oracleUserName due to exception $e.message"
+            log.error "BannerAuthenticationProvider not able to determine Authorities for user ${authenticationResults.oracleUserName} due to exception $e.message"
             return new ArrayList<GrantedAuthority>()
         } 
         log.trace "BannerAuthenticationProvider.determineAuthorities is returning ${authorities?.size()} authorities. "
@@ -258,7 +262,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     private def defaultAuthentication( Authentication authentication ) {
         def conn
-        def authenticationResults
+        def authenticationResults = [:]
         try {
             log.trace "BannerAuthenticationProvider.defaultAuthentication invoked..."
             authenticationDataSource.setURL( dataSource.getUrl() )
@@ -272,18 +276,21 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             authenticationResults
         } 
         catch (SQLException e) {
-            log.warn "BannerAuthenticationProvider not able to perform default authentication for $authentication.name due to exception $e.message"
-
             switch (e.getErrorCode()) {
-            case 1017 : // 'Invalid userName/password'
-                throw new BadCredentialsException(e.message)
-            case 28000 : // 'Locked account'
-                throw new LockedException(e.message)
-            case 28001 : // 'Expired password'
-                throw new CredentialsExpiredException(e.message)
-            default :
-                throw e
-         }
+                case 1017 : // 'Invalid userName/password'
+                    authenticationResults.valid = false
+                    break
+                case 28000 : // 'Locked account'
+                    authenticationResults.locked = true
+                    break
+                case 28001 : // 'Expired password'
+                    authenticationResults.expired = true
+                    break
+                default :
+                    authenticationResults.valid = false
+                    break
+            }
+            authenticationResults
         }
         finally {
             conn?.close()

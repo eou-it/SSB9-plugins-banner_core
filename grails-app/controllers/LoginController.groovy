@@ -91,38 +91,49 @@ class LoginController {
 	def authfail = {
 
 		def username = session[UsernamePasswordAuthenticationFilter.SPRING_SECURITY_LAST_USERNAME_KEY]
-		String msg = ''
 		def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+		
+		String msg = getMessageFor( exception )
 
-        if (exception) {
-            if (exception instanceof AccountExpiredException) {
-                msg = SpringSecurityUtils.securityConfig.errors.login.expired
-            }
-            else if (exception instanceof CredentialsExpiredException) {
-                msg = message(code:"com.sungardhe.banner.errors.login.expired")
-            }
-            else if (exception instanceof DisabledException) {
-                msg = SpringSecurityUtils.securityConfig.errors.login.disabled
-            }
-            else if (exception instanceof LockedException) {
-                msg = message(code:"com.sungardhe.banner.errors.login.locked")
-            }
-            else if (exception instanceof BadCredentialsException) {
-                msg = message(code:"com.sungardhe.banner.errors.login.fail")
-            }
-            else {
-                msg = SpringSecurityUtils.securityConfig.errors.login.fail
-            }
-        }
-
-		if (springSecurityService.isAjax(request)) {
-			render([error: msg] as JSON)
+		if (springSecurityService.isAjax( request )) {
+			render( [error: msg] as JSON )
 		}
 		else {
 			flash.message = msg
 			redirect action: auth, params: params
 		}
 	}
+	
+	
+	/**
+	 * Returns a localized message appropriate for the supplied exception.
+	 **/
+	def getMessageFor( Throwable exception ) {
+	    
+	    def msg = ''
+	    if (exception) {
+            if (exception instanceof AccountExpiredException) {
+                msg = SpringSecurityUtils.securityConfig.errors.login.expired
+            }
+            else if (exception instanceof CredentialsExpiredException) {
+                msg = message( code:"com.sungardhe.banner.errors.login.expired" )
+            }
+            else if (exception instanceof DisabledException) {
+                msg = SpringSecurityUtils.securityConfig.errors.login.disabled
+            }
+            else if (exception instanceof LockedException) {
+                msg = message( code:"com.sungardhe.banner.errors.login.locked" )
+            }
+            else if (exception instanceof BadCredentialsException) {
+                msg = message( code:"com.sungardhe.banner.errors.login.fail" )
+            }
+            else {
+                msg = SpringSecurityUtils.securityConfig.errors.login.fail
+            }
+        }
+        msg
+	}
+	
 
 	/**
 	 * The Ajax success redirect url.
@@ -130,6 +141,7 @@ class LoginController {
 	def ajaxSuccess = {
 		render([success: true, username: springSecurityService.authentication.name] as JSON)
 	}
+	
 
 	/**
 	 * The Ajax denied redirect url.

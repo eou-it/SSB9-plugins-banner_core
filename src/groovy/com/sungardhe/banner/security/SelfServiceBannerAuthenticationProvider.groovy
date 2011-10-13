@@ -62,8 +62,8 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     private static Integer defaultWebSessionTimeout // will be read from configuration
 
     public boolean supports( Class clazz ) {
-        log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isSsbEnabled() && !isCasEnabled()}"
-        clazz == UsernamePasswordAuthenticationToken && isSsbEnabled() && !isCasEnabled()
+        log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isSsbEnabled()}"
+        clazz == UsernamePasswordAuthenticationToken && isSsbEnabled()
     }
     
     
@@ -87,27 +87,18 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             def authenticationResults = selfServiceAuthentication( authentication, db ) // may throw exceptions, like SQLException
 
             // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
-            // Note that we execute this outside of a try-catch block, to let the exceptions be caught by the filter
-            BannerAuthenticationProvider.verifyAuthenticationResults authenticationResults
+            BannerAuthenticationProvider.verifyAuthenticationResults this, authentication, authenticationResults
             
-            authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authentication, authenticationResults, db )
+            authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
             authenticationResults['webTimeout']  = getWebTimeOut( authenticationResults, db ) 
-            setWebSessionTimeout( authenticationResults['webTimeout'] )
             authenticationResults['fullName']    = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
+            setWebSessionTimeout( authenticationResults['webTimeout'] )
+            
             newAuthenticationToken( authenticationResults )
         }
-        catch (DisabledException de) {
-            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${de.message}"
-            throw de
-        }
-        catch (CredentialsExpiredException ce) {
-            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${ce.message}"
-            throw ce
-        }
-        catch (LockedException le) {
-            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${le.message}"
-            throw le
-        }
+        catch (DisabledException de)           { throw de }
+        catch (CredentialsExpiredException ce) { throw ce }
+        catch (LockedException le)             { throw le }
         catch (BadCredentialsException be) {
             log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, but another provider may be able to..."
             return null // Other providers follow this one, and returning null will give them an opportunity to authenticate the user
@@ -122,7 +113,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     }
 
 
-    public static getFullName ( String name, dataSource ) {        
+    public static getFullName( String name, dataSource ) {        
         BannerAuthenticationProvider.getFullName( name, dataSource )
     }
 
@@ -134,14 +125,9 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
     }
     
-    
-    public static def isCasEnabled() {
-        def ssoConfig = CH.config.banner.sso.authenticationProvider instanceof String || CH.config.banner.sso.authenticationProvider instanceof GString ? CH.config.ssbEnabled : ''
-        'cas' == ssoConfig
-    }
-    
 
     def selfServiceAuthentication( Authentication authentication, db )  {
+        
         def pidm
         def errorStatus
         def expirationDate
@@ -170,72 +156,58 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                                       pidm: pidm, oracleUserName: oracleUserName ].withDefault { k -> false }
         switch (errorStatus) {
             case -20101:
-                log.error "SelfServiceAuthenticationProvider failed on invalid login id/pin"
+                log.debug "SelfServiceAuthenticationProvider failed on invalid login id/pin"
                 authenticationResults.valid = false
                 break
             case -20112:
-                log.error "SelfServiceAuthenticationProvider failed on deceased user"
+                log.debug "SelfServiceAuthenticationProvider failed on deceased user"
                 authenticationResults.deceased = true
                 break
             case -20105:
-                log.error "SelfServiceAuthenticationProvider failed on disabled pin"
+                log.debug "SelfServiceAuthenticationProvider failed on disabled pin"
                 authenticationResults.disabled = true
                 break
             case -20901:
-                log.error "SelfServiceAuthenticationProvider failed on expired pin"
+                log.debug "SelfServiceAuthenticationProvider failed on expired pin"
                 authenticationResults.expired = true
                 break
             case -20903:
-                log.error "SelfServiceAuthenticationProvider failed on ldap authentication"
+                log.debug "SelfServiceAuthenticationProvider failed on ldap authentication"
                 authenticationResults.valid = false
                 break
             case 0:
                 authenticationResults.valid = true
                 break
         }
+        
+        if (!authenticationResults.valid) {
+            if (guestAuthenticationSuccessful( authentication, db )) {
+                authenticationResults.valid = true
+                authenticationResults.guest = true
+            }
+        }        
         authenticationResults
     }
     
     
-    def newAuthenticationToken( authenticationResults ) {
-       BannerAuthenticationProvider.newAuthenticationToken( this, authenticationResults )
-     //   newSelfServiceAuthenticationToken(  this, authenticationResults )
+    private boolean guestAuthenticationSuccessful( Authentication authentication, db ) {
+        
+        if (!isGuestAuthenticationEnabled()) return false
+        
+        log.debug "guestAuthenticationSuccessful() will return 'false' "
+        // TODO: Query temporary table using authentication.name and authentication.credentials
+        //       and return 'true' if found, else return false...
+        false // !!! TEMPORARY !!!
     }
-
-
-         /**
-     * Returns a new authentication object based upon the supplied arguments.
-     * This method, when used within other providers, should NOT catch the exceptions but should let them be caught by the filter.
-     * @param provider the provider who needs to create a token (used for logging purposes)
-     * @param authentication the initial authentication object containing credentials
-     * @param authentictionResults the authentication results, including the user's Oracle database username
-     * @param authorities the user's authorities that must be included in the new authentication object
-     * @throws AuthenticationException various AuthenticationException types may be thrown, and should NOT be caught by providers using this method
-     **/
-    public static def newSelfServiceAuthenticationToken( provider, authenticationResults ) {
-
-        try {
-            def user = new BannerUser( authenticationResults.name,                       // username
-                                       authenticationResults.credentials as String,      // password
-                                       authenticationResults.oracleUserName,             // oracle username (note this may be null)
-                                       !authenticationResults.disabled,                  // enabled (account)
-                                       true,                                             // accountNonExpired - NOT USED
-                                       !authenticationResults.expired,                   // credentialsNonExpired
-                                       true,                                             // accountNonLocked - NOT USED (YET)
-                                       authenticationResults.authorities as Collection,
-                                       authenticationResults.fullName,
-                                       authenticationResults.pidm,
-                                       authenticationResults.webTimeout
-                                       )
-
-            def token = new BannerAuthenticationToken( user )
-            log.trace "${provider?.class?.simpleName}.newAuthenticationToken is returning token $token"
-            token
-        } catch (e) {
-            // We don't expect an exception when simply constructing the user and token, so we'll report this as an error
-            log.error "BannerAuthenticationProvider.newAuthenticationToken was not able to construct a token for user $authenticationResults.name, due to exception: ${e.message}"
-            return null // this is a rare situation where we want to bury the exception - we *need* to return null to allow other providers a chance...
-        }
+    
+    
+    private boolean isGuestAuthenticationEnabled() {
+        CH.config.guestAuthenticationEnabled instanceof Boolean ? CH.config.guestAuthenticationEnabled : false
+    }
+    
+    
+    def newAuthenticationToken( authenticationResults ) {
+        BannerAuthenticationProvider.newAuthenticationToken( this, authenticationResults )
     }
     
     
@@ -251,43 +223,50 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     }
     
     
-     public static Collection<GrantedAuthority>determineAuthorities( Authentication authentication, Map authentictionResults, Sql db ) {
+     public static Collection<GrantedAuthority>determineAuthorities( Map authentictionResults, Sql db ) {
 
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
         
-        def rows = db.rows( 
-            """select twgrrole_pidm,twgrrole_role from twgrrole 
-                       where twgrrole_pidm = :pidm
-                union
-                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                       where govrole_faculty_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FACULTY'
-                union
-                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                       where govrole_student_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'STUDENT'
-                union
-                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                       where govrole_employee_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'EMPLOYEE'
-                union
-                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                       where govrole_alumni_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'ALUMNI'
-                union
-                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                       where govrole_friend_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FRIEND'
-                union
-                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                       where govrole_finaid_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINAID'
-                union
-                select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole 
-                       where govrole_finance_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINANCE'
-            """, [ pidm: authentictionResults.pidm ] ) 
-                    
-        rows?.each { row ->    
-            authorities << BannerGrantedAuthority.create( "SELFSERVICE-$row.TWGRROLE_ROLE", "BAN_DEFAULT_M", null )
+        if (authentictionResults.guest) {
+            authorities << BannerGrantedAuthority.create( "SELFSERVICE-GUEST", "BAN_DEFAULT_M", null )    
+        }
+        
+        def rows        
+        if (authentictionResults.pidm) {
+            rows = db.rows( 
+                """select twgrrole_pidm,twgrrole_role from twgrrole 
+                           where twgrrole_pidm = :pidm
+                    union
+                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
+                           where govrole_faculty_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FACULTY'
+                    union
+                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
+                           where govrole_student_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'STUDENT'
+                    union
+                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
+                           where govrole_employee_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'EMPLOYEE'
+                    union
+                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
+                           where govrole_alumni_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'ALUMNI'
+                    union
+                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
+                           where govrole_friend_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FRIEND'
+                    union
+                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
+                           where govrole_finaid_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINAID'
+                    union
+                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole 
+                           where govrole_finance_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINANCE'
+                """, [ pidm: authentictionResults.pidm ] ) 
+
+            rows?.each { row ->    
+                authorities << BannerGrantedAuthority.create( "SELFSERVICE-$row.TWGRROLE_ROLE", "BAN_DEFAULT_M", null )
+            }
         }
         
         def selfServiceRolePassword
         if (authentictionResults.oracleUserName) {            
-            Collection<GrantedAuthority> adminAuthorities = BannerAuthenticationProvider.determineAuthorities( authentictionResults.oracleUserName, db )
+            Collection<GrantedAuthority> adminAuthorities = BannerAuthenticationProvider.determineAuthorities( authentictionResults, db )
             if (adminAuthorities.size() > 0) {
                 selfServiceRolePassword = adminAuthorities[0].bannerPassword // we'll just grab the password from the first administrative role...
             }
