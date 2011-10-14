@@ -137,6 +137,8 @@ public class BannerDS implements DataSource {
 
         Connection conn = underlyingSsbDataSource.getConnection()
         new BannerConnection(conn, null, this)  // Note that while an IDE may not like this, the delegate supports this type coersion
+        setRoleSSB(conn)
+        conn
     }
 
     // Note: This method should be used only for initial authentication, and for testing purposes.
@@ -317,6 +319,21 @@ public class BannerDS implements DataSource {
         }
         log.debug "Given FormContext of ${formContext?.join(',')}, the user's applicable authorities are $applicableAuthorities"
         applicableAuthorities
+    }
+
+
+    private setRoleSSB (Connection conn) {
+        def rolePassword
+        def roleName = "BAN_DEFAULT_M"
+        Sql sql = new Sql(conn)
+        try {
+            sql.call("{$Sql.VARCHAR = call g\$_security.G\$_GET_ROLE_PASSWORD_FNC('BAN_DEFAULT_M','SELFSERVICE')}") {pwd -> rolePassword = pwd }
+            String stmt = "set role \"$roleName\" identified by \"$rolePassword\"" as String
+            sql.execute(stmt)
+        }
+        catch (e) {
+            log.error("Error retreieiving role password for ssb connection $e")
+        }
     }
 
 
