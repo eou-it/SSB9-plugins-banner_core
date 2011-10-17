@@ -54,6 +54,10 @@ def locationAdder = ConfigFinder.&addLocation.curry( grails.config.locations )
   releaseProperties:              "release.properties",
 ].each { envName, defaultFileName -> locationAdder( envName, defaultFileName ) }
 
+// In case logging is problematic, we'll just write this to the console immediately
+grails.config.locations.each {
+    println "Using configuration: " + it
+}
 
 
 // ******************************************************************************

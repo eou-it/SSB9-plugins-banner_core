@@ -264,9 +264,11 @@ class BannerCoreGrailsPlugin {
         switch (GrailsUtil.environment) {
             case "development": // 'pass through', so logging will be exported via JMX for 'development' and 'production'
             case "production":
+                String log4jBeanName = getUniqueJmxBeanNameFor('log4j') + ':hierarchy=default'
+                
                 exporter( MBeanExporter ) {
                     server = mbeanServer
-                    beans = ["log4j:hierarchy=default":log4jBean]
+                    beans = [("$log4jBeanName" as String): log4jBean]
                 }        
             break
         }        
@@ -393,6 +395,16 @@ class BannerCoreGrailsPlugin {
     
     private def isSsbEnabled() {
         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
+    }
+    
+    
+    private def getUniqueJmxBeanNameFor( String name ) {
+        def nameToRegister = CH.config.jmx.exported."$name"
+        if (nameToRegister instanceof String || nameToRegister instanceof GStringImpl) {
+            return "$nameToRegister" as String
+        } else {
+            return name
+        }
     }
     
 }
