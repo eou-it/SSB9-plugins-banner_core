@@ -72,6 +72,11 @@ public class BannerAuthenticationToken implements Authentication {
     public Integer getWebTimeout() {
         user?.webTimeout
     }
+
+
+     public String getFullName() {
+        user?.fullName
+    }   
     
     public String toString() {
         "${super.toString()}[isAuthenticated()=${isAuthenticated()}, user=$user]"

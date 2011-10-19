@@ -98,6 +98,7 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         assertTrue    auth.details.credentialsNonExpired
         assertEquals  auth.pidm,testUser.pidm
         assertTrue    auth.webTimeout >= 30
+        assertEquals auth.fullName,"Edward Engle"
     }
         
     
@@ -198,6 +199,8 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         }
         expiredPinUser
     }
+
+
     
 }
 

@@ -91,7 +91,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
             authenticationResults['webTimeout']  = getWebTimeOut( authenticationResults, db ) 
-            authenticationResults['fullName']    = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
+            authenticationResults['fullName']    = getFullName( authenticationResults, dataSource ) as String
             setWebSessionTimeout( authenticationResults['webTimeout'] )
             
             newAuthenticationToken( authenticationResults )
@@ -113,9 +113,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     }
 
 
-    public static getFullName( String name, dataSource ) {        
-        BannerAuthenticationProvider.getFullName( name, dataSource )
-    }
 
 
 // ------------------------------- Helper Methods ------------------------------
@@ -187,6 +184,32 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             }
         }        
         authenticationResults
+    }
+
+
+    private static getFullName( authenticationResults, dataSource ) {
+      def conn = null
+      def fullName
+
+      def name = authenticationResults.name.toUpperCase()
+      def pidm = authenticationResults.pidm
+      try {
+          conn = dataSource.unproxiedConnection
+          Sql db = new Sql( conn )
+          db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname from spriden where spriden_pidm = ?", [pidm] ) {
+            row -> fullName = row.fullname
+          }
+          log.trace "SelfServiceAuthenticationProvider.getFullName after checking f_formatname $fullName"
+
+          if (null == fullName) fullName = name
+      } catch (SQLException e) {
+          log.error "SelfServiceAuthenticationProvider not able to getFullName $name due to exception $e.message"
+          return null
+      } finally {
+          conn?.close()
+      }
+      log.trace "SelfServiceAuthenticationProvider.getFullName is returning $fullName"
+      fullName
     }
     
     
