@@ -196,7 +196,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
       try {
           conn = dataSource.unproxiedConnection
           Sql db = new Sql( conn )
-          db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname from spriden where spriden_pidm = ?", [pidm] ) {
+          db.eachRow( "select  f_format_name(spriden_pidm,'FMIL') fullname from spriden where spriden_pidm = ?", [pidm] ) {
             row -> fullName = row.fullname
           }
           log.trace "SelfServiceAuthenticationProvider.getFullName after checking f_formatname $fullName"

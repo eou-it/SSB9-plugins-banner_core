@@ -243,6 +243,11 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
                fullName = row.fullname
             }
           }
+          if (null == fullName) {
+            db.eachRow( "select f_format_name(spriden_pidm,'FMIL') fullname from spriden where spriden_id = ?", [name] ) {
+                row -> fullName = row.fullname
+            }
+          }
           if (null == fullName) fullName = name
       } catch (SQLException e) {
           log.error "BannerAuthenticationProvider not able to getFullName $name due to exception $e.message"

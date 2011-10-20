@@ -62,7 +62,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
     
     public boolean isNotExcludedFromSSO() {
         def theUrl = RCH.currentRequestAttributes().request.forwardURI
-        def excludedUrlPattern = CH?.config.banner.sso.excludedUrlPattern // e.g., 'guest'
+        def excludedUrlPattern = CH?.config.banner.sso.excludedUrlPattern.toString() // e.g., 'guest'
         !("$theUrl".contains( excludedUrlPattern ))
     }
     
@@ -176,7 +176,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
                 spridenId = row.spriden_id
                 pidm = row.gobumap_pidm
             }
-            authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm) ].withDefault { k -> false } 
+            authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: null ].withDefault { k -> false } 
         }
         
         log.trace "CasAuthenticationProvider.casAuthentication results are $authenticationResults"
