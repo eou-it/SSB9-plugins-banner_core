@@ -211,16 +211,29 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
       log.trace "SelfServiceAuthenticationProvider.getFullName is returning $fullName"
       fullName
     }
-    
-    
+
+
+
     private boolean guestAuthenticationSuccessful( Authentication authentication, db ) {
-        
         if (!isGuestAuthenticationEnabled()) return false
-        
-        log.debug "guestAuthenticationSuccessful() will return 'false' "
-        // TODO: Query temporary table using authentication.name and authentication.credentials
-        //       and return 'true' if found, else return false...
-        false // !!! TEMPORARY !!!
+        log.debug "guestAuthenticationSuccessful()  "
+        def salt
+        def hashPin
+        def userPin
+        db.eachRow( "select gpbprxy_salt, gpbprxy_pin  from gpbprxy,geniden where geniden_gidm = gpbprxy_proxy_idm AND geniden_id = ?", [authentication.name] ) {
+            salt = it.gpbprxy_salt
+            hashPin = it.gpbprxy_pin
+        }
+        if (null == hashPin) return false
+        db.call( "{call gspcrpt.p_saltedhash(?,?,?)}", [
+            authentication.credentials,
+            salt ,
+            Sql.VARCHAR
+            ]
+            ) {
+            userpasswd -> userPin = userpasswd}
+        if (userPin == hashPin)   return true
+        false
     }
     
     
