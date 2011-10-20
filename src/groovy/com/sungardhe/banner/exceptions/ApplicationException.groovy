@@ -322,7 +322,7 @@ class ApplicationException extends RuntimeException {
                                 msg = wrappedException.message
                             }
                             [ message: msg,
-                              errors: wrappedException.errors?.allErrors?.collect { localize( error: it ) },
+                              errors: localizeFieldValidationErrors( wrappedException.modelValidationErrorsMaps.collect{ it.errors.getAllErrors() }.flatten(), localize ),
                               modelValidationErrorsMaps: wrappedException.modelValidationErrorsMaps
                             ]
                         }
