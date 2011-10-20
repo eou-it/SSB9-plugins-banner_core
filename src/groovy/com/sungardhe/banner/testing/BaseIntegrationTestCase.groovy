@@ -270,15 +270,31 @@ class BaseIntegrationTestCase extends GroovyTestCase {
             }
         }
         else if (ae.wrappedException?.message) {
-            // Typically we would be more explicit, but we have gotten into the habit of doing a regex to evaluate the
-            // wrapped exception with the 'resourceCode' varying from including '@@r1:' but excluding potential parameter information that
-            // comes on the tail of the ApplicationException.  We are just evaluating that the message contains the code.
-            if (ae.wrappedException.message.contains( resourceCodeOrExceptedMessage )) {
-                // this is ok, we found the correct error message
-            } else {
 
+            def messageEvaluator
+            if (ae.type == "MultiModelValidationException" ) {
+                messageEvaluator = {
+                    ae.wrappedException.modelValidationErrorsMaps.collect {
+                        it.errors.getAllErrors().collect{ err -> err.codes }
+                    }.flatten().toString().contains( resourceCodeOrExceptedMessage )
+                }
+            }
+            else {
+                // Default evaluation
+                // Typically we would be more explicit, but we have gotten into the habit of doing a regex to evaluate the
+                // wrapped exception with the 'resourceCode' varying from including '@@r1:' but excluding potential parameter information that
+                // comes on the tail of the ApplicationException.  We are just evaluating that the message contains the code.
+                messageEvaluator = {
+                    ae.wrappedException.message.contains( resourceCodeOrExceptedMessage )
+                }
+            }
+
+            if (messageEvaluator()) {
+                // this is ok, we found the correct error message
+            }
+            else {
                 if (message == null) {
-                    message = "Did not find expected error code $resourceCodeOrExceptedMessage.  Found '${ae.wrappedException}' instead."
+                     message = "Did not find expected error code $resourceCodeOrExceptedMessage.  Found '${ae.wrappedException}' instead."
                 }
 
                 fail( message )
