@@ -36,6 +36,8 @@ import com.sungardhe.banner.mep.MultiEntityProcessingService
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.springframework.context.ApplicationContext
 
+import org.springframework.web.context.request.RequestContextHolder
+
 /**
  * A dataSource that wraps an 'underlying' datasource.  When this datasource is asked for a 
  * connection, it will first:
@@ -75,6 +77,10 @@ public class BannerDS implements DataSource {
 
         if (!user?.oracleUserName && isSelfServiceRequest()) {
             conn = underlyingSsbDataSource.getConnection()
+
+            // SSB Mep setup
+            setMepSsb(conn)
+
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
@@ -444,6 +450,30 @@ public class BannerDS implements DataSource {
             }
         }
     }
+
+    private setMepSsb(conn) {
+        ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+        multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
+
+        if (multiEntityProcessingService?.isMEP(conn)) {
+                if (!RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")) {
+                  log.error "The Mep Code must be provided when running in multi institution context"
+                  throw new RuntimeException("The Mep Code must be provided when running in multi institution context")
+                }
+
+          def desc =  multiEntityProcessingService?.getMepDescription(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
+
+          if(!desc){
+             log.error "Mep Code is invalid"
+             throw new RuntimeException("Mep Code is invalid")
+          }else{
+              RequestContextHolder.currentRequestAttributes()?.request?.session.setAttribute("ssbMepDesc",desc)
+              multiEntityProcessingService?.setHomeContext(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
+              multiEntityProcessingService?.setProcessContext(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
+          }
+        }
+    }
+
 
 
 }

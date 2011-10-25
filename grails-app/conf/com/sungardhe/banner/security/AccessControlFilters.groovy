@@ -14,6 +14,7 @@ package com.sungardhe.banner.security
 import org.apache.commons.logging.LogFactory
 
 import org.springframework.web.context.request.RequestContextHolder as RCH
+import org.springframework.web.context.request.RequestContextHolder
 
 
 /**
@@ -41,6 +42,10 @@ class AccessControlFilters {
             def theUrl
                         
             before = {
+
+                if (params?.mepCode){
+                 RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep",params?.mepCode)
+                }
                 
                 Map formControllerMap = grailsApplication.config.formControllerMap
                 def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]

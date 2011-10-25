@@ -14,6 +14,7 @@ package com.sungardhe.banner.mep
 import com.sungardhe.banner.testing.BaseIntegrationTestCase
 import groovy.sql.Sql
 import org.springframework.security.core.context.SecurityContextHolder as SCH
+import org.springframework.web.context.request.RequestContextHolder
 
 class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestCase {
 
@@ -110,6 +111,15 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         assertEquals "Banner College",  desc
     }
 
+    void testSsbMep() {
+        try {
+            setMepSsb()
+            fail "Failed Mep SSB validation."
+        } catch (Exception e) {
+           // should be RuntimeException for mep
+        }
+    }
+
 
     private setMepLogon() {
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
@@ -127,6 +137,26 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
             sql.call("{call  g\$_vpdi_security.g\$_vpdi_set_process_context('LOGON','LOGON')}")
         } catch (e) {
             println "ERROR: Could not establish mif context. ${e.message}"
+        }
+    }
+
+       private setMepSsb() {
+
+        if (multiEntityProcessingService?.isMEP()) {
+            if (!RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")) {
+                throw new RuntimeException("The Mep Code must be provided when running in multi institution context")
+            }
+
+            def desc = multiEntityProcessingService?.getMepDescription(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"))
+
+
+            if (!desc) {
+                throw new RuntimeException("Mep Code is invalid")
+            } else {
+                RequestContextHolder.currentRequestAttributes()?.request?.session.setAttribute("ssbMepDesc", desc)
+                multiEntityProcessingService?.setHomeContext(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"))
+                multiEntityProcessingService?.setProcessContext(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"))
+            }
         }
     }
 }

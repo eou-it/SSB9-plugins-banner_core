@@ -10,6 +10,7 @@
  Education in the U.S.A. and/or other regions and/or countries.
  **********************************************************************************/
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import org.springframework.web.context.request.RequestContextHolder
 
 class LogoutController {
 
@@ -18,6 +19,10 @@ class LogoutController {
 	 */
 	def index = {
 		// TODO  put any pre-logout code here
-		redirect uri: SpringSecurityUtils.securityConfig.logout.filterProcessesUrl // '/j_spring_security_logout'
+       def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
+
+        if (mep)
+            redirect uri: SpringSecurityUtils.securityConfig.logout.filterProcessesUrl + "?spring-security-redirect=?mepCode=${mep}"
+            redirect uri: SpringSecurityUtils.securityConfig.logout.filterProcessesUrl // '/j_spring_security_logout'
 	}
 }
