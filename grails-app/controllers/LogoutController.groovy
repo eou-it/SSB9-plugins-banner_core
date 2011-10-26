@@ -21,8 +21,10 @@ class LogoutController {
 		// TODO  put any pre-logout code here
        def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
 
-        if (mep)
+        if (mep){
             redirect uri: SpringSecurityUtils.securityConfig.logout.filterProcessesUrl + "?spring-security-redirect=?mepCode=${mep}"
+        }else{
             redirect uri: SpringSecurityUtils.securityConfig.logout.filterProcessesUrl // '/j_spring_security_logout'
+        }
 	}
 }
