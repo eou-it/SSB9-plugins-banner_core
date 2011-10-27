@@ -220,7 +220,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         def salt
         def hashPin
         def userPin
-        db.eachRow( "select gpbprxy_salt, gpbprxy_pin  from gpbprxy,geniden where geniden_gidm = gpbprxy_proxy_idm AND geniden_id = ?", [authentication.name] ) {
+        db.eachRow( "select gpbprxy_salt, gpbprxy_pin  from gpbprxy,geniden where geniden_gidm = gpbprxy_proxy_idm AND GPBPRXY_EMAIL_ADDRESS = ?", [authentication.name] ) {
             salt = it.gpbprxy_salt
             hashPin = it.gpbprxy_pin
         }
