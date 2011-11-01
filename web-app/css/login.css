@@ -1,24 +1,24 @@
-body{
-    margin:0px;
-    padding:0px;
-    font:normal 100% Arial, Helvetica, sans-serif;
+BODY {
+    margin: 0px;
+    padding: 0px;
+    font: normal 100% Arial, Helvetica, sans-serif;
 }
 
-/*-----------------------------------------------------------*/
-/* LOG IN */
-/*-----------------------------------------------------------*/
-.pageBg{
-    background:#4C8DB5 url(../images/page-bg.png) repeat-x 0 0;
+/*-----------------------------------------------------------
+LOG IN
+-----------------------------------------------------------*/
+.pageBg {
+    background: #4C8DB5 url(../images/page-bg.png) repeat-x 0 0;
 }
 
-.splashBg{
-    background:url(../images/splash-bg-light.png) no-repeat 0 0;
-    height:404px;
-    width:704px;
-    margin:140px auto 0px;
-    -moz-box-shadow:0 0 8px 8px #16577F;
-    -webkit-box-shadow:0 0 8px 8px #16577F;
-    box-shadow:0px 0px 8px #16577F;
+.splashBg {
+    background: url(../images/splash-bg-light.png) no-repeat 0 0;
+    height: 404px;
+    width: 704px;
+    margin: 140px auto 0px;
+    -moz-box-shadow: 0 0 8px 8px #16577F;
+    -webkit-box-shadow: 0 0 8px 8px #16577F;
+    box-shadow: 0px 0px 8px #16577F;
 }
 
 .splashBg .appName {
@@ -35,174 +35,176 @@ body{
     margin: 53px 0 0 254px;
 }
 
-.splashBg .logIn div{
-    float:left;
+.splashBg .logIn DIV {
+    float: left;
+    margin-top: 0;
 }
 
-.splashBg div span input{
-    width:135px;
-    outline:none;
-    border-style:none;
-    border:0;
-    padding:0;
-	margin:3px 0 0 0px;
+.splashBg DIV SPAN INPUT {
+    width: 130px;
+    outline: none;
+    border-style: none;
+    border: 1 solid #000000;
+    padding: 1px;
+    margin: 2px 0 0 0px;
+    height: 15px;
 }
 
-.splashBg .userName{
-    background:url(../images/textbox-sprites.png) no-repeat left -27px;
-    padding:0px 0px 0px 20px;
-    margin-right:10px;
-    height:24px;
-    width:139px;
+.splashBg .userName {
+    background: url(../images/textbox-sprites.png) no-repeat left -27px;
+    padding: 0px 0px 0px 20px;
+    margin-right: 10px;
+    height: 24px;
+    width: 139px;
 }
 
-.splashBg .userName span{
-    display:block;
-    background:url(../images/textbox-sprites.png) no-repeat right 0;
-    padding-right:10px;
-    height:24px;
+.splashBg .userName SPAN {
+    display: block;
+    background: url(../images/textbox-sprites.png) no-repeat right 0;
+    padding-right: 10px;
+    height: 24px;
 }
 
-.splashBg .password{
-    background:url(../images/textbox-sprites.png) no-repeat left 0;
-    padding:0px 0px 0px 20px;
-    height:24px;
-    width:139px;
-	margin-right:10px;
+.splashBg .password {
+    background: url(../images/textbox-sprites.png) no-repeat left 0;
+    padding: 0px 0px 0px 20px;
+    height: 24px;
+    width: 139px;
+    margin-right: 10px;
 }
 
-.splashBg .password span{
-    display:block;
-    background:url(../images/textbox-sprites.png) no-repeat right 0;
-    padding-right:10px;
-    height:24px;
+.splashBg .password SPAN {
+    display: block;
+    background: url(../images/textbox-sprites.png) no-repeat right 0;
+    padding-right: 10px;
+    height: 24px;
 }
 
-.splashBg a:link, .splashBg a:visited, .splashBg .submit-button{
-    background:url(../images/login-button-bg.png) no-repeat 0 0;
-    display:block;
-    width:77px;
-    height:31px;
-    text-align:center;
-    color:#FFF;
-    text-decoration:none;
-    padding-top:8px;
-    font-size:0.75em;
-    font-weight:bold;
-    position:relative;
-    top:-4px;
+.splashBg A:link, .splashBg A:visited, .splashBg .submit-button {
+    background: url(../images/login-button-bg.png) no-repeat 0 0;
+    display: block;
+    width: 77px;
+    height: 31px;
+    text-align: center;
+    color: #FFF;
+    text-decoration: none;
+    padding-top: 8px;
+    font-size: 0.75em;
+    font-weight: bold;
+    position: relative;
+    top: -4px;
 }
-
 
 .splashBg .copyright {
     clear: both;
     color: #FFFFFF;
     font-size: 0.75em;
     margin: 0 50px 0 93px;
-    padding-top: 36px;
+    padding-top: 25px;
 }
 
-.splashBg .appName span {
+.splashBg .appName SPAN {
     font-size: 14px;
     vertical-align: top;
 }
 
-.loginMsg{
-    text-align:right;
-    color:#FFF;
-    padding-top:20px;
-    margin-right:50px;
+.loginMsg {
+    text-align: right;
+    color: #FFF;
+    padding-top: 44px;
+    margin-right: 50px;
 }
 
-input[type="submit"]{
-    border:0;
-    background:url('../images/login-button-sprite.png') no-repeat 0 0;
-    width:78px;
-    height:32px;
-    color:#FFF;
-    line-height:32px;
-    font-weight:bold;
-    padding-bottom:3px;
-    position:relative;
-    bottom:4px;
-	vertical-align: text-top;
+INPUT[type="submit"] {
+    border: 0;
+    background: url('../images/login-button-sprite.png') no-repeat 0 0;
+    width: 78px;
+    height: 32px;
+    color: #FFF;
+    line-height: 32px;
+    font-weight: bold;
+    padding-bottom: 3px;
+    position: relative;
+    bottom: 4px;
+    vertical-align: text-top;
 }
 
-input[type="submit"]:hover{
-    background:url('../images/login-button-sprite.png') no-repeat 0 -37px;
-    width:78px;
-    height:32px;
-    color:#FFF;
-    line-height:32px;
-    font-weight:bold;
-	vertical-align: text-top;
+INPUT[type="submit"]:hover {
+    background: url('../images/login-button-sprite.png') no-repeat 0 -37px;
+    width: 78px;
+    height: 32px;
+    color: #FFF;
+    line-height: 32px;
+    font-weight: bold;
+    vertical-align: text-top;
 }
 
-#sign-in-btn{
-    padding:0px;
+#sign-in-btn {
+    padding: 0px;
 }
 
 .icon-error {
-    background: url(../images/icon-error-16x16.png) no-repeat scroll 0 bottom transparent;
+    background: transparent url(../images/icon-error-16x16.png) no-repeat scroll 0 bottom;
     padding-left: 1.5em;
 }
 
 .splashBg .userName-error-state {
-	background:url(../images/textbox-sprites.png) no-repeat left -81px;
-	padding:0px 0px 0px 20px;
-	margin-right:10px;
-	height:24px;
-	width:139px;
+    background: url(../images/textbox-sprites.png) no-repeat left -81px;
+    padding: 0px 0px 0px 20px;
+    margin-right: 10px;
+    height: 24px;
+    width: 139px;
 }
 
-.splashBg .userName-error-state span {
-	display:block;
-	background:url(../images/textbox-sprites.png) no-repeat right -81px;
-	padding-right:10px;
-	height:24px;
+.splashBg .userName-error-state SPAN {
+    display: block;
+    background: url(../images/textbox-sprites.png) no-repeat right -81px;
+    padding-right: 10px;
+    height: 24px;
 }
 
 .splashBg .password-error-state {
-	background:url(../images/textbox-sprites.png) no-repeat left -54px;
-	padding:0px 0px 0px 20px;
-	height:24px;
-	width:139px;
-	margin-right: 10px;
+    background: url(../images/textbox-sprites.png) no-repeat left -54px;
+    padding: 0px 0px 0px 20px;
+    height: 24px;
+    width: 139px;
+    margin-right: 10px;
 }
 
-.splashBg .password-error-state span {
-	display:block;
-	background:url(../images/textbox-sprites.png) no-repeat right -54px;
-	padding-right:10px;
-	height:24px;
+.splashBg .password-error-state SPAN {
+    display: block;
+    background: url(../images/textbox-sprites.png) no-repeat right -54px;
+    padding-right: 10px;
+    height: 24px;
 }
 
 .signin-btn {
-	position: relative;
-	top: -2px;
+    position: relative;
+    top: -2px;
 }
 
 .ie-warning {
     background: url(../images/icon-warning-24x24.png) no-repeat 7px scroll transparent #f7eca3;
-    color: #ffffff;
+    color: #FFFFFF;
     font-family: Arial;
     font-size: 0.917em;
-    margin: 15px 15px 0 15px;
-    border: 1px solid #ffcc33;
+    margin: 15px 15px 0;
+    border: 1px solid #FFCC33;
     text-align: left;
     visibility: hidden;
     vertical-align: middle;
-    border-radius: 2px; /* for IE 9 */
+    border-radius: 2px;
+    /*for IE 9*/
 }
 
-.ie-warning div {
+.ie-warning DIV {
     color: #333333;
     margin: 10px;
     padding-left: 30px;
     vertical-align: middle;
 }
 
-.ie-warning span {
+.ie-warning SPAN {
     text-decoration: underline;
     cursor: pointer;
     color: #2200C1;

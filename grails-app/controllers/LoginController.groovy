@@ -60,9 +60,30 @@ class LoginController {
 
 		String view = 'auth'
 		String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
+
 		render view: view, model: [postUrl: postUrl,
 		                           rememberMeParameter: config.rememberMe.parameter]
 	}
+
+    /**
+     * Called when making ajax request and being redirected to authenticate.  We are informing the client that the user is not authenticated
+     * and sending a request for a login page by sending a response header down under the key 'X-Login-Page'.
+     */
+    def authAjax = {
+
+        def config = SpringSecurityUtils.securityConfig
+
+        if (springSecurityService.isLoggedIn()) {
+            redirect uri: config.successHandler.defaultTargetUrl
+            return
+        }
+
+        // Add a custom response header.
+        response.setHeader( "X-Login-Page", true.toString() )
+
+        render "userNotLoggedIn"
+    }
+
 
 	/**
 	 * Show denied page.
