@@ -68,7 +68,11 @@ public class BannerAuthenticationToken implements Authentication {
     public Integer getPidm() {
         user?.pidm
     }
-    
+
+    public Integer getGidm() {
+        user?.gidm
+    }
+
     public Integer getWebTimeout() {
         user?.webTimeout
     }

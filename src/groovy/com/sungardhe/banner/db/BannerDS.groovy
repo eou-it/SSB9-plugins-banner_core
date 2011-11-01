@@ -1,12 +1,12 @@
 /*********************************************************************************
  Copyright 2009-2011 SunGard Higher Education. All Rights Reserved.
- This copyrighted software contains confidential and proprietary information of 
- SunGard Higher Education and its subsidiaries. Any use of this software is limited 
- solely to SunGard Higher Education licensees, and is further subject to the terms 
- and conditions of one or more written license agreements between SunGard Higher 
+ This copyrighted software contains confidential and proprietary information of
+ SunGard Higher Education and its subsidiaries. Any use of this software is limited
+ solely to SunGard Higher Education licensees, and is further subject to the terms
+ and conditions of one or more written license agreements between SunGard Higher
  Education and the licensee in question. SunGard is either a registered trademark or
  trademark of SunGard Data Systems in the U.S.A. and/or other regions and/or countries.
- Banner and Luminis are either registered trademarks or trademarks of SunGard Higher 
+ Banner and Luminis are either registered trademarks or trademarks of SunGard Higher
  Education in the U.S.A. and/or other regions and/or countries.
  **********************************************************************************/
 package com.sungardhe.banner.db
@@ -37,18 +37,19 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.springframework.context.ApplicationContext
 
 import org.springframework.web.context.request.RequestContextHolder
+import com.sungardhe.banner.security.BannerUser
 
 /**
- * A dataSource that wraps an 'underlying' datasource.  When this datasource is asked for a 
+ * A dataSource that wraps an 'underlying' datasource.  When this datasource is asked for a
  * connection, it will first:
- * 1) proxy the connection for the authenticated user, 
+ * 1) proxy the connection for the authenticated user,
  * 2) set Banner roles that are applicable to the current request, based on the authenticated user's privileges
- * and the 'FormContext' 
- * 3) wrap the connection within a 'BannerConnection'. (The BannerConnection wrapper will 
- * invoke p_commit and p_rollback.) 
- * Note this class is named 'BannerDS' versus 'BannerDataSource' to circumvent 
- * 'cannot resolve class' issues when including this plugin.  It is recommended when importing this  
- * class, to import it like: 'import com.sungardhe.banner.db.BannerDS as BannerDataSource'. 
+ * and the 'FormContext'
+ * 3) wrap the connection within a 'BannerConnection'. (The BannerConnection wrapper will
+ * invoke p_commit and p_rollback.)
+ * Note this class is named 'BannerDS' versus 'BannerDataSource' to circumvent
+ * 'cannot resolve class' issues when including this plugin.  It is recommended when importing this
+ * class, to import it like: 'import com.sungardhe.banner.db.BannerDS as BannerDataSource'.
  * */
 public class BannerDS implements DataSource {
 
@@ -74,8 +75,7 @@ public class BannerDS implements DataSource {
 
         Connection conn
         def user = SecurityContextHolder?.context?.authentication?.principal
-
-        if (!user?.oracleUserName && isSelfServiceRequest()) {
+        if (((user instanceof BannerUser && !user?.oracleUserName) || (user instanceof String && user == 'anonymousUser')) && isSelfServiceRequest()) {
             conn = underlyingSsbDataSource.getConnection()
 
             // SSB Mep setup
@@ -84,7 +84,7 @@ public class BannerDS implements DataSource {
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
-        else if (user?.oracleUserName && shouldProxy()) {
+        else if ((user instanceof BannerUser && user?.oracleUserName)  && shouldProxy()) {
             List applicableAuthorities = extractApplicableAuthorities(user?.authorities)
             conn = underlyingDataSource.getConnection()
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
@@ -100,7 +100,10 @@ public class BannerDS implements DataSource {
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
         }
 
-        new BannerConnection(conn, user?.username, this)  // Note that while an IDE may not like this, the delegate supports this type coersion
+         if (user instanceof BannerUser)
+         return new BannerConnection(conn, user?.username, this)
+       else
+          return new BannerConnection(conn, user, this)// Note that while an IDE may not like this, the delegate supports this type coersion
     }
 
     // Note: This method is used for Integration Tests.
@@ -137,7 +140,7 @@ public class BannerDS implements DataSource {
     // Note: This method should be used only for initial authentication, and for testing purposes.
     /**
      * This method serves the self service banner authentication provider, by returning an unproxied connection that may be used
-     * to retrive authorities for a user. 
+     * to retrive authorities for a user.
      * */
     public Connection getSsbConnection() {
 
@@ -175,7 +178,7 @@ public class BannerDS implements DataSource {
 
     // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session
     /**
-     * Sets the identifer into DBMS_SESSION. 
+     * Sets the identifer into DBMS_SESSION.
      * @param conn the connection upon which to set the dbms session identifer
      * @param identifer the identifier to set
      * */
@@ -186,9 +189,9 @@ public class BannerDS implements DataSource {
         db.call("{call dbms_session.set_identifier(?)}", [identifier])
     }
 
-    // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session 
+    // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session
     /**
-     * Clears the identifer from the DBMS_SESSION.  This should be called when 'closing' the connection. 
+     * Clears the identifer from the DBMS_SESSION.  This should be called when 'closing' the connection.
      * @param conn the connection upon which to clear the dbms session identifer
      * */
     public void clearIdentifer(conn) {
@@ -198,17 +201,17 @@ public class BannerDS implements DataSource {
         db.call("{call dbms_session.set_identifier( NULL )}")
     }
 
-    // note: This method would ideally be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session 
+    // note: This method would ideally be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session
     /**
-     * Sets the 'module' and 'action' into the 'DBMS_APPLICATION_INFO'. This method should be called by services, when  
-     * logging at the debug level (except for testing).  Note that 'ServiceBase' does this for it's CRUD methods. 
+     * Sets the 'module' and 'action' into the 'DBMS_APPLICATION_INFO'. This method should be called by services, when
+     * logging at the debug level (except for testing).  Note that 'ServiceBase' does this for it's CRUD methods.
      * @param conn the connection upon which to set DBMS application info
      * @param module The 'module' to be set, which will be populated from the FormContext threadlocal if not provided
-     * @param action the 'action' to set, which will be NULL if not provided 
+     * @param action the 'action' to set, which will be NULL if not provided
      * */
     public void setDbmsApplicationInfo(conn, module = null, action = null) {
 
-        String mod = module ?: (FormContext.get() ? FormContext.get()[0] : null) // FormContext returns a list, but we'll just use the first entry        
+        String mod = module ?: (FormContext.get() ? FormContext.get()[0] : null) // FormContext returns a list, but we'll just use the first entry
         log.trace "BannerConnection.setDbmsApplicationInfo will call Oracle 'dbms_application_info.set_module' using module = '$mod' and action = '$action' for '$conn'"
 
         Sql db = new Sql(conn)
@@ -216,9 +219,9 @@ public class BannerDS implements DataSource {
         // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
     }
 
-    // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session 
+    // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session
     /**
-     * Clears the DBMS application information.  This should be invoked when 'committing' the transaction. 
+     * Clears the DBMS application information.  This should be invoked when 'committing' the transaction.
      * @param conn the connection upon which to clear DBMS application info
      * */
     public void clearDbmsApplicationInfo(conn) {
@@ -316,7 +319,7 @@ public class BannerDS implements DataSource {
 
         List formContext = FormContext.get()
         log.debug "BannerDS has retrieved the FormContext value: $formContext"
-        // log.debug "The user's granted authorities are $grantedAuthorities*.authority" // re-enable in development to see all the user's privileges 
+        // log.debug "The user's granted authorities are $grantedAuthorities*.authority" // re-enable in development to see all the user's privileges
 
         List applicableAuthorities = []
         formContext.each { form ->
@@ -385,10 +388,10 @@ public class BannerDS implements DataSource {
     /**
      * Returns an underlying dataSource.
      * If a user is authenticated and has an Oracle database username, and the current request
-     * is either an administrative page or the solution is configured to proxy connections for 
-     * SSB users, the dataSource returned is the Spring 'underlyingDataSource' bean. 
-     * If the user does not have an Oracle username and the request is for a self service page, 
-     * the dataSource returned is the Spring 'underlyingSsbDataSource' bean. 
+     * is either an administrative page or the solution is configured to proxy connections for
+     * SSB users, the dataSource returned is the Spring 'underlyingDataSource' bean.
+     * If the user does not have an Oracle username and the request is for a self service page,
+     * the dataSource returned is the Spring 'underlyingSsbDataSource' bean.
      * If the user is not authenticated, the underlyingDataSource bean is returned.
      * */
     private DataSource getUnderlyingDataSource() {

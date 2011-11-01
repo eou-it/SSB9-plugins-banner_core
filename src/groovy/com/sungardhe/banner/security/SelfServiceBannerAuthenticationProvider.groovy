@@ -178,7 +178,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         }
         
         if (!authenticationResults.valid) {
-            if (guestAuthenticationSuccessful( authentication, db )) {
+            if (guestAuthenticationSuccessful( authentication, db , authenticationResults )) {
                 authenticationResults.valid = true
                 authenticationResults.guest = true
             }
@@ -214,15 +214,21 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
 
 
-    private boolean guestAuthenticationSuccessful( Authentication authentication, db ) {
+    private boolean guestAuthenticationSuccessful( Authentication authentication, db, authenticationResults ) {
         if (!isGuestAuthenticationEnabled()) return false
         log.debug "guestAuthenticationSuccessful()  "
         def salt
         def hashPin
+        def gidm
         def userPin
-        db.eachRow( "select gpbprxy_salt, gpbprxy_pin  from gpbprxy,geniden where geniden_gidm = gpbprxy_proxy_idm AND GPBPRXY_EMAIL_ADDRESS = ?", [authentication.name] ) {
+        def firstName
+        def lastName
+        db.eachRow( "select gpbprxy_salt, gpbprxy_pin,geniden_first_name,geniden_last_name,geniden_gidm  from gpbprxy,geniden where GENIDEN_GIDM = GPBPRXY_PROXY_IDM AND  GPBPRXY_EMAIL_ADDRESS = ?", [authentication.name] ) {
             salt = it.gpbprxy_salt
             hashPin = it.gpbprxy_pin
+            gidm = it.geniden_gidm
+            firstName = it.geniden_first_name
+            lastName = it.geniden_last_name
         }
         if (null == hashPin) return false
         db.call( "{call gspcrpt.p_saltedhash(?,?,?)}", [
@@ -232,7 +238,11 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             ]
             ) {
             userpasswd -> userPin = userpasswd}
-        if (userPin == hashPin)   return true
+        if (userPin == hashPin)  {
+            authenticationResults.gidm = gidm
+            authenticationResults.fullName =  firstName + " " + lastName
+            return true
+        }
         false
     }
     
@@ -300,18 +310,15 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             }
         }
         
-        def selfServiceRolePassword
+       // def selfServiceRolePassword
         if (authentictionResults.oracleUserName) {            
             Collection<GrantedAuthority> adminAuthorities = BannerAuthenticationProvider.determineAuthorities( authentictionResults, db )
-            if (adminAuthorities.size() > 0) {
-                selfServiceRolePassword = adminAuthorities[0].bannerPassword // we'll just grab the password from the first administrative role...
-            }
             authorities.addAll( adminAuthorities )
         }
         
         // Users should be given the 'ROLE_SELFSERVICE_BAN_DEFAULT_M' role to have access to self service pages
         // that are associated to the 'SELFSERVICE' FormContext. 
-        if (authorities.size() > 0) authorities << BannerGrantedAuthority.create( "SELFSERVICE", "BAN_DEFAULT_M", selfServiceRolePassword ) 
+        //if (authorities.size() > 0) authorities << BannerGrantedAuthority.create( "SELFSERVICE", "BAN_DEFAULT_M", selfServiceRolePassword )
         
         log.trace "SelfServiceAuthenticationProvider.determineAuthorities will return $authorities"
         authorities 

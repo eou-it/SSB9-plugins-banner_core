@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.plugins.springsecurity.GrailsUser
  */
 public class BannerUser extends GrailsUser {
     Integer pidm
+    Integer gidm
     Integer webTimeout
     String fullName
     String oracleUserName
@@ -50,7 +51,7 @@ public class BannerUser extends GrailsUser {
                        final String oracleUserName, final boolean enabled,
 			           final boolean accountNonExpired, final boolean credentialsNonExpired,
 			           final boolean accountNonLocked, final Collection<GrantedAuthority> authorities,
-			           final String fullName, final Integer pidm, final Integer webTimeout
+			           final String fullName, final Integer pidm, final Integer webTimeout , final Integer gidm
                        ) throws IllegalArgumentException {
 
          // Note: The spring-security-core plugin now includes an 'id' property, which is normally used to retrieve the user versus keeping the
@@ -62,11 +63,12 @@ public class BannerUser extends GrailsUser {
         this.oracleUserName = oracleUserName
         this.pidm = pidm
         this.webTimeout = webTimeout
+        this.gidm = gidm
 	}
 	
 	
 	public String toString() {
-	    "BannerUser[${super.toString()}, fullName=$fullName, oracleUserName=$oracleUserName, PIDM=$pidm, webTimeout=$webTimeout "
+	    "BannerUser[${super.toString()}, fullName=$fullName, oracleUserName=$oracleUserName, PIDM=$pidm, webTimeout=$webTimeout,GIDM=$gidm "
 	}
 
 

@@ -109,8 +109,8 @@ class SelfServiceBannerAuthenticationProviderTests extends GroovyTestCase {
         assertTrue    auth.isAuthenticated()
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-ALUMNI_BAN_DEFAULT_M" }
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M" }
-        assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE_BAN_DEFAULT_M" }
-        assertEquals  3, auth.authorities.size()
+//        assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE_BAN_DEFAULT_M" }
+        assertEquals  2, auth.authorities.size()
     }
     
 

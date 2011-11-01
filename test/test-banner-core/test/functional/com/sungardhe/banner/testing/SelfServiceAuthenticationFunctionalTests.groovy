@@ -83,8 +83,6 @@ class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
     }
     
 
-    //----------------------------- Helper Methods ------------------------------    
-
 
     // Expects a map like: [ spridenId: #########, pidm: ### ]
     def loginSelfServiceUser( Map user_credentials ) { 
