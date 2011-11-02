@@ -99,4 +99,11 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         }
     }
 
+    def getLastModifiedBy() {
+        String  lastModifiedBy = SCH.context?.authentication?.principal?.username
+        if (lastModifiedBy.length() > 30) {
+            return  lastModifiedBy.substring(0,30)
+        }
+        return lastModifiedBy
+    }
 }
