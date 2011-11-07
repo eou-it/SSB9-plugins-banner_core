@@ -138,7 +138,8 @@ class SupplementalDataService {
             }
             return sdeFound
         } catch (e) {
-            println "ERROR: Could not establish role set up to the database. ${e.message}"
+            log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
+            throw e
         } finally {
             sql?.close()
         }
@@ -184,7 +185,8 @@ class SupplementalDataService {
                 log.debug "SDE Table: ${tableName}"
             }
         } catch (e) {
-            println "ERROR: Could not establish role set up to the database. ${e.message}"
+            log.error("ERROR: Could not establish role set up to the database. ${e.message}")
+            throw e
         } finally {
             db?.close()
         }

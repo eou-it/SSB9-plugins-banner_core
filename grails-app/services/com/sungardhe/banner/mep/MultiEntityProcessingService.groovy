@@ -43,7 +43,8 @@ class MultiEntityProcessingService {
             sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_is_mif_enabled_str()}") {mifEnabled -> mif = mifEnabled.toLowerCase().toBoolean() }
             mif
         } catch (e) {
-            println "ERROR: Could not establish mif context. ${e.message}"
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
         } finally {
             //sql?.close()
         }
@@ -56,7 +57,8 @@ class MultiEntityProcessingService {
             sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_is_mif_enabled_str()}") {mifEnabled -> mif = mifEnabled.toLowerCase().toBoolean() }
             mif
         } catch (e) {
-            println "ERROR: Could not establish mif context. ${e.message}"
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
         } finally {
             //sql?.close()
         }
@@ -69,7 +71,8 @@ class MultiEntityProcessingService {
             sql.call("{call g\$_vpdi_security.g\$_vpdi_set_home_context(${home})}")
 
         } catch (e) {
-            println "ERROR: Could not establish mif context. ${e.message}"
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
         } finally {
             sql?.close()
         }
@@ -81,7 +84,8 @@ class MultiEntityProcessingService {
             sql.call("{call g\$_vpdi_security.g\$_vpdi_set_home_context(${home})}")
 
         } catch (e) {
-            println "ERROR: Could not establish mif context. ${e.message}"
+           log.error("ERROR: Could not establish mif context. $e")
+           throw e
         } finally {
             //sql?.close()
         }
@@ -94,7 +98,8 @@ class MultiEntityProcessingService {
             sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_vpdi_get_inst_code_fnc()}") {home -> homeContext = home}
             homeContext
         } catch (e) {
-            println "ERROR: Could not establish mif context. ${e.message}"
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
         } finally {
             sql?.close()
         }
@@ -108,7 +113,8 @@ class MultiEntityProcessingService {
             sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_vpdi_get_inst_code_fnc()}") {home -> homeContext = home}
             homeContext
         } catch (e) {
-            println "ERROR: Could not establish mif context. ${e.message}"
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
         } finally {
             //sql?.close()
         }
@@ -120,7 +126,8 @@ class MultiEntityProcessingService {
             sql.call("{call g\$_vpdi_security.g\$_vpdi_set_process_context(${process},'NEXT')}")
 
         } catch (e) {
-            println "ERROR: Could not establish mif context. ${e.message}"
+           log.error("ERROR: Could not establish mif context. $e")
+           throw e
         } finally {
             sql?.close()
         }
@@ -132,7 +139,8 @@ class MultiEntityProcessingService {
             sql.call("{call g\$_vpdi_security.g\$_vpdi_set_process_context(${process},'NEXT')}")
 
         } catch (e) {
-            println "ERROR: Could not establish mif context. ${e.message}"
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
         } finally {
             //sql?.close()
         }
@@ -145,7 +153,8 @@ class MultiEntityProcessingService {
             sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_vpdi_get_proc_context_fnc()}") {process -> processContext = process}
             processContext
         } catch (e) {
-            println "ERROR: Could not establish mif context. ${e.message}"
+           log.error("ERROR: Could not establish mif context. $e")
+           throw e
         } finally {
             sql?.close()
         }
@@ -157,7 +166,8 @@ class MultiEntityProcessingService {
         try {
             sql.call("{$Sql.VARCHAR = call gspvpdi.get_mif_default_code_for_user(${userName})}") {homeDefault -> home = homeDefault}
         } catch (e) {
-            println "ERROR: Could not establish mif context. ${e.message}"
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
         } finally {
             sql?.close()
         }
@@ -173,7 +183,8 @@ class MultiEntityProcessingService {
         try {
             sql.call("{$Sql.VARCHAR = call gspvpdi.get_mif_default_code_for_user(${userName})}") {homeDefault -> home = homeDefault}
         } catch (e) {
-            println "ERROR: Could not establish mif context. ${e.message}"
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
         } finally {
             //sql?.close()
         }
