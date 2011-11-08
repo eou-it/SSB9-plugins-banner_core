@@ -1,12 +1,12 @@
 /*********************************************************************************
  Copyright 2009-2011 SunGard Higher Education. All Rights Reserved.
- This copyrighted software contains confidential and proprietary information of 
- SunGard Higher Education and its subsidiaries. Any use of this software is limited 
- solely to SunGard Higher Education licensees, and is further subject to the terms 
- and conditions of one or more written license agreements between SunGard Higher 
+ This copyrighted software contains confidential and proprietary information of
+ SunGard Higher Education and its subsidiaries. Any use of this software is limited
+ solely to SunGard Higher Education licensees, and is further subject to the terms
+ and conditions of one or more written license agreements between SunGard Higher
  Education and the licensee in question. SunGard is either a registered trademark or
  trademark of SunGard Data Systems in the U.S.A. and/or other regions and/or countries.
- Banner and Luminis are either registered trademarks or trademarks of SunGard Higher 
+ Banner and Luminis are either registered trademarks or trademarks of SunGard Higher
  Education in the U.S.A. and/or other regions and/or countries.
  **********************************************************************************/
 
@@ -65,7 +65,7 @@ class BannerCoreGrailsPlugin {
 
     String groupId = "com.sungardhe"
 
-    String version = "1.0.17"
+    String version = "1.0.18"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
@@ -87,7 +87,7 @@ class BannerCoreGrailsPlugin {
                          |Banner Security configuration. In addition, this plugin provides
                          |additional framework support (e.g., injecting CRUD methods into
                          |services, providing base test classes) to facilitate development of
-                         |Banner web applications.'''.stripMargin() 
+                         |Banner web applications.'''.stripMargin()
 
     def documentation = "http://sungardhe.com/development/horizon/plugins/banner-core"
 
@@ -95,7 +95,7 @@ class BannerCoreGrailsPlugin {
     def doWithWebDescriptor = { xml ->
         // no-op
     }
-    
+
 
     def doWithSpring = {
 
@@ -122,7 +122,7 @@ class BannerCoreGrailsPlugin {
                         log.info "Please launch the Elvyx UI to monitor SQL traffic... (see http://www.elvyx.com/ to download)"
                         driverClassName = "${CH.config.elvyx.driver}"
                         url = "${CH.config.elvyx.url}"
-                    } 
+                    }
                     else {
                         driverClassName = "${CH.config.bannerDataSource.driver}"
                         url = "${CH.config.bannerDataSource.url}"
@@ -153,8 +153,8 @@ class BannerCoreGrailsPlugin {
                         }
                     }
                 }
-            break               
-        }        
+            break
+        }
 
         nativeJdbcExtractor( NativeJdbcExtractor )
 
@@ -252,9 +252,9 @@ class BannerCoreGrailsPlugin {
             taskExecutor = Executors.newCachedThreadPool()
         }
 
-        
+
         // ---------------- JMX Mbeans (incl. Logging) ----------------
-        
+
         log4jBean( HierarchyDynamicMBean )
 
         mbeanServer( MBeanServerFactoryBean ) {
@@ -265,13 +265,13 @@ class BannerCoreGrailsPlugin {
             case "development": // 'pass through', so logging will be exported via JMX for 'development' and 'production'
             case "production":
                 String log4jBeanName = getUniqueJmxBeanNameFor('log4j') + ':hierarchy=default'
-                
+
                 exporter( MBeanExporter ) {
                     server = mbeanServer
                     beans = [("$log4jBeanName" as String): log4jBean]
-                }        
+                }
             break
-        }        
+        }
     }
 
 
@@ -318,12 +318,12 @@ class BannerCoreGrailsPlugin {
         // inject the logger into every class (Grails only injects this into some artifacts)
 //        application.allClasses.each {
 //            //For some reason weblogic throws an error if we try to inject the method if it is already present
-//            if (!it.metaClass.methods.find { m -> m.name.matches( "getLog" ) }) { 
+//            if (!it.metaClass.methods.find { m -> m.name.matches( "getLog" ) }) {
 //                it.metaClass.getLog = { LogFactory.getLog it }
 //            }
 //        }
     }
-    
+
 
     // Register Hibernate event listeners.
     def doWithApplicationContext = { applicationContext ->
@@ -391,13 +391,13 @@ class BannerCoreGrailsPlugin {
 
         listeners."${typeProperty}" = expandedTypeListeners
     }
-    
-    
+
+
     private def isSsbEnabled() {
         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
     }
-    
-    
+
+
     private def getUniqueJmxBeanNameFor( String name ) {
         def nameToRegister = CH.config.jmx.exported."$name"
         if (nameToRegister instanceof String || nameToRegister instanceof GStringImpl) {
@@ -406,5 +406,5 @@ class BannerCoreGrailsPlugin {
             return name
         }
     }
-    
+
 }
