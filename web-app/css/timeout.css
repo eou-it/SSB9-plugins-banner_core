@@ -1,7 +1,6 @@
 body {
     margin: 0px;
     padding: 0px;
-    background: #4C8DB5 url(../images/page-bg.png) repeat-x 0 0;
 }
 
 .dialog {
@@ -17,9 +16,10 @@ body {
     color: #333;
     padding: 20px 20px 20px 62px;
     width: 304px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 150px;
+    position: absolute;
+    margin: -75px 0 0 -152px;
+    top: 50%;
+    left: 50%;
     line-height: 18px;
 }
 
@@ -30,4 +30,83 @@ body {
 
 .dialog a:visited {
     color: #176A94
+}
+
+.header {
+    background: url("../images/header-bg.png") repeat-x scroll left bottom #999999;
+    height: 75px;
+}
+
+.header .institutionalBranding {
+    background: url("../images/sgu-logo.png") no-repeat scroll 0 0 transparent;
+    float: left;
+    height: 22px;
+    left: 10px;
+    position: relative;
+    top: 15px;
+    width: 173px;
+}
+
+.header .buttonBar {
+    left: 10px;
+    position: absolute;
+    right: 10px;
+    top: 42px;
+}
+
+.header .home {
+    background: url("../images/btn-header-sprite.png") no-repeat scroll 0 -29px transparent;
+    display: block;
+    height: 24px;
+    width: 26px;
+}
+
+.header .menuArrow {
+    background: url("../images/header-composite-button-sprites.png") no-repeat scroll right 0 transparent;
+    display: block;
+    height: 24px;
+    left: 30px;
+    position: absolute;
+    top: 0;
+    width: 26px;
+}
+
+.header .fauxBar {
+    background: url("../images/header-button-sprites.png") repeat-x scroll 0 -24px transparent;
+    display: block;
+    height: 24px;
+    left: 56px;
+    position: absolute;
+    top: 0;
+    right: 8px;
+}
+
+.header .fauxBarEndCap {
+    background: url("../images/header-button-sprites.png") no-repeat scroll right 0 transparent;
+    height: 24px;
+    margin-right: 0;
+    padding-left: 4px;
+    padding-right: 4px;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.footer {
+    background: url("../images/footer-background.png") repeat-x scroll left top transparent;
+    bottom: -1px;
+    height: 30px;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    width: 100%;
+}
+
+.footer .logo {
+    background: url("../images/sghe_logo_white.png") no-repeat scroll center center transparent;
+    cursor: pointer;
+    float: right;
+    height: 8px;
+    padding: 11px 14px;
+    width: 159px;
 }
