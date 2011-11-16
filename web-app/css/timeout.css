@@ -1,0 +1,33 @@
+body {
+    margin: 0px;
+    padding: 0px;
+    background: #4C8DB5 url(../images/page-bg.png) repeat-x 0 0;
+}
+
+.dialog {
+    background-color: #FDF5B3;
+    background-image: url(../images/icon-warning-32x32.png);
+    background-position: 20px 20px;
+    background-repeat: no-repeat;
+    border-color: #E4C71F;
+    border-style: solid;
+    border-width: 1px;
+    font-family: Arial;
+    font-size: 12px;
+    color: #333;
+    padding: 20px 20px 20px 62px;
+    width: 304px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 150px;
+    line-height: 18px;
+}
+
+.dialog .title {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.dialog a:visited {
+    color: #176A94
+}
