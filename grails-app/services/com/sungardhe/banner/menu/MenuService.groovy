@@ -57,7 +57,7 @@ class MenuService {
         sql.execute("Begin gukmenu.p_bld_pers_menu; End;")
         log.debug("After gukmenu.p_bld_pers_menu sql.execute" )
         sql.eachRow("select * from gutpmnu,gubmodu,gubpage,gubobjs where  substr(gutpmnu_value,6,length(gutpmnu_value))  = gubpage_code (+) AND " +
-            " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubobjs_ui_version IN ('A','H') AND gubpage_gubmodu_code  = gubmodu_code (+) order by gutpmnu_seq_no", {
+            " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubobjs_ui_version IN ('A','C') AND gubpage_gubmodu_code  = gubmodu_code (+) order by gutpmnu_seq_no", {
 
         def mnu = new Menu()
 
@@ -128,7 +128,7 @@ class MenuService {
         log.debug(sql.useConnection.toString())
         sql.execute("Begin gukmenu.p_bld_prod_menu; End;")
         sql.eachRow("select * from gutmenu,gubmodu,gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
-            " gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','H') and gubpage_gubmodu_code  = gubmodu_code (+) " +
+            " gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','C') and gubpage_gubmodu_code  = gubmodu_code (+) " +
             " order by gutmenu_seq_no", {
             def mnu = new Menu()
             def clnMenu = true
@@ -172,6 +172,7 @@ class MenuService {
             false
     }
 
+
     /**
     * This returns map of all menu item for searching in goto
     * @return Map of menu objects that a user has access
@@ -185,13 +186,14 @@ class MenuService {
         sql = new Sql( sessionFactory.getCurrentSession().connection() )
         log.debug( sql.useConnection.toString() )
         sql.execute( "Begin gukmenu.p_bld_prod_menu; End;" )
-        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name " +
-                " from gutmenu,gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
-                " gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','H')  AND " +
+        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url " +
+                " from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
+                " gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','C')  and gubpage_gubmodu_code  = gubmodu_code (+) AND " +
                 " (upper(gutmenu_value) like '%$searchVal%' OR upper(gutmenu_desc) like '%$searchVal%' OR upper(gubpage_name) like '%$searchVal%' )", {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.pageName = it.gubpage_name
+            mnu.url = it.gubmodu_url
             mnu.captionProperty = mnuPrf
             if (it.gutmenu_desc != null) {
                 mnu.caption = it.gutmenu_desc.replaceAll(/\&/, "&amp;")
