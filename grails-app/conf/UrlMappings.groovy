@@ -18,5 +18,26 @@ class UrlMappings {
 	  }
       "/"(view:"/index")
 	  "500"(view:'/error')
+
+      "/login/forgotpin" {
+             controller = "login"
+             action = "forgotpassword"
+        }
+        "/forgotpin/validateans" {
+            controller = "forgotpin"
+            action = "validateAnswer"
+        }
+        "/forgotpin/resetpin" {
+            controller = "forgotpin"
+            action = "resetPin"
+        }
+        "/forgotpin/auth" {
+            controller = "login"
+            action = "auth"
+        }
+        "/forgotpin/recovery" {
+             controller = "forgotpin"
+             action = "recovery"
+        }
 	}
 }

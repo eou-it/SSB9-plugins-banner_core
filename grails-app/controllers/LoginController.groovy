@@ -170,4 +170,24 @@ class LoginController {
 	def ajaxDenied = {
 		render([error: 'access denied'] as JSON)
 	}
+
+    /**
+     * When user clicks on forgot password URL.
+     */
+    def forgotpassword ={
+        def config = SpringSecurityUtils.securityConfig
+
+        String userName = request.getParameter("j_username")
+        if(userName == null || userName.trim().length() == 0){
+            flash.message =  "User Name is required"
+            String view = 'auth'
+            String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
+            String forgotPasswordUrl =  "${request.contextPath}/login/forgotpin";
+            render view: view, model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl, userNameRequired: true,
+                                       rememberMeParameter: config.rememberMe.parameter]
+        }
+        else{
+            redirect controller : "forgotpin", action: "questans", params : params
+        }
+    }
 }

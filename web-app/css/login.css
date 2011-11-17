@@ -209,3 +209,10 @@ INPUT[type="submit"]:hover {
     cursor: pointer;
     color: #2200C1;
 }
+
+
+.forgotpassword{
+    background: none !important;
+    margin-left: -20px;
+    width: 160px !important;
+}
