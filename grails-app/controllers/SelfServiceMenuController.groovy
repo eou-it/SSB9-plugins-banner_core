@@ -1,4 +1,4 @@
-package com.sungardhe.banner.menu
+
 /** *******************************************************************************
  Copyright 2009-2011 SunGard Higher Education. All Rights Reserved.
  This copyrighted software contains confidential and proprietary information of 
