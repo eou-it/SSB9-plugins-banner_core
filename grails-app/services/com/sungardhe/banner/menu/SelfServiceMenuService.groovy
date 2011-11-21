@@ -78,7 +78,7 @@ class SelfServiceMenuService {
             mnu.pageCaption = mnu.caption
             mnu.type = menuName ? 'FORM' : 'MENU'
             mnu.menu = parentMenuName
-            mnu.url = menuName ? ConfigurationHolder.config.banner8x.url + it.twgrmenu_url : ""
+            mnu.url = menuName ? ConfigurationHolder.config.banner8.SS.url + it.twgrmenu_url : ""
             mnu.seq = parentSequence.toString() + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
 
