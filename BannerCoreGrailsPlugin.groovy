@@ -57,7 +57,7 @@ import com.sungardhe.banner.security.BannerPreAuthenticatedFilter
 import com.sungardhe.banner.security.BannerAccessDecisionVoter
 import com.sungardhe.banner.service.LoginAuditService
 import com.sungardhe.banner.service.DefaultLoaderService
-import com.sungardhe.banner.forgotpin.ForgotPinService
+import com.sungardhe.banner.security.ResetPasswordService
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access for Banner web applications.
@@ -253,7 +253,7 @@ class BannerCoreGrailsPlugin {
             taskExecutor = Executors.newCachedThreadPool()
         }
 
-        forgotPinService(ForgotPinService){
+        resetPasswordService(ResetPasswordService){
            dataSource = ref( dataSource )
            authenticationDataSource = ref( authenticationDataSource )
            sessionFactory = ref( sessionFactory )

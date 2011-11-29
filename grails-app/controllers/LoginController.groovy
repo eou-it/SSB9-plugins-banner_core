@@ -182,12 +182,12 @@ class LoginController {
             flash.message =  "User Name is required"
             String view = 'auth'
             String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
-            String forgotPasswordUrl =  "${request.contextPath}/login/forgotpin";
+            String forgotPasswordUrl =  "${request.contextPath}/login/forgotPassword";
             render view: view, model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl, userNameRequired: true,
                                        rememberMeParameter: config.rememberMe.parameter]
         }
         else{
-            redirect controller : "forgotpin", action: "questans", params : params
+            redirect controller : "resetPassword", action: "questans", params : params
         }
     }
 }
