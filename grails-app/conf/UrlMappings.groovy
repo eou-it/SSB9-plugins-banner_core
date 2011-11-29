@@ -19,24 +19,24 @@ class UrlMappings {
       "/"(view:"/index")
 	  "500"(view:'/error')
 
-      "/login/forgotpin" {
+      "/login/forgotPassword" {
              controller = "login"
              action = "forgotpassword"
         }
-        "/forgotpin/validateans" {
-            controller = "forgotpin"
+        "/resetPassword/validateans" {
+            controller = "resetPassword"
             action = "validateAnswer"
         }
-        "/forgotpin/resetpin" {
-            controller = "forgotpin"
+        "/resetPassword/resetpin" {
+            controller = "resetPassword"
             action = "resetPin"
         }
-        "/forgotpin/auth" {
+        "/resetPassword/auth" {
             controller = "login"
             action = "auth"
         }
-        "/forgotpin/recovery" {
-             controller = "forgotpin"
+        "/resetPassword/recovery" {
+             controller = "resetPassword"
              action = "recovery"
         }
 	}
