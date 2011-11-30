@@ -12,7 +12,7 @@ import org.apache.log4j.Logger
  */
 class ResetPasswordService {
 
-    static transactional = true
+
     private final Logger log = Logger.getLogger(getClass())
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring

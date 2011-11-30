@@ -216,6 +216,10 @@ class BannerCoreGrailsPlugin {
             dataSource = ref( dataSource )
         }
 
+        resetPasswordService( ResetPasswordService ) {
+            dataSource = ref( dataSource )
+        }
+
         casBannerAuthenticationProvider( CasAuthenticationProvider ) {
             dataSource = ref( dataSource )
         }
