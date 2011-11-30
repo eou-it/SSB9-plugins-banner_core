@@ -25,5 +25,6 @@ public class OptionMenu implements Serializable {
     def formName
     def calledFormName
     def pageName
+    def url
 }
 

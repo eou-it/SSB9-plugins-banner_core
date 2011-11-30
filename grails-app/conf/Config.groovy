@@ -51,3 +51,5 @@ codenarc.propertiesFile="grails-app/conf/codenarc.properties"
 coverage {
 	enabledByDefault = false
 }
+grails.views.default.codec="none" // none, html, base64
+grails.views.gsp.encoding="UTF-8"

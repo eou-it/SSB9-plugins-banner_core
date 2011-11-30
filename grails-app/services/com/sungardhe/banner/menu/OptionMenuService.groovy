@@ -34,8 +34,8 @@ class OptionMenuService {
 
         sql.eachRow("""
                      SELECT GUROPTM_SORT_SEQ, GUROPTM_NAME1_DESC||'['||GUROPTM_FORM_TO_BE_CALLED||']', GUROPTM_FORM_NAME,
-                            GUROPTM_FORM_TO_BE_CALLED, GUBPAGE_NAME
-                       FROM GUROPTM, GUBPAGE
+                            GUROPTM_FORM_TO_BE_CALLED, GUBPAGE_NAME, GUBMODU_URL
+                       FROM GUROPTM, GUBPAGE, GUBMODU
                       WHERE GUBPAGE_CODE = GUROPTM_FORM_TO_BE_CALLED
                         AND GUROPTM_FORM_NAME = (SELECT GUBPAGE_CODE
                                                  FROM GUBPAGE
@@ -44,6 +44,7 @@ class OptionMenuService {
                         AND GUROPTM_TRG_NAME = 'GOTO_FORM'
                         AND GUROPTM_TYPE_IND <> 'I'
                         AND GUROPTM_BLOCK_VALID is null
+                        AND GUBPAGE_GUBMODU_CODE = GUBMODU_CODE (+)
                         ORDER BY GUROPTM_SORT_SEQ
                    """, [pageId]) {
 
@@ -54,6 +55,7 @@ class OptionMenuService {
             optionMenu.formName = it[2]
             optionMenu.calledFormName = it[3]
             optionMenu.pageName = it[4]
+            optionMenu.url = it[5]
 
             optionFormMenuList.add(optionMenu)
 
@@ -89,8 +91,8 @@ class OptionMenuService {
 
         sql.eachRow("""
                      SELECT GUROPTM_SORT_SEQ, GUROPTM_NAME1_DESC||'['||GUROPTM_FORM_TO_BE_CALLED||']', GUROPTM_FORM_NAME,
-                            GUROPTM_FORM_TO_BE_CALLED, GUBPAGE_NAME
-                       FROM GUROPTM, GUBPAGE
+                            GUROPTM_FORM_TO_BE_CALLED, GUBPAGE_NAME, GUBMODU_URL
+                       FROM GUROPTM, GUBPAGE, GUBMODU
                       WHERE GUBPAGE_CODE = GUROPTM_FORM_TO_BE_CALLED
                         AND GUROPTM_FORM_NAME = (SELECT GUBPAGE_CODE
                                                  FROM GUBPAGE
@@ -99,6 +101,7 @@ class OptionMenuService {
                         AND GUROPTM_TRG_NAME = 'GOTO_FORM'
                         AND GUROPTM_TYPE_IND <> 'I'
                         AND GUROPTM_BLOCK_VALID = ?
+                        AND GUBPAGE_GUBMODU_CODE = GUBMODU_CODE (+)
                         ORDER BY GUROPTM_SORT_SEQ
                    """, [pageId, tableName]) {
 
@@ -109,6 +112,7 @@ class OptionMenuService {
             optionMenu.formName = it[2]
             optionMenu.calledFormName = it[3]
             optionMenu.pageName = it[4]
+            optionMenu.url = it[5]
 
             optionBlockMenuList.add(optionMenu)
 
