@@ -77,14 +77,14 @@ class ResetPasswordService {
 
     def resetUserPassword(pidm, newPassword) {
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        def rowsUpdated = sql.call ("{call gb_third_party_access.p_update(p_pidm=>'${pidm}', p_pin=>'${newPassword}')}")
+        sql.call ("{call gb_third_party_access.p_update(p_pidm=>'${pidm}', p_pin=>'${newPassword}')}")
+        sql.commit()
         sql.close()
-        rowsUpdated
     }
 
     def isPidmUser(pidm_id){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String query = "SELECT SPRIDEN_ID FROM spriden WHERE SPRIDEN_ID='${pidm_id}'"
+        String query = "SELECT SPRIDEN_ID FROM spriden WHERE SPRIDEN_ID='${pidm_id}' and spriden_change_ind is null"
         if(sql.rows(query).size() > 0){
             sql.close()
             true
