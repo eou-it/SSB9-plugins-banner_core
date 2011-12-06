@@ -11,6 +11,9 @@
  **********************************************************************************/
 package com.sungardhe.banner.controllers
 
+import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import org.springframework.web.context.request.RequestContextHolder
+
 /**
  * Utilities for controllers.
  */
@@ -38,4 +41,16 @@ class ControllerUtils {
         return model
     }
 
+
+
+    public static def buildLogoutRedirectURI() {
+        def uri = SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
+
+        def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
+        if (mep) {
+            uri += "?spring-security-redirect=?mepCode=${mep}"
+        }
+
+        uri
+    }
 }
