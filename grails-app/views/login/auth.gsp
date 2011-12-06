@@ -1,13 +1,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title><g:message code="com.sungardhe.banner.login.title"/></title>
-    <link rel="shortcut icon" href="${resource(dir:'images',file:'favicon.ico')}" type="image/x-icon"/>
+<title>Login</title>
 <link rel="stylesheet" href="${resource(dir: 'css', file: 'login.css')}"/>
 <!--<link rel="stylesheet" href="${resource(dir: 'css', file: 'rtl-login.css')}"/>-->
 <!--[if IE 7]>
 	<link href="fix-ie7.css" rel="stylesheet" type="text/css" />
-
 <![endif]-->
 </head>
 
@@ -23,8 +21,11 @@
     <g:if test='${flash.message}'>
         <div class='loginMsg'><span class="icon-error"></span>${flash.message}</div>
     </g:if>
-    <g:else test='${flash.message}'>
+    <g:elseif test='${flash.message}'>
 	  <div class="loginMsg"><g:message code="com.sungardhe.banner.login.prompt"/></div>
+    </g:elseif>
+    <g:else test="${flash.reloginMessage}">
+      <div class="loginMsg">${flash.reloginMessage}</div>
     </g:else>
 	<div class="logIn">
       <form action='${postUrl}' method='POST' id='loginForm'>
@@ -79,6 +80,18 @@
 
         window.open("${onLineHelpUrl}?productName=general&formName=login" , '_blank');
         return false;
+    }
+
+    function gotoForgotPassword(){
+         var form = document.getElementById('loginForm');
+         form.action = '${forgotPasswordUrl}';
+         form.submit();
+    }
+
+    function submitForm(){
+      var form = document.getElementById('loginForm');
+         form.action = '${postUrl}';
+         form.submit();
     }
 </script>
 
