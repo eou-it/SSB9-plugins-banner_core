@@ -39,14 +39,14 @@ class FooControllerFunctionalTests extends BaseFunctionalTestCase {
                             // maps this 'controller' to the NOPE form. The logged in user will not have
                             // any roles that pertain to this non-existent controller, and authorization
                             // will fail.
-        assertTitle "Denied"
+        assertTitle "Banner"
     }
 
     // ---- Test for split url format
     void testSplitUrlFormat() {
         login()
         get( "/banner.zul?page=nope" )
-        assertTitle "Denied"
+        assertTitle "Banner"
 
     }
 
