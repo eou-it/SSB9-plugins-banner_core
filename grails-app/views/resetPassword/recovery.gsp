@@ -34,12 +34,12 @@
                                  <tr><td colspan="2"> <div style="broder: 1px soild red; background-color: #ffffe0; color: red; font-weight: bold; text-align: center;">${flash.message}</div> </td> </tr>
                              </g:if>
                              <tr><td class="tabledata" colspan="2"><g:message code="com.sungardhe.banner.resetpassword.recoverycode.message"/></td></tr>
-                             <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text"/> </td></tr>
+                             <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text default-state"/> </td></tr>
                           </table>
                           <div class="button-bar-container">
                                 <div class="button-bar">
                                     <button id="cancelButton1" class="ui-corner-all ui-button ui-widget" onclick="gotoLogin()"><g:message code="com.sungardhe.banner.resetpassword.button.cancel"/></button>
-                                    <button id="createAccount1" class="ui-corner-all ui-button ui-widget" type="submit"><g:message code="com.sungardhe.banner.resetpassword.button.validate"/></button>
+                                    <button id="createAccount1" class="ui-corner-all ui-button ui-widget" type="submit"><g:message code="com.sungardhe.banner.resetpassword.button.submit"/></button>
                                 </div>
                           </div>
                        </form>

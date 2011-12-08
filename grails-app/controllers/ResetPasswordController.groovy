@@ -1,4 +1,3 @@
-import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import com.sungardhe.banner.security.ResetPasswordService
 
 /**
@@ -24,7 +23,6 @@ class ResetPasswordController {
 
     def questans ={
         String id = request.getParameter("j_username")
-        def config = org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils.securityConfig
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
         if(id == null || id.trim().length() == 0){
 
@@ -41,10 +39,14 @@ class ResetPasswordController {
 
             render view: view, model: [questions: questionsInfoMap.get(id), userName: id, postUrl : postUrl, cancelUrl: cancelUrl]
         }
-        else{
+        else if(resetPasswordService.isNonPidmUser(id)){
             String postUrl = "${request.contextPath}/resetPassword/recovery"
             String view = 'recovery'
             render view: view, model: [userName: id, postUrl : postUrl, cancelUrl: cancelUrl]
+        }
+        else{
+            flash.message = message( code: "com.sungardhe.banner.resetpassword.user.invalid")
+            redirect(uri: "/login/auth")
         }
     }
 
@@ -55,32 +57,43 @@ class ResetPasswordController {
        String id = request.getParameter("username")
        String pidm = session.getAttribute("pidm")
        List questions = session.getAttribute("questions")
-        flash.message = null
+       Map questionValidationMap = new HashMap();
+        flash.message = ""
+        def errorflag = false;
        questions.each {
            String answer = request.getParameter("answer"+it[0])
            if(answer == null || answer.trim().length() == 0){
-               flash.message = "Please answer all the questions"
+               errorflag = true
+               flash.message = "Answer for question ${it[0]} is required"
+               questionValidationMap.put(it[0], [error:true, answer: "", message: flash.message])
+           }
+           else{
+               questionValidationMap.put(it[0], [error: false, answer: answer, message:""])
            }
        }
        if(flash.message){
            String view = 'questans'
-           render view: view, model: [questions: questions, userName: id, postBackUrl : postBackUrl, cancelUrl: cancelUrl]
+           render view: view, model: [questions: questions, questionValidationMap: questionValidationMap, userName: id, postBackUrl : postBackUrl, cancelUrl: cancelUrl]
        }
         else{
            int questionCount = 0;
-           String errorMessage = new String("")
+           def errorMessage = new String("")
            questions.each {
                questionCount ++;
                String userAnswer = request.getParameter("answer"+it[0])
                boolean answerMatch = resetPasswordService.isAnswerMatched(userAnswer, pidm, it[0])
                if(!answerMatch){
-                   errorMessage += "Answer for Question ${questionCount} doesn't match \n";
+                   errorMessage = "Authorization failure: One or more question did not match";
+                   questionValidationMap.put(it[0], [error:true, answer:"", message: errorMessage])
+               }
+               else{
+                   questionValidationMap.put(it[0], [error:false, answer: userAnswer, message: ""])
                }
            }
            if(errorMessage){
               flash.message = errorMessage
               String view = 'questans'
-              render view: view, model: [questions: questions, userName: id, postBackUrl : postBackUrl, cancelUrl: cancelUrl]
+              render view: view, model: [questions: questions, userName: id, postBackUrl : postBackUrl, cancelUrl: cancelUrl, questionValidationMap: questionValidationMap]
            }
            else{
                String view = 'resetpin'
@@ -97,7 +110,12 @@ class ResetPasswordController {
         String postBackUrl = "${request.contextPath}/resetPassword/resetpin"
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
         if(password != confirmPassword){
-           flash.message = "Both password did not match"
+           flash.message = message( code:"com.sungardhe.banner.resetpassword.password.match.error" )
+           String view = 'resetpin'
+           render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
+        }
+        else if(password.trim().length() == 0 || confirmPassword.trim().length() == 0){
+           flash.message = message( code:"com.sungardhe.banner.resetpassword.password.required.error" )
            String view = 'resetpin'
            render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
         }

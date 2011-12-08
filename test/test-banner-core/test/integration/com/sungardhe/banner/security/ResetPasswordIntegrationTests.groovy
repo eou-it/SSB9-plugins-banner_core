@@ -85,6 +85,8 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
 
         assertEquals(userPin,bannerPasswd)
 
+
+
     }
 
     private void dataSetup(){

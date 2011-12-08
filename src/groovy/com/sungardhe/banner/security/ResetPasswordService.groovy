@@ -94,4 +94,40 @@ class ResetPasswordService {
             false
         }
     }
+
+    def isNonPidmUser(userId){
+        Sql sql = new Sql(dataSource.getUnproxiedConnection())
+        String queryGpbprxy = "SELECT GPBPRXY_EMAIL_ADDRESS FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) ='${userId?.toUpperCase()}'"
+        String queryGeniden = "SELECT GENIDEN_ID FROM geniden WHERE UPPER(GENIDEN_ID) = '${userId?.toUpperCase()}'"
+
+        if(sql.rows(queryGpbprxy).size() > 0){
+            sql.close()
+            true
+        }
+        else if(sql.rows(queryGeniden).size() > 0){
+            sql.close()
+            true
+        }
+        else{
+            sql.close()
+            false
+        }
+
+    }
+
+    def generateRecoveryUrlAndSendEmail(userId){
+       Sql sql = new Sql(dataSource.getUnproxiedConnection())
+       String queryGbprxy = "SELECT GPBPRXY_PROXY_IDM FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) = '${userId?.toUpperCase()}'"
+       String queryGeniden = "SELECT GENIDEN_GIDM FROM geniden WHERE UPPER(GENIDEN_ID) = '${userId?.toUpperCase()}'"
+       def nonPidmId = null;
+       sql.rows(queryGbprxy).each {
+           nonPidmId = it.GPBPRXY_PROXY_IDM
+       }
+       if(nonPidmId){
+           sql.rows(queryGeniden).each {
+               nonPidmId = it.GENIDEN_GIDM
+           }
+       }
+
+    }
 }
