@@ -30,9 +30,9 @@ class SelfServiceMenuService {
      * @return List representation of menu objects that a user has access
      */
 
-    def bannerMenu(def menuName, def menu) {
+    def bannerMenu(def menuName, def menuTrail, def facultyPidm) {
 
-        processMenu(menuName, menu)
+        processMenu(menuName, menuTrail, facultyPidm)
     }
 
     /**
@@ -40,7 +40,10 @@ class SelfServiceMenuService {
      * @return Map of menu objects that a user has access
      */
 
-    private def processMenu(def menuName, def menu) {
+    private def processMenu(def menuName, def menuTrail, def facultyPidm) {
+
+        assert facultyPidm
+
         def dataMap = []
         def firstMenu = "Banner";
         menuName = toggleSeparator(menuName);
@@ -52,7 +55,7 @@ class SelfServiceMenuService {
 
         menuName = menuName ?: "bmenu.P_MainMnu"
 
-        def sqlQuery = "select * from twgrmenu where  twgrmenu_name = '" + menuName + "' and twgrmenu_enabled = 'Y' and twgrmenu_source_ind = (select nvl( 'B',nvl( max(twgrmenu_source_ind ),'B')) from twgrmenu where twgrmenu_name = '" + menuName + "' and twgrmenu_source_ind='L') order by twgrmenu_sequence";
+        def sqlQuery = "select * from twgrmenu " + " where  twgrmenu_name = '" + menuName + "' and    twgrmenu_enabled = 'Y' " + " and twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where twgrrole_pidm=" + facultyPidm + " and twgrrole_role = twgrwmrl_role) " + " and twgrmenu_source_ind = " + "   (select nvl( 'B',nvl( max(twgrmenu_source_ind ),'B')) " + "   from twgrmenu " + "   where  twgrmenu_name = '" + menuName + "'   and twgrmenu_source_ind='L') " + " order by twgrmenu_sequence"
 
         def randomSequence = RandomUtils.nextInt(1000);
 
@@ -66,7 +69,7 @@ class SelfServiceMenuService {
             mnu.caption = toggleSeparator(it.twgrmenu_url_text)
             mnu.pageCaption = mnu.caption
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
-            mnu.menu = menu ? menu : firstMenu
+            mnu.menu = menuTrail ? menuTrail : firstMenu
             mnu.url = it.twgrmenu_db_link_ind == "Y" ? ConfigurationHolder.config.banner8.SS.url + it.twgrmenu_url : toggleSeparator(it.twgrmenu_url)
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false

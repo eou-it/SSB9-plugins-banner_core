@@ -38,7 +38,7 @@ class SelfServiceMenuController {
             menu = request.parameterMap["menu"][0]
         }
 
-        list = getMenu(menuName, menu)
+        list = getMenu(menuName, menu, session?.facultyPidm)
 
         def sw = new StringWriter()
         def xml = new groovy.xml.MarkupBuilder(sw)
@@ -54,14 +54,14 @@ class SelfServiceMenuController {
      * Driver for banner menu
      */
 
-    private def getMenu(def menuName, def menu) {
+    private def getMenu(def menuName, def menuTrail, def facultyPidm) {
         def list
         if (log.isDebugEnabled()) log.debug("Menu Controller getmenu")
 
         def currentMenu = menuName ? menuName : "Banner"
 
         if (session[currentMenu] == null) {
-            list = selfServiceMenuService.bannerMenu(menuName, menu)
+            list = selfServiceMenuService.bannerMenu(menuName, menuTrail, facultyPidm)
             session[currentMenu] = list
         }
         else {
