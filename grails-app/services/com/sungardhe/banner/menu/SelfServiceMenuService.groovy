@@ -12,6 +12,7 @@
 package com.sungardhe.banner.menu
 
 import groovy.sql.Sql
+import org.apache.commons.lang.math.RandomUtils
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
@@ -29,9 +30,9 @@ class SelfServiceMenuService {
      * @return List representation of menu objects that a user has access
      */
 
-    def bannerMenu(def menuName) {
+    def bannerMenu(def menuName, def menuTrail, def facultyPidm) {
 
-        processMenu(menuName)
+        processMenu(menuName, menuTrail, facultyPidm)
     }
 
     /**
@@ -39,51 +40,40 @@ class SelfServiceMenuService {
      * @return Map of menu objects that a user has access
      */
 
-    private def processMenu(def menuName) {
+    private def processMenu(def menuName, def menuTrail, def facultyPidm) {
+
+        assert facultyPidm
+
         def dataMap = []
-        def parentMenuName = "Banner";
-        def parentName = ""
+        def firstMenu = "Banner";
         menuName = toggleSeparator(menuName);
-        def twgrmenu_name
-        def parentSequence = ""
 
         Sql sql
         if (log.isDebugEnabled()) log.debug("Process Menu started for nenu:" + menuName)
         sql = new Sql(sessionFactory.getCurrentSession().connection())
         if (log.isDebugEnabled()) log.debug("SQL Connection:" + sql.useConnection.toString())
 
+        menuName = menuName ?: "bmenu.P_MainMnu"
 
-        if (menuName) {
-            def row = sql.firstRow("select * from twgrmenu where twgrmenu_name = 'bmenu.P_MainMnu' and twgrmenu_source_ind = 'B' and twgrmenu_url_text = '" + menuName + "'")
-            parentMenuName = parentMenuName + "/" + toggleSeparator(row.twgrmenu_url_text)
-            parentName = toggleSeparator(row.twgrmenu_url_text)
-            twgrmenu_name = row.twgrmenu_url
-            parentSequence = row.twgrmenu_sequence
-        }
+        def sqlQuery = "select * from twgrmenu " + " where  twgrmenu_name = '" + menuName + "' and    twgrmenu_enabled = 'Y' " + " and twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where twgrrole_pidm=" + facultyPidm + " and twgrrole_role = twgrwmrl_role) " + " and twgrmenu_source_ind = " + "   (select nvl( 'B',nvl( max(twgrmenu_source_ind ),'B')) " + "   from twgrmenu " + "   where  twgrmenu_name = '" + menuName + "'   and twgrmenu_source_ind='L') " + " order by twgrmenu_sequence"
 
-        //def sqlQuery = menuName ? "select * from twgrmenu where twgrmenu_name = '" + twgrmenu_name + "' and twgrmenu_source_ind = 'B'" : "select * from twgrmenu where twgrmenu_name = 'bmenu.P_MainMnu' and twgrmenu_source_ind = 'B'"
-
-        twgrmenu_name = twgrmenu_name?: "bmenu.P_MainMnu"
-
-        def sqlQuery = "select * from twgrmenu where  twgrmenu_name = '" + twgrmenu_name + "' and twgrmenu_enabled = 'Y' and twgrmenu_source_ind = (select nvl( 'B',nvl( max(twgrmenu_source_ind ),'B')) from twgrmenu where twgrmenu_name = '" + twgrmenu_name + "' and twgrmenu_source_ind='L') order by twgrmenu_sequence";
+        def randomSequence = RandomUtils.nextInt(1000);
 
         sql.eachRow(sqlQuery, {
 
             def mnu = new SelfServiceMenu()
 
             mnu.formName = toggleSeparator(it.twgrmenu_url)
-            mnu.pageName = menuName ? toggleSeparator(it.twgrmenu_url) : null
+            mnu.pageName = it.twgrmenu_submenu_ind == "Y" ? null : toggleSeparator(it.twgrmenu_url)
             mnu.name = it.twgrmenu_url_text
             mnu.caption = toggleSeparator(it.twgrmenu_url_text)
             mnu.pageCaption = mnu.caption
-            mnu.type = menuName ? 'FORM' : 'MENU'
-            mnu.menu = parentMenuName
-            mnu.url = menuName ? ConfigurationHolder.config.banner8.SS.url + it.twgrmenu_url : ""
-            mnu.seq = parentSequence.toString() + "-" + it.twgrmenu_sequence.toString()
+            mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
+            mnu.menu = menuTrail ? menuTrail : firstMenu
+            mnu.url = it.twgrmenu_db_link_ind == "Y" ? ConfigurationHolder.config.banner8.SS.url + it.twgrmenu_url : toggleSeparator(it.twgrmenu_url)
+            mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
-
-            if (menuName)
-                mnu.parent = toggleSeparator(parentName)
+            mnu.parent = ''
 
             dataMap.add(mnu)
 

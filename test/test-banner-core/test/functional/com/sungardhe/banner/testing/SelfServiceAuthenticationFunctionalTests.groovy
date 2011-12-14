@@ -62,7 +62,7 @@ class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
              
             get "/ssb/foobar/view"
             
-            assertTitle 'Login'             
+            assertTitle 'Sign In'
             assertStatus 200
             assertEquals 'text/html', page?.webResponse?.contentType
          }
@@ -76,7 +76,7 @@ class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
              
             get "/ssb/foobar/view"
             
-            assertTitle 'Login'             
+            assertTitle 'Sign In'
             assertStatus 200
             assertEquals 'text/html', page?.webResponse?.contentType
          }

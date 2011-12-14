@@ -21,6 +21,7 @@ import org.springframework.security.authentication.LockedException
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import com.sungardhe.banner.controllers.ControllerUtils
 
 class LoginController {
 
@@ -94,6 +95,10 @@ class LoginController {
 			// have cookie but the page is guarded with IS_AUTHENTICATED_FULLY
 			redirect action: full, params: params
 		}
+
+        def uri = ControllerUtils.buildLogoutRedirectURI()
+       // session.invalidate()
+        render view: "denied", model: [uri: uri]
 	}
 
 	/**
