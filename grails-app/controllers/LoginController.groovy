@@ -97,7 +97,7 @@ class LoginController {
 		}
 
         def uri = ControllerUtils.buildLogoutRedirectURI()
-        session.invalidate()
+       // session.invalidate()
         render view: "denied", model: [uri: uri]
 	}
 
