@@ -28,8 +28,12 @@ class LogoutController {
 
 
     def timeout = {
-        def uri = ControllerUtils.buildLogoutRedirectURI()
-        session.invalidate()
-        render view: "timeout", model: [uri: uri]
+        if(request?.getHeader("referer")?.endsWith("login/auth")){
+            forward(controller:"login")
+        } else {
+            def uri = ControllerUtils.buildLogoutRedirectURI()
+            session.invalidate()
+            render view: "timeout", model: [uri: uri]
+        }
     }
 }
