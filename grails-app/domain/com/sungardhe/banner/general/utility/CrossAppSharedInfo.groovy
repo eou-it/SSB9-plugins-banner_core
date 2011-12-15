@@ -29,15 +29,33 @@ class CrossAppSharedInfo implements Serializable {
     @Column(name="HORCRSI_INFO_TYPE")
     String infoType
 
-    /**
-     * todo HOW TO SHARE NON-STRING DATA ???
-     */
+    @Transient
+    Object info
+
     @Column(name="HORCRSI_INFO")
-    String info
+    String stringInfo
+
+    @Column(name="HORCRSI_DATE_INFO")
+    Date dateInfo
 
     static constraints = {
     }
 
+    Object getInfo () {
+        if (getDateInfo()) {
+            return dateInfo
+        } else {
+            return stringInfo
+        }
+    }
+
+    void setInfo (Object info) {
+         if (info instanceof Date){
+             dateInfo = info
+         } else {
+             stringInfo = info
+         }
+    }
 
     boolean equals(o) {
         if (this.is(o)) return true;
@@ -46,7 +64,6 @@ class CrossAppSharedInfo implements Serializable {
         CrossAppSharedInfo that = (CrossAppSharedInfo) o;
 
         if (appName != that.appName) return false;
-        if (info != that.info) return false;
         if (infoType != that.infoType) return false;
         if (userName != that.userName) return false;
 
@@ -55,10 +72,9 @@ class CrossAppSharedInfo implements Serializable {
 
     int hashCode() {
         int result;
-        result = (userName != null ? userName.hashCode() : 0);
-        result = 31 * result + (appName != null ? appName.hashCode() : 0);
-        result = 31 * result + (infoType != null ? infoType.hashCode() : 0);
-        result = 31 * result + (info != null ? info.hashCode() : 0);
+        result = userName.hashCode();
+        result = 31 * result + appName.hashCode();
+        result = 31 * result + infoType.hashCode();
         return result;
     }
 
@@ -69,7 +85,7 @@ class CrossAppSharedInfo implements Serializable {
         sb . append ( "{userName='" ) . append ( userName ) . append ( '\'' ) ;
         sb . append ( ", appName='" ) . append ( appName ) . append ( '\'' ) ;
         sb . append ( ", infoType='" ) . append ( infoType ) . append ( '\'' ) ;
-        sb . append ( ", info='" ) . append ( info ) . append ( '\'' ) ;
+        sb . append ( ", info=" ) . append ( info ) ;
         sb . append ( '}' ) ;
         return sb . toString ( ) ;
     }
