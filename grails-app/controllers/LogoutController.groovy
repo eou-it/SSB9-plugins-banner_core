@@ -1,4 +1,7 @@
 import com.sungardhe.banner.controllers.ControllerUtils
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
+import org.springframework.security.core.context.SecurityContextHolder
+import javax.servlet.http.Cookie
 
 /** *******************************************************************************
  Copyright 2009-2011 SunGard Higher Education. All Rights Reserved.
@@ -33,6 +36,10 @@ class LogoutController {
         } else {
             def uri = ControllerUtils.buildLogoutRedirectURI()
             session.invalidate()
+            Cookie cookie = new Cookie("JSESSIONID", null);
+            cookie.setPath(request.getContextPath());
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
             render view: "timeout", model: [uri: uri]
         }
     }
