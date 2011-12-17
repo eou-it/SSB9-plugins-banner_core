@@ -3,39 +3,36 @@ package com.sungardhe.banner.general.utility
 import javax.persistence.*
 
 @Entity
-@Table(name="ABCDEDF")
-class CrossAppSharedInfo implements Serializable {
+@Table(name="GURSESS")
+class MultiAppUserSession implements Serializable {
 
     @Id
-    @Column(name = "HORCRSI_SURROGATE_ID")
-    @SequenceGenerator(name = "HORCRSI_SEQ_GEN", allocationSize = 1, sequenceName = "HORCRSI_SURROGATE_ID_SEQUENCE")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "HORCRSI_SEQ_GEN")
+    @Column(name = "GURSESS_SURROGATE_ID")
+    @SequenceGenerator(name = "GURSESS_SEQ_GEN", allocationSize = 1, sequenceName = "GURSESS_SURROGATE_ID_SEQUENCE")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GURSESS_SEQ_GEN")
     Long id
 
     /**
-     * Optimistic lock token for HORCRSI
+     * Optimistic lock token for GURSESS
      */
     @Version
-    @Column(name = "HORCRSI_VERSION", nullable = false, precision = 19)
+    @Column(name = "GURSESS_VERSION", nullable = false, precision = 19)
     Long version
 
 
-    @Column(name="HORCRSI_USER_NAME")
+    @Column(name="GURSESS_USER_NAME")
     String userName
 
-    @Column(name="HORCRSI_APP_NAME")
-    String appName
-
-    @Column(name="HORCRSI_INFO_TYPE")
+    @Column(name="GURSESS_INFO_TYPE")
     String infoType
 
     @Transient
     Object info
 
-    @Column(name="HORCRSI_INFO")
+    @Column(name="GURSESS_INFO")
     String stringInfo
 
-    @Column(name="HORCRSI_DATE_INFO")
+    @Column(name="GURSESS_DATE_INFO")
     Date dateInfo
 
     static constraints = {
@@ -61,9 +58,8 @@ class CrossAppSharedInfo implements Serializable {
         if (this.is(o)) return true;
         if (getClass() != o.class) return false;
 
-        CrossAppSharedInfo that = (CrossAppSharedInfo) o;
+        MultiAppUserSession that = (MultiAppUserSession) o;
 
-        if (appName != that.appName) return false;
         if (infoType != that.infoType) return false;
         if (userName != that.userName) return false;
 
@@ -73,7 +69,6 @@ class CrossAppSharedInfo implements Serializable {
     int hashCode() {
         int result;
         result = userName.hashCode();
-        result = 31 * result + appName.hashCode();
         result = 31 * result + infoType.hashCode();
         return result;
     }
@@ -81,11 +76,10 @@ class CrossAppSharedInfo implements Serializable {
 
     public String toString ( ) {
         final StringBuilder sb = new StringBuilder ( ) ;
-        sb . append ( "CrossAppSharedInfo" ) ;
+        sb . append ( "MultiAppUserSession" ) ;
         sb . append ( "{userName='" ) . append ( userName ) . append ( '\'' ) ;
-        sb . append ( ", appName='" ) . append ( appName ) . append ( '\'' ) ;
         sb . append ( ", infoType='" ) . append ( infoType ) . append ( '\'' ) ;
-        sb . append ( ", info=" ) . append ( info ) ;
+        sb . append ( ", info=" ) . append ( getInfo() ) ;
         sb . append ( '}' ) ;
         return sb . toString ( ) ;
     }
