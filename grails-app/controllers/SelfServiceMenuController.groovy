@@ -11,6 +11,7 @@
  ********************************************************************************* */
 
 import org.apache.log4j.Logger
+import org.springframework.security.core.context.SecurityContextHolder
 
 /**
  * SelfService controller returns menu as XML format
@@ -38,7 +39,7 @@ class SelfServiceMenuController {
             menu = request.parameterMap["menu"][0]
         }
 
-        list = getMenu(menuName, menu, session?.facultyPidm)
+        list = getMenu(menuName, menu, SecurityContextHolder?.context?.authentication?.principal?.pidm )
 
         def sw = new StringWriter()
         def xml = new groovy.xml.MarkupBuilder(sw)
@@ -50,24 +51,20 @@ class SelfServiceMenuController {
         }
         render(text: sw.toString(), contentType: "text/xml", encoding: "UTF-8")
     }
+
+
     /**
      * Driver for banner menu
      */
-
-    private def getMenu(def menuName, def menuTrail, def facultyPidm) {
-        def list
+    private def getMenu( menuName, menuTrail, pidm ) {
         if (log.isDebugEnabled()) log.debug("Menu Controller getmenu")
 
         def currentMenu = menuName ? menuName : "Banner"
 
         if (session[currentMenu] == null) {
-            list = selfServiceMenuService.bannerMenu(menuName, menuTrail, facultyPidm)
-            session[currentMenu] = list
+            session[currentMenu] = selfServiceMenuService.bannerMenu(menuName, menuTrail, pidm)
         }
-        else {
-            list = session[currentMenu]
-        }
-        return list
-    }
 
+        return session[currentMenu]
+    }
 }
