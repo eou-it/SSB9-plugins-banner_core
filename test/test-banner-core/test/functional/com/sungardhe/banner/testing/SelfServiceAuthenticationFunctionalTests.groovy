@@ -114,7 +114,7 @@ class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
     }
      
      
-    protected def getDataSource() {
+    def getDataSource() {
         if (!dataSource) {
             ApplicationContext ctx = (ApplicationContext) AH.getApplication().getMainContext()
             dataSource = (DataSource) ctx.getBean( 'dataSource' )
