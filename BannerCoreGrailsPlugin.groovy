@@ -1,4 +1,4 @@
-/*********************************************************************************
+/* ********************************************************************************
  Copyright 2009-2011 SunGard Higher Education. All Rights Reserved.
  This copyrighted software contains confidential and proprietary information of
  SunGard Higher Education and its subsidiaries. Any use of this software is limited
@@ -60,7 +60,7 @@ import com.sungardhe.banner.service.DefaultLoaderService
 import com.sungardhe.banner.security.ResetPasswordService
 
 /**
- * A Grails Plugin providing cross cutting concerns such as security and database access for Banner web applications.
+ * A Grails Plugin supporting cross cutting concerns such as security and database access for Banner web applications.
  **/
 class BannerCoreGrailsPlugin {
 

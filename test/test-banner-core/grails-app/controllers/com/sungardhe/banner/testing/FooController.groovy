@@ -1,4 +1,4 @@
-/*********************************************************************************
+/* ********************************************************************************
  Copyright 2009-2011 SunGard Higher Education. All Rights Reserved.
  This copyrighted software contains confidential and proprietary information of 
  SunGard Higher Education and its subsidiaries. Any use of this software is limited 
@@ -33,6 +33,12 @@ class FooController  {
     static List mixInRestActions = [ 'show', 'list', 'create', 'update', 'destroy' ]
 
     def fooService  // injected by Spring
+
+
+
+
+//   ********** ALL REMAINING CODE PERTAINS TO FRAMEWORK TESTING. *********
+
 
     def invokedRenderCallbacks = [] // this is used for testing the framework -- it is NOT something controllers would normally have
 
