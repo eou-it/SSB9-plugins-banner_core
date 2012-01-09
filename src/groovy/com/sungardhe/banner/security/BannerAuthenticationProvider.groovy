@@ -1,4 +1,4 @@
-/*********************************************************************************
+/* ********************************************************************************
  Copyright 2009-2011 SunGard Higher Education. All Rights Reserved.
  This copyrighted software contains confidential and proprietary information of 
  SunGard Higher Education and its subsidiaries. Any use of this software is limited 
@@ -55,38 +55,38 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     private static def applicationContext // set lazily via 'getApplicationContext()'
 
-    def dataSource                  // injected by Spring
-    def authenticationDataSource	// injected by Spring
+    def dataSource               // injected by Spring
+    def authenticationDataSource // injected by Spring
 
 
     public boolean supports( Class clazz ) {
         log.trace "BannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isAdministrativeBannerEnabled() == true}"
         clazz == UsernamePasswordAuthenticationToken && isAdministrativeBannerEnabled()
     }
-    
-    
+
+
     /**
      * Authenticates the user.
      * @param authentication an Authentication object containing a user's credentials
      * @return Authentication an authentication object providing authentication results and holding the user's authorities, or null
      **/
     public Authentication authenticate( Authentication authentication ) {
-                
+
         log.trace "BannerAuthenticationProvider.authenticate invoked"
 
         try {
             def authenticationResults = defaultAuthentication( authentication )
-        
+
             // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
             // Note that when we execute this inside a try-catch block, we need to re-throw exceptions we want caught by the filter
             verifyAuthenticationResults this, authentication, authenticationResults
-           
+
             loadDefault( getApplicationContext(), authenticationResults['oracleUserName'] )
             getApplicationContext().publishEvent( new BannerAuthenticationEvent( authenticationResults['oracleUserName'], true, '', '', new Date(), '' ) )
-            
+
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, dataSource )
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String  
-                      
+
             newAuthenticationToken( this, authenticationResults )
         }
         catch (DisabledException de)           { throw de }
@@ -99,16 +99,16 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             return null // this is a rare situation where we want to bury the exception - we *need* to return null
         }
     }
-    
-    
+
+
     public static def getApplicationContext() {
         if (!applicationContext) {
             applicationContext = (ApplicationContext) AH.getApplication().getMainContext()
         }
         applicationContext
     }
-    
-    
+
+
     /**
      * Throws appropriate Spring Security exceptions for disabled accounts, locked accounts, expired pin, 
      * @throws DisabledException if account is disabled
@@ -117,26 +117,26 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
      * @throws RuntimeException if the pin was invalid or the id was incorrect (i.e., the default error)
      **/
     public static verifyAuthenticationResults( AuthenticationProvider provider, Authentication authentication, Map authenticationResults ) {
-        
+
         def report = BannerAuthenticationProvider.&handleFailure.curry( provider, authentication, authenticationResults )
-        
+
         if (authenticationResults.disabled) report( new DisabledException('') )
         if (authenticationResults.expired)  report( new CredentialsExpiredException('') )
         if (authenticationResults.locked)   report( new LockedException('') )
         if (!authenticationResults.valid)   report( new BadCredentialsException('') )
     }
-    
-    
+
+
     private static handleFailure( provider, authentication, authenticationResults, exception ) { 
-        
+
         log.warn "${provider.class.simpleName} was not able to authenticate user $authentication.name due to exception ${exception.class.simpleName}: ${exception.message} " 
         def msg = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( exception.class.simpleName, "Exception" ) )
         def module = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( provider.class.simpleName, "AuthenticationProvider" ) )
         getApplicationContext().publishEvent( new BannerAuthenticationEvent( authentication.name, false, msg, module, new Date(), 1 ) )
         throw exception 
     }
-    
-    
+
+
     /**
      * Returns a new authentication object based upon the supplied arguments.  
      * This method, when used within other providers, should NOT catch the exceptions but should let them be caught by the filter.
@@ -147,7 +147,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
      * @throws AuthenticationException various AuthenticationException types may be thrown, and should NOT be caught by providers using this method
      **/
     public static def newAuthenticationToken( provider, authenticationResults ) { 
-        
+
         try {
             def user = new BannerUser( authenticationResults.name,                       // username
                                        authenticationResults.credentials as String,      // password
@@ -169,7 +169,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             // We don't expect an exception when simply constructing the user and token, so we'll report this as an error
             log.error "BannerAuthenticationProvider.newAuthenticationToken was not able to construct a token for user $authenticationResults.name, due to exception: ${e.message}"
             return null // this is a rare situation where we want to bury the exception - we *need* to return null to allow other providers a chance...
-        }        
+        }
     }
 
 
@@ -188,18 +188,18 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             return determineAuthorities( authenticationResults, db )
         } finally {
             conn?.close()
-        }        
+        }
     }
-    
-    
+
+
     /**
      * Returns the authorities granted for the identified user.
      **/
     public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, Sql db ) {
-        
+
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
         if (!authenticationResults.oracleUserName) return authorities // empty list
-        
+
         try {
             // We query the database for all role assignments for the user, using an unproxied connection.
             // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
@@ -211,7 +211,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         } catch (SQLException e) {
             log.error "BannerAuthenticationProvider not able to determine Authorities for user ${authenticationResults.oracleUserName} due to exception $e.message"
             return new ArrayList<GrantedAuthority>()
-        } 
+        }
         log.trace "BannerAuthenticationProvider.determineAuthorities is returning ${authorities?.size()} authorities. "
         authorities
     }
@@ -258,12 +258,12 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
       log.trace "BannerAuthenticationProvider.getFullName is returning $fullName"
       fullName
     }
-    
-    
+
+
     private def isAdministrativeBannerEnabled() {
         CH.config.administrativeBannerEnabled instanceof Boolean ? CH.config.administrativeBannerEnabled : true // default is 'true'
     }
-    
+
 
     private def defaultAuthentication( Authentication authentication ) {
         def conn
@@ -279,7 +279,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
                                       valid:          true ].withDefault { k -> false }
             log.trace "BannerAuthenticationProvider.defaultAuthentication successfully authenticated user ${authentication.name} and will return $authenticationResults"
             authenticationResults
-        } 
+        }
         catch (SQLException e) {
             switch (e.getErrorCode()) {
                 case 1017 : // 'Invalid userName/password'
