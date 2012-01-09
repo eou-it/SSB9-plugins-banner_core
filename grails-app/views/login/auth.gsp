@@ -3,8 +3,11 @@
 <head>
     <title><g:message code="com.sungardhe.banner.login.title"/></title>
     <link rel="shortcut icon" href="${resource(dir:'images',file:'favicon.ico')}" type="image/x-icon"/>
-<link rel="stylesheet" href="${resource(dir: 'css', file: 'login.css')}"/>
+    <link rel="stylesheet" href="${resource(dir: 'css', file: 'login.css')}"/>
 <!--<link rel="stylesheet" href="${resource(dir: 'css', file: 'rtl-login.css')}"/>-->
+    <g:if test="${message(code: 'default.language.direction')  == 'rtl'}">
+        <link rel="stylesheet" href="${resource(dir: 'css', file: 'rtl-login.css')}"/>
+    </g:if>
 <!--[if IE 7]>
 	<link href="fix-ie7.css" rel="stylesheet" type="text/css" />
 
