@@ -210,3 +210,17 @@ INPUT[type="submit"]:hover {
     color: #2200C1;
 }
 
+/* The following entry was added as a fix for aligning login page fields in Safari 4x*/
+/* HRU-2870*/
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    .splashBg .logIn DIV {
+        float: left;
+        margin-top: 5px;
+    }
+
+    .signin-btn {
+        position: relative;
+        top: -1px;
+    }
+}
+
