@@ -40,7 +40,7 @@
 				<div class="userName"><span><input type='text'  name='j_username' id='j_username' /></span></div>
 				<div class="password"><span><input type='password' name='j_password' id='j_password' /></span></div>
 			</g:else>
-			<div class="signin-btn"><input type='submit' value="${message(code: 'com.sungardhe.banner.login.signin', default: 'Sign In')}" id="sign-in-btn" height="32px"/></div>
+			<div class="signin-button-wrapper"><input type='submit' value="${message(code: 'com.sungardhe.banner.login.signin', default: 'Sign In')}" id="sign-in-btn" class="signin-button" /></div>
 		</div>
       </form>
 	</div>

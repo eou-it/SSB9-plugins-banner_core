@@ -1,213 +1,264 @@
-BODY {
-    margin: 0px;
-    padding: 0px;
-    font: normal 100% Arial, Helvetica, sans-serif;
+BODY
+{
+	margin: 0px;
+	padding: 0px;
+	font: normal 66.7% Arial, Helvetica, sans-serif;
 }
-
 /*-----------------------------------------------------------
 LOG IN
 -----------------------------------------------------------*/
-.pageBg {
-    background: #4C8DB5 url(../images/page-bg.png) repeat-x 0 0;
-}
 
-.splashBg {
-    background: url(../images/splash-bg-light.png) no-repeat 0 0;
-    height: 404px;
-    width: 704px;
-    margin: 140px auto 0px;
-    -moz-box-shadow: 0 0 8px 8px #16577F;
-    -webkit-box-shadow: 0 0 8px 8px #16577F;
-    box-shadow: 0px 0px 8px #16577F;
+.pageBg
+{
+	background: #4C8DB5 url(../images/page-bg.png) repeat-x 0 0;
 }
-
-.splashBg .appName {
-    color: #FFFFFF;
-    font-size: 1.4em;
-    font-weight: bold;
-    margin: -10px 50px 0 0;
-    padding-top: 4px;
-    text-align: right;
+.splashBg
+{
+	background: url(../images/splash-bg-light.png) no-repeat 0 0;
+	height: 404px;
+	width: 704px;
+	margin: 140px auto 0px;
+	-moz-box-shadow: 0 0 8px 8px #16577F;
+	-webkit-box-shadow: 0 0 8px 8px #16577F;
+	box-shadow: 0px 0px 8px #16577F;
+	position: relative;
 }
-
+.splashBg .appName
+{
+	color: #FFFFFF;
+	font-size: 24px;
+	font-weight: bold;
+	padding-top: 4px;
+	text-align: right;
+	position: absolute;
+	top: 70px;
+	right: 50px;
+}
 .splashBg .logIn {
     float: none;
     margin: 53px 0 0 254px;
+    position: absolute;
+    top: 138px;
 }
-
-.splashBg .logIn DIV {
-    float: left;
-    margin-top: 0;
+.splashBg .logIn DIV
+{
+	float: left;
+	margin-top: 0;
 }
-
 .splashBg DIV SPAN INPUT {
-    width: 130px;
-    outline: none;
     border-style: none;
-    border: 1 solid #000000;
-    padding: 1px;
-    margin: 2px 0 0 0px;
-    height: 15px;
-}
-
-.splashBg .userName {
-    background: url(../images/textbox-sprites.png) no-repeat left -27px;
-    padding: 0px 0px 0px 20px;
-    margin-right: 10px;
-    height: 24px;
-    width: 139px;
-}
-
-.splashBg .userName SPAN {
-    display: block;
-    background: url(../images/textbox-sprites.png) no-repeat right 0;
-    padding-right: 10px;
-    height: 24px;
-}
-
-.splashBg .password {
-    background: url(../images/textbox-sprites.png) no-repeat left 0;
-    padding: 0px 0px 0px 20px;
-    height: 24px;
-    width: 139px;
-    margin-right: 10px;
-}
-
-.splashBg .password SPAN {
-    display: block;
-    background: url(../images/textbox-sprites.png) no-repeat right 0;
-    padding-right: 10px;
-    height: 24px;
-}
-
-.splashBg A:link, .splashBg A:visited, .splashBg .submit-button {
-    background: url(../images/login-button-bg.png) no-repeat 0 0;
-    display: block;
-    width: 77px;
-    height: 31px;
-    text-align: center;
-    color: #FFF;
-    text-decoration: none;
-    padding-top: 8px;
-    font-size: 0.75em;
-    font-weight: bold;
-    position: relative;
-    top: -4px;
-}
-
-.splashBg .copyright {
-    clear: both;
-    color: #FFFFFF;
-    font-size: 0.75em;
-    margin: 0 50px 0 93px;
-    padding-top: 25px;
-}
-
-.splashBg .appName SPAN {
     font-size: 14px;
-    vertical-align: top;
+    height: 16px;
+    margin: 2px 0 0 0;
+    outline: medium none;
+    padding: 1px;
+    width: 130px;
 }
-
-.loginMsg {
-    text-align: right;
-    color: #FFF;
-    padding-top: 44px;
-    margin-right: 50px;
+.splashBg .userName
+{
+	background: url(../images/textbox-sprites.png) no-repeat left -27px;
+	padding: 0px 0px 0px 20px;
+	margin-right: 10px;
+	height: 24px;
+	width: 139px;
 }
-
-INPUT[type="submit"] {
-    border: 0;
-    background: url('../images/login-button-sprite.png') no-repeat 0 0;
-    width: 78px;
-    height: 32px;
-    color: #FFF;
-    line-height: 32px;
-    font-weight: bold;
-    padding-bottom: 3px;
-    position: relative;
-    bottom: 4px;
-    vertical-align: text-top;
+.splashBg .userName SPAN
+{
+	display: block;
+	background: url(../images/textbox-sprites.png) no-repeat right 0;
+	padding-right: 10px;
+	height: 24px;
 }
-
-INPUT[type="submit"]:hover {
-    background: url('../images/login-button-sprite.png') no-repeat 0 -37px;
-    width: 78px;
-    height: 32px;
-    color: #FFF;
-    line-height: 32px;
-    font-weight: bold;
-    vertical-align: text-top;
+.splashBg .password
+{
+	background: url(../images/textbox-sprites.png) no-repeat left 0;
+	padding: 0px 0px 0px 20px;
+	height: 24px;
+	width: 139px;
+	margin-right: 10px;
 }
-
-#sign-in-btn {
-    padding: 0px;
+.splashBg .password SPAN
+{
+	display: block;
+	background: url(../images/textbox-sprites.png) no-repeat right 0;
+	padding-right: 10px;
+	height: 24px;
 }
-
-.icon-error {
-    background: transparent url(../images/icon-error-16x16.png) no-repeat scroll 0 bottom;
-    padding-left: 1.5em;
+.splashBg A:link, .splashBg A:visited, .splashBg .submit-button
+{
+	background: url(../images/login-button-bg.png) no-repeat 0 0;
+	display: block;
+	width: 77px;
+	height: 31px;
+	text-align: center;
+	color: #FFF;
+	text-decoration: none;
+	padding-top: 8px;
+	font-size: 0.75em;
+	font-weight: bold;
+	position: relative;
+	top: -4px;
 }
-
-.splashBg .userName-error-state {
-    background: url(../images/textbox-sprites.png) no-repeat left -81px;
-    padding: 0px 0px 0px 20px;
-    margin-right: 10px;
-    height: 24px;
-    width: 139px;
-}
-
-.splashBg .userName-error-state SPAN {
-    display: block;
-    background: url(../images/textbox-sprites.png) no-repeat right -81px;
-    padding-right: 10px;
-    height: 24px;
-}
-
-.splashBg .password-error-state {
-    background: url(../images/textbox-sprites.png) no-repeat left -54px;
-    padding: 0px 0px 0px 20px;
-    height: 24px;
-    width: 139px;
-    margin-right: 10px;
-}
-
-.splashBg .password-error-state SPAN {
-    display: block;
-    background: url(../images/textbox-sprites.png) no-repeat right -54px;
-    padding-right: 10px;
-    height: 24px;
-}
-
-.signin-btn {
-    position: relative;
-    top: -2px;
-}
-
-.ie-warning {
-    background: url(../images/icon-warning-24x24.png) no-repeat 7px scroll transparent #f7eca3;
+.splashBg .copyright {
+    bottom: 5px;
     color: #FFFFFF;
-    font-family: Arial;
-    font-size: 0.917em;
-    margin: 15px 15px 0;
-    border: 1px solid #FFCC33;
-    text-align: left;
-    visibility: hidden;
-    vertical-align: middle;
-    border-radius: 2px;
-    /*for IE 9*/
+    font-size: 12px;
+    margin: 0 50px 0 93px;
+    position: absolute;
+}
+.splashBg .appName SPAN
+{
+	font-size: 14px;
+	vertical-align: top;
+}
+.loginMsg
+{
+	text-align: right;
+	color: #FFF;
+	position: absolute;
+	top: 125px;
+	right: 50px;
+	font-size:16px;
+}
+/*INPUT[type="submit"]
+{
+	border: 0;
+	background: url('../images/login-button-sprite.png') no-repeat 0 0;
+	width: 78px;
+	height: 32px;
+	color: #FFF;
+	line-height: 32px;
+	font-weight: bold;
+	padding-bottom: 3px;
+	position: relative;
+	bottom: 4px;
+	vertical-align: text-top;
+}
+INPUT[type="submit"]:hover
+{
+	background: url('../images/login-button-sprite.png') no-repeat 0 -37px;
+	width: 78px;
+	height: 32px;
+	color: #FFF;
+	line-height: 32px;
+	font-weight: bold;
+	vertical-align: text-top;
+}*/
+#sign-in-btn
+{
+	/*padding: 0px;*/
+}
+.icon-error
+{
+	background: transparent url(../images/icon-error-16x16.png) no-repeat scroll 0 bottom;
+	padding-left: 1.5em;
+}
+.splashBg .userName-error-state
+{
+	background: url(../images/textbox-sprites.png) no-repeat left -81px;
+	padding: 0px 0px 0px 20px;
+	margin-right: 10px;
+	height: 24px;
+	width: 139px;
+}
+.splashBg .userName-error-state SPAN
+{
+	display: block;
+	background: url(../images/textbox-sprites.png) no-repeat right -81px;
+	padding-right: 10px;
+	height: 24px;
+}
+.splashBg .password-error-state
+{
+	background: url(../images/textbox-sprites.png) no-repeat left -54px;
+	padding: 0px 0px 0px 20px;
+	height: 24px;
+	width: 139px;
+	margin-right: 10px;
+}
+.splashBg .password-error-state SPAN
+{
+	display: block;
+	background: url(../images/textbox-sprites.png) no-repeat right -54px;
+	padding-right: 10px;
+	height: 24px;
+}
+.ie-warning
+{
+	background: url(../images/icon-warning-24x24.png) no-repeat 7px scroll transparent #f7eca3;
+	color: #FFFFFF;
+	font-family: Arial;
+	font-size: 0.917em;
+	margin: 15px 15px 0;
+	border: 1px solid #FFCC33;
+	text-align: left;
+	visibility: hidden;
+	vertical-align: middle;
+	border-radius: 2px;
+/*for IE 9*/
+}
+.ie-warning DIV
+{
+	color: #333333;
+	margin: 10px;
+	padding-left: 30px;
+	vertical-align: middle;
+}
+.ie-warning SPAN
+{
+	text-decoration: underline;
+	cursor: pointer;
+	color: #2200C1;
 }
 
-.ie-warning DIV {
-    color: #333333;
-    margin: 10px;
-    padding-left: 30px;
-    vertical-align: middle;
+.signin-button {
+	font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+	font-size: 1.2em;
+	color: #ffffff;
+	padding: .5em 1.75em;
+	background: transparent; /* Old browsers */
+	background: -moz-linear-gradient(top,  #658ea8 0%, #194161 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#658ea8), color-stop(100%,#194161)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #658ea8 0%,#194161 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #658ea8 0%,#194161 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #658ea8 0%,#194161 100%); /* IE10+ */
+	background: linear-gradient(top,  #658ea8 0%,#194161 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#658ea8', endColorstr='#194161',GradientType=0 ); /* IE6-8 */
+	border-radius: 6px;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+	border: 1px solid #003366;
+	text-shadow:
+		0px -1px 0px rgba(000,000,000,0.7),
+		0px 1px 0px rgba(255,255,255,0.3);
 }
 
-.ie-warning SPAN {
-    text-decoration: underline;
-    cursor: pointer;
-    color: #2200C1;
+.signin-button:hover {
+  	background: transparent; /* Old browsers */
+	background: -moz-linear-gradient(top,  #97b2c2 0%, #25506b 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#97b2c2), color-stop(100%,#25506b)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #97b2c2 0%,#25506b 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #97b2c2 0%,#25506b 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #97b2c2 0%,#25506b 100%); /* IE10+ */
+	background: linear-gradient(top,  #97b2c2 0%,#25506b 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#97b2c2', endColorstr='#25506b',GradientType=0 ); /* IE6-8 */
+}
+
+.signin-button:active {
+	background: #194a6a; /* Old browsers */
+	background: -moz-linear-gradient(top,  #194a6a 0%, #658ea8 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#194a6a), color-stop(100%,#658ea8)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #194a6a 0%,#658ea8 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #194a6a 0%,#658ea8 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #194a6a 0%,#658ea8 100%); /* IE10+ */
+	background: linear-gradient(top,  #194a6a 0%,#658ea8 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#194a6a', endColorstr='#658ea8',GradientType=0 ); /* IE6-8 */
+}
+
+.signin-button-wrapper {
+    position: relative;
+    bottom: .5em;
 }
 
 /* The following entry was added as a fix for aligning login page fields in Safari 4x*/

@@ -30,10 +30,12 @@ LOG IN
 	padding-top:24px;
 	font-size:1.4em;
 	font-weight:bold;
+    top: 50px;
+    right: auto;
 }
 
 .splashBg .logIn {
-	margin:47px 254px 0px 0px;
+	margin: 54px 254px 0px 0px;
 	float:none;
 }
 
@@ -53,7 +55,7 @@ LOG IN
 }
 
 .splashBg .userName {
-	background:url(../images/textbox-sprites-rtl.png) no-repeat left -25px;
+	background:url(../images/textbox-sprites-rtl.png) no-repeat left -27px;
 	padding:0px 0px 0px 20px;
 	margin-right:0px;
 	height:23px;
@@ -64,7 +66,7 @@ LOG IN
 
 .splashBg .userName span {
 	display:block;
-	background:url(../images/textbox-sprites-rtl.png) no-repeat right -25px;
+	background:url(../images/textbox-sprites-rtl.png) no-repeat right -27px;
 	padding-right:10px;
 	height:23px;
 }
@@ -143,6 +145,7 @@ LOG IN
 	color:#FFF;
 	padding-top:36px;
 	text-align: right;
+    top: 230px;
 }
 
 .loginMsg {
@@ -151,26 +154,18 @@ LOG IN
 	padding-top:20px;
 	margin-left:51px;
 	background-image:url(../images/icon-error-16x16.png) left top no-repeat;
+    top: 107px;
+    right: auto;
 }
-input[type="submit"] {
-    border: 0;
-    background: url('../images/login-button-sprite.png') no-repeat 0 0;
-    width: 78px;
-    height: 32px;
-    color: #FFF;
-    line-height: 32px;
-    font-weight: bold;
+
+.signin-button {
+    left: -269px;
+    font-size: 1.1em;
+    padding: 0.15em 0.5em;
     position: relative;
-    bottom: 4px;
-    left:-240px;   
 }
 
-input[type="submit"]:hover {
-    background: url('../images/login-button-sprite.png') no-repeat 0 -37px;  
+.signin-button-wrapper {
+    bottom: 0.25em;
+    position: relative;
 }
-
-#sign-in-btn {
-	padding:0px;
-}
-
-  
