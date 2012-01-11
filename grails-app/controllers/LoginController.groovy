@@ -53,7 +53,7 @@ class LoginController {
 	def auth = {
 
 		def config = SpringSecurityUtils.securityConfig
-
+		String forgotPasswordUrl =  "${request.contextPath}/login/resetPassword"
 		if (springSecurityService.isLoggedIn()) {
 			redirect uri: config.successHandler.defaultTargetUrl
 			return
@@ -62,7 +62,7 @@ class LoginController {
 		String view = 'auth'
 		String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
 
-		render view: view, model: [postUrl: postUrl,
+		render view: view, model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
 		                           rememberMeParameter: config.rememberMe.parameter]
 	}
 
@@ -96,7 +96,7 @@ class LoginController {
 			redirect action: full, params: params
 		}
 
-        def uri = ControllerUtils.buildLogoutRedirectURI()
+		def uri = ControllerUtils.buildLogoutRedirectURI()
        // session.invalidate()
         render view: "denied", model: [uri: uri]
 	}
@@ -175,4 +175,25 @@ class LoginController {
 	def ajaxDenied = {
 		render([error: 'access denied'] as JSON)
 	}
+
+	/**
+     * When user clicks on forgot password URL.
+     */
+    def forgotpassword ={
+        def config = SpringSecurityUtils.securityConfig
+
+        String userName = request.getParameter("j_username")
+        if(userName == null || userName.trim().length() == 0){
+            flash.message =  message( code: "com.sungardhe.banner.resetpassword.username.required.error")
+            String view = 'auth'
+            String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
+            String forgotPasswordUrl =  "${request.contextPath}/login/resetPassword";
+            render view: view, model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl, userNameRequired: true,
+                                       rememberMeParameter: config.rememberMe.parameter]
+        }
+        else{
+            session.setAttribute("currentPage", "questans")
+            redirect controller : "resetPassword", action: "questans", params : params
+        }
+    }
 }

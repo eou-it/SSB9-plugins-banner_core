@@ -18,5 +18,37 @@ class UrlMappings {
 	  }
       "/"(view:"/index")
 	  "500"(view:'/error')
+
+      "/login/resetPassword" {
+             controller = "login"
+             action = "forgotpassword"
+        }
+        "/resetPassword/validateans" {
+            controller = "resetPassword"
+            action = "validateAnswer"
+        }
+        "/resetPassword/resetpin" {
+            controller = "resetPassword"
+            action = "resetPin"
+        }
+        "/resetPassword/auth" {
+            controller = "login"
+            action = "auth"
+        }
+        "/resetPassword/recovery" {
+             controller = "resetPassword"
+             action = "recovery"
+        }
+        "/resetPassword/login/auth" {
+            controller = "login"
+            action = "auth"
+        }
+
+        "/resetPassword/logout/timeout" {
+            controller = "logout"
+            action = "timeout"
+        }
+
 	}
+
 }

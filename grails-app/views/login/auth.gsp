@@ -26,21 +26,31 @@
     <g:if test='${flash.message}'>
         <div class='loginMsg'><span class="icon-error"></span>${flash.message}</div>
     </g:if>
-    <g:else test='${flash.message}'>
+    <g:elseif test='${flash.message}'>
 	  <div class="loginMsg"><g:message code="com.sungardhe.banner.login.prompt"/></div>
+    </g:elseif>
+    <g:else test="${flash.reloginMessage}">
+      <div class="loginMsg">${flash.reloginMessage}</div>
     </g:else>
 	<div class="logIn">
       <form action='${postUrl}' method='POST' id='loginForm'>
 		<div class="textfield-wrapper">
-			<g:if test='${flash.message}'>
+            <g:if test='${userNameRequired}'>
+				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' /></span></div>
+				<div class="password"><span><input type='password' name='j_password' id='j_password' /></span></div>
+			</g:if>
+			<g:elseif test='${flash.message}'>
 				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' /></span></div>
 				<div class="password-error-state"><span><input type='password' name='j_password' id='j_password' /></span></div>
-			</g:if>
+			</g:elseif>
 			<g:else>
 				<div class="userName"><span><input type='text'  name='j_username' id='j_username' /></span></div>
 				<div class="password"><span><input type='password' name='j_password' id='j_password' /></span></div>
 			</g:else>
-			<div class="signin-button-wrapper"><input type='submit' value="${message(code: 'com.sungardhe.banner.login.signin', default: 'Sign In')}" id="sign-in-btn" class="signin-button" /></div>
+			<div class="signin-btn"><input type='submit' value="${message(code: 'com.sungardhe.banner.login.signin', default: 'Sign In')}" id="sign-in-btn" height="32px"  onclick="submitForm()"/></div>
+            <g:if test="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbEnabled == true}">
+                <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" class="forgotpassword">Forgot Password </a></div>
+            </g:if>
 		</div>
       </form>
 	</div>
@@ -78,6 +88,18 @@
 
         window.open("${onLineHelpUrl}?productName=general&formName=login" , '_blank');
         return false;
+    }
+
+	function gotoForgotPassword(){
+         var form = document.getElementById('loginForm');
+         form.action = '${forgotPasswordUrl}';
+         form.submit();
+    }
+
+    function submitForm(){
+      var form = document.getElementById('loginForm');
+         form.action = '${postUrl}';
+         form.submit();
     }
 </script>
 
