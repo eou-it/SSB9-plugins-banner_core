@@ -38,10 +38,10 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
     def db          // set in setUp
 
     protected void setUp(){
-        conn = dataSource.getSsbConnection()
-        db = new Sql( conn )
-        dataSetup()
-        super.setUp()
+      //  conn = dataSource.getSsbConnection()
+      //  db = new Sql( conn )
+      //  dataSetup()
+      //  super.setUp()
     }
   /**
     def testQuestionAnswer(){
