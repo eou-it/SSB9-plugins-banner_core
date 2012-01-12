@@ -27,6 +27,10 @@
                     }
                 })
             }, 500);
+
+            setTimeout( function(){
+                $('input:password').attr('value', '');
+            }, 100);
            });
         </script>
   </head>

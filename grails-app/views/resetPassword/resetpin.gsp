@@ -65,6 +65,10 @@
                     element.parent().prev().removeClass("invalid");
                 }
             });
+
+            setTimeout( function(){
+                $('input:password').attr('value', '');
+            }, 100);
         });
         </script>
   </head>
