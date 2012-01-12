@@ -18,6 +18,16 @@
                 form.action='${cancelUrl}';
                 form.submit();
             }
+           $(document).ready(function (){
+            setTimeout(function() {
+                $(".error-state").each(function(i, element){
+                    if($(element).attr("data-error-message").trim().length != 0){
+                        var errorNotification = new Notification({message: $(element).attr("data-error-message"), type: "error", id: $(element).attr("id")});
+                        notifications.addNotification(errorNotification);
+                    }
+                })
+            }, 500);
+           });
         </script>
   </head>
   <body>
@@ -28,15 +38,20 @@
                   <div class="ui-widget-header"><g:message code="com.sungardhe.banner.resetpassword.resetpassword.title"/></div>
                   <div class="main-wrapper" >
                       <div class="ui-widget-panel">
-                      <form action="${postBackUrl}" method="post" id="recoveryForm">
+                      <form action="${postUrl}" method="post" id="recoveryForm">
                           <table cellpadding="5" cellspacing="10" class="input-table">
                              <g:if test="${infoPage}">
                                  <tr><td class="tabledata"> A web page link has been sent to your e-mail address. Use the link to reset your password.</td> </tr>
                              </g:if>
                               <g:elseif test="${nonPidmIdm}">
-                                  <input type="text" name="nonPidmIdm" value='${nonPidmIdm}'/>
+                                  <input type="hidden" name="nonPidmId" value='${nonPidmIdm}'/>
                              <tr><td class="tabledata" colspan="2"><g:message code="com.sungardhe.banner.resetpassword.recoverycode.message"/></td></tr>
-                             <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text default-state"/> </td></tr>
+                             <g:if test="${flash.message}">
+                                <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text error-state" data-error-message="${flash.message}"/> </td></tr>
+                             </g:if>
+                             <g:else>
+                                <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text default-state"/> </td></tr>
+                             </g:else>
                              </g:elseif>
                           </table>
                           <g:if test="${infoPage}">

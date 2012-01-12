@@ -2,6 +2,9 @@ import com.sungardhe.banner.security.ResetPasswordService
 import java.sql.SQLException
 import org.apache.commons.lang.RandomStringUtils
 import org.apache.commons.codec.binary.Base64
+import javax.servlet.http.HttpSession
+import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,6 +28,7 @@ class ResetPasswordController {
     ResetPasswordService resetPasswordService
 
     def questans ={
+        def config = SpringSecurityUtils.securityConfig
         response.setHeader("Cache-Control", "no-cache")
         response.setHeader("Cache-Control", "no-store")
         response.setDateHeader("Expires", 0)
@@ -46,9 +50,15 @@ class ResetPasswordController {
             String view = 'questans'
             try{
                 Map questionsInfoMap = resetPasswordService.getQuestionInfoByLoginId(id)
+                if(((List)questionsInfoMap.get(id)).size() == 0 && ((List)questionsInfoMap.get(id)).size() < questionsInfoMap.get(id+"qstn_no")){
+                    flash.message = "Security question/answers need to be defined"
+                    redirect (uri: "/resetPassword/auth")
+                }
+                else{
                 session.setAttribute("questions", questionsInfoMap.get(id))
                 session.setAttribute("pidm", questionsInfoMap.get(id+"pidm"))
                 render view: view, model: [questions: questionsInfoMap.get(id), userName: id, postUrl : postUrl, cancelUrl: cancelUrl]
+                }
             }
             catch(SQLException sqle){
                 flash.message = sqle.getMessage()
@@ -56,8 +66,9 @@ class ResetPasswordController {
             }
         }
         else if(resetPasswordService.isNonPidmUser(id)){
-           String postUrl = "${request.contextPath}/resetPassword/recovery"
-            resetPasswordService.generateResetPasswordURL(id, postUrl)
+            String baseUrl = "${CH?.config.banner.events.resetpassword.guest.url}${request.contextPath}/resetPassword/recovery"
+            String postUrl = "${request.contextPath}/resetPassword/recovery"
+            resetPasswordService.generateResetPasswordURL(id, baseUrl)
             String view = 'recovery'
             render view: view, model: [userName: id, postUrl : postUrl, cancelUrl: cancelUrl, infoPage:true]
         }
@@ -146,6 +157,7 @@ class ResetPasswordController {
         String password = request.getParameter("password")
         String confirmPassword = request.getParameter("repassword")
         String pidm = session.getAttribute("pidm")
+        String nonPidm = session.getAttribute("nonPidmId")
         String postBackUrl = "${request.contextPath}/resetPassword/resetpin"
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
         if(session.getAttribute("requestPage") != "resetpin"){
@@ -165,7 +177,12 @@ class ResetPasswordController {
         }
         else{
             try{
+                if(pidm){
                 resetPasswordService.resetUserPassword(pidm, password)
+                }
+                else if(nonPidm){
+                    resetPasswordService.resetNonPidmPassword(nonPidm, password)
+                }
                 session.invalidate()
                 flash.reloginMessage = "Password reset was successful, please relogin"
                 redirect(controller: "login", action: "auth")
@@ -175,7 +192,7 @@ class ResetPasswordController {
                    flash.message = "Password must be only 6 characters long"
                 }
                 else{
-                    flash.message = "Unknow Exception"
+                    flash.message = sqle.getMessage()
                 }
                 String view = 'resetpin'
                 render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
@@ -184,8 +201,8 @@ class ResetPasswordController {
         }
     }
     def recovery ={
-        String postUrl = "${request.contextPath}/resetPassword/recovery"
-        def cancelUrl = "${request.contextPath}/resetPassword/auth"
+        String postUrl = "${request.contextPath}/ssb/resetPassword/validateCode"
+        def cancelUrl = "${request.contextPath}/ssb/resetPassword/auth"
         def token= request.getParameter("token")
         def username = request.getParameter("j_username")
         if(username){
@@ -195,6 +212,8 @@ class ResetPasswordController {
             def decodedToken = new String(new Base64().decode(token))
             def result = resetPasswordService.validateToken(decodedToken)
             if(result.get("nonPidmId")){
+                HttpSession session = request.getSession(true)
+                session.setAttribute("requestPage", "recovery")
                 String view = 'recovery'
                 render view: view, model: [postUrl : postUrl, cancelUrl: cancelUrl, nonPidmIdm:result.get("nonPidmId")]
             }
@@ -207,11 +226,30 @@ class ResetPasswordController {
 
     def validateCode ={
         def recoveryCode = request.getParameter("recoverycode")
-        def nonPidmIdm = request.getParameter("nonPidmIdm")
-
-        Map result = resetPasswordService.validateRecoveryCode(recoveryCode, nonPidmIdm)
-        if(result.get("validate")){
-
+        def nonPidmIdm = request.getParameter("nonPidmId")
+        if(session.getAttribute("requestPage") != "recovery"){
+            session.invalidate()
+            flash.message = "Invalid Request. Try Again!"
+            redirect (uri: "/resetPassword/auth")
+        }
+        else{
+            Map result = resetPasswordService.validateRecoveryCode(recoveryCode, nonPidmIdm)
+            HttpSession session = request.getSession(true)
+            if(result.get("validate")){
+                   session.setAttribute("requestPage", "resetpin")
+                   session.setAttribute("nonPidmId", nonPidmIdm)
+                   String view = 'resetpin'
+                   def postUrl = "${request.contextPath}/resetPassword/resetpin"
+                   def cancelUrl = "${request.contextPath}/resetPassword/auth"
+                   render view: view, model: [postBackUrl : postUrl, cancelUrl: cancelUrl]
+            }
+            else if(result.get("error")){
+                String postUrl = "${request.contextPath}/ssb/resetPassword/validateCode"
+                def cancelUrl = "${request.contextPath}/ssb/resetPassword/auth"
+                flash.message = result.get("error")
+                String view = 'recovery'
+                render view: view, model: [postUrl : postUrl, cancelUrl: cancelUrl, nonPidmIdm:nonPidmIdm]
+            }
         }
     }
 }

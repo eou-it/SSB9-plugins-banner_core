@@ -28,6 +28,7 @@ class ResetPasswordService {
 
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String query = "SELECT GOBANSR_NUM,GOBANSR_PIDM,GOBANSR_QSTN_DESC,GOBQSTN_DESC, GOBANSR_ANSR_SALT FROM gobansr, spriden, gobqstn WHERE SPRIDEN_ID = '${id}' AND SPRIDEN_PIDM = GOBANSR_PIDM AND SPRIDEN_CHANGE_IND IS NULL AND GOBANSR_GOBQSTN_ID = GOBQSTN_ID"
+        String prefQuery = "SELECT GUBPPRF_NO_OF_QSTNS FROM gubpprf"
         try{
             sql.eachRow(query){
                 String[] question = [it.GOBANSR_NUM, it.GOBQSTN_DESC]
@@ -36,6 +37,9 @@ class ResetPasswordService {
                 }
                 questions.add(question)
 
+            }
+            sql.eachRow(prefQuery) {
+                questionAnswerMap.put(id+"qstn_no", it.GUBPPRF_NO_OF_QSTNS)
             }
         }
         finally{
@@ -148,7 +152,7 @@ class ResetPasswordService {
                                   utl_smtp.write_data(c,name ||':'|| header || UTL_TCP.CRLF);
                               END;
                               begin
-                              p_base_url := '${((String)baseUrl).substring(7)}';
+                              p_base_url := '${baseUrl}';
                               lv_salt := gspcrpt.f_get_salt(26);
                               gspcrpt.p_saltedhash( lv_salt, lv_salt, lv_pinhash);
                               gp_gpbprxy.P_Update (p_proxy_idm          => p_idm,
@@ -222,22 +226,28 @@ class ResetPasswordService {
 
     def validateToken(recoveryCode){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String selectQuery = "SELECT GPBELTR_PROXY_IDM, GPBELTR_CTYP_EXP_DATE  FROM gpbeltr WHERE ROWID ='${recoveryCode}'"
+        String selectQuery = "SELECT GPBPRXY_EMAIL_ADDRESS, GPBELTR_CTYP_EXP_DATE, GPBPRXY_PIN_DISABLED_IND FROM gpbeltr, gpbprxy WHERE GPBPRXY_PROXY_IDM = GPBELTR_PROXY_IDM AND gpbeltr.ROWID ='${recoveryCode}'"
         def nonPidmId = null;
         def expDate = null;
+        def disabledInd = null;
         def errorMessage = null;
         def result = [:]
         try{
             sql.rows(selectQuery).each {
-                nonPidmId = it.GPBELTR_PROXY_IDM
+                nonPidmId = it.GPBPRXY_EMAIL_ADDRESS
                 expDate = it.GPBELTR_CTYP_EXP_DATE
+                disabledInd = it.GPBPRXY_PIN_DISABLED_IND
             }
-            if(nonPidmId == null || expDate == null){
-                errorMessage = "Invalid Token"
+            if(nonPidmId == null || expDate == null || disabledInd == null){
+                errorMessage = "Invalid URL"
                 [error:errorMessage]
             }
             else if(((Date)expDate).before(Calendar.getInstance().getTime())){
-                errorMessage = "Sorry! Token Expired"
+                errorMessage = "Sorry! URL Expired"
+                [error:errorMessage]
+            }
+            else if(disabledInd.toString().toUpperCase() == "N"){
+                errorMessage = "Sorry! URL Expired"
                 [error:errorMessage]
             }
             else{
@@ -246,7 +256,12 @@ class ResetPasswordService {
             }
         }
         catch(SQLException sqle){
-            errorMessage = sqle.getMessage()
+             if(sqle.getErrorCode() == 1410){
+                errorMessage = "Invalid URL"
+            }
+            else{
+                errorMessage = sqle.getMessage()
+            }
             sql.close()
             [error: errorMessage]
         }
@@ -254,10 +269,10 @@ class ResetPasswordService {
 
     def validateRecoveryCode(recoveryCode, nonPidmId){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String selectQuery = "SELECT * FROM gpbprxy WHERE GPBPRXY_EMAIL_ADDRESS ='${nonPidmId}' AND GPBPRXY_SALT='${recoveryCode}'"
+        String selectQuery = "SELECT * FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) ='${nonPidmId.toString().toUpperCase()}' AND GPBPRXY_SALT='${recoveryCode}'"
         def result = [:]
         try{
-            if(sql.rows(selectQuery).last().size() > 0){
+            if(sql.rows(selectQuery).size() > 0){
                 result.put("validate", true)
             }
             else{
@@ -279,9 +294,12 @@ class ResetPasswordService {
         sql.call("""
         declare
             p_proxyIDM VARCHAR2(255);
-            p_pin1 VARCHAR2(255) :=  '${passwd}' ;
+            p_pin1 VARCHAR2(255) :=  '${passwd}';
+            lv_salt VARCHAR(255);
+            lv_pinhash  VARCHAR(255);
+            p_email VARCHAR(255) := '${nonPidmId}';
         begin
-            SELECT gpbprxy_proxy_idm FROM gpbprxy WHERE GPBPRXY_EMAIL_ADDRESS ='${nonPidmId}' ;
+            SELECT gpbprxy_proxy_idm into p_proxyIDM FROM gpbprxy WHERE GPBPRXY_EMAIL_ADDRESS = p_email;
             lv_salt := gspcrpt.F_Get_Salt (LENGTH (p_pin1));
             gspcrpt.P_SaltedHash (p_pin1, lv_salt, lv_pinhash);
             gp_gpbprxy.P_Update (
@@ -291,6 +309,7 @@ class ResetPasswordService {
                 p_pin                => lv_pinhash,
                 p_inv_login_cnt      => 0,
                 p_salt               => lv_salt);
+                gb_common.P_Commit;
         end;
            """
         )

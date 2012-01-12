@@ -19,7 +19,7 @@ class UrlMappings {
       "/"(view:"/index")
 	  "500"(view:'/error')
 
-      "/login/resetPassword" {
+        "/login/resetPassword" {
              controller = "login"
              action = "forgotpassword"
         }
@@ -38,6 +38,10 @@ class UrlMappings {
         "/resetPassword/recovery" {
              controller = "resetPassword"
              action = "recovery"
+        }
+        "/resetPassword/validateCode" {
+             controller = "resetPassword"
+             action = "validateCode"
         }
         "/resetPassword/login/auth" {
             controller = "login"

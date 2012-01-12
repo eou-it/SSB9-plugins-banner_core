@@ -192,7 +192,7 @@ class LoginController {
                                        rememberMeParameter: config.rememberMe.parameter]
         }
         else{
-            session.setAttribute("currentPage", "questans")
+            session.setAttribute("requestPage", "questans")
             redirect controller : "resetPassword", action: "questans", params : params
         }
     }

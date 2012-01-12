@@ -288,6 +288,7 @@ INPUT[type="submit"]:hover
     width: 160px !important;
     color: #8CD6F4 !important;
     text-decoration: underline !important;
+    font-size: 1em !important;
 }
 
 .forgotPasswordDiv{
