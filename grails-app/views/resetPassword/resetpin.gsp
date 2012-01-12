@@ -84,12 +84,12 @@
                           <table cellpadding="5" cellspacing="10" class="input-table">
                              <tr><td class="tabledata" colspan="2"><g:message code="com.sungardhe.banner.resetpassword.resetpassword.message"/></td></tr>
                               <g:if test="${flash.message}">
-                                    <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.newpassword"/>:</td><td class="tabledata"><input type="password" id="password" name="password" class="input-text error-state"/> </td></tr>
-                                    <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.repassword" /> :</td><td  class="tabledata"><input type="password" id="repassword" name="repassword" class="input-text error-state"/> </td></tr>
+                                    <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.newpassword"/>:</td><td class="tabledata"><input type="password" id="password" name="password" class="input-text error-state" autocomplete="off"/> </td></tr>
+                                    <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.repassword" /> :</td><td  class="tabledata"><input type="password" id="repassword" name="repassword" class="input-text error-state" autocomplete="off"/> </td></tr>
                               </g:if>
                               <g:else>
-                                 <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.newpassword"/>:</td><td class="tabledata"><input type="password" id="password" name="password" class="input-text default-state"/> </td></tr>
-                                 <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.repassword" /> :</td><td  class="tabledata"><input type="password" id="repassword" name="repassword" class="input-text default-state"/> </td></tr>
+                                 <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.newpassword"/>:</td><td class="tabledata"><input type="password" id="password" name="password" class="input-text default-state" autocomplete="off"/> </td></tr>
+                                 <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.repassword" /> :</td><td  class="tabledata"><input type="password" id="repassword" name="repassword" class="input-text default-state" autocomplete="off"/> </td></tr>
                              </g:else>
                           </table>
                           <div class="button-bar-container">

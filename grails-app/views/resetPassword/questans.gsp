@@ -66,10 +66,10 @@
                                <g:each in="${questions}">
                                     <tr><td class="tabletext" ><g:message code="com.sungardhe.banner.resetpassword.question"/>:</td><td class="tabledata">  ${it[1]}</td></tr>
                                    <g:if test='${questionValidationMap.get(it[0]).get("error")}'>
-                                        <tr><td class="tabletext invalid" ><g:message code="com.sungardhe.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text error-state" data-error-message="${questionValidationMap.get(it[0]).get("message")}"/> </td></tr>
+                                        <tr><td class="tabletext invalid" ><g:message code="com.sungardhe.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text error-state" data-error-message="${questionValidationMap.get(it[0]).get("message")}" autocomplete="off"/> </td></tr>
                                     </g:if>
                                    <g:else>
-                                        <tr><td class="tabletext" ><g:message code="com.sungardhe.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text default-state" value='${questionValidationMap.get(it[0]).get("answer")}'/> </td></tr>
+                                        <tr><td class="tabletext" ><g:message code="com.sungardhe.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text default-state" value='${questionValidationMap.get(it[0]).get("answer")}' autocomplete="off"/> </td></tr>
                                    </g:else>
                                </g:each>
                            </g:if>

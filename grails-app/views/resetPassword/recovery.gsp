@@ -51,10 +51,10 @@
                                   <input type="hidden" name="nonPidmId" value='${nonPidmIdm}'/>
                              <tr><td class="tabledata" colspan="2"><g:message code="com.sungardhe.banner.resetpassword.recoverycode.message"/></td></tr>
                              <g:if test="${flash.message}">
-                                <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text error-state" data-error-message="${flash.message}"/> </td></tr>
+                                <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text error-state" data-error-message="${flash.message}" autocomplete="off"/> </td></tr>
                              </g:if>
                              <g:else>
-                                <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text default-state"/> </td></tr>
+                                <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text default-state" autocomplete="off"/> </td></tr>
                              </g:else>
                              </g:elseif>
                           </table>
