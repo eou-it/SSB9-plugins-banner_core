@@ -140,7 +140,7 @@ class ResetPasswordService {
                               p_name           varchar(255);
                               p_recovery_code  varchar(255);
                               p_url             varchar(255);
-                              p_idm             varchar(255);
+                              p_idm             varchar(255) := '${nonPidmIdm}';
                               p_base_url        varchar(1000);
                               c utl_smtp.connection;
                               PROCEDURE send_header(name VARCHAR2, header VARCHAR2) AS
@@ -148,7 +148,6 @@ class ResetPasswordService {
                                   utl_smtp.write_data(c,name ||':'|| header || UTL_TCP.CRLF);
                               END;
                               begin
-                              SELECT GENIDEN_GIDM into p_idm FROM geniden WHERE  GENIDEN_ID = '${nonPidmId}';
                               p_base_url := '${((String)baseUrl).substring(7)}';
                               lv_salt := gspcrpt.f_get_salt(26);
                               gspcrpt.p_saltedhash( lv_salt, lv_salt, lv_pinhash);
@@ -185,9 +184,9 @@ class ResetPasswordService {
 
                               SELECT GPBPRXY_EMAIL_ADDRESS , GPBPRXY_FIRST_NAME ||' '|| GPBPRXY_LAST_NAME , GPBPRXY_SALT , GPBELTR_CTYP_URL into p_email, p_name, p_recovery_code, p_url FROM gpbeltr, gpbprxy WHERE GPBPRXY_PROXY_IDM = GPBELTR_PROXY_IDM AND gpbeltr.ROWID = ''||lv_hold_rowid||'';
                               c := utl_smtp.open_connection('mailhost.sct.com');
-                              utl_smtp.helo(c, 'psoug.org');
-                              utl_smtp.mail(c, 'Vijendra.Rao@sungard.com');
-                              utl_smtp.rcpt(c, ''||p_email||'');
+                              utl_smtp.helo(c, 'mailhost.sct.com');
+                              utl_smtp.mail(c, twbkwbis.F_FetchWTparam ('PROXY_ACCESS_EMAIL_FROM'));
+                              utl_smtp.rcpt(c, p_email);
                               utl_smtp.open_data(c);
                               send_header('From', '"Admin" <'||twbkwbis.F_FetchWTparam ('PROXY_ACCESS_EMAIL_FROM')||'>');
                               send_header('To', '"'||p_name||'" <'||p_email||'>');
@@ -195,10 +194,12 @@ class ResetPasswordService {
                               utl_smtp.write_data(c, UTL_TCP.CRLF || p_url || ' (use code '|| p_recovery_code ||')');
                               utl_smtp.close_data(c);
                               utl_smtp.quit(c);
-
+                              gb_common.P_Commit;
                         end;
             """)
         }
+
+
         catch(SQLException sqle){
              [error:sqle.getMessage()]
         }
@@ -209,10 +210,10 @@ class ResetPasswordService {
 
     def getNonPidmIdm(nonPidmId){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String query = "SELECT GENIDEN_GIDM FROM geniden WHERE  GENIDEN_ID = '${nonPidmId}'"
+        String query = "select gpbprxy_proxy_idm from gpbprxy where  gpbprxy_email_address = '${nonPidmId}'"
         def id = null
         sql.rows(query).each {
-            id = it.GENIDEN_GIDM
+            id = it.gpbprxy_proxy_idm
         }
         sql.close()
         id
@@ -253,7 +254,7 @@ class ResetPasswordService {
 
     def validateRecoveryCode(recoveryCode, nonPidmId){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String selectQuery = "SELECT * FROM gpbprxy WHERE GPBPRXY_PROXY_IDM ='${nonPidmId}' AND GPBPRXY_SALT='${recoveryCode}'"
+        String selectQuery = "SELECT * FROM gpbprxy WHERE GPBPRXY_EMAIL_ADDRESS ='${nonPidmId}' AND GPBPRXY_SALT='${recoveryCode}'"
         def result = [:]
         try{
             if(sql.rows(selectQuery).last().size() > 0){
@@ -272,5 +273,34 @@ class ResetPasswordService {
         result
     }
 
+    def resetNonPidmPassword (nonPidmId, passwd  ) {
+        Sql sql = new Sql(dataSource.getUnproxiedConnection())
+        try {
+        sql.call("""
+        declare
+            p_proxyIDM VARCHAR2(255);
+            p_pin1 VARCHAR2(255) :=  '${passwd}' ;
+        begin
+            SELECT gpbprxy_proxy_idm FROM gpbprxy WHERE GPBPRXY_EMAIL_ADDRESS ='${nonPidmId}' ;
+            lv_salt := gspcrpt.F_Get_Salt (LENGTH (p_pin1));
+            gspcrpt.P_SaltedHash (p_pin1, lv_salt, lv_pinhash);
+            gp_gpbprxy.P_Update (
+                p_proxy_idm          => p_proxyIDM,
+                p_pin_disabled_ind   => 'N',
+                p_pin_exp_date       => SYSDATE + bwgkprxy.F_GetOption ('PIN_LIFETIME_DAYS'),
+                p_pin                => lv_pinhash,
+                p_inv_login_cnt      => 0,
+                p_salt               => lv_salt);
+        end;
+           """
+        )
+        }
+        catch(SQLException sqle){
+             log.error(sqle.message)
+        }
+        finally{
+            sql.close()
+        }
+    }
 
 }
