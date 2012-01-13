@@ -134,6 +134,7 @@ class ResetPasswordService {
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         try{
             String nonPidmIdm = getNonPidmIdm(nonPidmId)
+            def message = generateEmailBody(nonPidmIdm)
             sql.call("""
                            DECLARE
                               lv_hold_rowid   gb_common.internal_record_id_type;
@@ -146,11 +147,12 @@ class ResetPasswordService {
                               p_url             varchar(255);
                               p_idm             varchar(255) := '${nonPidmIdm}';
                               p_base_url        varchar(1000);
-
+                              p_email_body      varchar(2000);
                               p_success varchar2(255);
                               p_reply   varchar2(255);
                            begin
                               p_base_url := '${baseUrl}';
+                              p_email_body := '${message}';
                               lv_salt := gspcrpt.f_get_salt(26);
                               gspcrpt.p_saltedhash( lv_salt, lv_salt, lv_pinhash);
                               gp_gpbprxy.P_Update (p_proxy_idm          => p_idm,
@@ -183,11 +185,11 @@ class ResetPasswordService {
                                  p_rowid      => lv_hold_rowid);
 
                               SELECT GPBPRXY_EMAIL_ADDRESS , GPBPRXY_FIRST_NAME ||' '|| GPBPRXY_LAST_NAME , GPBPRXY_SALT , GPBELTR_CTYP_URL into p_email, p_name, p_recovery_code, p_url FROM gpbeltr, gpbprxy WHERE GPBPRXY_PROXY_IDM = GPBELTR_PROXY_IDM AND gpbeltr.ROWID = ''||lv_hold_rowid||'';
-
+                              SELECT REPLACE(p_email_body, 'GOVELTR_CTYP_URL', p_url) INTO p_email_body FROM DUAL;
                               gokemal.p_send_email(p_to_addr => p_email,
                                                      p_from_addr => twbkwbis.F_FetchWTparam ('PROXY_ACCESS_EMAIL_FROM'),
                                                      p_subject => 'Password Reset request',
-                                                     p_message => p_url || ' (use code '|| p_recovery_code ||')',
+                                                     p_message => p_email_body,
                                                      p_success_out => p_success,
                                                      p_reply_out => p_reply);
                               gb_common.P_Commit;
@@ -312,6 +314,51 @@ class ResetPasswordService {
         finally{
             sql.close()
         }
+    }
+
+    def generateEmailBody(nonPidmIdm){
+           Sql sql = new Sql(dataSource.getUnproxiedConnection())
+           String query = "select SORELTR_COLUMN_ID ,SORELTR_TEXT_VAR from soreltr where SORELTR_LETR_CODE = 'EV_PINRESET' order by SORELTR_LETR_CODE,  SORELTR_SEQ_NO"
+           String userQuery = "SELECT GPBPRXY_FIRST_NAME||' '|| GPBPRXY_LAST_NAME COMPLETE_NAME, GPBPRXY_SALT FROM gpbprxy WHERE GPBPRXY_PROXY_IDM='${nonPidmIdm}' "
+           def emailBodyMessage = new StringBuffer("")
+           def userName = ""
+           def recoveryCode = ""
+           try{
+               sql.eachRow(query){
+                   if(it.SORELTR_COLUMN_ID)    emailBodyMessage.append(it.SORELTR_COLUMN_ID+" ")
+                   if(it.SORELTR_TEXT_VAR)     emailBodyMessage.append(it.SORELTR_TEXT_VAR+" ")
+                   emailBodyMessage.append(" CHR(10) ")
+               }
+               sql.eachRow(userQuery){
+                   userName = it.COMPLETE_NAME
+                   recoveryCode = it.GPBPRXY_SALT
+               }
+               emailBodyMessage = ((String)emailBodyMessage).replaceAll("GOVELTR_PROXY_NAME", userName)
+               emailBodyMessage = ((String)emailBodyMessage).replaceAll("GOVELTR_PROXY_SALT", recoveryCode)
+           }
+           catch(SQLException sqle){
+                log.error(sqle.getMessage())
+           }
+           finally{
+               sql.close()
+           }
+           emailBodyMessage
+    }
+
+    def isPidmAccountDisabled(id){
+        Sql sql = new Sql(dataSource.getUnproxiedConnection())
+        String pidmQuery = "SELECT NVL(GOBTPAC_PIN_DISABLED_IND,'N') DISABLED_IND FROM gobtpac WHERE GOBTPAC_PIDM ='${id}'"
+        def disabledInd = "N"
+        try{
+            sql.eachRow(pidmQuery){
+                disabledInd = it.DISABLED_IND
+            }
+        }
+        finally{
+            sql.close()
+        }
+        if(disabledInd.toUpperCase() == "Y")    true
+        else    false
     }
 
 }

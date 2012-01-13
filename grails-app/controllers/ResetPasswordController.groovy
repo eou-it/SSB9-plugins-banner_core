@@ -45,24 +45,29 @@ class ResetPasswordController {
             render view: "auth", model: [usernameRequired = true]
         }
         else if(resetPasswordService.isPidmUser(id)){
-            String postUrl = "${request.contextPath}/resetPassword/validateans"
-
-            String view = 'questans'
-            try{
-                Map questionsInfoMap = resetPasswordService.getQuestionInfoByLoginId(id)
-                if(((List)questionsInfoMap.get(id)).size() == 0 && ((List)questionsInfoMap.get(id)).size() < questionsInfoMap.get(id+"qstn_no")){
-                    flash.message = "Security question/answers need to be defined"
+            if(resetPasswordService.isPidmAccountDisabled(id)){
+                flash.message = message(code: "com.sungardhe.banner.resetpassword.user.disabled.message")
+                redirect (uri: "/resetPassword/auth")
+            }
+            else{
+                String postUrl = "${request.contextPath}/resetPassword/validateans"
+                String view = 'questans'
+                try{
+                    Map questionsInfoMap = resetPasswordService.getQuestionInfoByLoginId(id)
+                    if(((List)questionsInfoMap.get(id)).size() == 0 || ((List)questionsInfoMap.get(id)).size() < questionsInfoMap.get(id+"qstn_no")){
+                        flash.message = "Security question/answers need to be defined"
+                        redirect (uri: "/resetPassword/auth")
+                    }
+                    else{
+                    session.setAttribute("questions", questionsInfoMap.get(id))
+                    session.setAttribute("pidm", questionsInfoMap.get(id+"pidm"))
+                    render view: view, model: [questions: questionsInfoMap.get(id), userName: id, postUrl : postUrl, cancelUrl: cancelUrl]
+                    }
+                }
+                catch(SQLException sqle){
+                    flash.message = sqle.getMessage()
                     redirect (uri: "/resetPassword/auth")
                 }
-                else{
-                session.setAttribute("questions", questionsInfoMap.get(id))
-                session.setAttribute("pidm", questionsInfoMap.get(id+"pidm"))
-                render view: view, model: [questions: questionsInfoMap.get(id), userName: id, postUrl : postUrl, cancelUrl: cancelUrl]
-                }
-            }
-            catch(SQLException sqle){
-                flash.message = sqle.getMessage()
-                redirect (uri: "/resetPassword/auth")
             }
         }
         else if(resetPasswordService.isNonPidmUser(id)){
