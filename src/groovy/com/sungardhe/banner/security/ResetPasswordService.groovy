@@ -135,7 +135,7 @@ class ResetPasswordService {
         try{
             String nonPidmIdm = getNonPidmIdm(nonPidmId)
             sql.call("""
-                              DECLARE
+                           DECLARE
                               lv_hold_rowid   gb_common.internal_record_id_type;
                               lv_pinhash      gpbprxy.gpbprxy_pin%TYPE;
                               lv_salt         gpbprxy.gpbprxy_salt%TYPE;
@@ -146,12 +146,10 @@ class ResetPasswordService {
                               p_url             varchar(255);
                               p_idm             varchar(255) := '${nonPidmIdm}';
                               p_base_url        varchar(1000);
-                              c utl_smtp.connection;
-                              PROCEDURE send_header(name VARCHAR2, header VARCHAR2) AS
-                                BEGIN
-                                  utl_smtp.write_data(c,name ||':'|| header || UTL_TCP.CRLF);
-                              END;
-                              begin
+
+                              p_success varchar2(255);
+                              p_reply   varchar2(255);
+                           begin
                               p_base_url := '${baseUrl}';
                               lv_salt := gspcrpt.f_get_salt(26);
                               gspcrpt.p_saltedhash( lv_salt, lv_salt, lv_pinhash);
@@ -163,8 +161,8 @@ class ResetPasswordService {
                                                    p_inv_login_cnt      => 0);
 
                               gp_gpbeltr.P_Create (
-                                 p_syst_code        => 'p_syst_code',
-                                 p_ctyp_code        => 'PIN_RESET',
+                                 p_syst_code        => 'EVENTS',
+                                 p_ctyp_code        => 'EV_PINRESET',
                                  p_ctyp_url         => NULL,
                                  p_ctyp_exp_date    => SYSDATE
                                                       + bwgkprxy.F_GetOption ('ACTION_VALID_DAYS'),
@@ -184,28 +182,22 @@ class ResetPasswordService {
                                  p_ctyp_url   =>   p_base_url||'?token='||twbkbssf.F_Encode (lv_hold_rowid),
                                  p_rowid      => lv_hold_rowid);
 
-                              gb_common.P_Commit;
-
                               SELECT GPBPRXY_EMAIL_ADDRESS , GPBPRXY_FIRST_NAME ||' '|| GPBPRXY_LAST_NAME , GPBPRXY_SALT , GPBELTR_CTYP_URL into p_email, p_name, p_recovery_code, p_url FROM gpbeltr, gpbprxy WHERE GPBPRXY_PROXY_IDM = GPBELTR_PROXY_IDM AND gpbeltr.ROWID = ''||lv_hold_rowid||'';
-                              c := utl_smtp.open_connection('mailhost.sct.com');
-                              utl_smtp.helo(c, 'mailhost.sct.com');
-                              utl_smtp.mail(c, twbkwbis.F_FetchWTparam ('PROXY_ACCESS_EMAIL_FROM'));
-                              utl_smtp.rcpt(c, p_email);
-                              utl_smtp.open_data(c);
-                              send_header('From', '"Admin" <'||twbkwbis.F_FetchWTparam ('PROXY_ACCESS_EMAIL_FROM')||'>');
-                              send_header('To', '"'||p_name||'" <'||p_email||'>');
-                              send_header('Subject', 'Reset Password Request');
-                              utl_smtp.write_data(c, UTL_TCP.CRLF || p_url || ' (use code '|| p_recovery_code ||')');
-                              utl_smtp.close_data(c);
-                              utl_smtp.quit(c);
+
+                              gokemal.p_send_email(p_to_addr => p_email,
+                                                     p_from_addr => twbkwbis.F_FetchWTparam ('PROXY_ACCESS_EMAIL_FROM'),
+                                                     p_subject => 'Password Reset request',
+                                                     p_message => p_url || ' (use code '|| p_recovery_code ||')',
+                                                     p_success_out => p_success,
+                                                     p_reply_out => p_reply);
                               gb_common.P_Commit;
-                        end;
+                            end;
             """)
         }
 
 
         catch(SQLException sqle){
-             [error:sqle.getMessage()]
+            log.error("ResetPasswordService" + sqle)
         }
         finally{
             sql.close()
