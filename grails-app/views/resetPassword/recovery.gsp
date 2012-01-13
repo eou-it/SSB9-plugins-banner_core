@@ -61,7 +61,7 @@
                           <g:if test="${infoPage}">
                               <div class="button-bar-container">
                               <div class="button-bar">
-                                  <button id="closebutton" class="primary-button" onclick="window.close()"> Close </button>
+                                  <button id="closebutton" class="primary-button" onclick="gotoLogin()"> Close </button>
                               </div>
                               </div>
                           </g:if>
