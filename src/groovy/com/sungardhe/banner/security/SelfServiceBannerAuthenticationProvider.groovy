@@ -223,12 +223,13 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         def userPin
         def firstName
         def lastName
-        db.eachRow( "select gpbprxy_salt, gpbprxy_pin,geniden_first_name,geniden_last_name,geniden_gidm  from gpbprxy,geniden where GENIDEN_GIDM = GPBPRXY_PROXY_IDM AND  GPBPRXY_EMAIL_ADDRESS = ?", [authentication.name] ) {
+        db.eachRow( """select gpbprxy_salt, gpbprxy_pin,gpbprxy_first_name,gpbprxy_last_name,gpbprxy_proxy_idm
+                       from gpbprxy where  NVL(TRUNC(GPBPRXY_PIN_EXP_DATE), TRUNC(SYSDATE)) >= TRUNC(SYSDATE) AND GPBPRXY_PIN_DISABLED_IND = 'N' AND GPBPRXY_EMAIL_ADDRESS = ?""", [authentication.name] ) {
             salt = it.gpbprxy_salt
             hashPin = it.gpbprxy_pin
-            gidm = it.geniden_gidm
-            firstName = it.geniden_first_name
-            lastName = it.geniden_last_name
+            gidm = it.gpbprxy_proxy_idm
+            firstName = it.gpbprxy_first_name
+            lastName = it.gpbprxy_last_name
         }
         if (null == hashPin) return false
         db.call( "{call gspcrpt.p_saltedhash(?,?,?)}", [

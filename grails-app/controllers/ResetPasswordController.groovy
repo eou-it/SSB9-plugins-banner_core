@@ -141,6 +141,7 @@ class ResetPasswordController {
                }
                if(errorMessage){
                   flash.message = errorMessage
+                  resetPasswordService.loginAttempt(pidm)
                   String view = 'questans'
                   render view: view, model: [questions: questions, userName: id, postBackUrl : postBackUrl, cancelUrl: cancelUrl, questionValidationMap: questionValidationMap]
                }
