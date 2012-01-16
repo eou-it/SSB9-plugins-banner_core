@@ -185,15 +185,15 @@ class ResetPasswordService {
                 disabledInd = it.GPBPRXY_PIN_DISABLED_IND
             }
             if(nonPidmId == null || expDate == null || disabledInd == null){
-                errorMessage = "Invalid URL"
+                    errorMessage = "com.sungardhe.banner.resetpassword.guest.url.invalid.message"
                 [error:errorMessage]
             }
             else if(((Date)expDate).before(Calendar.getInstance().getTime())){
-                errorMessage = "Sorry! URL Expired"
+                errorMessage = "com.sungardhe.banner.resetpassword.guest.url.expired.message"
                 [error:errorMessage]
             }
             else if(disabledInd.toString().toUpperCase() == "N"){
-                errorMessage = "Sorry! URL Expired"
+                errorMessage = "com.sungardhe.banner.resetpassword.guest.url.expired.message"
                 [error:errorMessage]
             }
             else{
@@ -203,7 +203,7 @@ class ResetPasswordService {
         }
         catch(SQLException sqle){
              if(sqle.getErrorCode() == 1410){
-                errorMessage = "Invalid URL"
+                errorMessage = "com.sungardhe.banner.resetpassword.guest.url.invalid.message"
             }
             else{
                 errorMessage = sqle.getMessage()
@@ -222,7 +222,7 @@ class ResetPasswordService {
                 result.put("validate", true)
             }
             else{
-                result.put("error", "Invalid Recovery Code")
+                result.put("error", "com.sungardhe.banner.resetpassword.reciverycode.invalid.message")
             }
         }
         catch(SQLException sqle){

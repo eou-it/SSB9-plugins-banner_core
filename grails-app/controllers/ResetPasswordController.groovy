@@ -37,7 +37,7 @@ class ResetPasswordController {
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
         if(session.getAttribute("requestPage") != "questans"){
             session.invalidate()
-            flash.message = "Invalid Request. Try Again!"
+            flash.message = message(code: "com.sungardhe.banner.resetpassword.request.invalid.message")
             redirect (uri: "/resetPassword/auth")
         }
         else if(id == null || id.trim().length() == 0){
@@ -55,7 +55,7 @@ class ResetPasswordController {
                 try{
                     Map questionsInfoMap = resetPasswordService.getQuestionInfoByLoginId(id)
                     if(((List)questionsInfoMap.get(id)).size() == 0 || ((List)questionsInfoMap.get(id)).size() < questionsInfoMap.get(id+"qstn_no")){
-                        flash.message = "Security question/answers need to be defined"
+                        flash.message = message(code:"com.sungardhe.banner.resetpasword.securityquestion.notfound.message")
                         redirect (uri: "/resetPassword/auth")
                     }
                     else{
@@ -65,7 +65,7 @@ class ResetPasswordController {
                     }
                 }
                 catch(SQLException sqle){
-                    flash.message = sqle.getMessage()
+                    flash.message = message(code:sqle.getMessage())
                     redirect (uri: "/resetPassword/auth")
                 }
             }
@@ -100,7 +100,7 @@ class ResetPasswordController {
 
         if(session.getAttribute("requestPage") != "questans"){
             session.invalidate()
-            flash.message = "Invalid Request. Try Again!"
+            flash.message = message(code: "com.sungardhe.banner.resetpassword.request.invalid.message")
             redirect (uri: "/resetPassword/auth")
         }
        else{
@@ -108,7 +108,7 @@ class ResetPasswordController {
                String answer = request.getParameter("answer"+it[0])
                if(answer == null || answer.trim().length() == 0){
                    errorflag = true
-                   flash.message = "Answer is required"
+                   flash.message = message(code:"com.sungardhe.banner.resetpassword.answer.required.error")
                    questionValidationMap.put(it[0], [error:true, answer: "", message: flash.message])
                }
                else{
@@ -168,7 +168,7 @@ class ResetPasswordController {
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
         if(session.getAttribute("requestPage") != "resetpin"){
             session.invalidate()
-            flash.message = "Invalid Request. Try Again!"
+            flash.message = message(code: "com.sungardhe.banner.resetpassword.request.invalid.message")
             redirect (uri: "/resetPassword/auth")
         }
         if(password != confirmPassword){
@@ -190,15 +190,15 @@ class ResetPasswordController {
                     resetPasswordService.resetNonPidmPassword(nonPidm, password)
                 }
                 session.invalidate()
-                flash.reloginMessage = "Password reset was successful, please relogin"
+                flash.reloginMessage = message(code: "com.sungardhe.banner.resetpassword.resetpin.success.message")
                 redirect(controller: "login", action: "auth")
             }
             catch(SQLException sqle){
                 if(20100 == sqle.getErrorCode()){
-                   flash.message = "Password must be only 6 characters long"
+                   flash.message = message(code:"com.sungardhe.banner.resetpassword.resetpin.password.length.error")
                 }
                 else{
-                    flash.message = sqle.getMessage()
+                    flash.message = message(code:sqle.getMessage())
                 }
                 String view = 'resetpin'
                 render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
@@ -210,11 +210,8 @@ class ResetPasswordController {
         String postUrl = "${request.contextPath}/ssb/resetPassword/validateCode"
         def cancelUrl = "${request.contextPath}/ssb/resetPassword/auth"
         def token= request.getParameter("token")
-        def username = request.getParameter("j_username")
-        if(username){
-            def infoMessage = "A web page link has been sent to your e-mail address. Use the link to reset your password."
-        }
-        else if(token){
+
+        if(token){
             def decodedToken = new String(new Base64().decode(token))
             def result = resetPasswordService.validateToken(decodedToken)
             if(result.get("nonPidmId")){
@@ -224,7 +221,7 @@ class ResetPasswordController {
                 render view: view, model: [postUrl : postUrl, cancelUrl: cancelUrl, nonPidmIdm:result.get("nonPidmId")]
             }
             else if(result.get("error")){
-                flash.message =  result.get("error")
+                flash.message =  message(code:result.get("error"))
                 redirect (uri: "/resetPassword/auth")
             }
         }
@@ -235,7 +232,7 @@ class ResetPasswordController {
         def nonPidmIdm = request.getParameter("nonPidmId")
         if(session.getAttribute("requestPage") != "recovery"){
             session.invalidate()
-            flash.message = "Invalid Request. Try Again!"
+            flash.message = message(code: "com.sungardhe.banner.resetpassword.request.invalid.message")
             redirect (uri: "/resetPassword/auth")
         }
         else{
@@ -252,7 +249,7 @@ class ResetPasswordController {
             else if(result.get("error")){
                 String postUrl = "${request.contextPath}/ssb/resetPassword/validateCode"
                 def cancelUrl = "${request.contextPath}/ssb/resetPassword/auth"
-                flash.message = result.get("error")
+                flash.message = message(code:result.get("error"))
                 String view = 'recovery'
                 render view: view, model: [postUrl : postUrl, cancelUrl: cancelUrl, nonPidmIdm:nonPidmIdm]
             }
