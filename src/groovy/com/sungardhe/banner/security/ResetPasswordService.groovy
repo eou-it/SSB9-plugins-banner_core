@@ -20,6 +20,21 @@ class ResetPasswordService {
     def dataSource                         // injected by Spring
     def authenticationDataSource           // injected by Spring
 
+    /**
+     *
+     * @param id
+     * @return
+     * @throws SQLException
+     *
+     * This method returns a map of questions related to a given PIDM user id. map contains 3 values.
+     * 1) List of question associated
+     * 2) Pdim IDM value associated
+     * 3) No of questions configured in Preference table
+     *
+     * throws exception for any db related issues
+     *
+     */
+
     def getQuestionInfoByLoginId(id) throws SQLException{
         Map questionAnswerMap = new HashMap()
         List questions = new ArrayList()
@@ -49,7 +64,18 @@ class ResetPasswordService {
         questionAnswerMap
     }
 
-
+    /**
+     *
+     * @param userAnswer
+     * @param pidm
+     * @param questionNumber
+     * @return
+     * @throws SQLException
+     *
+     * This method will return true if all the security questions for a pidm user match. Else false
+     * Throws exception for any db related issues.
+     *
+     */
     def isAnswerMatched(userAnswer, pidm, questionNumber) throws SQLException{
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         def answerSalt =  getAnswerSaltByQyestionNumberAndPidm(questionNumber, pidm, sql)
@@ -67,6 +93,18 @@ class ResetPasswordService {
         matchFlag
     }
 
+    /**
+     *
+     * @param questionNumber
+     * @param pidm
+     * @param sql
+     * @return
+     * @throws SQLException
+     *
+     * This method will return the answer for a given question for a given pidm user
+     * throws exception for any db related issues
+     *
+     */
     def getAnswerByQuestionNumberAndPidm(questionNumber, pidm, sql) throws SQLException{
         def answer
         String query = "select GOBANSR_ANSR_DESC from gobansr where GOBANSR_PIDM ='${pidm}' AND GOBANSR_NUM='${questionNumber}'"
@@ -76,6 +114,18 @@ class ResetPasswordService {
         answer
     }
 
+    /**
+     *
+     * @param questionNumber
+     * @param pidm
+     * @param sql
+     * @return
+     * @throws SQLException
+     *
+     * This method will return the salt key for a given question for a given pidm user. And will be used for encrypting answer
+     * throws exception for any db related issues
+     *
+     */
     def getAnswerSaltByQyestionNumberAndPidm(questionNumber, pidm, sql) throws SQLException{
         def answerSalt
         String query = "select GOBANSR_ANSR_SALT from gobansr where GOBANSR_PIDM ='${pidm}' AND GOBANSR_NUM='${questionNumber}'"
@@ -85,6 +135,17 @@ class ResetPasswordService {
         answerSalt
     }
 
+    /**
+     *
+     * @param pidm
+     * @param newPassword
+     * @return
+     * @throws SQLException
+     *
+     * This method will reset password for a given pidm user with the new password
+     * throws exception for any db related issues
+     *
+     */
     def resetUserPassword(pidm, newPassword) throws SQLException{
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         try{
@@ -97,6 +158,16 @@ class ResetPasswordService {
 
     }
 
+    /**
+     *
+     * @param pidm_id
+     * @return
+     * @throws SQLException
+     *
+     * This method return true if the given username is pidm user else false
+     * throws exception for any db related issues
+     *
+     */
     def isPidmUser(pidm_id) throws SQLException{
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String query = "SELECT SPRIDEN_ID FROM spriden WHERE SPRIDEN_ID='${pidm_id}'"
@@ -110,6 +181,16 @@ class ResetPasswordService {
         }
     }
 
+    /**
+     *
+     * @param userId
+     * @return
+     * @throws SQLException
+     *
+     * This method return true if the given username is non-pidm user else false
+     * throws exception for any db related issues.
+     *
+     */
     def isNonPidmUser(userId) throws SQLException{
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String queryGpbprxy = "SELECT GPBPRXY_EMAIL_ADDRESS FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) ='${userId?.toUpperCase()}'"
@@ -130,8 +211,15 @@ class ResetPasswordService {
 
     }
 
-
-
+    /**
+     *
+     * @param nonPidmId
+     * @param baseUrl
+     * @return
+     *
+     * This method will generate reset password URL for the non-pidm user which is used later for resetting the password
+     *
+     */
     def generateResetPasswordURL(nonPidmId, baseUrl){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         def successFlag
@@ -158,6 +246,14 @@ class ResetPasswordService {
         }
     }
 
+    /**
+     *
+     * @param nonPidmId
+     * @return
+     *
+     * This method will return the non-pidm IDM for a given guest email address
+     *
+     */
     def getNonPidmIdm(nonPidmId){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String query = "select gpbprxy_proxy_idm from gpbprxy where  gpbprxy_email_address = '${nonPidmId}'"
@@ -169,7 +265,14 @@ class ResetPasswordService {
         id
     }
 
-
+    /**
+     *
+     * @param recoveryCode
+     * @return
+     *
+     * This method will validate the token in a given reset password url. Return non-pidm idm if token is valid else appropriate error message
+     *
+     */
     def validateToken(recoveryCode){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String selectQuery = "SELECT GPBPRXY_EMAIL_ADDRESS, GPBELTR_CTYP_EXP_DATE, GPBPRXY_PIN_DISABLED_IND FROM gpbeltr, gpbprxy WHERE GPBPRXY_PROXY_IDM = GPBELTR_PROXY_IDM AND gpbeltr.ROWID ='${recoveryCode}'"
@@ -213,6 +316,15 @@ class ResetPasswordService {
         }
     }
 
+    /**
+     *
+     * @param recoveryCode
+     * @param nonPidmId
+     * @return
+     *
+     * This method will validate the recovery code entered by the user before resetting the password
+     *
+     */
     def validateRecoveryCode(recoveryCode, nonPidmId){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String selectQuery = "SELECT * FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) ='${nonPidmId.toString().toUpperCase()}' AND GPBPRXY_SALT='${recoveryCode}'"
@@ -234,6 +346,15 @@ class ResetPasswordService {
         result
     }
 
+    /**
+     *
+     * @param nonPidmId
+     * @param passwd
+     * @return
+     *
+     * This method will reset the password for non-pidm (guest) user with the given new password.
+     *
+     */
     def resetNonPidmPassword (nonPidmId, passwd  ) {
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         try {
@@ -268,6 +389,13 @@ class ResetPasswordService {
         }
     }
 
+    /**
+     *
+     * @param id
+     * @return
+     *
+     * This method will check whether the PIDM account is disabled or not. Returns true if account is disabled else false
+     */
     def isPidmAccountDisabled(id){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String pidmQuery = "SELECT NVL(GOBTPAC_PIN_DISABLED_IND,'N') DISABLED_IND FROM gobtpac,spriden  WHERE GOBTPAC_PIDM = spriden_pidm and spriden_change_ind is null and spriden_id = '${id}'"
@@ -284,6 +412,14 @@ class ResetPasswordService {
         else    false
     }
 
+    /**
+     *
+     * @param pidm
+     * @return
+     *
+     * This method will log an login attempt and throws error if no of attempts are exceeded.
+     *
+     */
     def loginAttempt(pidm) {
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         try {

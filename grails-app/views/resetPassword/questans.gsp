@@ -76,7 +76,7 @@
                             <g:else>
                                 <g:each in="${questions}">
                                     <tr><td class="tabletext" ><g:message code="com.sungardhe.banner.resetpassword.question"/>:</td><td class="tabledata">  ${it[1]}</td></tr>
-                                    <tr><td class="tabletext" ><g:message code="com.sungardhe.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text default-state"/> </td></tr>
+                                    <tr><td class="tabletext" ><g:message code="com.sungardhe.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text default-state" autocomplete="off"/> </td></tr>
                                 </g:each>
                             </g:else>
                         </table>

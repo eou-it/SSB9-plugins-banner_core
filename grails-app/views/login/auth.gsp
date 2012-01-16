@@ -37,15 +37,15 @@
 		<div class="textfield-wrapper">
             <g:if test='${userNameRequired}'>
 				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' /></span></div>
-				<div class="password"><span><input type='password' name='j_password' id='j_password' /></span></div>
+				<div class="password"><span><input type='password' name='j_password' id='j_password' autocomplete="off" /></span></div>
 			</g:if>
 			<g:elseif test='${flash.message}'>
 				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' /></span></div>
-				<div class="password-error-state"><span><input type='password' name='j_password' id='j_password' /></span></div>
+				<div class="password-error-state"><span><input type='password' name='j_password' id='j_password' autocomplete="off" /></span></div>
 			</g:elseif>
 			<g:else>
 				<div class="userName"><span><input type='text'  name='j_username' id='j_username' /></span></div>
-				<div class="password"><span><input type='password' name='j_password' id='j_password' /></span></div>
+				<div class="password"><span><input type='password' name='j_password' id='j_password' autocomplete="off" /></span></div>
 			</g:else>
 			<div class="signin-button-wrapper"><input type='submit' value="${message(code: 'com.sungardhe.banner.login.signin', default: 'Sign In')}" id="sign-in-btn" height="32px"  onclick="submitForm()" class="signin-button"/></div>
             <g:if test="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbEnabled == true}">
