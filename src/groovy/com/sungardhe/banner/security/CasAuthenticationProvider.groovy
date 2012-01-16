@@ -129,56 +129,38 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
     }
 
 
-    public static def getMappedDatabaseUserForUdcId( String udcId, DataSource dataSource ) {
-        def conn
-        def dbUser
-        try {
-            conn = dataSource.unproxiedConnection
-            Sql db = new Sql( conn )
-            return getMappedDatabaseUserForUdcId( udcId, db )
-        } finally {
-            conn?.close()
-        }
-        dbUser
-    }
-
-
-    public static def getMappedDatabaseUserForUdcId( String udcId, Sql db ) {
-        def dbUser
-        try {
-            log.trace "CasAuthenticationProvider.getMappedDatabaseUserForUdcId mapping for udcId = $udcId"
-            def sqlStatement = '''SELECT gobeacc_username FROM gobumap, gobeacc
-                                  WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
-            db.eachRow( sqlStatement, [udcId] ) { row ->
-                dbUser = row.gobeacc_username
-            }
-        } catch (SQLException e) {
-            log.error "CasAuthenticationProvider not able to map udcId $udcId to db user"
-            return null
-        }
-        dbUser
-    }
-    
-    
     private def casAuthentication( authentication, db ) {
         log.trace "CasAuthenticationProvider.casAuthentication doing CAS authentication"
         def attributeMap = RCH.currentRequestAttributes().request.session.getAttribute( AbstractCasFilter.CONST_CAS_ASSERTION ).principal.attributes
         def assertAttributeValue = attributeMap[CH?.config?.banner.sso.authenticationAssertionAttribute]
-        def oracleUserName = getMappedDatabaseUserForUdcId( assertAttributeValue, db )
+        def oracleUserName
+        def pidm
+        def spridenId
         def authenticationResults  
-        if (oracleUserName) {
-            authenticationResults = [ name: oracleUserName, oracleUserName: oracleUserName, valid: true ].withDefault { k -> false } 
-        } else {
-            def spridenId
-            def pidm
-            def sqlStatement = '''SELECT spriden_id, gobumap_pidm FROM gobumap,spriden WHERE spriden_pidm = gobumap_pidm AND spriden_change_ind is null AND gobumap_udc_id = ?'''
+        try {
+            log.trace "CasAuthenticationProvider.casAuthentication mapping for $CH?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue"
+            // Determine if they map to a Banner Admin user
+            def sqlStatement = '''SELECT gobeacc_username, gobeacc_pidm FROM gobumap, gobeacc
+                                  WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
             db.eachRow( sqlStatement, [assertAttributeValue] ) { row ->
-                spridenId = row.spriden_id
-                pidm = row.gobumap_pidm
+                oracleUserName = row.gobeacc_username
+                pidm = row.gobeacc_pidm
             }
-            authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: null ].withDefault { k -> false } 
+            if ( oracleUserName ) {
+                authenticationResults = [ name: oracleUserName, pidm: pidm, oracleUserName: oracleUserName, valid: true ].withDefault { k -> false } 
+            } else {
+                // Not an Admin user, must map to a self service user
+                def sqlStatement2 = '''SELECT spriden_id, gobumap_pidm FROM gobumap,spriden WHERE spriden_pidm = gobumap_pidm AND spriden_change_ind is null AND gobumap_udc_id = ?'''
+                db.eachRow( sqlStatement2, [assertAttributeValue] ) { row ->
+                    spridenId = row.spriden_id
+                    pidm = row.gobumap_pidm
+                }
+                authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: null ].withDefault { k -> false } 
+            }
+        } catch (SQLException e) {
+            log.error "CasAuthenticationProvider not able to map $CH?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue to db user"
+            throw e
         }
-        
         log.trace "CasAuthenticationProvider.casAuthentication results are $authenticationResults"
         authenticationResults
     }
