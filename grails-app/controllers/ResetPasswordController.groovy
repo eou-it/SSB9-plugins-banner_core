@@ -142,6 +142,11 @@ class ResetPasswordController {
                if(errorMessage){
                   flash.message = errorMessage
                   resetPasswordService.loginAttempt(pidm)
+                  if(resetPasswordService.isPidmAccountDisabled(pidm)){
+                      session.invalidate()
+                      flash.message = message(code: "com.sungardhe.banner.resetpassword.user.disabled.message")
+                      redirect (uri: "/resetPassword/auth")
+                  }
                   String view = 'questans'
                   render view: view, model: [questions: questions, userName: id, postBackUrl : postBackUrl, cancelUrl: cancelUrl, questionValidationMap: questionValidationMap]
                }
