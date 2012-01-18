@@ -148,7 +148,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             displayUsage = display_usage
             oracleUserName = user_name
         }
-
+        db.commit() //Added to make sure db updates are committed
         def authenticationResults = [ name: authentication.name, credentials: authentication.credentials,
                                       pidm: pidm, oracleUserName: oracleUserName ].withDefault { k -> false }
         switch (errorStatus) {
