@@ -26,12 +26,13 @@
     <g:if test='${flash.message}'>
         <div class='loginMsg'><span class="icon-error"></span>${flash.message}</div>
     </g:if>
-    <g:elseif test='${flash.message}'>
-	  <div class="loginMsg"><g:message code="com.sungardhe.banner.login.prompt"/></div>
-    </g:elseif>
-    <g:else test="${flash.reloginMessage}">
+    <g:elseif test="${flash.reloginMessage}">
       <div class="loginMsg">${flash.reloginMessage}</div>
+    </g:elseif>
+    <g:else>
+	  <div class="loginMsg"><g:message code="com.sungardhe.banner.login.prompt"/></div>
     </g:else>
+
 	<div class="logIn">
       <form action='${postUrl}' method='POST' id='loginForm'>
 		<div class="textfield-wrapper">
