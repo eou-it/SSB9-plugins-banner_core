@@ -45,7 +45,7 @@ class ResetPasswordController {
             render view: "auth", model: [usernameRequired = true]
         }
         else if(resetPasswordService.isPidmUser(id)){
-            if(resetPasswordService.isPidmAccountDisabled(id)){
+            if(resetPasswordService.isAccountDisabled(id)){
                 flash.message = message(code: "com.sungardhe.banner.resetpassword.user.disabled.message")
                 redirect (uri: "/resetPassword/auth")
             }

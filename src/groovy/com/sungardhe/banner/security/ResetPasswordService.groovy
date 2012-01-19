@@ -396,7 +396,7 @@ class ResetPasswordService {
      *
      * This method will check whether the PIDM account is disabled or not. Returns true if account is disabled else false
      */
-    def isPidmAccountDisabled(id){
+    def isAccountDisabled(id){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String pidmQuery = "SELECT NVL(GOBTPAC_PIN_DISABLED_IND,'N') DISABLED_IND FROM gobtpac,spriden  WHERE GOBTPAC_PIDM = spriden_pidm and spriden_change_ind is null and spriden_id = '${id}'"
         def disabledInd = "N"
@@ -412,6 +412,29 @@ class ResetPasswordService {
         else    false
     }
 
+
+    /**
+     *
+     * @param id
+     * @return
+     *
+     * This method will check whether the PIDM account is disabled or not. Returns true if account is disabled else false
+     */
+    def isPidmAccountDisabled(id){
+        Sql sql = new Sql(dataSource.getUnproxiedConnection())
+        String pidmQuery = "SELECT NVL(GOBTPAC_PIN_DISABLED_IND,'N') DISABLED_IND FROM gobtpac   WHERE GOBTPAC_PIDM =  ${id}"
+        def disabledInd = "N"
+        try{
+            sql.eachRow(pidmQuery){
+                disabledInd = it.DISABLED_IND
+            }
+        }
+        finally{
+            sql.close()
+        }
+        if(disabledInd.toUpperCase() == "Y")    true
+        else    false
+    }
     /**
      *
      * @param pidm
