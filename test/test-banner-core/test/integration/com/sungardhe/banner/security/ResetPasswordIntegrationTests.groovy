@@ -43,11 +43,10 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
       //  dataSetup()
       //  super.setUp()
     }
-  /**
+
     def testQuestionAnswer(){
         def user = "HOSS001"
         def answers = ["dummy", "red", "scott"]
-        def newPassword = "000000"
         def questionAnswerMap = resetPasswordService.getQuestionInfoByLoginId(user)
         assertNotNull(questionAnswerMap.get(user+"pidm"))
         assertEquals(questionAnswerMap.get(user)?.size, 3)
@@ -88,8 +87,8 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
 
 
     def testNonPidmPasswordNotify() {
-          def user = "rajesh.kumar@sungardhe.com"
-          def gidm = resetPasswordService.getNonPidmIdm(user)
+         def user = "rajesh.kumar@sungardhe.com"
+         def gidm = resetPasswordService.getNonPidmIdm(user)
          resetPasswordService.generateResetPasswordURL(user, "http://localhost:808/resetPassword/recovery" )
     }
 
@@ -97,16 +96,42 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
 
      def testNonPidmPasswordReset() {
          def user = "rajesh.kumar@sungardhe.com"
-          resetPasswordService.resetNonPidmPassword (user, "123456"  )
+         def newPassword =  "123456"
+         def salt
+         def bannerPassword
+         def userPassword
+         resetPasswordService.resetNonPidmPassword (user, newPassword )
+
+         db.eachRow("select gpbprxy_pin, gpbprxy_salt  from gpbprxy where lower(gpbprxy_email_address)=?", [user.toLowerCase()]){ row ->
+             salt = row.gpbprxy_salt
+             bannerPassword = row.gpbprxy_pin
+         }
+         db.call( "{call gspcrpt.p_saltedhash(?,?,?)}", [
+            newPassword,
+            salt ,
+            Sql.VARCHAR
+            ]
+            ) {pswd -> userPassword = pswd}
+
+         assertEquals(userPassword, bannerPassword)
+
     }
 
+    def testIsPidmUser() {
+        assertTrue(resetPasswordService.isPidmUser("HOSS001"))
+        assertTrue (true)
+    }
 
-
-        **/
-
-        def testIsPidmUser() {
-        //assertTrue(resetPasswordService.isPidmUser("HOSS001"))
-          assertTrue (true)
+    def testPidmUserAccountDisabled(){
+        def user = "HOSS001"
+        def pidm
+        db.eachRow("SELECT SPRIDEN_PIDM FROM spriden WHERE SPRIDEN_ID = ?", [user]){row ->
+            pidm = row.SPRIDEN_PIDM
+        }
+        for (int i =0; i< 3; i++){
+            resetPasswordService.loginAttempt(pidm)
+        }
+        assertTrue(resetPasswordService.isPidmAccountDisabled(user))
     }
 
     private void dataSetup(){
@@ -157,6 +182,11 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
 
                         END;
         """)
+
+        def guestUserId = "-999898"
+        def guestEmailAddress = "vijendra.rao@sungard.com"
+
+        db.executeUpdate("update gpbprxy set gpbprxy_email_address=? where gpbprxy_proxy_idm=?", [guestEmailAddress, guestUserId])
     }
 
     
