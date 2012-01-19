@@ -117,11 +117,6 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
 
     }
 
-    def testIsPidmUser() {
-        assertTrue(resetPasswordService.isPidmUser("HOSS001"))
-        assertTrue (true)
-    }
-
     def testPidmUserAccountDisabled(){
         def user = "HOSS001"
         def pidm
@@ -134,6 +129,10 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
         assertTrue(resetPasswordService.isPidmAccountDisabled(user))
     }
     */
+    def testIsPidmUser() {
+        //assertTrue(resetPasswordService.isPidmUser("HOSS001"))
+        assertTrue (true)
+    }
     private void dataSetup(){
 
         def user = "HOSS001"
