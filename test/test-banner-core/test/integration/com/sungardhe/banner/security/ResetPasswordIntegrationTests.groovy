@@ -133,7 +133,7 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
         }
         assertTrue(resetPasswordService.isPidmAccountDisabled(user))
     }
-
+    */
     private void dataSetup(){
 
         def user = "HOSS001"
@@ -188,7 +188,7 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
 
         db.executeUpdate("update gpbprxy set gpbprxy_email_address=? where gpbprxy_proxy_idm=?", [guestEmailAddress, guestUserId])
     }
-**/
+
     
 }
 
