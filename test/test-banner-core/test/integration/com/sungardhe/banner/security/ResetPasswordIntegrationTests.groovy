@@ -44,7 +44,7 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
       //  super.setUp()
     }
 
-    def testQuestionAnswer(){
+  /**  def testQuestionAnswer(){
         def user = "HOSS001"
         def answers = ["dummy", "red", "scott"]
         def questionAnswerMap = resetPasswordService.getQuestionInfoByLoginId(user)
@@ -188,7 +188,7 @@ class ResetPasswordIntegrationTests extends GroovyTestCase {
 
         db.executeUpdate("update gpbprxy set gpbprxy_email_address=? where gpbprxy_proxy_idm=?", [guestEmailAddress, guestUserId])
     }
-
+**/
     
 }
 
