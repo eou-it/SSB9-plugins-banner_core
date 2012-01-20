@@ -32,7 +32,6 @@ class MenuServiceIntegrationTests extends BaseIntegrationTestCase {
         def mnu = map.find {it -> it.formName == "SCACRSE"}
 
         assertNotNull mnu
-        assertNotNull mnu.url
         assertNotNull mnu.caption
         assert mnu.formName == "SCACRSE"
         assert mnu.pageName == "basicCourseInformation"
