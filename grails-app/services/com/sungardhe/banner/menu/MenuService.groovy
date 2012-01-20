@@ -165,11 +165,18 @@ class MenuService {
     * @return Map of menu objects that a user has access
     */
     private def getMnuPref() {
-        if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).formnameDisplayIndicator  == 'B' ||
-            menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).formnameDisplayIndicator  == 'Y')
-            true
-        else
-            false
+        boolean isMnuPref = false
+        try {
+            SecurityContextHolder.context?.authentication?.principal?.pidm
+
+            if (menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).formnameDisplayIndicator  == 'B' ||
+                menuAndToolbarPreferenceService.fetchMenuAndToolbarPreference().get(0).formnameDisplayIndicator  == 'Y')
+                isMnuPref = true
+        }
+        catch (Exception e) {
+            //If pidm is not defined
+        }
+        return isMnuPref
     }
 
 

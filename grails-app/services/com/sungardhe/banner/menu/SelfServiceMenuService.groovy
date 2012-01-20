@@ -40,9 +40,9 @@ class SelfServiceMenuService {
      * @return Map of menu objects that a user has access
      */
 
-    private def processMenu(def menuName, def menuTrail, def facultyPidm) {
+    private def processMenu(def menuName, def menuTrail, def pidm) {
 
-        assert facultyPidm
+        //assert facultyPidm
 
         def dataMap = []
         def firstMenu = "Banner";
@@ -55,7 +55,14 @@ class SelfServiceMenuService {
 
         menuName = menuName ?: "bmenu.P_MainMnu"
 
-        def sqlQuery = "select * from twgrmenu " + " where  twgrmenu_name = '" + menuName + "' and    twgrmenu_enabled = 'Y' " + " and twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where twgrrole_pidm=" + facultyPidm + " and twgrrole_role = twgrwmrl_role) " + " and twgrmenu_source_ind = " + "   (select nvl( 'B',nvl( max(twgrmenu_source_ind ),'B')) " + "   from twgrmenu " + "   where  twgrmenu_name = '" + menuName + "'   and twgrmenu_source_ind='L') " + " order by twgrmenu_sequence"
+        def sqlQuery;
+
+        String pidmCondition = "twgrrole_pidm is NULL"
+        if(pidm) {
+            pidmCondition = "twgrrole_pidm =" + pidm
+        }
+
+        sqlQuery = "select * from twgrmenu  where  twgrmenu_name = '" + menuName + "'    and    twgrmenu_enabled = 'Y'  and ((twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where " + pidmCondition + " and twgrrole_role = twgrwmrl_role) and twgrmenu_source_ind =  (select nvl( 'B',nvl( max(twgrmenu_source_ind ),'B'))   from twgrmenu where  twgrmenu_name = '" + menuName + "' and twgrmenu_source_ind='L') )  or twgrmenu_db_link_ind = 'N')  order by twgrmenu_sequence"
 
         def randomSequence = RandomUtils.nextInt(1000);
 

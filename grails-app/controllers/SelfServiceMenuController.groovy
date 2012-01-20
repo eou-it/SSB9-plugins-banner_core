@@ -39,7 +39,17 @@ class SelfServiceMenuController {
             menu = request.parameterMap["menu"][0]
         }
 
-        list = getMenu(menuName, menu, SecurityContextHolder?.context?.authentication?.principal?.pidm )
+        def pidm
+
+        try {
+            pidm = SecurityContextHolder?.context?.authentication?.principal?.pidm
+        }
+        catch (Exception e) {
+            //non logged in user
+            pidm = null
+        }
+
+        list = getMenu(menuName, menu, pidm )
 
         def sw = new StringWriter()
         def xml = new groovy.xml.MarkupBuilder(sw)
@@ -60,6 +70,7 @@ class SelfServiceMenuController {
         if (log.isDebugEnabled()) log.debug("Menu Controller getmenu")
 
         def currentMenu = menuName ? menuName : "Banner"
+        currentMenu = pidm ? currentMenu + pidm : currentMenu
 
         if (session[currentMenu] == null) {
             session[currentMenu] = selfServiceMenuService.bannerMenu(menuName, menuTrail, pidm)
