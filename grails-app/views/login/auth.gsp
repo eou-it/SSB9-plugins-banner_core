@@ -49,7 +49,7 @@
 				<div class="password"><span><input type='password' name='j_password' id='j_password' autocomplete="off" /></span></div>
 			</g:else>
 			<div class="signin-button-wrapper"><input type='submit' value="${message(code: 'com.sungardhe.banner.login.signin', default: 'Sign In')}" id="sign-in-btn" height="32px"  onclick="submitForm()" class="signin-button"/></div>
-            <g:if test="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbEnabled == true}">
+            <g:if test="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.reset.enabled == true || org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.guest.reset.enabled == true}">
                 <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" class="forgotpassword">Forgot Password </a></div>
             </g:if>
 		</div>
