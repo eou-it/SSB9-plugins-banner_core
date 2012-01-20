@@ -66,7 +66,7 @@ class BannerCoreGrailsPlugin {
 
     String groupId = "com.sungardhe"
 
-    String version = "1.0.40"
+    String version = "1.0.41"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
