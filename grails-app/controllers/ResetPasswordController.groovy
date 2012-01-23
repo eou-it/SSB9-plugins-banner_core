@@ -45,7 +45,11 @@ class ResetPasswordController {
             render view: "auth", model: [usernameRequired = true]
         }
         else if(resetPasswordService.isPidmUser(id)){
-            if(resetPasswordService.isAccountDisabled(id)){
+            if(CH?.config.ssbPassword.reset.enabled == null || CH?.config.ssbPassword.reset.enabled == false){
+                flash.message = message(code: "com.sungardhe.banner.resetpassword.disabled.message")
+                redirect (uri: "/resetPassword/auth")
+            }
+            else if(resetPasswordService.isAccountDisabled(id)){
                 flash.message = message(code: "com.sungardhe.banner.resetpassword.user.disabled.message")
                 redirect (uri: "/resetPassword/auth")
             }
@@ -71,11 +75,17 @@ class ResetPasswordController {
             }
         }
         else if(resetPasswordService.isNonPidmUser(id)){
-            String baseUrl = "${CH?.config.banner.events.resetpassword.guest.url}${request.contextPath}/resetPassword/recovery"
-            String postUrl = "${request.contextPath}/resetPassword/recovery"
-            resetPasswordService.generateResetPasswordURL(id, baseUrl)
-            String view = 'recovery'
-            render view: view, model: [userName: id, postUrl : postUrl, cancelUrl: cancelUrl, infoPage:true]
+            if(CH?.config.ssbPassword.guest.reset.enabled == null || CH?.config.ssbPassword.guest.reset.enabled == false){
+                flash.message = message(code: "com.sungardhe.banner.resetpassword.disabled.message")
+                redirect (uri: "/resetPassword/auth")
+            }
+            else{
+                String baseUrl = "${CH?.config.banner.events.resetpassword.guest.url}${request.contextPath}/resetPassword/recovery"
+                String postUrl = "${request.contextPath}/resetPassword/recovery"
+                resetPasswordService.generateResetPasswordURL(id, baseUrl)
+                String view = 'recovery'
+                render view: view, model: [userName: id, postUrl : postUrl, cancelUrl: cancelUrl, infoPage:true]
+            }
         }
         else{
             flash.message = message( code: "com.sungardhe.banner.resetpassword.user.invalid")

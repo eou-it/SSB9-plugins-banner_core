@@ -54,7 +54,7 @@ class MenuService {
         def parent
         log.debug("Personal Menu started")
         sql = new Sql(sessionFactory.getCurrentSession().connection())
-        sql.execute("Begin gukmenu.p_bld_pers_menu; End;")
+        sql.execute("Begin gukmenu.p_bld_pers_menu('BAN9'); End;")
         log.debug("After gukmenu.p_bld_pers_menu sql.execute" )
         sql.eachRow("select * from gutpmnu,gubmodu,gubpage,gubobjs where  substr(gutpmnu_value,6,length(gutpmnu_value))  = gubpage_code (+) AND " +
             " gubobjs_name = substr(gutpmnu_value,6,length(gutpmnu_value)) AND gubobjs_ui_version IN ('A','C') AND gubpage_gubmodu_code  = gubmodu_code (+) order by gutpmnu_seq_no", {
@@ -126,7 +126,7 @@ class MenuService {
         log.debug("Process Menu started")
         sql = new Sql(sessionFactory.getCurrentSession().connection())
         log.debug(sql.useConnection.toString())
-        sql.execute("Begin gukmenu.p_bld_prod_menu; End;")
+        sql.execute("Begin gukmenu.p_bld_prod_menu('BAN9'); End;")
         sql.eachRow("select * from gutmenu,gubmodu,gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
             " gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','C') and gubpage_gubmodu_code  = gubmodu_code (+) " +
             " order by gutmenu_seq_no", {
