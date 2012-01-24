@@ -194,13 +194,8 @@ class ResetPasswordService {
     def isNonPidmUser(userId) throws SQLException{
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String queryGpbprxy = "SELECT GPBPRXY_EMAIL_ADDRESS FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) ='${userId?.toUpperCase()}'"
-        String queryGeniden = "SELECT GENIDEN_ID FROM geniden WHERE UPPER(GENIDEN_ID) = '${userId?.toUpperCase()}'"
 
         if(sql.rows(queryGpbprxy).size() > 0){
-            sql.close()
-            true
-        }
-        else if(sql.rows(queryGeniden).size() > 0){
             sql.close()
             true
         }
