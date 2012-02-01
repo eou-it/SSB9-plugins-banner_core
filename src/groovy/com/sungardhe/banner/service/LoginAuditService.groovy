@@ -36,7 +36,10 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
         try {
             conn = dataSource.unproxiedConnection
             sql = new Sql( conn )
-            sql.call("begin g\$_security.g\$_check_logon_rules('BAN9',?); commit; end;",[event.userName])
+            if (event.userName?.size() > 0 && event.module?.size() > 0 )  {
+                def truncateUserName = event.userName[0..(event.userName.size() > 29 ? 29 : event.userName.size())]
+                sql.call("begin g\$_security.g\$_check_logon_rules('BAN9',?); commit; end;",[truncateUserName])
+            }
         } catch (Exception e) {
             e.printStackTrace()
         } finally {
@@ -50,8 +53,10 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
         try {
             conn = dataSource.unproxiedConnection
             sql = new Sql( conn )
-            if (event.userName?.size() > 0 && event.module?.size() > 0 )
-                sql.call("begin g\$_security.g\$_create_log_record(?,?,?,?); commit; end;",[event.userName,event.module,event.message, event.severity])
+            if (event.userName?.size() > 0 && event.module?.size() > 0 )  {
+                def truncateUserName = event.userName[0..(event.userName.size() > 29 ? 29 : event.userName.size())]
+                sql.call("begin g\$_security.g\$_create_log_record(?,?,?,?); commit; end;",[truncateUserName,event.module,event.message, event.severity])
+            }
         } catch (Exception e) {
             e.printStackTrace()
         } finally {
