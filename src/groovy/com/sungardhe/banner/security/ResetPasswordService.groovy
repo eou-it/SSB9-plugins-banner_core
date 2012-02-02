@@ -3,7 +3,7 @@ package com.sungardhe.banner.security
 import groovy.sql.Sql
 import org.apache.log4j.Logger
 import java.sql.SQLException
-import org.apache.commons.lang.RandomStringUtils
+import java.util.regex.Pattern
 
 /**
  * Created by IntelliJ IDEA.
@@ -449,6 +449,39 @@ class ResetPasswordService {
         } finally {
             sql?.close()
         }
+    }
+
+    def validatePassword(pidm, password){
+        Sql sql = new Sql(dataSource.getUnproxiedConnection())
+        def errorMessage = "";
+        String prefQuery = "SELECT GUBPPRF_REUSE_DAYS FROM gubpprf"
+        def passwordReuseDays = 0;
+        try{
+            sql.eachRow(prefQuery){row ->
+                passwordReuseDays = row.GUBPPRF_REUSE_DAYS
+            }
+            sql.call( "{call gb_third_party_access_rules.p_validate_pinrules(?,?,?,?)}",
+            [ pidm,
+              password,
+              (passwordReuseDays == 0)? "N" : "Y",
+              Sql.VARCHAR
+            ]
+            ) { error_message ->
+                errorMessage = error_message;
+            }
+        }
+        finally{
+            sql?.close();
+        }
+        (errorMessage == null || errorMessage?.toString()?.trim()?.length() == 0) ? [error: false] : [error: true, errorMessage: errorMessage];
+    }
+
+    def containsNumber(inputString){
+        Pattern.matches("[^0-9]*[0-9]+[^0-9]*", inputString)
+    }
+
+    def containsCharacters(inputString){
+        Pattern.matches("[^A-Z]*[^a-z]*[A-Za-z]+[^A-Z]*[^a-z]*", inputString)
     }
 
 }
