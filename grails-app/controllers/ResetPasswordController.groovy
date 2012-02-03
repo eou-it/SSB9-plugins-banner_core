@@ -181,7 +181,8 @@ class ResetPasswordController {
         String nonPidm = session.getAttribute("nonPidmId")
         String postBackUrl = "${request.contextPath}/resetPassword/resetpin"
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
-        def validateResult = resetPasswordService.validatePassword(pidm, password)
+        def validateResult =  resetPasswordService.validatePassword(pidm, password)
+
         if(session.getAttribute("requestPage") != "resetpin"){
             session.invalidate()
             flash.message = message(code: "com.sungardhe.banner.resetpassword.request.invalid.message")
@@ -203,7 +204,7 @@ class ResetPasswordController {
            render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
         }
         else{
-            def result = resetPasswordService.validatePassword(password)
+            def result = resetPasswordService.validatePassword(pidm,password)
             if(result.get("error")){
                 flash.message = message(code: result.get("error"))
                 String view = 'resetpin'
