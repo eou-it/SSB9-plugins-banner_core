@@ -241,7 +241,9 @@ class ResetPasswordController {
         def token= request.getParameter("token")
 
         if(token){
-            def decodedToken = new String(new Base64().decode(token))
+            byte[] decoded = Base64.decodeBase64(token.getBytes());
+            def decodedToken = new String(decoded);
+            //def decodedToken = new String(new Base64().decode(token))
             def result = resetPasswordService.validateToken(decodedToken)
             if(result.get("nonPidmId")){
                 HttpSession session = request.getSession(true)
