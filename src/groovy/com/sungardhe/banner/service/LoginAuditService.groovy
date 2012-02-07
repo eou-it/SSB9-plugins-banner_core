@@ -51,7 +51,7 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
             conn = dataSource.unproxiedConnection
             sql = new Sql( conn )
             if (event.userName?.size() > 0 && event.module?.size() > 0 )  {
-                def truncateUserName = event.userName[0..(event.userName.size() > 29 ? 29 : event.userName.size())]
+                def truncateUserName = event.userName[0..(event.userName.size() > 29 ? 29 : event.userName.size() - 1)]
                 sql.call("begin g\$_security.g\$_create_log_record(?,?,?,?); commit; end;",[truncateUserName,event.module,event.message, event.severity])
             }
         } catch (Exception e) {
