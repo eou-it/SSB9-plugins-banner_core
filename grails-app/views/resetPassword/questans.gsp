@@ -21,7 +21,7 @@
             }, 500);
 
              $("input").blur(function(e){
-                 var emptyErrorMessage = "${message( code:"com.sungardhe.banner.resetpassword.answer.required.error" )}";
+                var emptyErrorMessage = "${message( code:"com.sungardhe.banner.resetpassword.question.answer.required.error" )}";
                 var element = $(e.currentTarget);
                 if(element.val().trim() != "" && element.hasClass("error-state")){
                     element.removeClass("error-state");
