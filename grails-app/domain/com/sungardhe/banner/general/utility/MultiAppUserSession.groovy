@@ -20,19 +20,19 @@ class MultiAppUserSession implements Serializable {
     Long version
 
 
-    @Column(name="GURSESS_USER_NAME")
+    @Column(name="GURSESS_USER")
     String userName
 
-    @Column(name="GURSESS_INFO_TYPE")
+    @Column(name="GURSESS_NAME")
     String infoType
 
     @Transient
     Object info
 
-    @Column(name="GURSESS_INFO")
+    @Column(name="GURSESS_VALUE")
     String stringInfo
 
-    @Column(name="GURSESS_DATE_INFO")
+    @Column(name="GURSESS_ACTIVITY_DATE")
     Date dateInfo
 
     static constraints = {
