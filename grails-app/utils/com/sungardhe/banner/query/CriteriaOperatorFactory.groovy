@@ -106,6 +106,11 @@ class CriteriaOperatorFactory {
                                             operator:"is not null",
                                             key:"isnotnull",
                                             dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} IS NOT NULL "},
+                                            formatvalue : {value -> value }],
+                                soundslike:[label:"com.sungardhe.banner.ui.zk.search.advancedSearch.operator.soundslike",
+                                            operator:"sounds like",
+                                            key:"soundslike",
+                                            dynamicQuery: {tableIdentifier, parammap-> " and ((soundex($tableIdentifier.${parammap.binding}) = soundex(:${parammap.key})) or :${parammap.key} is null)"},
                                             formatvalue : {value -> value }]
                               ]
 
