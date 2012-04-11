@@ -15,7 +15,7 @@ class CriteriaOperatorFactory {
     static final operators = [equals:[label:"com.sungardhe.banner.ui.zk.search.advancedSearch.operator.equals",
                                             operator:"=",
                                             key:"equals",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} = :${parammap.key} "},
+                                            dynamicQuery: {tableIdentifier, parammap-> " and lower($tableIdentifier.${parammap.binding}) = lower(:${parammap.key}) "},
                                             formatvalue : {value -> value } ],
                                 equalsorisnull:[label:"com.sungardhe.banner.ui.zk.search.advancedSearch.operator.equalsorisnull",
                                             operator:"=",
