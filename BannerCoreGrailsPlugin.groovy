@@ -1,5 +1,5 @@
 /* ********************************************************************************
- Copyright 2009-2011 SunGard Higher Education. All Rights Reserved.
+ Copyright 2009-2012 SunGard Higher Education. All Rights Reserved.
  This copyrighted software contains confidential and proprietary information of
  SunGard Higher Education and its subsidiaries. Any use of this software is limited
  solely to SunGard Higher Education licensees, and is further subject to the terms
@@ -69,7 +69,7 @@ class BannerCoreGrailsPlugin {
     String version = "1.0.44"
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "1.3.0 > *"
+    def grailsVersion = "1.3.7 > *"
 
     // the other plugins this plugin depends on
     def dependsOn = [ 'springSecurityCore': '1.0.1',
@@ -79,8 +79,8 @@ class BannerCoreGrailsPlugin {
     // resources that are excluded from plugin packaging
     def pluginExcludes = [ "grails-app/views/error.gsp" ]
 
-    def author = "SunGard Higher Education"
-    def authorEmail = "horizon-support@sungardhe.com"
+    def author = "ellucian"
+    def authorEmail = "horizon-support@ellucian.com"
     def title = "Banner Core Framework Plugin"
     def description = '''This plugin adds Spring Security (aka Acegi) and a custom
                          |DataSource implementation (BannerDataSource) that together
