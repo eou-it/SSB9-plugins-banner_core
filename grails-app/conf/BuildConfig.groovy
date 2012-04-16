@@ -10,12 +10,12 @@
  Education in the U.S.A. and/or other regions and/or countries.
  **********************************************************************************/
 
+grails.project.class.dir        = "target/classes"
+grails.project.test.class.dir   = "target/test-classes"
+grails.project.test.reports.dir = "target/test-reports"
 
-grails.project.class.dir = "target/classes"
-grails.project.test.class.dir = "target/test-classes"
-grails.project.test.reports.dir	= "target/test-reports"
-
-grails.plugin.location.'spring-security-cas'="../spring_security_cas.git"
+grails.plugin.location.'spring-security-cas' = "../spring_security_cas.git"
+grails.plugin.location.'banner-codenarc'     = "../banner_codenarc.git"
 
 grails.project.dependency.resolution = {
 
