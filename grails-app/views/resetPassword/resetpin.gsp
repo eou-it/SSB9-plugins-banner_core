@@ -21,8 +21,12 @@
            $(document).ready(function (){
             setTimeout(function() {
                 $(".error-state").each(function(i, element){
-                    var errorNotification = new Notification({message: "${flash.message}", type: "error", id: $(element).attr("id")});
-                    notifications.addNotification(errorNotification);
+                    var errorMessageList = "${flash.message}".split("::::");
+                    for(var i=0; i< errorMessageList.length; i++){
+                        var error = errorMessageList[i].replace(/:/g, "");
+                        var errorNotification = new Notification({message: error, type: "error", id: $(element).attr("id")});
+                        notifications.addNotification(errorNotification);
+                    }
                 })
             }, 500);
 
@@ -34,14 +38,16 @@
                     element.removeClass("error-state");
                     element.addClass("default-state");
                     element.parent().prev().removeClass("invalid");
-                    notifications.remove(notifications.get(element.attr("id")));
+                    while(notifications.length != 0){
+                        notifications.remove(notifications.first());
+                    }
                 }
                 else if(element.val().trim() == ""){
                     element.addClass("error-state");
                     element.removeClass("default-state");
                     element.parent().prev().addClass("invalid");
-                    if(notifications.get(element.attr("id"))){
-                       notifications.remove(notifications.get(element.attr("id")))
+                    while(notifications.length != 0){
+                       notifications.remove(notifications.first())
                     }
                     var errorNotification = new Notification({message: emptyErrorMessage, type: "error", id: $(element).attr("id")});
                     notifications.addNotification(errorNotification);

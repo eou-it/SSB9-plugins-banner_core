@@ -15,7 +15,7 @@ class CriteriaOperatorFactory {
     static final operators = [equals:[label:"com.sungardhe.banner.ui.zk.search.advancedSearch.operator.equals",
                                             operator:"=",
                                             key:"equals",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} = :${parammap.key} "},
+                                            dynamicQuery: {tableIdentifier, parammap-> " and lower($tableIdentifier.${parammap.binding}) = lower(:${parammap.key}) "},
                                             formatvalue : {value -> value } ],
                                 equalsorisnull:[label:"com.sungardhe.banner.ui.zk.search.advancedSearch.operator.equalsorisnull",
                                             operator:"=",
@@ -106,6 +106,11 @@ class CriteriaOperatorFactory {
                                             operator:"is not null",
                                             key:"isnotnull",
                                             dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} IS NOT NULL "},
+                                            formatvalue : {value -> value }],
+                                soundslike:[label:"com.sungardhe.banner.ui.zk.search.advancedSearch.operator.soundslike",
+                                            operator:"sounds like",
+                                            key:"soundslike",
+                                            dynamicQuery: {tableIdentifier, parammap-> " and ((soundex($tableIdentifier.${parammap.binding}) = soundex(:${parammap.key})) or :${parammap.key} is null)"},
                                             formatvalue : {value -> value }]
                               ]
 

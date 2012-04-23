@@ -58,6 +58,7 @@ import com.sungardhe.banner.security.BannerAccessDecisionVoter
 import com.sungardhe.banner.service.LoginAuditService
 import com.sungardhe.banner.service.DefaultLoaderService
 import com.sungardhe.banner.security.ResetPasswordService
+import org.springframework.security.core.context.SecurityContextHolder
 
 /**
  * A Grails Plugin providing cross cutting concerns such as security and database access for Banner web applications.
@@ -66,7 +67,7 @@ class BannerCoreGrailsPlugin {
 
     String groupId = "com.sungardhe"
 
-    String version = "1.0.44"
+    String version = "1.0.49"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.0 > *"
@@ -374,6 +375,7 @@ class BannerCoreGrailsPlugin {
         //set the teransaction timeout on transaction manager time unit in seconds
         def transTimeOut = CH.config.banner?.transactionTimeout instanceof Integer ? CH.config.banner?.transactionTimeout : 30
         applicationContext.getBean( 'transactionManager' )?.setDefaultTimeout( transTimeOut )
+       // SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL)
     }
 
 

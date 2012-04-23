@@ -181,12 +181,14 @@ class ResetPasswordController {
         String nonPidm = session.getAttribute("nonPidmId")
         String postBackUrl = "${request.contextPath}/resetPassword/resetpin"
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
+        def validateResult =  resetPasswordService.validatePassword(pidm, password)
+
         if(session.getAttribute("requestPage") != "resetpin"){
             session.invalidate()
             flash.message = message(code: "com.sungardhe.banner.resetpassword.request.invalid.message")
             redirect (uri: "/resetPassword/auth")
         }
-        if(password != confirmPassword){
+        else if(password != confirmPassword){
            flash.message = message( code:"com.sungardhe.banner.resetpassword.password.match.error" )
            String view = 'resetpin'
            render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
@@ -196,29 +198,41 @@ class ResetPasswordController {
            String view = 'resetpin'
            render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
         }
+        else if(validateResult.get("error") == true){
+           flash.message = validateResult.get("errorMessage")
+           String view = 'resetpin'
+           render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
+        }
         else{
-            try{
-                if(pidm){
-                resetPasswordService.resetUserPassword(pidm, password)
-                }
-                else if(nonPidm){
-                    resetPasswordService.resetNonPidmPassword(nonPidm, password)
-                }
-                session.invalidate()
-                flash.reloginMessage = message(code: "com.sungardhe.banner.resetpassword.resetpin.success.message")
-                redirect(controller: "login", action: "auth")
-            }
-            catch(SQLException sqle){
-                if(20100 == sqle.getErrorCode()){
-                   flash.message = message(code:"com.sungardhe.banner.resetpassword.resetpin.password.length.error")
-                }
-                else{
-                    flash.message = message(code:sqle.getMessage())
-                }
+            def result = resetPasswordService.validatePassword(pidm,password)
+            if(result.get("error")){
+                flash.message = message(code: result.get("error"))
                 String view = 'resetpin'
                 render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
             }
-
+            else{
+                try{
+                    if(pidm){
+                    resetPasswordService.resetUserPassword(pidm, password)
+                    }
+                    else if(nonPidm){
+                        resetPasswordService.resetNonPidmPassword(nonPidm, password)
+                    }
+                    session.invalidate()
+                    flash.reloginMessage = message(code: "com.sungardhe.banner.resetpassword.resetpin.success.message")
+                    redirect(controller: "login", action: "auth")
+                }
+                catch(SQLException sqle){
+                    if(20100 == sqle.getErrorCode()){
+                       flash.message = message(code:"com.sungardhe.banner.resetpassword.resetpin.password.length.error")
+                    }
+                    else{
+                        flash.message = message(code:sqle.getMessage())
+                    }
+                    String view = 'resetpin'
+                    render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
+                }
+            }
         }
     }
     def recovery ={
@@ -227,7 +241,9 @@ class ResetPasswordController {
         def token= request.getParameter("token")
 
         if(token){
-            def decodedToken = new String(new Base64().decode(token))
+            byte[] decoded = Base64.decodeBase64(token.getBytes());
+            def decodedToken = new String(decoded);
+            //def decodedToken = new String(new Base64().decode(token))
             def result = resetPasswordService.validateToken(decodedToken)
             if(result.get("nonPidmId")){
                 HttpSession session = request.getSession(true)
