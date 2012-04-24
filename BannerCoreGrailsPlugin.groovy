@@ -64,7 +64,7 @@ import com.sungardhe.banner.security.ResetPasswordService
  **/
 class BannerCoreGrailsPlugin {
 
-    String groupId = "com.sungardhe"
+    String groupId = "com.ellucian"
 
     String version = "1.0.44"
 
@@ -90,7 +90,7 @@ class BannerCoreGrailsPlugin {
                          |services, providing base test classes) to facilitate development of
                          |Banner web applications.'''.stripMargin()
 
-    def documentation = "http://sungardhe.com/development/horizon/plugins/banner-core"
+    def documentation = "http://ellucian.com/development/horizon/plugins/banner-core"
 
 
     def doWithWebDescriptor = { xml ->
