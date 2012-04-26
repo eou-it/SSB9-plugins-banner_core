@@ -154,7 +154,7 @@ class LoginController {
                 msg = message( code:"com.sungardhe.banner.errors.login.fail" )
             }
             else {
-                msg = SpringSecurityUtils.securityConfig.errors.login.fail
+                msg = message( code:"com.sungardhe.banner.errors.login.fail" )
             }
         }
         msg
