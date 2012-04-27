@@ -908,14 +908,14 @@ class ServiceBase {
     
     private void setDbmsApplicationInfo( action ) {
         if (log.debugEnabled) {
-            dataSource.setDbmsApplicationInfo( getBannerConnection(), FormContext.get() ? FormContext.get()[0] : null, action as String ) 
+            dataSource?.setDbmsApplicationInfo( getBannerConnection(), FormContext.get() ? FormContext.get()[0] : null, action as String )
         }              
     }
     
     
     private void clearDbmsApplicationInfo() {
         if (log.debugEnabled) {
-            dataSource.clearDbmsApplicationInfo( getBannerConnection() ) 
+            dataSource?.clearDbmsApplicationInfo( getBannerConnection() )
         }              
     }
     
