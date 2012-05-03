@@ -112,55 +112,69 @@ body {
 }
 
 .error {
-    background-color:  #FFF0CF;
-    background-position: 20px 20px;
-    background-repeat: no-repeat;
+    background: transparent; /* Old browsers */
+    background: -moz-linear-gradient(top, #fef4b0 0%, #fef5b1 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #fef4b0), color-stop(100%, #fef5b1)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #fef4b0 0%, #fef5b1 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #fef4b0 0%, #fef5b1 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #fef4b0 0%, #fef5b1 100%); /* IE10+ */
+    background: linear-gradient(top, #fef4b0 0%, #fef5b1 100%); /* W3C */
     border-color: #FFF0CF;
     border-style: solid;
     border-width: 1px;
+    color: #333333;
     font-family: Arial;
     font-size: 12px;
-    color: #333;
-    width: 604px;
-    height: 304px;
-    position: absolute;
-    margin: 10px 0 0 -152px;
-    top: 0%;
-    left: 40%;
-    line-height: 18px;
+    min-width: 603px;
+    min-height: 300px;
+    margin-left: 200px;
+    margin-right: 200px;
 }
 
 .errorBox {
-    background-color:#F1F1F2;
+    background-color:#fef4b0;
     background-image: url(../images/bkgd_gradient.png);
     background-position: 0px 0px;
     background-repeat: repeat;
-    border-color: #FFF0CF;
+    border-color: #bcb586;
     border-style: solid;
-    border-width: 1px;
+    border-width: 3px;
     font-family: Arial;
     font-size: 12px;
     color: #333;
-    padding: 20px 20px 20px 40px;
-    width: 500px;
-    height: 220px;
     position: relative;
-    margin: 20px 20px 20px 20px;
+    margin-bottom: 25px;
+    margin-right: 25px;
+	margin-left: 25px;
+    margin-top: 25px;
+    min-width: 500px;
+    min-height: 220px;
     top: 0%;
     left: 0%;
     line-height: 18px;
+    border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
 }
 
 .errorMessage {
-    background-image: url(../images/icon-warning-32x32.png);
+    background-image: url(../images/icon-warning-48x48.png);
     background-repeat: no-repeat;
+    background-position: 50px;
     margin: 50px 10px 10px 10px;
-    padding: 0px 0px 30px 50px;
+    padding-right: 40px;
+    padding-left: 120px;
     font: 11px verdana, arial, helvetica, sans-serif;
     font-size: 14px;
     color: #666;
+    border-color:#d6c039;
 }
 
 .errorBackButton {
-  margin-left: 400px;
+    float: right;
+    position: relative;
+    top: -20px;
+    padding-right: 25px;
+    height: 30px;
 }
+
