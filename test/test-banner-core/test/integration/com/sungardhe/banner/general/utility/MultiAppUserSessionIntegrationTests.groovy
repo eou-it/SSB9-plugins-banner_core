@@ -1,12 +1,15 @@
 package com.sungardhe.banner.general.utility
 
-class MultiAppUserSessionTests extends GroovyTestCase {
+import com.sungardhe.banner.testing.BaseIntegrationTestCase
+
+class MultiAppUserSessionIntegrationTests extends BaseIntegrationTestCase {
 
     def multiAppUserSessionService
 
     protected void setUp() {
-        super.setUp()
-    }
+		formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
+		super.setUp()
+	}
 
     protected void tearDown() {
         super.tearDown()

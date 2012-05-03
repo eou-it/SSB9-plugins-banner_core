@@ -1,4 +1,4 @@
-package com.sungardhe.banner
+package com.sungardhe.banner.general.utility
 
 import com.sungardhe.banner.general.utility.MultiAppUserSession
 
