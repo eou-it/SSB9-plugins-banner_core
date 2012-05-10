@@ -173,8 +173,7 @@ body {
 .errorBackButton {
     float: right;
     position: relative;
-    top: -20px;
+    top: -17px;
     padding-right: 25px;
     height: 30px;
 }
-
