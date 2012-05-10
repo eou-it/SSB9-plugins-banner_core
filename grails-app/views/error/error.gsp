@@ -15,8 +15,6 @@
         <div class="error">
             <div class="errorBox">
               <div class="errorMessage"><b><g:message code="com.sungardhe.banner.errors.serverError.message"/> </b><br>
-                <g:message code="com.sungardhe.banner.errors.serverError.message.detail"/>
-                <br><br>
                 <g:message code="com.sungardhe.banner.errors.serverError.error"/>
                 ${exception.message?.encodeAsHTML()}
               </div>
