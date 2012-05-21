@@ -17,6 +17,11 @@ class CriteriaOperatorFactory {
                                             key:"equals",
                                             dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} = :${parammap.key} "},
                                             formatvalue : {value -> value } ],
+                                equalsignorecase:[label:"com.sungardhe.banner.ui.zk.search.advancedSearch.operator.equals",
+                                            operator:"=",
+                                            key:"equalsignorecase",
+                                            dynamicQuery: {tableIdentifier, parammap-> " and lower($tableIdentifier.${parammap.binding}) = lower(:${parammap.key}) "},
+                                            formatvalue : {value -> value } ],
                                 equalsorisnull:[label:"com.sungardhe.banner.ui.zk.search.advancedSearch.operator.equalsorisnull",
                                             operator:"=",
                                             key:"equalsorisnull",
@@ -106,6 +111,11 @@ class CriteriaOperatorFactory {
                                             operator:"is not null",
                                             key:"isnotnull",
                                             dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} IS NOT NULL "},
+                                            formatvalue : {value -> value }],
+                                soundslike:[label:"com.sungardhe.banner.ui.zk.search.advancedSearch.operator.soundslike",
+                                            operator:"sounds like",
+                                            key:"soundslike",
+                                            dynamicQuery: {tableIdentifier, parammap-> " and ((soundex($tableIdentifier.${parammap.binding}) = soundex(:${parammap.key})) or :${parammap.key} is null)"},
                                             formatvalue : {value -> value }]
                               ]
 
@@ -113,7 +123,7 @@ class CriteriaOperatorFactory {
                                             [operator:operators.contains, default:"true"],
                                             [operator:operators.startswith],
                                             [operator:operators.endswith],
-                                            [operator:operators.equals],
+                                            [operator:operators.equalsignorecase],
                                             [operator:operators.notequals],
                                             [operator:operators.notequalsorisnull],
                                             [operator:operators.isnull],

@@ -1,53 +1,27 @@
+<%@ page contentType="text/html;charset=UTF-8" defaultCodec="none" %>
+<% request.getSession().invalidate() %>
+
 <html>
-  <head>
-	  <title>Grails Runtime Exception</title>
-	  <style type="text/css">
-	  		.message {
-	  			border: 1px solid black;
-	  			padding: 5px;
-	  			background-color:#E9E9E9;
-	  		}
-	  		.stack {
-	  			border: 1px solid black;
-	  			padding: 5px;
-	  			overflow:auto;
-	  			height: 300px;
-	  		}
-	  		.snippet {
-	  			padding: 5px;
-	  			background-color:white;
-	  			border:1px solid black;
-	  			margin:3px;
-	  			font-family:courier;
-	  		}
-	  </style>
-  </head>
-
-  <body>
-    <h1>Grails Runtime Exception</h1>
-    <h2>Error Details</h2>
-
-  	<div class="message">
-		<strong>Error ${request.'javax.servlet.error.status_code'}</strong><br/>
-		<strong>URI:</strong> ${request.'javax.servlet.forward.request_uri'}<br/>
-		<g:if test="${exception}">
-	  		<strong>Exception Message:</strong> ${exception.message?.encodeAsHTML()} <br />
-	  		<strong>Caused by:</strong> ${exception.cause?.message?.encodeAsHTML()} <br />
-	  		<strong>Class:</strong> ${exception.className} <br />
-	  		<strong>At Line:</strong> [${exception.lineNumber}] <br />
-	  		<strong>Code Snippet:</strong><br />
-	  		<div class="snippet">
-	  			<g:each var="cs" in="${exception.codeSnippet}">
-	  				${cs?.encodeAsHTML()}<br />
-	  			</g:each>
-	  		</div>
-		</g:if>
-  	</div>
-	<g:if test="${exception}">
-	    <h2>Stack Trace</h2>
-	    <div class="stack">
-	      <pre><g:each in="${exception.stackTraceLines}">${it.encodeAsHTML()}<br/></g:each></pre>
-	    </div>
-	</g:if>
-  </body>
+    <head>
+        <title><g:message code="com.sungardhe.banner.productTitle"/></title>
+        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'timeout.css')}"/>
+        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'main.css')}"/>
+        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'button.css')}"/>
+        <g:set var="actionLabel" value="${g.message(code: 'com.sungardhe.banner.access.denied.dialog.action')}"/>
+        <g:set var="target" value="${request.requestURL}"/>
+        <link rel="shortcut icon" href="${resource(plugin: 'bannerCore', dir: 'images', file: 'favicon.ico')}" type="image/x-icon"/>
+    </head>
+    <body>
+        <div class="error">
+            <div class="errorBox">
+              <div class="errorMessage"><b><g:message code="com.sungardhe.banner.errors.serverError.message"/> </b><br>
+                <g:message code="com.sungardhe.banner.errors.serverError.error"/>
+                ${exception.message?.encodeAsHTML()}   <br /> <br />
+              </div>
+            </div>
+           <div class="errorBackButton">
+                <input type="button" value="${g.message(code:'com.sungardhe.banner.errors.serverError.backToHomeButton.label')}" class="secondary-button" onclick="javascript:window.location='${target.substring(0,target.lastIndexOf("/") + 1)}';"/>
+           </div>
+        </div>
+    </body>
 </html>
