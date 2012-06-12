@@ -30,9 +30,18 @@ class MultiAppUserSessionService {
 
         //TODO is there GORM batch save ? or flush=false would do batch operation automatically?
         infoToPersist?.each { infoType, info ->
-            def crossAppSharedInfo = new MultiAppUserSession(userName: userName,infoType: MULTI_APP_USER_SESSION+infoType, info: info)
-            crossAppSharedInfo.save( failOnError: true)
+            if (isNull(info)) {
+                log.info(infoType + ": passes NULL VALUES to share, which will not be persisted")
+            } else {
+                def crossAppSharedInfo = new MultiAppUserSession(userName: userName,infoType: MULTI_APP_USER_SESSION+infoType, info: info)
+                crossAppSharedInfo.save( failOnError: true)
+            }
         }
+    }
+
+
+    private boolean isNull (info){
+        (info == null || (info instanceof String && info == ""))
     }
 
     def delete (userName) {
