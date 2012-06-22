@@ -1,13 +1,12 @@
 /* ********************************************************************************
- Copyright 2009-2012 SunGard Higher Education. All Rights Reserved.
+ Copyright 2009-2012 Ellucian. All Rights Reserved.
  This copyrighted software contains confidential and proprietary information of
- SunGard Higher Education and its subsidiaries. Any use of this software is limited
- solely to SunGard Higher Education licensees, and is further subject to the terms
- and conditions of one or more written license agreements between SunGard Higher
- Education and the licensee in question. SunGard is either a registered trademark or
- trademark of SunGard Data Systems in the U.S.A. and/or other regions and/or countries.
- Banner and Luminis are either registered trademarks or trademarks of SunGard Higher
- Education in the U.S.A. and/or other regions and/or countries.
+ Ellucian and its subsidiaries. Any use of this software is limited
+ solely to Ellucian licensees, and is further subject to the terms
+ and conditions of one or more written license agreements between Ellucian 
+ and the licensee in question. 
+ Banner and Luminis are either registered trademarks or trademarks of Ellucian
+ in the U.S.A. and/or other regions and/or countries.
  **********************************************************************************/
 
 import com.sungardhe.banner.controllers.RestfulControllerMixin
@@ -64,8 +63,6 @@ import com.sungardhe.banner.security.ResetPasswordService
  **/
 class BannerCoreGrailsPlugin {
 
-    String groupId = "com.sungardhe"
-
     String version = "1.0.51"
 
     // the version or versions of Grails the plugin is designed for
@@ -80,7 +77,7 @@ class BannerCoreGrailsPlugin {
     def pluginExcludes = [ "grails-app/views/error.gsp" ]
 
     def author = "ellucian"
-    def authorEmail = "horizon-support@ellucian.com"
+    def authorEmail = ""
     def title = "Banner Core Framework Plugin"
     def description = '''This plugin adds Spring Security (aka Acegi) and a custom
                          |DataSource implementation (BannerDataSource) that together
@@ -90,7 +87,7 @@ class BannerCoreGrailsPlugin {
                          |services, providing base test classes) to facilitate development of
                          |Banner web applications.'''.stripMargin()
 
-    def documentation = "http://sungardhe.com/development/horizon/plugins/banner-core"
+    def documentation = ""
 
 
     def doWithWebDescriptor = { xml ->
