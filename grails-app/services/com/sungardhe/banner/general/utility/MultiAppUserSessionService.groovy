@@ -33,8 +33,8 @@ class MultiAppUserSessionService {
             if (isNull(info)) {
                 log.info(infoType + ": passes NULL VALUES to share, which will not be persisted")
             } else {
-                def crossAppSharedInfo = new MultiAppUserSession(userName: userName,infoType: MULTI_APP_USER_SESSION+infoType, info: info)
-                crossAppSharedInfo.save( failOnError: true)
+                def multiAppUserSession = new MultiAppUserSession(userName: userName,infoType: MULTI_APP_USER_SESSION+infoType, info: info)
+                multiAppUserSession.save( failOnError: true)
             }
         }
     }

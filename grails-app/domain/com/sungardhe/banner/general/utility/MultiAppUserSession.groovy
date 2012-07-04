@@ -19,6 +19,23 @@ class MultiAppUserSession implements Serializable {
     @Column(name = "GURSESS_VERSION", nullable = false, precision = 19)
     Long version
 
+    /**
+	 * UserID
+	 */
+	@Column(name="GURSESS_USER_ID", length=30)
+	String lastModifiedBy
+
+	/**
+	 * Activity Date of the last change
+	 */
+	@Column(name="GURSESS_ACTIVITY_DATE")
+	Date lastModified
+
+	/**
+	 * Data Origin column for GURSESS
+	 */
+	@Column(name="GURSESS_DATA_ORIGIN", length=30)
+	String dataOrigin
 
     @Column(name="GURSESS_USER")
     String userName
@@ -32,10 +49,18 @@ class MultiAppUserSession implements Serializable {
     @Column(name="GURSESS_VALUE")
     String stringInfo
 
-    @Column(name="GURSESS_ACTIVITY_DATE")
+    @Column(name="GURSESS_DATE_VALUE")
     Date dateInfo
 
     static constraints = {
+        lastModifiedBy(nullable:true, maxSize:30)
+		lastModified(nullable:true)
+		dataOrigin(nullable:true, maxSize:30)
+        userName(nullable:false, maxSize:150)
+        infoType(nullable:false, maxSize:1000)
+        info(nullable:false)
+        dateInfo(nullable:true)
+        stringInfo(nullable:true)
     }
 
     Object getInfo () {
@@ -54,33 +79,48 @@ class MultiAppUserSession implements Serializable {
          }
     }
 
+
     boolean equals(o) {
         if (this.is(o)) return true;
         if (getClass() != o.class) return false;
 
         MultiAppUserSession that = (MultiAppUserSession) o;
 
+        if (dataOrigin != that.dataOrigin) return false;
+        if (id != that.id) return false;
+        if (info != that.info) return false;
         if (infoType != that.infoType) return false;
+        if (lastModified != that.lastModified) return false;
+        if (lastModifiedBy != that.lastModifiedBy) return false;
         if (userName != that.userName) return false;
+        if (version != that.version) return false;
 
         return true;
     }
 
     int hashCode() {
         int result;
-        result = userName.hashCode();
+        result = id.hashCode();
+        result = 31 * result + version.hashCode();
+        result = 31 * result + lastModifiedBy.hashCode();
+        result = 31 * result + lastModified.hashCode();
+        result = 31 * result + dataOrigin.hashCode();
+        result = 31 * result + userName.hashCode();
         result = 31 * result + infoType.hashCode();
+        result = 31 * result + info.hashCode();
         return result;
     }
 
 
-    public String toString ( ) {
-        final StringBuilder sb = new StringBuilder ( ) ;
-        sb . append ( "MultiAppUserSession" ) ;
-        sb . append ( "{userName='" ) . append ( userName ) . append ( '\'' ) ;
-        sb . append ( ", infoType='" ) . append ( infoType ) . append ( '\'' ) ;
-        sb . append ( ", info=" ) . append ( getInfo() ) ;
-        sb . append ( '}' ) ;
-        return sb . toString ( ) ;
+    public String toString () {
+        """MultiAppUserSession[
+                id=$id,
+                userName=$userName,
+                infoType=$infoType,
+                info=$info,
+                version=$version,
+                lastModifiedBy=$lastModifiedBy,
+                lastModified=$lastModified,
+                dataOrigin=$dataOrigin]"""
     }
 }
