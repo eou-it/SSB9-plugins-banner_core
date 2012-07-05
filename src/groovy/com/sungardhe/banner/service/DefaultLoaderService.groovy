@@ -14,11 +14,14 @@ package com.sungardhe.banner.service
 
 import groovy.sql.Sql
 import org.springframework.web.context.request.RequestContextHolder
+import com.sungardhe.i18n.MessageHelper
+import com.sungardhe.banner.i18n.DateConverterService
 
 public class DefaultLoaderService {
 
     def dataSource                  // injected by Spring
     def dateFormatMap = [ 1:"MDY", 2:"DMY", 3:"YMD" ]
+    def dateConverterService
 
     public void loadDefault( def userName ) {
         def conn
@@ -41,12 +44,13 @@ public class DefaultLoaderService {
                 lastLogonDate = row.gurlogn_hrzn_last_logon_date
             }
             def strDate
+            dateConverterService = new DateConverterService()
             if(lastLogonDate){
-                strDate = lastLogonDate.format("dd-MMM-yyyy")
+                strDate = dateConverterService.convertGregorianToDefaultCalendar(lastLogonDate,MessageHelper.message('default.date.format'))
             } else {
-                strDate = new Date().format("dd-MMM-yyyy")
+                strDate = dateConverterService.convertGregorianToDefaultCalendar(new Date(),MessageHelper.message('default.date.format'))
             }
-            defaultMap.LAST_LOGON_DATE = strDate
+            defaultMap.LAST_LOGON_DATE = strDate.toString()
 
             RequestContextHolder.currentRequestAttributes().request.session.setAttribute("DEFAULTS", defaultMap)
         } catch(Exception e) {
