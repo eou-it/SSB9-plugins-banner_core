@@ -1,6 +1,8 @@
 package com.sungardhe.banner.general.utility
 
 import com.sungardhe.banner.general.utility.MultiAppUserSession
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 /**
  * Cross-app Shared Info Service.
@@ -33,19 +35,24 @@ class MultiAppUserSessionService {
             if (isNull(info)) {
                 log.info(infoType + ": passes NULL VALUES to share, which will not be persisted")
             } else {
-                def multiAppUserSession = new MultiAppUserSession(userName: userName,infoType: MULTI_APP_USER_SESSION+infoType, info: info)
+                def multiAppUserSession = new MultiAppUserSession(
+                        userName: userName,
+                        infoType: MULTI_APP_USER_SESSION+infoType,
+                        info: info
+                )
                 multiAppUserSession.save( failOnError: true)
             }
         }
     }
-
 
     private boolean isNull (info){
         (info == null || (info instanceof String && info == ""))
     }
 
     def delete (userName) {
-        MultiAppUserSession.executeUpdate("delete MultiAppUserSession c where c.userName = :userName", [userName:userName])
+        this.findByUserName(userName).each { MultiAppUserSession multiAppUserSession ->
+            multiAppUserSession.delete( failOnError: true, flush: true )
+        }
     }
 
     def findByUserName (userName) {

@@ -47,10 +47,10 @@ class MultiAppUserSession implements Serializable {
     Object info
 
     @Column(name="GURSESS_VALUE")
-    String stringInfo
+    String infoPersisted
 
-    @Column(name="GURSESS_DATE_VALUE")
-    Date dateInfo
+    @Column(name="GURSESS_VALUE_TYPE")
+    String infoDataType
 
     static constraints = {
         lastModifiedBy(nullable:true, maxSize:30)
@@ -59,26 +59,34 @@ class MultiAppUserSession implements Serializable {
         userName(nullable:false, maxSize:150)
         infoType(nullable:false, maxSize:1000)
         info(nullable:false)
-        dateInfo(nullable:true)
-        stringInfo(nullable:true)
+        infoDataType(nullable:false)
+        infoPersisted(nullable:false)
     }
 
     Object getInfo () {
-        if (getDateInfo()) {
-            return dateInfo
-        } else {
-            return stringInfo
-        }
+        dbDecodeInfo(infoPersisted, infoDataType)
     }
 
     void setInfo (Object info) {
-         if (info instanceof Date){
-             dateInfo = info
-         } else {
-             stringInfo = info
-         }
+        infoPersisted = dbEncodeInfo (info, info.class.name)
+        this.infoDataType = info.class.name
     }
 
+    private def dbEncodeInfo (info, dataType) {
+        if (dataType == "java.util.Date") {
+            ""+((Date)info)?.getTime()
+        } else {
+            info
+        }
+    }
+
+    private def dbDecodeInfo (info, dataType) {
+        if (dataType == "java.util.Date") {
+            new Date(Long.parseLong(info))
+        } else {
+            info
+        }
+    }
 
     boolean equals(o) {
         if (this.is(o)) return true;
