@@ -1,16 +1,9 @@
 package com.sungardhe.banner.general.utility
 
-import com.sungardhe.banner.general.utility.MultiAppUserSession
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-
 /**
  * Cross-app Shared Info Service.
  */
 class MultiAppUserSessionService {
-
-    public static final String MULTI_APP_USER_SESSION = "multi.app.user.session."
-
 
     static transactional = true
 
@@ -33,11 +26,12 @@ class MultiAppUserSessionService {
         //TODO is there GORM batch save ? or flush=false would do batch operation automatically?
         infoToPersist?.each { infoType, info ->
             if (isNull(info)) {
-                log.info(infoType + ": passes NULL VALUES to share, which will not be persisted")
+                deleteInfoType(userName, infoType)
+                log.info(infoType + ": NULL VALUE to share:- the obsolete value for the info-type would be removed from DB")
             } else {
                 def multiAppUserSession = new MultiAppUserSession(
                         userName: userName,
-                        infoType: MULTI_APP_USER_SESSION+infoType,
+                        infoType: infoType,
                         info: info
                 )
                 multiAppUserSession.save( failOnError: true)
@@ -49,16 +43,16 @@ class MultiAppUserSessionService {
         (info == null || (info instanceof String && info == ""))
     }
 
-    def delete (userName) {
-        this.findByUserName(userName).each { MultiAppUserSession multiAppUserSession ->
+    def deleteInfoType (userName, infoType) {
+        MultiAppUserSession.findAllByUserNameAndInfoType(userName, infoType).each { MultiAppUserSession multiAppUserSession ->
             multiAppUserSession.delete( failOnError: true, flush: true )
         }
     }
 
-    def findByUserName (userName) {
-        MultiAppUserSession.findAllByUserName (userName)?.collect {
-            it.infoType = it.infoType?.replaceFirst(MULTI_APP_USER_SESSION, "")
-            return it
+    def delete (userName) {
+        MultiAppUserSession.findAllByUserName (userName).each { MultiAppUserSession multiAppUserSession ->
+            multiAppUserSession.delete( failOnError: true, flush: true )
         }
     }
+
 }
