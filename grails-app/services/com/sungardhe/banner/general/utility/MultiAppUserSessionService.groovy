@@ -1,14 +1,9 @@
 package com.sungardhe.banner.general.utility
 
-import com.sungardhe.banner.general.utility.MultiAppUserSession
-
 /**
  * Cross-app Shared Info Service.
  */
 class MultiAppUserSessionService {
-
-    public static final String MULTI_APP_USER_SESSION = "multi.app.user.session."
-
 
     static transactional = true
 
@@ -31,27 +26,40 @@ class MultiAppUserSessionService {
         //TODO is there GORM batch save ? or flush=false would do batch operation automatically?
         infoToPersist?.each { infoType, info ->
             if (isNull(info)) {
-                log.info(infoType + ": passes NULL VALUES to share, which will not be persisted")
+                deleteInfoType(userName, infoType)
+                log.info(infoType + ": NULL VALUE to share:- the obsolete value for the info-type would be removed from DB")
             } else {
-                def crossAppSharedInfo = new MultiAppUserSession(userName: userName,infoType: MULTI_APP_USER_SESSION+infoType, info: info)
-                crossAppSharedInfo.save( failOnError: true)
+                def multiAppUserSession = new MultiAppUserSession(
+                        userName: userName,
+                        infoType: infoType,
+                        info: info
+                )
+                multiAppUserSession.save( failOnError: true)
             }
         }
     }
-
 
     private boolean isNull (info){
         (info == null || (info instanceof String && info == ""))
     }
 
+    def deleteInfoType (userName, infoType) {
+        this.findByUserNameAndInfoType(userName, infoType).each { MultiAppUserSession multiAppUserSession ->
+            multiAppUserSession.delete( failOnError: true, flush: true )
+        }
+    }
+
     def delete (userName) {
-        MultiAppUserSession.executeUpdate("delete MultiAppUserSession c where c.userName = :userName", [userName:userName])
+        this.findByUserName(userName).each { MultiAppUserSession multiAppUserSession ->
+            multiAppUserSession.delete( failOnError: true, flush: true )
+        }
     }
 
     def findByUserName (userName) {
-        MultiAppUserSession.findAllByUserName (userName)?.collect {
-            it.infoType = it.infoType?.replaceFirst(MULTI_APP_USER_SESSION, "")
-            return it
-        }
+        MultiAppUserSession.findAllByUserName (userName)
+    }
+
+    def findByUserNameAndInfoType (userName, infoType) {
+        MultiAppUserSession.findAllByUserNameAndInfoType (userName, infoType)
     }
 }
