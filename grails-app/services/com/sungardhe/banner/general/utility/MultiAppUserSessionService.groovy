@@ -1,5 +1,9 @@
 package com.sungardhe.banner.general.utility
 
+import com.sungardhe.banner.general.utility.MultiAppUserSession
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+
 /**
  * Cross-app Shared Info Service.
  */
@@ -44,15 +48,22 @@ class MultiAppUserSessionService {
     }
 
     def deleteInfoType (userName, infoType) {
-        MultiAppUserSession.findAllByUserNameAndInfoType(userName, infoType).each { MultiAppUserSession multiAppUserSession ->
+        this.findByUserNameAndInfoType(userName, infoType).each { MultiAppUserSession multiAppUserSession ->
             multiAppUserSession.delete( failOnError: true, flush: true )
         }
     }
 
     def delete (userName) {
-        MultiAppUserSession.findAllByUserName (userName).each { MultiAppUserSession multiAppUserSession ->
+        this.findByUserName(userName).each { MultiAppUserSession multiAppUserSession ->
             multiAppUserSession.delete( failOnError: true, flush: true )
         }
     }
 
+    def findByUserName (userName) {
+        MultiAppUserSession.findAllByUserName (userName)
+    }
+
+    def findByUserNameAndInfoType (userName, infoType) {
+        MultiAppUserSession.findAllByUserNameAndInfoType (userName, infoType)
+    }
 }
