@@ -15,7 +15,6 @@ package com.sungardhe.banner.service
 import groovy.sql.Sql
 import org.springframework.web.context.request.RequestContextHolder
 import com.sungardhe.banner.i18n.DateConverterService
-import com.sungardhe.banner.i18n.MessageUtility
 
 public class DefaultLoaderService {
 
@@ -46,9 +45,9 @@ public class DefaultLoaderService {
             def strDate
             dateConverterService = new DateConverterService()
             if(lastLogonDate){
-                strDate = dateConverterService.convertGregorianToDefaultCalendar(lastLogonDate,MessageUtility.message('default.date.format'))
+                strDate = dateConverterService.convertGregorianToDefaultCalendar(lastLogonDate)
             } else {
-                strDate = dateConverterService.convertGregorianToDefaultCalendar(new Date(),MessageUtility.message('default.date.format'))
+                strDate = dateConverterService.convertGregorianToDefaultCalendar(new Date())
             }
             defaultMap.LAST_LOGON_DATE = strDate.toString()
 
