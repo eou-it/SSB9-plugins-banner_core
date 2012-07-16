@@ -58,4 +58,12 @@ class QueryBuilder {
         returnQuery = "select count(*) ${returnQuery}"
         return returnQuery
     }
+
+    public static def dynamicGroupby = {tableIdentifier, params ->
+        String dynaGroup = ""
+        params?.each {key, val ->
+            dynaGroup += ", ${tableIdentifier}.${key}"
+        }
+        return dynaGroup
+    }
 }
