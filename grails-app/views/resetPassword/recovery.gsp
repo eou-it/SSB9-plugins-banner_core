@@ -9,7 +9,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
   <head>
-      <title><g:message code="com.sungardhe.banner.resetpassword.recoverycode.title"/></title>
+      <title><g:message code="net.hedtech.banner.resetpassword.recoverycode.title"/></title>
        <meta name="layout" content="bannerSelfServicePage"/>
        <link rel="stylesheet" href="${resource(dir: 'css', file: 'resetpassword.css')}"/>
        <script language="javascript">
@@ -39,7 +39,7 @@
       <div class="ui-layout-center inner-content" id="inner-content">
           <div class="inner-center">
               <div id="resetpassword" class="ui-widget ui-widget-section">
-                  <div class="ui-widget-header"><g:message code="com.sungardhe.banner.resetpassword.resetpassword.title"/></div>
+                  <div class="ui-widget-header"><g:message code="net.hedtech.banner.resetpassword.resetpassword.title"/></div>
                   <div class="main-wrapper" >
                       <div class="ui-widget-panel">
                       <form action="${postUrl}" method="post" id="recoveryForm">
@@ -49,12 +49,12 @@
                              </g:if>
                               <g:elseif test="${nonPidmIdm}">
                                   <input type="hidden" name="nonPidmId" value='${nonPidmIdm}'/>
-                             <tr><td class="tabledata" colspan="2"><g:message code="com.sungardhe.banner.resetpassword.recoverycode.message"/></td></tr>
+                             <tr><td class="tabledata" colspan="2"><g:message code="net.hedtech.banner.resetpassword.recoverycode.message"/></td></tr>
                              <g:if test="${flash.message}">
-                                <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text error-state" data-error-message="${flash.message}" autocomplete="off"/> </td></tr>
+                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text error-state" data-error-message="${flash.message}" autocomplete="off"/> </td></tr>
                              </g:if>
                              <g:else>
-                                <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text default-state" autocomplete="off"/> </td></tr>
+                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text default-state" autocomplete="off"/> </td></tr>
                              </g:else>
                              </g:elseif>
                           </table>
@@ -68,8 +68,8 @@
                           <g:else>
                           <div class="button-bar-container">
                               <div class="button-bar">
-                                  <button id="cancelButton1" class="secondary-button" onclick="gotoLogin()"><g:message code="com.sungardhe.banner.resetpassword.button.cancel"/></button>
-                                  <button id="createAccount1" class="primary-button" type="submit"><g:message code="com.sungardhe.banner.resetpassword.button.continue"/></button>
+                                  <button id="cancelButton1" class="secondary-button" onclick="gotoLogin()"><g:message code="net.hedtech.banner.resetpassword.button.cancel"/></button>
+                                  <button id="createAccount1" class="primary-button" type="submit"><g:message code="net.hedtech.banner.resetpassword.button.continue"/></button>
                               </div>
                        </div>
                        </g:else>

@@ -90,11 +90,11 @@ There are several configuration options to specify support for a custom represen
 //
 bannerRepresentationHandlerMap = [
     "application/vnd.sungardhe.banner.general.v0.01+xml": 
-        [ "College": "com.sungardhe.banner.general.system.CollegeRepresentationHandler_v0_01",
+        [ "College": "net.hedtech.banner.general.system.CollegeRepresentationHandler_v0_01",
           // next Model supported goes here
         ],
     "application/vnd.sungardhe.banner.general.v0.02+xml": 
-        [ "College": "com.sungardhe.banner.general.system.CollegeRepresentationHandler_v0_02",
+        [ "College": "net.hedtech.banner.general.system.CollegeRepresentationHandler_v0_02",
         // next Model supported goes here
         ],                                                    ],
     // The next MIME type(s) should be added here
@@ -184,7 +184,7 @@ bannerRepresentationHandlerMap =
       // This second example to support v0.03 for Foo use an external groovy file 
       // - please make sure the groovy file is available on the classpath
       "application/vnd.sungardhe.student.v0.03+xml":
-          [ "Foo": "com.sungardhe.banner.testing.FooMarkupBuilderBasedRepresentationHandler" ],
+          [ "Foo": "net.hedtech.banner.testing.FooMarkupBuilderBasedRepresentationHandler" ],
 
       // next MIME type would go here
 ]

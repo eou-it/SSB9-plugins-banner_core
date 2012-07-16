@@ -1,9 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" defaultCodec="none" %>
 <html>
 <head>
-    <title><g:message code="com.sungardhe.banner.productTitle"/></title>
+    <title><g:message code="net.hedtech.banner.productTitle"/></title>
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'timeout.css')}"/>
-    <g:set var="actionLabel" value="${g.message(code: 'com.sungardhe.banner.logout.timeout.dialog.action')}"/>
+    <g:set var="actionLabel" value="${g.message(code: 'net.hedtech.banner.logout.timeout.dialog.action')}"/>
     <g:set var="target" value="${request.contextPath}${uri}"/>
     <link rel="shortcut icon" href="${resource(dir: 'images', file: 'favicon.ico')}" type="image/x-icon"/>
 </head>
@@ -19,9 +19,9 @@
         </div>
     </div>
     <div class="dialog">
-        <div class="title"><g:message code="com.sungardhe.banner.logout.timeout.dialog.title"/></div>
-        <div class="message"><g:message code="com.sungardhe.banner.logout.timeout.dialog.message"/></div>
-        <div class="actionMessage">${g.message(code: "com.sungardhe.banner.logout.timeout.dialog.actionMessage", args: ["<a href=\"$target\">$actionLabel</a>"])}</div>
+        <div class="title"><g:message code="net.hedtech.banner.logout.timeout.dialog.title"/></div>
+        <div class="message"><g:message code="net.hedtech.banner.logout.timeout.dialog.message"/></div>
+        <div class="actionMessage">${g.message(code: "net.hedtech.banner.logout.timeout.dialog.actionMessage", args: ["<a href=\"$target\">$actionLabel</a>"])}</div>
     </div>
     <div class="footer">
         <span class="logo"></span>

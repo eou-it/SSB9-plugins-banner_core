@@ -1,4 +1,4 @@
-import com.sungardhe.banner.controllers.ControllerUtils
+import net.hedtech.banner.controllers.ControllerUtils
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 import org.springframework.security.core.context.SecurityContextHolder
 import javax.servlet.http.Cookie

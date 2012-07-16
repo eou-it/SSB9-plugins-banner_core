@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title><g:message code="com.sungardhe.banner.login.title"/></title>
+    <title><g:message code="net.hedtech.banner.login.title"/></title>
     <link rel="shortcut icon" href="${resource(dir:'images',file:'favicon.ico')}" type="image/x-icon"/>
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'login.css')}"/>
 <!--<link rel="stylesheet" href="${resource(dir: 'css', file: 'rtl-login.css')}"/>-->
@@ -19,7 +19,7 @@
 <div class="splashBg">
    <div class="ie-warning" id="ieWarningMessage">
        <div>
-         <g:message code="com.sungardhe.banner.login.warning"/>
+         <g:message code="net.hedtech.banner.login.warning"/>
        </div>
     </div>
 	<div class="appName">Banner<span> &reg;</span></div>
@@ -30,7 +30,7 @@
       <div class="loginMsg">${flash.reloginMessage}</div>
     </g:elseif>
     <g:else>
-	  <div class="loginMsg"><g:message code="com.sungardhe.banner.login.prompt"/></div>
+	  <div class="loginMsg"><g:message code="net.hedtech.banner.login.prompt"/></div>
     </g:else>
 
 	<div class="logIn">
@@ -48,16 +48,16 @@
 				<div class="userName"><span><input type='text'  name='j_username' id='j_username' /></span></div>
 				<div class="password"><span><input type='password' name='j_password' id='j_password' autocomplete="off" /></span></div>
 			</g:else>
-			<div class="signin-button-wrapper"><input type='submit' value="${message(code: 'com.sungardhe.banner.login.signin', default: 'Sign In')}" id="sign-in-btn" height="32px"  onclick="submitForm()" class="signin-button"/></div>
+			<div class="signin-button-wrapper"><input type='submit' value="${message(code: 'net.hedtech.banner.login.signin', default: 'Sign In')}" id="sign-in-btn" height="32px"  onclick="submitForm()" class="signin-button"/></div>
             <g:if test="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.reset.enabled == true || org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.guest.reset.enabled == true}">
-                <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" class="forgotpassword"> ${message(code: 'com.sungardhe.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')} </a></div>
+                <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" class="forgotpassword"> ${message(code: 'net.hedtech.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')} </a></div>
             </g:if>
 		</div>
       </form>
 	</div>
 	<div class="copyright">
-		<p>&copy; <g:message code="com.sungardhe.banner.login.copyright1"/></p>
-		<p><g:message code="com.sungardhe.banner.login.copyright2"/></p>
+		<p>&copy; <g:message code="net.hedtech.banner.login.copyright1"/></p>
+		<p><g:message code="net.hedtech.banner.login.copyright2"/></p>
 	</div>
 </div>
 

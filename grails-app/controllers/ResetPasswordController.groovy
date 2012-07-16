@@ -1,4 +1,4 @@
-import com.sungardhe.banner.security.ResetPasswordService
+import net.hedtech.banner.security.ResetPasswordService
 import java.sql.SQLException
 import org.apache.commons.lang.RandomStringUtils
 import org.apache.commons.codec.binary.Base64
@@ -37,7 +37,7 @@ class ResetPasswordController {
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
         if(session.getAttribute("requestPage") != "questans"){
             session.invalidate()
-            flash.message = message(code: "com.sungardhe.banner.resetpassword.request.invalid.message")
+            flash.message = message(code: "net.hedtech.banner.resetpassword.request.invalid.message")
             redirect (uri: "/resetPassword/auth")
         }
         else if(id == null || id.trim().length() == 0){
@@ -46,11 +46,11 @@ class ResetPasswordController {
         }
         else if(resetPasswordService.isPidmUser(id)){
             if(CH?.config.ssbPassword.reset.enabled == null || CH?.config.ssbPassword.reset.enabled == false){
-                flash.message = message(code: "com.sungardhe.banner.resetpassword.disabled.message")
+                flash.message = message(code: "net.hedtech.banner.resetpassword.disabled.message")
                 redirect (uri: "/resetPassword/auth")
             }
             else if(resetPasswordService.isAccountDisabled(id)){
-                flash.message = message(code: "com.sungardhe.banner.resetpassword.user.disabled.message")
+                flash.message = message(code: "net.hedtech.banner.resetpassword.user.disabled.message")
                 redirect (uri: "/resetPassword/auth")
             }
             else{
@@ -59,7 +59,7 @@ class ResetPasswordController {
                 try{
                     Map questionsInfoMap = resetPasswordService.getQuestionInfoByLoginId(id)
                     if(((List)questionsInfoMap.get(id)).size() == 0 || ((List)questionsInfoMap.get(id)).size() < questionsInfoMap.get(id+"qstn_no")){
-                        flash.message = message(code:"com.sungardhe.banner.resetpasword.securityquestion.notfound.message")
+                        flash.message = message(code:"net.hedtech.banner.resetpasword.securityquestion.notfound.message")
                         redirect (uri: "/resetPassword/auth")
                     }
                     else{
@@ -76,7 +76,7 @@ class ResetPasswordController {
         }
         else if(resetPasswordService.isNonPidmUser(id)){
             if(CH?.config.ssbPassword.guest.reset.enabled == null || CH?.config.ssbPassword.guest.reset.enabled == false){
-                flash.message = message(code: "com.sungardhe.banner.resetpassword.disabled.message")
+                flash.message = message(code: "net.hedtech.banner.resetpassword.disabled.message")
                 redirect (uri: "/resetPassword/auth")
             }
             else{
@@ -88,7 +88,7 @@ class ResetPasswordController {
             }
         }
         else{
-            flash.message = message( code: "com.sungardhe.banner.resetpassword.user.invalid")
+            flash.message = message( code: "net.hedtech.banner.resetpassword.user.invalid")
             redirect(controller: "login", action: "auth")
         }
     }
@@ -110,7 +110,7 @@ class ResetPasswordController {
 
         if(session.getAttribute("requestPage") != "questans"){
             session.invalidate()
-            flash.message = message(code: "com.sungardhe.banner.resetpassword.request.invalid.message")
+            flash.message = message(code: "net.hedtech.banner.resetpassword.request.invalid.message")
             redirect (uri: "/resetPassword/auth")
         }
        else{
@@ -118,7 +118,7 @@ class ResetPasswordController {
                String answer = request.getParameter("answer"+it[0])
                if(answer == null || answer.trim().length() == 0){
                    errorflag = true
-                   flash.message = message(code:"com.sungardhe.banner.resetpassword.answer.required.error")
+                   flash.message = message(code:"net.hedtech.banner.resetpassword.answer.required.error")
                    questionValidationMap.put(it[0], [error:true, answer: "", message: flash.message])
                }
                else{
@@ -138,7 +138,7 @@ class ResetPasswordController {
                    try{
                        boolean answerMatch = resetPasswordService.isAnswerMatched(userAnswer, pidm, it[0])
                        if(!answerMatch){
-                           errorMessage = message(code: "com.sungardhe.banner.resetpassword.answer.match.error")
+                           errorMessage = message(code: "net.hedtech.banner.resetpassword.answer.match.error")
                            questionValidationMap.put(it[0], [error:true, answer:"", message: errorMessage])
                        }
                        else{
@@ -154,7 +154,7 @@ class ResetPasswordController {
                   resetPasswordService.loginAttempt(pidm)
                   if(resetPasswordService.isPidmAccountDisabled(pidm)){
                       session.invalidate()
-                      flash.message = message(code: "com.sungardhe.banner.resetpassword.user.disabled.message")
+                      flash.message = message(code: "net.hedtech.banner.resetpassword.user.disabled.message")
                       redirect (uri: "/resetPassword/auth")
                   }
                   String view = 'questans'
@@ -184,16 +184,16 @@ class ResetPasswordController {
         def validateResult = resetPasswordService.validatePassword(pidm, password)
         if(session.getAttribute("requestPage") != "resetpin"){
             session.invalidate()
-            flash.message = message(code: "com.sungardhe.banner.resetpassword.request.invalid.message")
+            flash.message = message(code: "net.hedtech.banner.resetpassword.request.invalid.message")
             redirect (uri: "/resetPassword/auth")
         }
         else if(password != confirmPassword){
-           flash.message = message( code:"com.sungardhe.banner.resetpassword.password.match.error" )
+           flash.message = message( code:"net.hedtech.banner.resetpassword.password.match.error" )
            String view = 'resetpin'
            render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
         }
         else if(password.trim().length() == 0 || confirmPassword.trim().length() == 0){
-           flash.message = message( code:"com.sungardhe.banner.resetpassword.password.required.error" )
+           flash.message = message( code:"net.hedtech.banner.resetpassword.password.required.error" )
            String view = 'resetpin'
            render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
         }
@@ -218,12 +218,12 @@ class ResetPasswordController {
                         resetPasswordService.resetNonPidmPassword(nonPidm, password)
                     }
                     session.invalidate()
-                    flash.reloginMessage = message(code: "com.sungardhe.banner.resetpassword.resetpin.success.message")
+                    flash.reloginMessage = message(code: "net.hedtech.banner.resetpassword.resetpin.success.message")
                     redirect(controller: "login", action: "auth")
                 }
                 catch(SQLException sqle){
                     if(20100 == sqle.getErrorCode()){
-                       flash.message = message(code:"com.sungardhe.banner.resetpassword.resetpin.password.length.error")
+                       flash.message = message(code:"net.hedtech.banner.resetpassword.resetpin.password.length.error")
                     }
                     else{
                         flash.message = message(code:sqle.getMessage())
@@ -260,7 +260,7 @@ class ResetPasswordController {
         def nonPidmIdm = request.getParameter("nonPidmId")
         if(session.getAttribute("requestPage") != "recovery"){
             session.invalidate()
-            flash.message = message(code: "com.sungardhe.banner.resetpassword.request.invalid.message")
+            flash.message = message(code: "net.hedtech.banner.resetpassword.request.invalid.message")
             redirect (uri: "/resetPassword/auth")
         }
         else{

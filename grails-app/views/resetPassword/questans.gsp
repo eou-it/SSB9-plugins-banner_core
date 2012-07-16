@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
-   <title><g:message code="com.sungardhe.banner.resetpassword.forgotpassword.title"/></title>
+   <title><g:message code="net.hedtech.banner.resetpassword.forgotpassword.title"/></title>
    <meta name="layout" content="bannerSelfServicePage"/>
    <link rel="stylesheet" href="${resource(dir: 'css', file: 'resetpassword.css')}"/>
     <script language="javascript">
@@ -21,7 +21,7 @@
             }, 500);
 
              $("input").blur(function(e){
-                 var emptyErrorMessage = "${message( code:"com.sungardhe.banner.resetpassword.answer.required.error" )}";
+                 var emptyErrorMessage = "${message( code:"net.hedtech.banner.resetpassword.answer.required.error" )}";
                 var element = $(e.currentTarget);
                 if(element.val().trim() != "" && element.hasClass("error-state")){
                     element.removeClass("error-state");
@@ -56,34 +56,34 @@
     <div class="ui-layout-center inner-content" id="inner-content">
         <div class="inner-center">
             <div id="resetpassword" class="ui-widget ui-widget-section">
-                <div class="ui-widget-header"> <g:message code="com.sungardhe.banner.resetpassword.forgotpassword.title"/> </div>
+                <div class="ui-widget-header"> <g:message code="net.hedtech.banner.resetpassword.forgotpassword.title"/> </div>
                 <div class="main-wrapper" >
                     <div class="ui-widget-panel">
                     <form  action="${postUrl}" method="post" id="answerForm">
                         <table cellpadding="5" cellspacing="10" class="input-table">
-                           <tr><td class="tabletext"> <g:message code="com.sungardhe.banner.resetpassword.username"/> :</td><td class="tabledata"><input type="text" readonly="readonly" value="${userName}" name="username" class="input-text disabled-state"/> </td></tr>
+                           <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.username"/> :</td><td class="tabledata"><input type="text" readonly="readonly" value="${userName}" name="username" class="input-text disabled-state"/> </td></tr>
                             <g:if test="${questionValidationMap}">
                                <g:each in="${questions}">
-                                    <tr><td class="tabletext" ><g:message code="com.sungardhe.banner.resetpassword.question"/>:</td><td class="tabledata">  ${it[1]}</td></tr>
+                                    <tr><td class="tabletext" ><g:message code="net.hedtech.banner.resetpassword.question"/>:</td><td class="tabledata">  ${it[1]}</td></tr>
                                    <g:if test='${questionValidationMap.get(it[0]).get("error")}'>
-                                        <tr><td class="tabletext invalid" ><g:message code="com.sungardhe.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text error-state" data-error-message="${questionValidationMap.get(it[0]).get("message")}" autocomplete="off"/> </td></tr>
+                                        <tr><td class="tabletext invalid" ><g:message code="net.hedtech.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text error-state" data-error-message="${questionValidationMap.get(it[0]).get("message")}" autocomplete="off"/> </td></tr>
                                     </g:if>
                                    <g:else>
-                                        <tr><td class="tabletext" ><g:message code="com.sungardhe.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text default-state" value='${questionValidationMap.get(it[0]).get("answer")}' autocomplete="off"/> </td></tr>
+                                        <tr><td class="tabletext" ><g:message code="net.hedtech.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text default-state" value='${questionValidationMap.get(it[0]).get("answer")}' autocomplete="off"/> </td></tr>
                                    </g:else>
                                </g:each>
                            </g:if>
                             <g:else>
                                 <g:each in="${questions}">
-                                    <tr><td class="tabletext" ><g:message code="com.sungardhe.banner.resetpassword.question"/>:</td><td class="tabledata">  ${it[1]}</td></tr>
-                                    <tr><td class="tabletext" ><g:message code="com.sungardhe.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text default-state" autocomplete="off"/> </td></tr>
+                                    <tr><td class="tabletext" ><g:message code="net.hedtech.banner.resetpassword.question"/>:</td><td class="tabledata">  ${it[1]}</td></tr>
+                                    <tr><td class="tabletext" ><g:message code="net.hedtech.banner.resetpassword.answer"/>  * : </td><td class="tabledata"><input type="password" name="answer${it[0]}" id="answer${it[0]}" class="input-text default-state" autocomplete="off"/> </td></tr>
                                 </g:each>
                             </g:else>
                         </table>
                        <div class="button-bar-container">
                               <div class="button-bar">
-                                  <button id="cancelButton1" class="secondary-button" onclick="gotoLogin()"><g:message code="com.sungardhe.banner.resetpassword.button.cancel"/></button>
-                                  <button id="createAccount1" class="primary-button" type="submit"><g:message code="com.sungardhe.banner.resetpassword.button.continue"/></button>
+                                  <button id="cancelButton1" class="secondary-button" onclick="gotoLogin()"><g:message code="net.hedtech.banner.resetpassword.button.cancel"/></button>
+                                  <button id="createAccount1" class="primary-button" type="submit"><g:message code="net.hedtech.banner.resetpassword.button.continue"/></button>
                               </div>
                        </div>
                         </form>

@@ -21,7 +21,7 @@ import org.springframework.security.authentication.LockedException
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import com.sungardhe.banner.controllers.ControllerUtils
+import net.hedtech.banner.controllers.ControllerUtils
 
 class LoginController {
 
@@ -142,19 +142,19 @@ class LoginController {
                 msg = SpringSecurityUtils.securityConfig.errors.login.expired
             }
             else if (exception instanceof CredentialsExpiredException) {
-                msg = message( code:"com.sungardhe.banner.errors.login.expired" )
+                msg = message( code:"net.hedtech.banner.errors.login.expired" )
             }
             else if (exception instanceof DisabledException) {
                 msg = SpringSecurityUtils.securityConfig.errors.login.disabled
             }
             else if (exception instanceof LockedException) {
-                msg = message( code:"com.sungardhe.banner.errors.login.locked" )
+                msg = message( code:"net.hedtech.banner.errors.login.locked" )
             }
             else if (exception instanceof BadCredentialsException) {
-                msg = message( code:"com.sungardhe.banner.errors.login.fail" )
+                msg = message( code:"net.hedtech.banner.errors.login.fail" )
             }
             else {
-                msg = message( code:"com.sungardhe.banner.errors.login.fail" )
+                msg = message( code:"net.hedtech.banner.errors.login.fail" )
             }
         }
         msg
@@ -184,7 +184,7 @@ class LoginController {
 
         String userName = request.getParameter("j_username")
         if(userName == null || userName.trim().length() == 0){
-            flash.message =  message( code: "com.sungardhe.banner.resetpassword.username.required.error")
+            flash.message =  message( code: "net.hedtech.banner.resetpassword.username.required.error")
             String view = 'auth'
             String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
             String forgotPasswordUrl =  "${request.contextPath}/login/resetPassword";

@@ -23,7 +23,7 @@
             } );
 
             function closeBrowserInstance() {
-                var prompt = '${message( code: "com.sungardhe.banner.browserInstanceIdentifier.multiWindow.error")}';
+                var prompt = '${message( code: "net.hedtech.banner.browserInstanceIdentifier.multiWindow.error")}';
                 alert(prompt);
                 closeWindow ();
             };

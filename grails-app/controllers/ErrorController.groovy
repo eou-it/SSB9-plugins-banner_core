@@ -12,7 +12,7 @@
 
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import org.springframework.web.context.request.RequestContextHolder
-import com.sungardhe.banner.controllers.ControllerUtils
+import net.hedtech.banner.controllers.ControllerUtils
 
 class ErrorController {
 

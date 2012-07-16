@@ -9,17 +9,17 @@
  in the U.S.A. and/or other regions and/or countries.
  **********************************************************************************/
 
-import com.sungardhe.banner.controllers.RestfulControllerMixin
-import com.sungardhe.banner.db.BannerDS as BannerDataSource
-import com.sungardhe.banner.security.BannerAuthenticationProvider
-import com.sungardhe.banner.security.CasAuthenticationProvider
-import com.sungardhe.banner.security.SelfServiceBannerAuthenticationProvider
-import com.sungardhe.banner.service.ServiceBase
-import com.sungardhe.banner.supplemental.SupplementalDataSupportMixin
-import com.sungardhe.banner.supplemental.SupplementalDataHibernateListener
-import com.sungardhe.banner.supplemental.SupplementalDataService
-import com.sungardhe.banner.supplemental.SupplementalDataPersistenceManager
-import com.sungardhe.banner.mep.MultiEntityProcessingService
+import net.hedtech.banner.controllers.RestfulControllerMixin
+import net.hedtech.banner.db.BannerDS as BannerDataSource
+import net.hedtech.banner.security.BannerAuthenticationProvider
+import net.hedtech.banner.security.CasAuthenticationProvider
+import net.hedtech.banner.security.SelfServiceBannerAuthenticationProvider
+import net.hedtech.banner.service.ServiceBase
+import net.hedtech.banner.supplemental.SupplementalDataSupportMixin
+import net.hedtech.banner.supplemental.SupplementalDataHibernateListener
+import net.hedtech.banner.supplemental.SupplementalDataService
+import net.hedtech.banner.supplemental.SupplementalDataPersistenceManager
+import net.hedtech.banner.mep.MultiEntityProcessingService
 
 import grails.util.GrailsUtil
 
@@ -50,13 +50,13 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.transaction.annotation.Transactional
 
-import com.sungardhe.banner.service.AuditTrailPropertySupportHibernateListener
-import com.sungardhe.banner.representations.ResourceRepresentationRegistry
-import com.sungardhe.banner.security.BannerPreAuthenticatedFilter
-import com.sungardhe.banner.security.BannerAccessDecisionVoter
-import com.sungardhe.banner.service.LoginAuditService
-import com.sungardhe.banner.service.DefaultLoaderService
-import com.sungardhe.banner.security.ResetPasswordService
+import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
+import net.hedtech.banner.representations.ResourceRepresentationRegistry
+import net.hedtech.banner.security.BannerPreAuthenticatedFilter
+import net.hedtech.banner.security.BannerAccessDecisionVoter
+import net.hedtech.banner.service.LoginAuditService
+import net.hedtech.banner.service.DefaultLoaderService
+import net.hedtech.banner.security.ResetPasswordService
 
 /**
  * A Grails Plugin supporting cross cutting concerns such as security and database access for Banner web applications.
