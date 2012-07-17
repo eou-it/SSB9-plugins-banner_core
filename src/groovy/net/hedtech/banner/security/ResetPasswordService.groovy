@@ -352,35 +352,16 @@ class ResetPasswordService {
      */
     def resetNonPidmPassword (nonPidmId, passwd  ) {
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
+
         try {
-        sql.call("""
-        declare
-            p_proxyIDM VARCHAR2(255);
-            p_pin1 VARCHAR2(255) :=  ${passwd};
-            lv_salt VARCHAR(255);
-            lv_pinhash  VARCHAR(255);
-            p_email VARCHAR(255) := ${nonPidmId};
-        begin
-            SELECT gpbprxy_proxy_idm into p_proxyIDM FROM gpbprxy WHERE GPBPRXY_EMAIL_ADDRESS = p_email;
-            lv_salt := gspcrpt.F_Get_Salt (LENGTH (p_pin1));
-            gspcrpt.P_SaltedHash (p_pin1, lv_salt, lv_pinhash);
-            gp_gpbprxy.P_Update (
-                p_proxy_idm          => p_proxyIDM,
-                p_pin_disabled_ind   => 'N',
-                p_pin_exp_date       => SYSDATE + bwgkprxy.F_GetOption ('PIN_LIFETIME_DAYS'),
-                p_pin                => lv_pinhash,
-                p_inv_login_cnt      => 0,
-                p_salt               => lv_salt);
-                gb_common.P_Commit;
-        end;
-           """
-        )
-        }
-        catch(SQLException sqle){
-             log.error(sqle.message)
-        }
-        finally{
-            sql.close()
+            sql.call("{call gokauth.p_update_guest_passwd (${nonPidmId},${passwd})}")
+            sql.commit()
+
+        } catch (e) {
+           log.error("ERROR: loginAttempt $e")
+           throw e
+        } finally {
+            sql?.close()
         }
     }
 
@@ -456,6 +437,7 @@ class ResetPasswordService {
         def errorMessage = "";
         String prefQuery = "SELECT GUBPPRF_REUSE_DAYS FROM gubpprf"
         def passwordReuseDays = 0;
+        if (pidm) {
         try{
             sql.eachRow(prefQuery){row ->
                 passwordReuseDays = row.GUBPPRF_REUSE_DAYS
@@ -472,6 +454,7 @@ class ResetPasswordService {
         }
         finally{
             sql?.close();
+        }
         }
         (errorMessage == null || errorMessage?.toString()?.trim()?.length() == 0) ? [error: false] : [error: true, errorMessage: errorMessage];
     }

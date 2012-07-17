@@ -461,6 +461,7 @@ public class BannerDS implements DataSource {
         if (multiEntityProcessingService?.isMEP(conn)) {
                 if (!RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")) {
                   log.error "The Mep Code must be provided when running in multi institution context"
+                  conn?.close()
                   throw new RuntimeException("The Mep Code must be provided when running in multi institution context")
                 }
 
@@ -468,6 +469,7 @@ public class BannerDS implements DataSource {
 
           if(!desc){
              log.error "Mep Code is invalid"
+             conn?.close()
              throw new RuntimeException("Mep Code is invalid")
           }else{
               RequestContextHolder.currentRequestAttributes()?.request?.session.setAttribute("ssbMepDesc",desc)
