@@ -38,7 +38,7 @@ body {
 }
 
 .header .institutionalBranding {
-    background: url("../images/sgu-logo.png") no-repeat scroll 0 0 transparent;
+    background: url("../images/ellucian-university-logo-sm.png") no-repeat scroll 0 0 transparent;
     float: left;
     height: 22px;
     left: 10px;
@@ -103,7 +103,7 @@ body {
 }
 
 .footer .logo {
-    background: url("../images/sghe_logo_white.png") no-repeat scroll center center transparent;
+    background: url("../images/footer-logo-wht.png") no-repeat scroll center center transparent;
     cursor: pointer;
     float: right;
     height: 8px;
