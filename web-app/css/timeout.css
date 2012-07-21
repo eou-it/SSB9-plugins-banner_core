@@ -40,11 +40,11 @@ body {
 .header .institutionalBranding {
     background: url("../images/ellucian-university-logo-sm.png") no-repeat scroll 0 0 transparent;
     float: left;
-    height: 22px;
+    height: 19px;
     left: 10px;
     position: relative;
-    top: 15px;
-    width: 173px;
+    top: 11px;
+    width: 179px;
 }
 
 .header .buttonBar {
@@ -106,9 +106,9 @@ body {
     background: url("../images/footer-logo-wht.png") no-repeat scroll center center transparent;
     cursor: pointer;
     float: right;
-    height: 8px;
-    padding: 11px 14px;
-    width: 159px;
+    height: 12px;
+    padding: 9px 14px;
+    width: 63px;
 }
 
 .error {
