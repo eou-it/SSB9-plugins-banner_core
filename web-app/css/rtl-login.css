@@ -166,3 +166,8 @@ LOG IN
     bottom: 0.25em;
     position: relative;
 }
+
+.forgotPasswordDiv {
+    left: -244px;
+    top: 22px;
+}
