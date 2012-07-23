@@ -15,12 +15,9 @@ LOG IN
 .splashBg
 {
 	background: url(../images/splash-bg-light.png) no-repeat 0 0;
-	height: 404px;
-	width: 704px;
+	height: 438px;
+	width: 735px;
 	margin: 140px auto 0px;
-	-moz-box-shadow: 0 0 8px 8px #16577F;
-	-webkit-box-shadow: 0 0 8px 8px #16577F;
-	box-shadow: 0px 0px 8px #16577F;
 	position: relative;
 }
 .splashBg .appName
@@ -36,10 +33,11 @@ LOG IN
 }
 .splashBg .logIn {
     float: none;
-    margin: 53px 0 0 254px;
+    margin: 53px 0 0 263px;
     position: absolute;
-    top: 138px;
+    top: 157px;
 }
+
 .splashBg .logIn DIV
 {
 	float: left;
@@ -101,10 +99,10 @@ LOG IN
 	top: -4px;
 }
 .splashBg .copyright {
-    bottom: 5px;
+    bottom: 56px;
     color: #FFFFFF;
     font-size: 12px;
-    margin: 0 50px 0 93px;
+    margin: 0 50px 0 100px;
     position: absolute;
 }
 .splashBg .appName SPAN
@@ -118,7 +116,7 @@ LOG IN
 	color: #FFF;
 	position: absolute;
 	top: 125px;
-	right: 50px;
+	right: 52px;
 	font-size:16px;
 }
 /*INPUT[type="submit"]
@@ -190,7 +188,7 @@ INPUT[type="submit"]:hover
 	color: #FFFFFF;
 	font-family: Arial;
 	font-size: 0.917em;
-	margin: 15px 15px 0;
+	margin: 30px 30px 0;
 	border: 1px solid #FFCC33;
 	text-align: left;
 	visibility: hidden;
