@@ -4,6 +4,8 @@ import com.sungardhe.banner.general.utility.MultiAppUserSessionService
 import com.sungardhe.common.ui.zk.Utils
 import javax.servlet.http.HttpSessionEvent
 import org.zkoss.zk.ui.http.HttpSessionListener
+import net.hedtech.common.ui.zk.Utils
+import net.hedtech.banner.general.utility.MultiAppUserSessionService
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,7 +18,7 @@ class SeamlessHttpSessionListener extends HttpSessionListener {
     MultiAppUserSessionService multiAppUserSessionService
 
     public void sessionDestroyed(HttpSessionEvent evt) {
-		multiAppUserSessionService.delete(evt.session.getAttribute("SPRING_SECURITY_CONTEXT")?.authentication?.user?.username?.toUpperCase())
+		multiAppUserSessionService.delete(evt.session.getAttribute("session.seamlessToken"))
 	}
 
     private synchronized MultiAppUserSessionService getMultiAppUserSessionService() {

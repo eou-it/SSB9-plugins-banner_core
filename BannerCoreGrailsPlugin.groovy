@@ -57,6 +57,7 @@ import net.hedtech.banner.security.BannerAccessDecisionVoter
 import net.hedtech.banner.service.LoginAuditService
 import net.hedtech.banner.service.DefaultLoaderService
 import net.hedtech.banner.security.ResetPasswordService
+import com.sungardhe.banner.seamless.SeamlessHttpSessionListener
 
 /**
  * A Grails Plugin supporting cross cutting concerns such as security and database access for Banner web applications.
@@ -91,7 +92,14 @@ class BannerCoreGrailsPlugin {
 
 
     def doWithWebDescriptor = { xml ->
-        // no-op
+
+        def filterMapping = xml.'filter-mapping'
+        filterMapping[filterMapping.size() - 1] + {
+            'listener' {
+                'listener-class'(SeamlessHttpSessionListener.name)
+            }
+        }
+
     }
 
 

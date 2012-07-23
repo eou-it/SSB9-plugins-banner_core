@@ -19,7 +19,7 @@ class MultiAppUserSessionService {
      * @param domains
      * @return
      */
-    def save(seamlessToken, newSeamlessToken, Map<String, Object> infoToPersist) {
+    def save(seamlessToken, Map<String, Object> infoToPersist) {
         delete (seamlessToken)
 
         infoToPersist?.each { infoType, info ->
@@ -29,7 +29,7 @@ class MultiAppUserSessionService {
                 log.info(infoType + ": NULL VALUE to share:- the obsolete value for the info-type would be removed from DB")
             } else {
                 def multiAppUserSession = new MultiAppUserSession(
-                        seamlessToken: newSeamlessToken,
+                        seamlessToken: seamlessToken,
                         infoType: infoType,
                         info: info
                 )
@@ -49,12 +49,12 @@ class MultiAppUserSessionService {
     }
 
     def delete (seamlessToken) {
-        this.findBySeamlessToken(seamlessToken).each {
+        this.findAllBySeamlessToken(seamlessToken).each {
             it.delete( failOnError: true, flush: true )
         }
     }
 
-    def findBySeamlessToken (seamlessToken) {
+    def findAllBySeamlessToken(seamlessToken) {
         MultiAppUserSession.findAllBySeamlessToken (seamlessToken)
     }
 
