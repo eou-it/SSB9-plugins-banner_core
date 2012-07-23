@@ -1,9 +1,5 @@
 package net.hedtech.banner.general.utility
 
-import net.hedtech.banner.general.utility.MultiAppUserSession
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-
 /**
  * Cross-app Shared Info Service.
  */
@@ -23,18 +19,17 @@ class MultiAppUserSessionService {
      * @param domains
      * @return
      */
-    def save(userName, Map<String, Object> infoToPersist) {
-        //TODO revisit. instead of delete, should find&update?
-        delete (userName)
+    def save(seamlessToken, newSeamlessToken, Map<String, Object> infoToPersist) {
+        delete (seamlessToken)
 
-        //TODO is there GORM batch save ? or flush=false would do batch operation automatically?
         infoToPersist?.each { infoType, info ->
             if (isNull(info)) {
-                deleteInfoType(userName, infoType)
+                //not required, because it starts with a fresh db, so the obsolete data of the fresh null key wont be existing
+//                deleteInfoType(seamlessToken, infoType)
                 log.info(infoType + ": NULL VALUE to share:- the obsolete value for the info-type would be removed from DB")
             } else {
                 def multiAppUserSession = new MultiAppUserSession(
-                        userName: userName,
+                        seamlessToken: newSeamlessToken,
                         infoType: infoType,
                         info: info
                 )
@@ -47,23 +42,23 @@ class MultiAppUserSessionService {
         (info == null || (info instanceof String && info == ""))
     }
 
-    def deleteInfoType (userName, infoType) {
-        this.findByUserNameAndInfoType(userName, infoType).each { MultiAppUserSession multiAppUserSession ->
-            multiAppUserSession.delete( failOnError: true, flush: true )
+    def deleteInfoType (seamlessToken, infoType) {
+        this.findBySeamlessTokenAndInfoType(seamlessToken, infoType).each {
+            it.delete( failOnError: true, flush: true )
         }
     }
 
-    def delete (userName) {
-        this.findByUserName(userName).each { MultiAppUserSession multiAppUserSession ->
-            multiAppUserSession.delete( failOnError: true, flush: true )
+    def delete (seamlessToken) {
+        this.findBySeamlessToken(seamlessToken).each {
+            it.delete( failOnError: true, flush: true )
         }
     }
 
-    def findByUserName (userName) {
-        MultiAppUserSession.findAllByUserName (userName)
+    def findBySeamlessToken (seamlessToken) {
+        MultiAppUserSession.findAllBySeamlessToken (seamlessToken)
     }
 
-    def findByUserNameAndInfoType (userName, infoType) {
-        MultiAppUserSession.findAllByUserNameAndInfoType (userName, infoType)
+    def findBySeamlessTokenAndInfoType (seamlessToken, infoType) {
+        MultiAppUserSession.findAllBySeamlessTokenAndInfoType (seamlessToken, infoType)
     }
 }

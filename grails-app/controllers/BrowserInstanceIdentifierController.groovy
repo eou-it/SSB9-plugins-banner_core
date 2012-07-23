@@ -18,4 +18,5 @@ class BrowserInstanceIdentifierController {
         render view: "ManageBrowserInstance", model: [pageId: params.pageId]
     }
 
+
 }

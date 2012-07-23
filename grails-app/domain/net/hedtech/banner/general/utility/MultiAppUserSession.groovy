@@ -38,7 +38,7 @@ class MultiAppUserSession implements Serializable {
 	String dataOrigin
 
     @Column(name="GURSESS_USER")
-    String userName
+    String seamlessToken
 
     @Column(name="GURSESS_NAME")
     String infoType
@@ -56,7 +56,7 @@ class MultiAppUserSession implements Serializable {
         lastModifiedBy(nullable:true, maxSize:30)
 		lastModified(nullable:true)
 		dataOrigin(nullable:true, maxSize:30)
-        userName(nullable:false, maxSize:150)
+        seamlessToken(nullable:false, maxSize:150)
         infoType(nullable:false, maxSize:1000)
         info(nullable:false)
         infoDataType(nullable:false)
@@ -100,7 +100,7 @@ class MultiAppUserSession implements Serializable {
         if (infoType != that.infoType) return false;
         if (lastModified != that.lastModified) return false;
         if (lastModifiedBy != that.lastModifiedBy) return false;
-        if (userName != that.userName) return false;
+        if (seamlessToken != that.seamlessToken) return false;
         if (version != that.version) return false;
 
         return true;
@@ -113,7 +113,7 @@ class MultiAppUserSession implements Serializable {
         result = 31 * result + lastModifiedBy.hashCode();
         result = 31 * result + lastModified.hashCode();
         result = 31 * result + dataOrigin.hashCode();
-        result = 31 * result + userName.hashCode();
+        result = 31 * result + seamlessToken.hashCode();
         result = 31 * result + infoType.hashCode();
         result = 31 * result + info.hashCode();
         return result;
@@ -123,7 +123,7 @@ class MultiAppUserSession implements Serializable {
     public String toString () {
         """MultiAppUserSession[
                 id=$id,
-                userName=$userName,
+                seamlessToken=$seamlessToken,
                 infoType=$infoType,
                 info=$info,
                 version=$version,
