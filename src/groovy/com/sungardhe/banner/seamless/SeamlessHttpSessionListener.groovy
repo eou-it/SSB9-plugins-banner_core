@@ -18,7 +18,10 @@ class SeamlessHttpSessionListener extends HttpSessionListener {
     MultiAppUserSessionService multiAppUserSessionService
 
     public void sessionDestroyed(HttpSessionEvent evt) {
-		multiAppUserSessionService.delete(evt.session.getAttribute("session.seamlessToken"))
+        def seamlessToken = evt.session.getAttribute("session.seamlessToken")
+        if (seamlessToken) {
+            multiAppUserSessionService.delete(seamlessToken)
+        }
 	}
 
     private synchronized MultiAppUserSessionService getMultiAppUserSessionService() {
