@@ -55,10 +55,10 @@
 		</div>
       </form>
 	</div>
-	<div class="copyright">
-		<p>&copy; <g:message code="com.sungardhe.banner.login.copyright1"/></p>
-		<p><g:message code="com.sungardhe.banner.login.copyright2"/></p>
-	</div>
+    <div class="copyright">
+        <p>&copy; <g:message code="com.sungardhe.banner.login.copyright1"/></p>
+		<p dir="${message(code: 'default.language.direction')}"><g:message code="com.sungardhe.banner.login.copyright2"/></p>
+    </div>
 </div>
 
 <script type='text/javascript'>
