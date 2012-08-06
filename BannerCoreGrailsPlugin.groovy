@@ -64,7 +64,7 @@ import com.sungardhe.banner.seamless.SeamlessHttpSessionListener
  **/
 class BannerCoreGrailsPlugin {
 
-    String version = "1.0.51"
+    String version = "2.1.0"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.7 > *"
