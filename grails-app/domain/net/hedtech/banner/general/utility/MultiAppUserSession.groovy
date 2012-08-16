@@ -37,7 +37,7 @@ class MultiAppUserSession implements Serializable {
 	@Column(name="GURSESS_DATA_ORIGIN", length=30)
 	String dataOrigin
 
-    @Column(name="GURSESS_USER")
+    @Column(name="GURSESS_SEAMLESS_TOKEN")
     String seamlessToken
 
     @Column(name="GURSESS_NAME")

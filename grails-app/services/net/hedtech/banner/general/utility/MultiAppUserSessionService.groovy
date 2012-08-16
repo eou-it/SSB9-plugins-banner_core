@@ -12,21 +12,16 @@ class MultiAppUserSessionService {
     def grailsApplication                  // injected by Spring
 
     /**
-     * Before saving, it needs to delete
-     * the existing data for this app belong
-     * this user.
      *
-     * @param domains
+     * @param seamlessToken
+     * @param infoToPersist
      * @return
      */
-    def save(seamlessToken, Map<String, Object> infoToPersist) {
-        delete (seamlessToken)
-
+    def publish(seamlessToken, Map<String, Object> infoToPersist) {
+        log.debug (" Seamless Data to transfer for seamless token [" + seamlessToken + "]: " + infoToPersist)
         infoToPersist?.each { infoType, info ->
             if (isNull(info)) {
-                //not required, because it starts with a fresh db, so the obsolete data of the fresh null key wont be existing
-//                deleteInfoType(seamlessToken, infoType)
-                log.info(infoType + ": NULL VALUE to share:- the obsolete value for the info-type would be removed from DB")
+                log.warn(infoType + "has NULL VALUE. This cannot be shared.")
             } else {
                 def multiAppUserSession = new MultiAppUserSession(
                         seamlessToken: seamlessToken,
@@ -42,23 +37,29 @@ class MultiAppUserSessionService {
         (info == null || (info instanceof String && info == ""))
     }
 
-    def deleteInfoType (seamlessToken, infoType) {
-        this.findBySeamlessTokenAndInfoType(seamlessToken, infoType).each {
-            it.delete( failOnError: true, flush: true )
-        }
-    }
-
-    def delete (seamlessToken) {
-        this.findAllBySeamlessToken(seamlessToken).each {
-            it.delete( failOnError: true, flush: true )
-        }
-    }
-
-    def findAllBySeamlessToken(seamlessToken) {
+    /**
+     *
+     * @param seamlessToken
+     * @return
+     */
+    def lookupBySeamlessToken(seamlessToken) {
         MultiAppUserSession.findAllBySeamlessToken (seamlessToken)
     }
 
-    def findBySeamlessTokenAndInfoType (seamlessToken, infoType) {
-        MultiAppUserSession.findAllBySeamlessTokenAndInfoType (seamlessToken, infoType)
+    /**
+     *
+     * @param seamlessToken
+     * @return seamlessSession
+     */
+    def consume (seamlessToken) {
+        log.debug ("Consuming the seamless token : " + seamlessToken)
+        def seamlessSession = this.lookupBySeamlessToken(seamlessToken)
+        seamlessSession.each {
+            it.delete( failOnError: true, flush: true )
+        }
+        log.debug ("Seamless session retrieved : " + seamlessSession)
+
+        return seamlessSession
     }
+
 }

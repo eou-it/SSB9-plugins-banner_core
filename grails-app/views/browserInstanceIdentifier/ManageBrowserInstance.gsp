@@ -76,7 +76,7 @@
             }
 
         </script>
-        <form action="${request.contextPath}/banner.zul?page=${pageId}" method='POST' id='dummyForm'>
+        <form action="${urlToRedirect}" method='POST' id='dummyForm'>
             <g:hiddenField name="instanceVerified" value="true" />
         </form>
     </body>

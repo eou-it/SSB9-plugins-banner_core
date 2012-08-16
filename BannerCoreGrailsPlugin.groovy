@@ -9,55 +9,40 @@
  in the U.S.A. and/or other regions and/or countries.
  **********************************************************************************/
 
-import net.hedtech.banner.controllers.RestfulControllerMixin
 import net.hedtech.banner.db.BannerDS as BannerDataSource
-import net.hedtech.banner.security.BannerAuthenticationProvider
-import net.hedtech.banner.security.CasAuthenticationProvider
-import net.hedtech.banner.security.SelfServiceBannerAuthenticationProvider
-import net.hedtech.banner.service.ServiceBase
-import net.hedtech.banner.supplemental.SupplementalDataSupportMixin
-import net.hedtech.banner.supplemental.SupplementalDataHibernateListener
-import net.hedtech.banner.supplemental.SupplementalDataService
-import net.hedtech.banner.supplemental.SupplementalDataPersistenceManager
-import net.hedtech.banner.mep.MultiEntityProcessingService
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 
 import grails.util.GrailsUtil
-
 import java.util.concurrent.Executors
-
 import javax.servlet.Filter
-
+import net.hedtech.banner.controllers.RestfulControllerMixin
+import net.hedtech.banner.mep.MultiEntityProcessingService
+import net.hedtech.banner.representations.ResourceRepresentationRegistry
+import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
+import net.hedtech.banner.service.DefaultLoaderService
+import net.hedtech.banner.service.LoginAuditService
+import net.hedtech.banner.service.ServiceBase
+import net.hedtech.banner.supplemental.SupplementalDataHibernateListener
+import net.hedtech.banner.supplemental.SupplementalDataPersistenceManager
+import net.hedtech.banner.supplemental.SupplementalDataService
+import net.hedtech.banner.supplemental.SupplementalDataSupportMixin
 import oracle.jdbc.pool.OracleDataSource
-
 import org.apache.commons.dbcp.BasicDataSource
-import org.apache.commons.logging.LogFactory
 import org.apache.log4j.jmx.HierarchyDynamicMBean
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.runtime.GStringImpl
-
 import org.springframework.context.event.SimpleApplicationEventMulticaster
-import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
-import org.springframework.jmx.support.MBeanServerFactoryBean
 import org.springframework.jmx.export.MBeanExporter
+import org.springframework.jmx.support.MBeanServerFactoryBean
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.security.authentication.ProviderManager
+import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
-import org.springframework.security.web.access.ExceptionTranslationFilter
-import org.springframework.transaction.annotation.Transactional
-
-import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
-import net.hedtech.banner.representations.ResourceRepresentationRegistry
-import net.hedtech.banner.security.BannerPreAuthenticatedFilter
-import net.hedtech.banner.security.BannerAccessDecisionVoter
-import net.hedtech.banner.service.LoginAuditService
-import net.hedtech.banner.service.DefaultLoaderService
-import net.hedtech.banner.security.ResetPasswordService
-import com.sungardhe.banner.seamless.SeamlessHttpSessionListener
+import net.hedtech.banner.security.*
 
 /**
  * A Grails Plugin supporting cross cutting concerns such as security and database access for Banner web applications.
@@ -89,19 +74,6 @@ class BannerCoreGrailsPlugin {
                          |Banner web applications.'''.stripMargin()
 
     def documentation = ""
-
-
-    def doWithWebDescriptor = { xml ->
-
-        def filterMapping = xml.'filter-mapping'
-        filterMapping[filterMapping.size() - 1] + {
-            'listener' {
-                'listener-class'(SeamlessHttpSessionListener.name)
-            }
-        }
-
-    }
-
 
     def doWithSpring = {
 

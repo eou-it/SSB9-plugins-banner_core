@@ -1,4 +1,4 @@
-
+import org.springframework.web.context.request.RequestContextHolder
 
 /*********************************************************************************
  Copyright 2009-2011 SunGard Higher Education. All Rights Reserved.
@@ -15,8 +15,14 @@
 class BrowserInstanceIdentifierController {
 
     def redirect = {
-        render view: "ManageBrowserInstance", model: [pageId: params.pageId]
+        render view: "ManageBrowserInstance", model: [urlToRedirect: getUrlToRedirect ()]
     }
 
-
+    private def getUrlToRedirect () {
+        def urlToRedirect = request.contextPath + "/banner.zul"
+        if (RequestContextHolder.currentRequestAttributes()?.request?.getQueryString()) {
+            urlToRedirect = urlToRedirect + "?" + RequestContextHolder.currentRequestAttributes()?.request?.getQueryString()
+        }
+        urlToRedirect
+    }
 }
