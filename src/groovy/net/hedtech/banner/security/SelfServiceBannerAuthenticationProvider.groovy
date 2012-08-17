@@ -1,12 +1,12 @@
 /*********************************************************************************
  Copyright 2009-2011 SunGard Higher Education. All Rights Reserved.
- This copyrighted software contains confidential and proprietary information of 
- SunGard Higher Education and its subsidiaries. Any use of this software is limited 
- solely to SunGard Higher Education licensees, and is further subject to the terms 
- and conditions of one or more written license agreements between SunGard Higher 
+ This copyrighted software contains confidential and proprietary information of
+ SunGard Higher Education and its subsidiaries. Any use of this software is limited
+ solely to SunGard Higher Education licensees, and is further subject to the terms
+ and conditions of one or more written license agreements between SunGard Higher
  Education and the licensee in question. SunGard is either a registered trademark or
  trademark of SunGard Data Systems in the U.S.A. and/or other regions and/or countries.
- Banner and Luminis are either registered trademarks or trademarks of SunGard Higher 
+ Banner and Luminis are either registered trademarks or trademarks of SunGard Higher
  Education in the U.S.A. and/or other regions and/or countries.
  **********************************************************************************/
 package net.hedtech.banner.security
@@ -55,8 +55,8 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     private static final Logger log = Logger.getLogger( "net.hedtech.banner.security.SelfServiceBannerAuthenticationProvider" )
 
     def dataSource	// injected by Spring
-    
-    
+
+
     // a cached map of web roles to their configured timeout values, that is populated on first need
     private static roleBasedTimeOutsCache = [:]
     private static Integer defaultWebSessionTimeout // will be read from configuration
@@ -65,15 +65,15 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isSsbEnabled()}"
         clazz == UsernamePasswordAuthenticationToken && isSsbEnabled()
     }
-    
-    
+
+
     /**
      * Authenticates the user represented by the supplied authentication.
      * @param authentication an authentication object containing authentication information
      * @return Authentication an authentication token for the now-authenticated user
      **/
     public Authentication authenticate( Authentication authentication ) {
-        
+
         log.trace "SelfServiceBannerAuthenticationProvider asked to authenticate $authentication"
         def conn
         try {
@@ -81,19 +81,21 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                 log.trace "SelfServiceBannerAuthenticationProvider will not authenticate user since CAS is enabled"
                 return null
             }
-            conn = dataSource.getSsbConnection()                
-            Sql db = new Sql( conn ) 
-            
+            conn = dataSource.getSsbConnection()
+            Sql db = new Sql( conn )
+
             def authenticationResults = selfServiceAuthentication( authentication, db ) // may throw exceptions, like SQLException
 
             // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
             BannerAuthenticationProvider.verifyAuthenticationResults this, authentication, authenticationResults
-            
-            authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
-            authenticationResults['webTimeout']  = getWebTimeOut( authenticationResults, db ) 
-            authenticationResults['fullName']    = getFullName( authenticationResults, dataSource ) as String
-            setWebSessionTimeout( authenticationResults['webTimeout'] )
-            
+
+            authenticationResults['authorities']        = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
+            authenticationResults['webTimeout']         = getWebTimeOut( authenticationResults, db )
+            authenticationResults['transactionTimeout'] = getTransactionTimeout()
+            authenticationResults['fullName']           = getFullName( authenticationResults, dataSource ) as String
+            setWebSessionTimeout(  authenticationResults['webTimeout'] )
+            setTransactionTimeout( authenticationResults['transactionTimeout'] )
+
             newAuthenticationToken( authenticationResults )
         }
         catch (DisabledException de)           { throw de }
@@ -104,7 +106,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             return null // Other providers follow this one, and returning null will give them an opportunity to authenticate the user
         }
         catch (e) {
-            // We'll bury other exceptions (e.g., we'll get a SQLException because the user couldn't be found) 
+            // We'll bury other exceptions (e.g., we'll get a SQLException because the user couldn't be found)
             log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, but another provider may be able to..."
             return null // again, we'll return null to allow other providers a chance to authenticate the user
         } finally {
@@ -121,17 +123,17 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     public static def isSsbEnabled() {
         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
     }
-    
+
 
     def selfServiceAuthentication( Authentication authentication, db )  {
-        
+
         def pidm
         def errorStatus
         def expirationDate
         def displayUsage
         def oracleUserName
         def valid
-        
+
         db.call( "{call gokauth.p_authenticate(?,?,?,?,?,?,?)}",
             [ authentication.name,
               authentication.credentials,
@@ -176,13 +178,13 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                 authenticationResults.valid = true
                 break
         }
-        
+
         if (!authenticationResults.valid) {
             if (guestAuthenticationSuccessful( authentication, db , authenticationResults )) {
                 authenticationResults.valid = true
                 authenticationResults.guest = true
             }
-        }        
+        }
         authenticationResults
     }
 
@@ -246,20 +248,20 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         }
         false
     }
-    
-    
+
+
     private boolean isGuestAuthenticationEnabled() {
         CH.config.guestAuthenticationEnabled instanceof Boolean ? CH.config.guestAuthenticationEnabled : false
     }
-    
-    
+
+
     def newAuthenticationToken( authenticationResults ) {
         BannerAuthenticationProvider.newAuthenticationToken( this, authenticationResults )
     }
-    
-    
+
+
     def getPidm( authentication, db ) {
-        
+
         def pidm
         db.call( "{? = call twbkslib.f_fetchpidm(?)}", [ Sql.INTEGER, authentication.name ] ) { fetchedPidm ->
            pidm = fetchedPidm
@@ -268,20 +270,20 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         log.trace "SelfServiceAuthenticationProvider.getPidm found PIDM $pidm for user ${authentication.name}"
         pidm
     }
-    
-    
+
+
      public static Collection<GrantedAuthority>determineAuthorities( Map authentictionResults, Sql db ) {
 
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
-        
+
         if (authentictionResults.guest) {
-            authorities << BannerGrantedAuthority.create( "SELFSERVICE-GUEST", "BAN_DEFAULT_M", null )    
+            authorities << BannerGrantedAuthority.create( "SELFSERVICE-GUEST", "BAN_DEFAULT_M", null )
         }
-        
-        def rows        
+
+        def rows
         if (authentictionResults.pidm) {
-            rows = db.rows( 
-                """select twgrrole_pidm,twgrrole_role from twgrrole 
+            rows = db.rows(
+                """select twgrrole_pidm,twgrrole_role from twgrrole
                            where twgrrole_pidm = :pidm
                     union
                     select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
@@ -302,74 +304,84 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                     select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
                            where govrole_finaid_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINAID'
                     union
-                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole 
+                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
                            where govrole_finance_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINANCE'
-                """, [ pidm: authentictionResults.pidm ] ) 
+                """, [ pidm: authentictionResults.pidm ] )
 
-            rows?.each { row ->    
+            rows?.each { row ->
                 authorities << BannerGrantedAuthority.create( "SELFSERVICE-$row.TWGRROLE_ROLE", "BAN_DEFAULT_M", null )
             }
         }
-        
+
        // def selfServiceRolePassword
-        if (authentictionResults.oracleUserName) {            
+        if (authentictionResults.oracleUserName) {
             Collection<GrantedAuthority> adminAuthorities = BannerAuthenticationProvider.determineAuthorities( authentictionResults, db )
             authorities.addAll( adminAuthorities )
         }
-        
+
         // Users should be given the 'ROLE_SELFSERVICE_BAN_DEFAULT_M' role to have access to self service pages
-        // that are associated to the 'SELFSERVICE' FormContext. 
+        // that are associated to the 'SELFSERVICE' FormContext.
         //if (authorities.size() > 0) authorities << BannerGrantedAuthority.create( "SELFSERVICE", "BAN_DEFAULT_M", selfServiceRolePassword )
-        
+
         log.trace "SelfServiceAuthenticationProvider.determineAuthorities will return $authorities"
-        authorities 
-    }  
-    
-       
+        authorities
+    }
+
+
     public setWebSessionTimeout( Integer timeoutSeconds ) {
         RequestContextHolder.currentRequestAttributes().session.setMaxInactiveInterval( timeoutSeconds )
     }
-    
-    
+
+
+
+    public setTransactionTimeout( timeoutSeconds ) {
+        RequestContextHolder.currentRequestAttributes().session.transactionTimeout = timeoutSeconds
+    }
+
+    def getTransactionTimeout() {
+        def timeoutSeconds = CH.config.banner?.transactionTimeout instanceof Integer ? CH.config.banner?.transactionTimeout : 30
+        timeoutSeconds
+    }
+
     public int getDefaultWebSessionTimeout() {
-        
+
         if (!defaultWebSessionTimeout) {
-            def configuredTimeout = CH.config.defaultWebSessionTimeout 
-            defaultWebSessionTimeout = configuredTimeout instanceof Map ? 1500 : configuredTimeout        
+            def configuredTimeout = CH.config.defaultWebSessionTimeout
+            defaultWebSessionTimeout = configuredTimeout instanceof Map ? 1500 : configuredTimeout
         }
         defaultWebSessionTimeout
-    } 
-    
-    
+    }
+
+
     def getWebTimeOut( authenticationResults, db ) {
-        
+
         if (roleBasedTimeOutsCache.size() == 0) retrieveRoleBasedTimeOuts( db )
-        
-        // Grrrr... the 'findResults' method isn't available until Groovy 1.8.1  
-        // def timeoutsForUser = authenticationResults['authorities']?.findResults { authority -> 
+
+        // Grrrr... the 'findResults' method isn't available until Groovy 1.8.1
+        // def timeoutsForUser = authenticationResults['authorities']?.findResults { authority ->
         //     roleBasedTimeOutsCache[authority.roleName]
         // }
         // So, we'll have to do this using each...
-        
+
         def timeoutsForUser = [ getDefaultWebSessionTimeout() ]
-        authenticationResults['authorities']?.each { authority -> 
+        authenticationResults['authorities']?.each { authority ->
             def timeout = roleBasedTimeOutsCache[authority.roleName]
             if (timeout) timeoutsForUser << timeout * 60 // Convert minutes to seconds....
-        }                
+        }
         timeoutsForUser.max()
     }
-    
-    
+
+
     def retrieveRoleBasedTimeOuts( db ) {
-        
-        def rows = db.rows( "select twtvrole_code, twtvrole_time_out from twtvrole" ) 
-        rows?.each { row ->    
+
+        def rows = db.rows( "select twtvrole_code, twtvrole_time_out from twtvrole" )
+        rows?.each { row ->
             roleBasedTimeOutsCache << [ "${row.TWTVROLE_CODE}": row.TWTVROLE_TIME_OUT ]
         }
-        log.debug "retrieveRoleBasedTimeOuts() has cached web role timeouts: ${roleBasedTimeOutsCache}"    
-        roleBasedTimeOutsCache // we'll return this to facilitate testing of this method 
+        log.debug "retrieveRoleBasedTimeOuts() has cached web role timeouts: ${roleBasedTimeOutsCache}"
+        roleBasedTimeOutsCache // we'll return this to facilitate testing of this method
     }
-      
+
 
 }
 
