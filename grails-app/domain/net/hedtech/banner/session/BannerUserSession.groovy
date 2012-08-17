@@ -1,10 +1,10 @@
-package net.hedtech.banner.general.utility
+package net.hedtech.banner.session
 
 import javax.persistence.*
 
 @Entity
 @Table(name="GURSESS")
-class MultiAppUserSession implements Serializable {
+class BannerUserSession implements Serializable {
 
     @Id
     @Column(name = "GURSESS_SURROGATE_ID")
@@ -37,7 +37,7 @@ class MultiAppUserSession implements Serializable {
 	@Column(name="GURSESS_DATA_ORIGIN", length=30)
 	String dataOrigin
 
-    @Column(name="GURSESS_SEAMLESS_TOKEN")
+    @Column(name="GURSESS_SEAMLESS_TOKEN", length=100)
     String seamlessToken
 
     @Column(name="GURSESS_NAME")
@@ -92,7 +92,7 @@ class MultiAppUserSession implements Serializable {
         if (this.is(o)) return true;
         if (getClass() != o.class) return false;
 
-        MultiAppUserSession that = (MultiAppUserSession) o;
+        BannerUserSession that = (BannerUserSession) o;
 
         if (dataOrigin != that.dataOrigin) return false;
         if (id != that.id) return false;
@@ -121,7 +121,7 @@ class MultiAppUserSession implements Serializable {
 
 
     public String toString () {
-        """MultiAppUserSession[
+        """BannerUserSession[
                 id=$id,
                 seamlessToken=$seamlessToken,
                 infoType=$infoType,

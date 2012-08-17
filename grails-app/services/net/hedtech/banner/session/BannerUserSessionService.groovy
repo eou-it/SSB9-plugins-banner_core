@@ -1,15 +1,20 @@
-package net.hedtech.banner.general.utility
+package net.hedtech.banner.session
+
+import org.apache.log4j.Logger
 
 /**
  * Cross-app Shared Info Service.
  */
-class MultiAppUserSessionService {
+class BannerUserSessionService {
 
     static transactional = true
 
     def dataSource                         // injected by Spring
     def sessionFactory                     // injected by Spring
     def grailsApplication                  // injected by Spring
+
+    private final log = Logger.getLogger(getClass())
+
 
     /**
      *
@@ -23,12 +28,12 @@ class MultiAppUserSessionService {
             if (isNull(info)) {
                 log.warn(infoType + "has NULL VALUE. This cannot be shared.")
             } else {
-                def multiAppUserSession = new MultiAppUserSession(
+                def bannerUserSession = new BannerUserSession(
                         seamlessToken: seamlessToken,
                         infoType: infoType,
                         info: info
                 )
-                multiAppUserSession.save( failOnError: true)
+                bannerUserSession.save( failOnError: true)
             }
         }
     }
@@ -43,7 +48,7 @@ class MultiAppUserSessionService {
      * @return
      */
     def lookupBySeamlessToken(seamlessToken) {
-        MultiAppUserSession.findAllBySeamlessToken (seamlessToken)
+        BannerUserSession.findAllBySeamlessToken (seamlessToken)
     }
 
     /**
