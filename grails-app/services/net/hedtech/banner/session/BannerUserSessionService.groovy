@@ -23,7 +23,7 @@ class BannerUserSessionService {
      * @return
      */
     def publish(seamlessToken, Map<String, Object> infoToPersist) {
-        log.debug (" Seamless Data to transfer for seamless token [" + seamlessToken + "]: " + infoToPersist)
+        log.debug (" Banner User session Data to transfer for the token [" + seamlessToken + "]: " + infoToPersist)
         infoToPersist?.each { infoType, info ->
             if (isNull(info)) {
                 log.warn(infoType + "has NULL VALUE. This cannot be shared.")
@@ -57,12 +57,12 @@ class BannerUserSessionService {
      * @return seamlessSession
      */
     def consume (seamlessToken) {
-        log.debug ("Consuming the seamless token : " + seamlessToken)
+        log.debug ("Consuming the banner user session token : " + seamlessToken)
         def seamlessSession = this.lookupBySeamlessToken(seamlessToken)
         seamlessSession.each {
             it.delete( failOnError: true, flush: true )
         }
-        log.debug ("Seamless session retrieved : " + seamlessSession)
+        log.debug ("Banner User session retrieved : " + seamlessSession)
 
         return seamlessSession
     }

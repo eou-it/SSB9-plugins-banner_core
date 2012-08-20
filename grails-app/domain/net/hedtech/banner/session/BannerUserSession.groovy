@@ -115,17 +115,18 @@ class BannerUserSession implements Serializable {
         result = 31 * result + dataOrigin.hashCode();
         result = 31 * result + seamlessToken.hashCode();
         result = 31 * result + infoType.hashCode();
-        result = 31 * result + info.hashCode();
+        result = 31 * result + getInfo().hashCode();
         return result;
     }
 
 
     public String toString () {
+        def s = getInfo()
         """BannerUserSession[
                 id=$id,
                 seamlessToken=$seamlessToken,
                 infoType=$infoType,
-                info=$info,
+                info=$s,
                 version=$version,
                 lastModifiedBy=$lastModifiedBy,
                 lastModified=$lastModified,
