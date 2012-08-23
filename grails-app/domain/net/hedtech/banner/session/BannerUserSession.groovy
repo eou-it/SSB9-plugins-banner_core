@@ -37,8 +37,8 @@ class BannerUserSession implements Serializable {
 	@Column(name="GURSESS_DATA_ORIGIN", length=30)
 	String dataOrigin
 
-    @Column(name="GURSESS_SEAMLESS_TOKEN", length=100)
-    String seamlessToken
+    @Column(name="GURSESS_SESSION_TOKEN", length=100)
+    String sessionToken
 
     @Column(name="GURSESS_NAME")
     String infoType
@@ -56,7 +56,7 @@ class BannerUserSession implements Serializable {
         lastModifiedBy(nullable:true, maxSize:30)
 		lastModified(nullable:true)
 		dataOrigin(nullable:true, maxSize:30)
-        seamlessToken(nullable:false, maxSize:150)
+        sessionToken(nullable:false, maxSize:150)
         infoType(nullable:false, maxSize:1000)
         info(nullable:false)
         infoDataType(nullable:false)
@@ -100,7 +100,7 @@ class BannerUserSession implements Serializable {
         if (infoType != that.infoType) return false;
         if (lastModified != that.lastModified) return false;
         if (lastModifiedBy != that.lastModifiedBy) return false;
-        if (seamlessToken != that.seamlessToken) return false;
+        if (sessionToken != that.sessionToken) return false;
         if (version != that.version) return false;
 
         return true;
@@ -113,7 +113,7 @@ class BannerUserSession implements Serializable {
         result = 31 * result + lastModifiedBy.hashCode();
         result = 31 * result + lastModified.hashCode();
         result = 31 * result + dataOrigin.hashCode();
-        result = 31 * result + seamlessToken.hashCode();
+        result = 31 * result + sessionToken.hashCode();
         result = 31 * result + infoType.hashCode();
         result = 31 * result + getInfo().hashCode();
         return result;
@@ -124,7 +124,7 @@ class BannerUserSession implements Serializable {
         def s = getInfo()
         """BannerUserSession[
                 id=$id,
-                seamlessToken=$seamlessToken,
+                sessionToken=$sessionToken,
                 infoType=$infoType,
                 info=$s,
                 version=$version,

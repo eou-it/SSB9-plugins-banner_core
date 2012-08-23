@@ -18,18 +18,18 @@ class BannerUserSessionService {
 
     /**
      *
-     * @param seamlessToken
+     * @param sessionToken
      * @param infoToPersist
      * @return
      */
-    def publish(seamlessToken, Map<String, Object> infoToPersist) {
-        log.debug (" Banner User session Data to transfer for the token [" + seamlessToken + "]: " + infoToPersist)
+    def publish(sessionToken, Map<String, Object> infoToPersist) {
+        log.debug (" Banner User session Data to transfer for the token [" + sessionToken + "]: " + infoToPersist)
         infoToPersist?.each { infoType, info ->
             if (isNull(info)) {
                 log.warn(infoType + "has NULL VALUE. This cannot be shared.")
             } else {
                 def bannerUserSession = new BannerUserSession(
-                        seamlessToken: seamlessToken,
+                        sessionToken: sessionToken,
                         infoType: infoType,
                         info: info
                 )
@@ -47,18 +47,18 @@ class BannerUserSessionService {
      * @param seamlessToken
      * @return
      */
-    def lookupBySeamlessToken(seamlessToken) {
-        BannerUserSession.findAllBySeamlessToken (seamlessToken)
+    def lookupBySessionToken(seamlessToken) {
+        BannerUserSession.findAllBySessionToken (seamlessToken)
     }
 
     /**
      *
-     * @param seamlessToken
+     * @param sessionToken
      * @return seamlessSession
      */
-    def consume (seamlessToken) {
-        log.debug ("Consuming the banner user session token : " + seamlessToken)
-        def seamlessSession = this.lookupBySeamlessToken(seamlessToken)
+    def consume (sessionToken) {
+        log.debug ("Consuming the banner user session token : " + sessionToken)
+        def seamlessSession = this.lookupBySessionToken(sessionToken)
         seamlessSession.each {
             it.delete( failOnError: true, flush: true )
         }

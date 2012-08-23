@@ -17,7 +17,7 @@ abstract class BannerUserSessionManager {
 
 
     public static final String SESSION_BANNER_USER_SESSION_CONTRIBUTORS = "session.banner.user.session.contributors"
-    public static final String REQ_SEAMLESS_TOKEN = "seamlessToken"
+    public static final String REQ_SESSION_TOKEN = "sessionToken"
 
     /**
      * Retrieves the context from context URI.
@@ -128,7 +128,7 @@ abstract class BannerUserSessionManager {
         def sessionSeamlessToken = generateBannerUserSessionToken()
         persistBannerUserSession(sessionSeamlessToken)
         log.debug ("Switching application to load the page " + pageName + " and the banner user session token is " + sessionSeamlessToken)
-        switchApp(urlToNavigate, ['page':pageName, (REQ_SEAMLESS_TOKEN):sessionSeamlessToken])
+        switchApp(urlToNavigate, ['page':pageName, (REQ_SESSION_TOKEN):sessionSeamlessToken])
     }
 
     /**
@@ -241,7 +241,7 @@ abstract class BannerUserSessionManager {
      * share.
      *
      */
-    private  void persistBannerUserSession(seamlessToken) {
+    private  void persistBannerUserSession(sessionToken) {
 
         List<IBannerUserSessionContributor> bannerUserSessionContributors = getBannerUserSessionContributors ()
         if (bannerUserSessionContributors) {
@@ -252,7 +252,7 @@ abstract class BannerUserSessionManager {
             //TODO is this necessary ?
             setSharedAppInfoFormContext()
 
-            bannerUserSessionService.publish(seamlessToken, infoToShare)
+            bannerUserSessionService.publish(sessionToken, infoToShare)
         }
 
     }
@@ -267,18 +267,18 @@ abstract class BannerUserSessionManager {
      *
      * @return
      */
-    public  def consumeBannerUserSession(seamlessToken) {
+    public  def consumeBannerUserSession(sessionToken) {
         //TODO is this necessary ?
         setSharedAppInfoFormContext ()
 
-        List<BannerUserSession> bannerUserSession = bannerUserSessionService.consume (seamlessToken)
+        List<BannerUserSession> bannerUserSession = bannerUserSessionService.consume (sessionToken)
         getBannerUserSessionContributors()?.each { bannerUserSessionContributor ->
             bannerUserSessionContributor.consume(bannerUserSession)
         }
     }
 
     public def handleSeamlessNavigationRequest (httpRequestObj) {
-        String reqSeamlessToken = httpRequestObj?.getParameter(REQ_SEAMLESS_TOKEN)
+        String reqSeamlessToken = httpRequestObj?.getParameter(REQ_SESSION_TOKEN)
         if (reqSeamlessToken){
             consumeBannerUserSession (reqSeamlessToken)
         }
