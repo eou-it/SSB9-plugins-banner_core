@@ -29,11 +29,6 @@ class DynamicFinder {
 	}
 
     public def find( filterData, pagingAndSortParams ){
-       // This is a convenience method to take a more readable multiline string and collapse it down to a one line string
-        String.metaClass.flattenString = {
-            return delegate.replace( "\n", "" ).replaceAll( /  */, " " )
-        }
-
         def queryString =  QueryBuilder.buildQuery( query.flattenString(), tableIdentifier, filterData.criteria ,pagingAndSortParams )
 
         def list =  domainClass.findAll( queryString, filterData.params, pagingAndSortParams )
@@ -42,10 +37,6 @@ class DynamicFinder {
     }
 
     public def count ( filterData ) {
-        String.metaClass.flattenString = {
-            return delegate.replace( "\n", "" ).replaceAll( /  */, " " )
-        }
-
         def queryString =  QueryBuilder.buildCountQuery( query.flattenString(), tableIdentifier, filterData.criteria )
 
         def returnListCount = domainClass.executeQuery( queryString, filterData.params )
@@ -54,11 +45,6 @@ class DynamicFinder {
     }
 
     public static def fetchAll ( domainClass, query, tableIdentifier, filterData, pagingAndSortParams) {
-        // This is a convenience method to take a more readable multiline string and collapse it down to a one line string
-        String.metaClass.flattenString = {
-            return delegate.replace( "\n", "" ).replaceAll( /  */, " " )
-        }
-
         def queryString =  QueryBuilder.buildQuery( query.flattenString(), "a", filterData.criteria,pagingAndSortParams )
 
         def list =  domainClass.findAll( queryString, filterData.params, pagingAndSortParams )
@@ -67,10 +53,6 @@ class DynamicFinder {
     }
 
     public static def countAll (domainClass, query, tableIdentifier, filterData) {
-        String.metaClass.flattenString = {
-            return delegate.replace( "\n", "" ).replaceAll( /  */, " " )
-        }
-
         def queryString =  QueryBuilder.buildCountQuery( query.flattenString(), "a", filterData.criteria )
 
         def returnListCount = domainClass.executeQuery( queryString, filterData.params )

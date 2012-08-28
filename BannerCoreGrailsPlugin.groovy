@@ -298,6 +298,14 @@ class BannerCoreGrailsPlugin {
             }
         }
 
+        String.metaClass.flattenString = {
+            return delegate.replace( "\n", "" ).replaceAll( /  */, " " )
+        }
+
+        GString.metaClass.flattenString = {
+            return delegate.replace( "\n", "" ).replaceAll( /  */, " " )
+        }
+
         // inject the logger into every class (Grails only injects this into some artifacts)
 //        application.allClasses.each {
 //            //For some reason weblogic throws an error if we try to inject the method if it is already present
