@@ -37,7 +37,8 @@ LOG IN
 }
 
 .splashBg .logIn div {
-	float:left;
+	float:right;
+    margin-left: 8px;
 }
 
 .splashBg div span input {
@@ -57,7 +58,7 @@ LOG IN
 	margin-right:0px;
 	height:23px;
 	width:125px;
-	position: relative;
+	/*position: relative;*/
 	left: 290px;
 }
 
@@ -74,7 +75,7 @@ LOG IN
 	margin-right:0px;
 	height:23px;
 	width:125px;
-	position: relative;
+	/*position: relative;*/
 	left: -7px;
 }
 
@@ -91,7 +92,7 @@ LOG IN
 	margin-right:0px;
 	height:23px;
 	width:125px;
-	position: relative;
+	/*position: relative;*/
 	left: 290px;
 }
 
@@ -108,7 +109,7 @@ LOG IN
 	margin-right:0px;
 	height:23px;
 	width:125px;
-	position: relative;
+	/*position: relative;*/
 	left: -7px;
 }
 
@@ -159,12 +160,12 @@ LOG IN
     left: -269px;
     font-size: 1.1em;
     padding: 0.15em 0.5em;
-    position: relative;
+   /* position: relative;*/
 }
 
 .signin-button-wrapper {
     bottom: 0.25em;
-    position: relative;
+    /*position: relative;*/
 }
 
 .forgotPasswordDiv {
