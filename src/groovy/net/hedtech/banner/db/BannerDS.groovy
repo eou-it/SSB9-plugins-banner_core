@@ -93,6 +93,7 @@ public class BannerDS implements DataSource {
             setRoles(oconn, user?.oracleUserName, applicableAuthorities)
 
             setMep(conn, user)
+            setFGAC(conn)
         }
         else {
             conn = underlyingDataSource.getConnection()
@@ -104,6 +105,16 @@ public class BannerDS implements DataSource {
          return new BannerConnection(conn, user?.username, this)
        else
           return new BannerConnection(conn, user, this)// Note that while an IDE may not like this, the delegate supports this type coersion
+    }
+
+    public void setFGAC(conn) {
+
+        String form = (FormContext.get() ? FormContext.get()[0] : null) // FormContext returns a list, but we'll just use the first entry
+        if( form ) {
+            Sql db = new Sql(conn)
+            db.call("{call gokfgac.p_object_excluded (?) }", [form])
+        }
+        // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
     }
 
     // Note: This method is used for Integration Tests.
