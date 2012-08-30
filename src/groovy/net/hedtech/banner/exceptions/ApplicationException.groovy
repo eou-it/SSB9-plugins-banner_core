@@ -22,6 +22,9 @@ import org.apache.log4j.Logger
 import org.springframework.jdbc.UncategorizedSQLException
 
 import org.springframework.security.core.context.SecurityContextHolder as SCH
+import org.springframework.validation.FieldError
+import java.text.DecimalFormat
+import net.hedtech.banner.i18n.DateConverterService
 
 /**
  * A runtime exception thrown from services (and other artifacts as necessary).
@@ -64,6 +67,27 @@ class ApplicationException extends RuntimeException {
                             log.warn "ApplicationException was given an entityClassOrName of type ${entityClassOrName.class}"
         }
         wrapException( e )
+    }
+
+    public ApplicationException( entityClassOrName, Throwable e, rejectedValues) {
+        if (!entityClassOrName) entityClassOrName = ''
+        switch (entityClassOrName.class) {
+         case (Class)  : this.entityClassName = entityClassOrName.name; break;
+         case (String) : this.entityClassName = entityClassOrName; break;
+         default       : this.entityClassName = entityClassOrName.toString();
+                    log.warn "ApplicationException was given an entityClassOrName of type ${entityClassOrName.class}"
+         }
+
+        def newFieldErrors = e.errors?.allErrors.collect { error ->
+            return getModifiedFieldErrorObject(error, rejectedValues)
+        }
+        e.errors?.allErrors = newFieldErrors
+
+        def multiModelErrors = new MultiModelErrors()
+        multiModelErrors.allErrors = newFieldErrors
+        def modelValidationErrorsMaps = []
+        modelValidationErrorsMaps << [ entitySimpleClassName: this.entityClassName, errors: multiModelErrors ]
+        wrapException( new MultiModelValidationException(modelValidationErrorsMaps) )
     }
 
 
@@ -233,13 +257,77 @@ class ApplicationException extends RuntimeException {
 //    }
     def localizeFieldValidationErrors ( errors, localize ) {
         errors.collect { error ->
+            FieldError newError = getModifiedFieldErrorObject(error)
             [
                 field : error.field,
                 model : error.objectName,
-                rejectedValue : error.rejectedValue,
-                message: localize( error: error )
+                rejectedValue : newError.rejectedValue,
+                message: localize( error: newError )
             ]
         }
+    }
+
+    def getModifiedFieldErrorObject(error) {
+        def rejectedValue = getFormattedRejectedValue(error.rejectedValue)
+        def args = error.getArguments()
+        if(args != null && args.length >= 3) {
+            args[2] = rejectedValue;
+        }
+
+        FieldError newError = new FieldError(
+               error.getObjectName(),
+               error.getField(),
+               rejectedValue,
+               error.isBindingFailure(),
+               error.getCodes(),
+               args,
+               error.getDefaultMessage()
+        )
+        return newError
+    }
+
+    def getModifiedFieldErrorObject(error, overrideValues) {
+
+        def rejectedValue = error.rejectedValue
+
+        if(overrideValues?.containsKey(error.getField())) {
+            rejectedValue = overrideValues[error.getField()]
+        }
+
+        rejectedValue = getFormattedRejectedValue(rejectedValue)
+        def args = error.getArguments()
+        if(args != null && args.length >= 3) {
+            args[2] = rejectedValue;
+        }
+
+        FieldError newError = new FieldError(
+               error.getObjectName(),
+               error.getField(),
+               rejectedValue,
+               error.isBindingFailure(),
+               error.getCodes(),
+               args,
+               error.getDefaultMessage()
+        )
+        return newError
+    }
+
+    def getFormattedRejectedValue(rejectedValueSrc) {
+        if(rejectedValueSrc != null) {
+            if(rejectedValueSrc instanceof Double ||
+                rejectedValueSrc instanceof Long ||
+                    rejectedValueSrc instanceof Integer
+            ) {
+                def numberFormat = new DecimalFormat()
+                numberFormat.setGroupingUsed(false)
+                rejectedValueSrc = numberFormat.format(rejectedValueSrc)
+            }
+            else if(rejectedValueSrc instanceof Date) {
+                def dateConverterService = new DateConverterService()
+                rejectedValueSrc = dateConverterService.parseGregorianToDefaultCalendar(rejectedValueSrc)
+            }
+        }
+        return rejectedValueSrc
     }
 
     // ----------------------- Exception Handlers Map ------------------------
