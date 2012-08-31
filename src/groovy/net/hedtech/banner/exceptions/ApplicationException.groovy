@@ -327,10 +327,10 @@ class ApplicationException extends RuntimeException {
                 numberFormat.setGroupingUsed(false)
                 rejectedValueSrc = numberFormat.format(rejectedValueSrc)
             }
-            else if(rejectedValueSrc instanceof Date) {
+           /* else if(rejectedValueSrc instanceof Date) {
                 def dateConverterService = new DateConverterService()
                 rejectedValueSrc = dateConverterService.parseGregorianToDefaultCalendar(rejectedValueSrc)
-            }
+            }*/
         }
         return rejectedValueSrc
     }
