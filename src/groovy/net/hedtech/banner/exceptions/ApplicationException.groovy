@@ -78,16 +78,21 @@ class ApplicationException extends RuntimeException {
                     log.warn "ApplicationException was given an entityClassOrName of type ${entityClassOrName.class}"
          }
 
-        def newFieldErrors = e.errors?.allErrors.collect { error ->
-            return getModifiedFieldErrorObject(error, rejectedValues)
-        }
-        e.errors?.allErrors = newFieldErrors
+        if(e instanceof MultiModelValidationException) {
+           def newFieldErrors = e.errors?.allErrors.collect { error ->
+               return getModifiedFieldErrorObject(error, rejectedValues)
+           }
+           e.errors?.allErrors = newFieldErrors
 
-        def multiModelErrors = new MultiModelErrors()
-        multiModelErrors.allErrors = newFieldErrors
-        def modelValidationErrorsMaps = []
-        modelValidationErrorsMaps << [ entitySimpleClassName: this.entityClassName, errors: multiModelErrors ]
-        wrapException( new MultiModelValidationException(modelValidationErrorsMaps) )
+           def multiModelErrors = new MultiModelErrors()
+           multiModelErrors.allErrors = newFieldErrors
+           def modelValidationErrorsMaps = []
+           modelValidationErrorsMaps << [ entitySimpleClassName: this.entityClassName, errors: multiModelErrors ]
+           wrapException( new MultiModelValidationException(modelValidationErrorsMaps) )
+        }
+        else {
+           wrapException( e )
+        }
     }
 
 
@@ -322,10 +327,10 @@ class ApplicationException extends RuntimeException {
                 numberFormat.setGroupingUsed(false)
                 rejectedValueSrc = numberFormat.format(rejectedValueSrc)
             }
-            else if(rejectedValueSrc instanceof Date) {
+           /* else if(rejectedValueSrc instanceof Date) {
                 def dateConverterService = new DateConverterService()
                 rejectedValueSrc = dateConverterService.parseGregorianToDefaultCalendar(rejectedValueSrc)
-            }
+            }*/
         }
         return rejectedValueSrc
     }
