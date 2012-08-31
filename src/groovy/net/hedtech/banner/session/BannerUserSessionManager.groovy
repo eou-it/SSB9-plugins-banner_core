@@ -128,7 +128,17 @@ abstract class BannerUserSessionManager {
         def sessionSeamlessToken = generateBannerUserSessionToken()
         persistBannerUserSession(sessionSeamlessToken)
         log.debug ("Switching application to load the page " + pageName + " and the banner user session token is " + sessionSeamlessToken)
-        switchApp(urlToNavigate, ['page':pageName, (REQ_SESSION_TOKEN):sessionSeamlessToken])
+
+        /**
+         * TODO commented-out the code to use the session-id
+         * as the session-token because of the backward compatibility
+         * issue with 9.3 plugins. So to keep it compatible, reverted to
+         * user name as the session-token.
+         */
+
+//        switchApp(urlToNavigate, ['page':pageName, (REQ_SESSION_TOKEN):sessionSeamlessToken])
+
+        switchApp(urlToNavigate, ['page':pageName])
     }
 
     /**
@@ -139,11 +149,21 @@ abstract class BannerUserSessionManager {
      * @return
      */
     def generateBannerUserSessionToken() {
-        String s = RequestContextHolder.currentRequestAttributes().session.id
-        if (s?.length() > 100) {
-            s = s.substring(0, 100)
-        }
-        return s
+
+        /**
+         * TODO commented-out the code to use the session-id
+         * as the session-token because of the backward compatibility
+         * issue with 9.3 plugins. So to keep it compatible, reverted to
+         * user name as the session-token.
+         */
+
+//        String s = RequestContextHolder.currentRequestAttributes().session.id
+//        if (s?.length() > 30) {
+//            s = s.substring(0, 30)
+//        }
+//        return s
+
+        return userName
     }
 
 
@@ -278,10 +298,21 @@ abstract class BannerUserSessionManager {
     }
 
     public def handleSeamlessNavigationRequest (httpRequestObj) {
-        String reqSeamlessToken = httpRequestObj?.getParameter(REQ_SESSION_TOKEN)
-        if (reqSeamlessToken){
-            consumeBannerUserSession (reqSeamlessToken)
-        }
+
+        /**
+         * TODO commented-out the code to use the session-id
+         * as the session-token because of the backward compatibility
+         * issue with 9.3 plugins. So to keep it compatible, reverted to
+         * user name as the session-token.
+         */
+
+//        String reqSeamlessToken = httpRequestObj?.getParameter(REQ_SESSION_TOKEN)
+//        if (reqSeamlessToken){
+//            consumeBannerUserSession (reqSeamlessToken)
+//        }
+
+        consumeBannerUserSession (userName)
+
     }
 
 }

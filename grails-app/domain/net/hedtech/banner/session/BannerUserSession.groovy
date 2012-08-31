@@ -37,7 +37,7 @@ class BannerUserSession implements Serializable {
 	@Column(name="GURSESS_DATA_ORIGIN", length=30)
 	String dataOrigin
 
-    @Column(name="GURSESS_SESSION_TOKEN", length=100)
+    @Column(name="GURSESS_USER", length=30)
     String sessionToken
 
     @Column(name="GURSESS_NAME")

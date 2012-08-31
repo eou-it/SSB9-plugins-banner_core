@@ -24,6 +24,13 @@ class BannerUserSessionService {
      */
     def publish(sessionToken, Map<String, Object> infoToPersist) {
         log.debug (" Banner User session Data to transfer for the token [" + sessionToken + "]: " + infoToPersist)
+
+        /**
+         * Doing it here again to be on the safer side, if for some reason that
+         * session-data-cleanup on previous consumption is interrupted.
+         */
+        consume (sessionToken)
+
         infoToPersist?.each { infoType, info ->
             if (isNull(info)) {
                 log.warn(infoType + "has NULL VALUE. This cannot be shared.")
