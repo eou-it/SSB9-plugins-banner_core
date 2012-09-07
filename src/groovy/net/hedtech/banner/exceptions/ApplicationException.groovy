@@ -25,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.validation.FieldError
 import java.text.DecimalFormat
 import net.hedtech.banner.i18n.DateConverterService
+import org.springframework.context.MessageSourceResolvable
 
 /**
  * A runtime exception thrown from services (and other artifacts as necessary).
@@ -274,10 +275,12 @@ class ApplicationException extends RuntimeException {
 
     def getModifiedFieldErrorObject(error) {
         def rejectedValue = getFormattedRejectedValue(error.rejectedValue)
-        def args = error.getArguments()
+       /* def args = error.getArguments()
         if(args != null && args.length >= 3) {
             args[2] = rejectedValue;
-        }
+        }*/
+
+        def args = resolveArguments(error.getArguments(), error, rejectedValue)
 
         FieldError newError = new FieldError(
                error.getObjectName(),
@@ -291,6 +294,35 @@ class ApplicationException extends RuntimeException {
         return newError
     }
 
+    def Object[] resolveArguments(Object[] args, error, rejectedValue = null) {
+        if (args == null) {
+            return args;
+        }
+        if(rejectedValue && args[0] instanceof String) {
+            args[2] = rejectedValue;
+        }
+        else  {
+            List<Object> resolvedArgs = new ArrayList<Object>();
+            resolvedArgs.add(error.getField())
+            resolvedArgs.add(error.getObjectName())
+            resolvedArgs.add(rejectedValue)
+            args = resolvedArgs.toArray(new Object[resolvedArgs.size()]);
+        }
+
+        //if (args instanceof MessageSourceResolvable)
+        /*List<Object> resolvedArgs = new ArrayList<Object>(args.length);
+        for (Object arg : args) {
+            if (arg instanceof MessageSourceResolvable) {
+                resolvedArgs.add(resolveArguments(arg));
+            }
+            else {
+                resolvedArgs.add(arg);
+            }
+        }
+        return resolvedArgs.toArray(new Object[resolvedArgs.size()]);*/
+        return args
+    }
+
     def getModifiedFieldErrorObject(error, overrideValues) {
 
         def rejectedValue = error.rejectedValue
@@ -299,11 +331,13 @@ class ApplicationException extends RuntimeException {
             rejectedValue = overrideValues[error.getField()]
         }
 
-        rejectedValue = getFormattedRejectedValue(rejectedValue)
-        def args = error.getArguments()
+        //rejectedValue = getFormattedRejectedValue(rejectedValue)
+       /* def args = error.getArguments()
         if(args != null && args.length >= 3) {
             args[2] = rejectedValue;
-        }
+        }*/
+
+        def args = resolveArguments(error.getArguments(), error, rejectedValue)
 
         FieldError newError = new FieldError(
                error.getObjectName(),
@@ -327,10 +361,10 @@ class ApplicationException extends RuntimeException {
                 numberFormat.setGroupingUsed(false)
                 rejectedValueSrc = numberFormat.format(rejectedValueSrc)
             }
-           /* else if(rejectedValueSrc instanceof Date) {
+            else if(rejectedValueSrc instanceof Date) {
                 def dateConverterService = new DateConverterService()
                 rejectedValueSrc = dateConverterService.parseGregorianToDefaultCalendar(rejectedValueSrc)
-            }*/
+            }
         }
         return rejectedValueSrc
     }
