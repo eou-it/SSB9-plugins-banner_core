@@ -193,10 +193,8 @@ class MenuService {
         sql = new Sql( sessionFactory.getCurrentSession().connection() )
         log.debug( sql.useConnection.toString() )
         sql.execute( "Begin gukmenu.p_bld_prod_menu('BAN9'); End;" )
-        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url " +
-                " from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND " +
-                " gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','C')  and gubpage_gubmodu_code  = gubmodu_code (+) AND " +
-                " (upper(gutmenu_value) like '%$searchVal%' OR upper(gutmenu_desc) like '%$searchVal%' OR upper(gubpage_name) like '%$searchVal%' )", {
+        def searchValWild = "%" +searchVal +"%"
+        sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','C')  and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)",[searchValWild,searchValWild,searchValWild] ) {
             def mnu = new Menu()
             mnu.formName = it.gutmenu_value
             mnu.pageName = it.gubpage_name
@@ -209,7 +207,7 @@ class MenuService {
                     mnu.caption = mnu.caption + " (" + mnu.formName + ")"
             }
             dataMap.add( mnu )
-        });
+        }
         log.debug( "GotoMenu executed" )
         sql.connection.close()
         return dataMap

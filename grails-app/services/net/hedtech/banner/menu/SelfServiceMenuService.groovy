@@ -54,22 +54,51 @@ class SelfServiceMenuService {
         if (log.isDebugEnabled()) log.debug("SQL Connection:" + sql.useConnection.toString())
 
         menuName = menuName ?: "bmenu.P_MainMnu"
-
+        def govroleCriteria
+        def govroles = []
         def sqlQuery;
+        if (pidm) {
+            sql.eachRow("select govrole_student_ind, govrole_alumni_ind, govrole_employee_ind, govrole_faculty_ind, govrole_finance_ind ,govrole_friend_ind ,govrole_finaid_ind, govrole_bsac_ind from govrole where govrole_pidm = ? ", [pidm]) {
+                if (it.govrole_student_ind == "Y" )  govroles.add ("STUDENT")
+                if (it.govrole_faculty_ind == "Y" )  govroles.add ("FACULTY")
+                if (it.govrole_employee_ind == "Y" )  govroles.add ("EMPOLYEE")
+                if (it.govrole_alumni_ind == "Y" )  govroles.add ("ALUMNI")
+                if (it.govrole_finance_ind == "Y" )  govroles.add ("FINANCE")
+                if (it.govrole_finaid_ind == "Y" )  govroles.add ("FINAID")
+                if (it.govrole_friend_ind == "Y" )  govroles.add ("FRIEND")
+            }
+            if (govroles.size > 0) {
 
+                govroles.each {
+                                if (it == govroles.first())
+                                    govroleCriteria = "('" + it.value +"'"
+                                else
+                                    govroleCriteria= govroleCriteria + " ,'" + it.value +"'"
+                }
+                govroleCriteria= govroleCriteria + ")"
+            }
+        }
         String pidmCondition = "twgrrole_pidm is NULL"
         if(pidm) {
-            pidmCondition = "twgrrole_pidm =" + pidm
+            pidmCondition = "twgrrole_pidm = " + pidm
         }
 
-        sqlQuery = "select * from twgrmenu  where  twgrmenu_name = '" + menuName + "'    and    twgrmenu_enabled = 'Y'  and ((twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where " + pidmCondition + " and twgrrole_role = twgrwmrl_role) and twgrmenu_source_ind =  (select nvl( 'B',nvl( max(twgrmenu_source_ind ),'B'))   from twgrmenu where  twgrmenu_name = '" + menuName + "' and twgrmenu_source_ind='L') )  or twgrmenu_db_link_ind = 'N')  order by twgrmenu_sequence"
+        if (govroles.size > 0)
+            sqlQuery = "select  TWGRMENU_NAME,TWGRMENU_SEQUENCE	,TWGRMENU_URL_TEXT,TWGRMENU_URL	,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED, TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND from twgrmenu  where  twgrmenu_name = ?  and " +
+                       "twgrmenu_enabled = 'Y'  and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where twgrrole_pidm = "  + pidm +" and twgrrole_role = twgrwmrl_role  and twgrmenu_source_ind =  (select nvl( 'B',nvl( max(twgrmenu_source_ind ),'B')) " +
+                       "from twgrmenu where  twgrmenu_name = ? and twgrmenu_source_ind='L') )  or twgrmenu_db_link_ind = 'N') " +
+                       "union " +
+                       "select  TWGRMENU_NAME,TWGRMENU_SEQUENCE	,TWGRMENU_URL_TEXT,TWGRMENU_URL	,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED, TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND from twgrmenu  where  twgrmenu_name = ?  and " +
+                       "twgrmenu_enabled = 'Y'  and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,govrole where govrole_pidm =  " + pidm + " and  twgrwmrl_role in "+ govroleCriteria  + "  and twgrmenu_source_ind =  (select nvl( 'B',nvl( max(twgrmenu_source_ind ),'B')) " +
+                       "from twgrmenu where  twgrmenu_name = ? and twgrmenu_source_ind='L') )  or twgrmenu_db_link_ind = 'N')  ORDER BY twgrmenu_sequence"
+        else
+            sqlQuery = "select * from twgrmenu  where  twgrmenu_name = ?  and ? = ? and   twgrmenu_enabled = 'Y'  and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where " + pidmCondition + " and twgrrole_role = twgrwmrl_role   and twgrmenu_source_ind =  (select nvl( 'B',nvl( max(twgrmenu_source_ind ),'B'))   from twgrmenu where  twgrmenu_name = ? and twgrmenu_source_ind='L') )  or twgrmenu_db_link_ind = 'N')  order by twgrmenu_sequence"
 
         def randomSequence = RandomUtils.nextInt(1000);
 
-        sql.eachRow(sqlQuery, {
+        sql.eachRow(sqlQuery, [menuName, menuName, menuName, menuName]) {
 
             def mnu = new SelfServiceMenu()
-
             mnu.formName = toggleSeparator(it.twgrmenu_url)
             mnu.pageName = it.twgrmenu_submenu_ind == "Y" ? null : toggleSeparator(it.twgrmenu_url)
             mnu.name = it.twgrmenu_url_text
@@ -77,14 +106,15 @@ class SelfServiceMenuService {
             mnu.pageCaption = mnu.caption
             mnu.type = it.twgrmenu_submenu_ind == "Y" ? 'MENU' : 'FORM'
             mnu.menu = menuTrail ? menuTrail : firstMenu
-            mnu.url = it.twgrmenu_db_link_ind == "Y" ? ConfigurationHolder.config.banner8.SS.url + it.twgrmenu_url : toggleSeparator(it.twgrmenu_url)
+
+            mnu.url = it.twgrmenu_db_link_ind == "Y" ? ConfigurationHolder?.config?.banner8?.SS?.url + it.twgrmenu_url : toggleSeparator(it.twgrmenu_url)
             mnu.seq = randomSequence + "-" + it.twgrmenu_sequence.toString()
             mnu.captionProperty = false
             mnu.parent = ''
 
             dataMap.add(mnu)
 
-        });
+        };
 
         if (log.isDebugEnabled()) log.debug("ProcessMenu executed for Menu name:" + menuName)
         sql.connection.close()

@@ -42,10 +42,10 @@ class ResetPasswordService {
             return false
 
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String query = "SELECT GOBANSR_NUM,GOBANSR_PIDM,GOBANSR_QSTN_DESC,GOBQSTN_DESC, GOBANSR_ANSR_SALT FROM gobansr, spriden, gobqstn WHERE SPRIDEN_ID = '${id}' AND SPRIDEN_PIDM = GOBANSR_PIDM AND SPRIDEN_CHANGE_IND IS NULL AND GOBANSR_GOBQSTN_ID = GOBQSTN_ID"
+        String query = "SELECT GOBANSR_NUM,GOBANSR_PIDM,GOBANSR_QSTN_DESC,GOBQSTN_DESC, GOBANSR_ANSR_SALT FROM gobansr, spriden, gobqstn WHERE SPRIDEN_ID = ? AND SPRIDEN_PIDM = GOBANSR_PIDM AND SPRIDEN_CHANGE_IND IS NULL AND GOBANSR_GOBQSTN_ID = GOBQSTN_ID"
         String prefQuery = "SELECT GUBPPRF_NO_OF_QSTNS FROM gubpprf"
         try{
-            sql.eachRow(query){
+            sql.eachRow(query,[id]){
                 String[] question = [it.GOBANSR_NUM, it.GOBQSTN_DESC]
                 if(!questionAnswerMap.containsKey(id)){
                     questionAnswerMap.put(id+"pidm", it.GOBANSR_PIDM)
@@ -107,8 +107,8 @@ class ResetPasswordService {
      */
     def getAnswerByQuestionNumberAndPidm(questionNumber, pidm, sql) throws SQLException{
         def answer
-        String query = "select GOBANSR_ANSR_DESC from gobansr where GOBANSR_PIDM ='${pidm}' AND GOBANSR_NUM='${questionNumber}'"
-        sql.eachRow(query){
+        String query = "select GOBANSR_ANSR_DESC from gobansr where GOBANSR_PIDM = ? AND GOBANSR_NUM=? "
+        sql.eachRow(query,[pidm,questionNumber]){
               answer = it.GOBANSR_ANSR_DESC
         }
         answer
@@ -128,8 +128,8 @@ class ResetPasswordService {
      */
     def getAnswerSaltByQyestionNumberAndPidm(questionNumber, pidm, sql) throws SQLException{
         def answerSalt
-        String query = "select GOBANSR_ANSR_SALT from gobansr where GOBANSR_PIDM ='${pidm}' AND GOBANSR_NUM='${questionNumber}'"
-        sql.eachRow(query){
+        String query = "select GOBANSR_ANSR_SALT from gobansr where GOBANSR_PIDM =? AND GOBANSR_NUM=?"
+        sql.eachRow(query,[pidm,questionNumber]){
               answerSalt = it.GOBANSR_ANSR_SALT
         }
         answerSalt
@@ -251,9 +251,9 @@ class ResetPasswordService {
      */
     def getNonPidmIdm(nonPidmId){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String query = "select gpbprxy_proxy_idm from gpbprxy where  gpbprxy_email_address = '${nonPidmId}'"
+        String query = "select gpbprxy_proxy_idm from gpbprxy where  gpbprxy_email_address = ?"
         def id = null
-        sql.rows(query).each {
+        sql.rows(query,[nonPidmId]).each {
             id = it.gpbprxy_proxy_idm
         }
         sql.close()
@@ -270,14 +270,14 @@ class ResetPasswordService {
      */
     def validateToken(recoveryCode){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String selectQuery = "SELECT GPBPRXY_EMAIL_ADDRESS, GPBELTR_CTYP_EXP_DATE, GPBPRXY_PIN_DISABLED_IND FROM gpbeltr, gpbprxy WHERE GPBPRXY_PROXY_IDM = GPBELTR_PROXY_IDM AND gpbeltr.ROWID ='${recoveryCode}'"
+        String selectQuery = "SELECT GPBPRXY_EMAIL_ADDRESS, GPBELTR_CTYP_EXP_DATE, GPBPRXY_PIN_DISABLED_IND FROM gpbeltr, gpbprxy WHERE GPBPRXY_PROXY_IDM = GPBELTR_PROXY_IDM AND gpbeltr.ROWID =? "
         def nonPidmId = null;
         def expDate = null;
         def disabledInd = null;
         def errorMessage = null;
         def result = [:]
         try{
-            sql.rows(selectQuery).each {
+            sql.rows(selectQuery,[recoveryCode]).each {
                 nonPidmId = it.GPBPRXY_EMAIL_ADDRESS
                 expDate = it.GPBELTR_CTYP_EXP_DATE
                 disabledInd = it.GPBPRXY_PIN_DISABLED_IND
@@ -322,10 +322,10 @@ class ResetPasswordService {
      */
     def validateRecoveryCode(recoveryCode, nonPidmId){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String selectQuery = "SELECT * FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) ='${nonPidmId.toString().toUpperCase()}' AND GPBPRXY_SALT='${recoveryCode}'"
+        String selectQuery = "SELECT * FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) =? AND GPBPRXY_SALT=? "
         def result = [:]
         try{
-            if(sql.rows(selectQuery).size() > 0){
+            if(sql.rows(selectQuery,[nonPidmId.toString().toUpperCase(),recoveryCode]).size() > 0){
                 result.put("validate", true)
             }
             else{
@@ -374,10 +374,10 @@ class ResetPasswordService {
      */
     def isAccountDisabled(id){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String pidmQuery = "SELECT NVL(GOBTPAC_PIN_DISABLED_IND,'N') DISABLED_IND FROM gobtpac,spriden  WHERE GOBTPAC_PIDM = spriden_pidm and spriden_change_ind is null and spriden_id = '${id}'"
+        String pidmQuery = "SELECT NVL(GOBTPAC_PIN_DISABLED_IND,'N') DISABLED_IND FROM gobtpac,spriden  WHERE GOBTPAC_PIDM = spriden_pidm and spriden_change_ind is null and spriden_id = ?"
         def disabledInd = "N"
         try{
-            sql.eachRow(pidmQuery){
+            sql.eachRow(pidmQuery,[id]){
                 disabledInd = it.DISABLED_IND
             }
         }
@@ -398,10 +398,10 @@ class ResetPasswordService {
      */
     def isPidmAccountDisabled(id){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String pidmQuery = "SELECT NVL(GOBTPAC_PIN_DISABLED_IND,'N') DISABLED_IND FROM gobtpac   WHERE GOBTPAC_PIDM =  ${id}"
+        String pidmQuery = "SELECT NVL(GOBTPAC_PIN_DISABLED_IND,'N') DISABLED_IND FROM gobtpac   WHERE GOBTPAC_PIDM =  ?"
         def disabledInd = "N"
         try{
-            sql.eachRow(pidmQuery){
+            sql.eachRow(pidmQuery,[id]){
                 disabledInd = it.DISABLED_IND
             }
         }
