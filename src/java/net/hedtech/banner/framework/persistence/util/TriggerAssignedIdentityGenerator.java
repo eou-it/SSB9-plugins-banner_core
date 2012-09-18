@@ -1,6 +1,6 @@
-/*
- * Copyright (c) SunGard 2009. All rights reserved.
- */
+/*******************************************************************************
+Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.framework.persistence.util;
 
 import java.io.Serializable;

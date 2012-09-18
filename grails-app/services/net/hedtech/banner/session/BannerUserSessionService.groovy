@@ -1,3 +1,6 @@
+/*******************************************************************************
+Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.session
 
 import org.apache.log4j.Logger

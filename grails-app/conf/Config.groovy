@@ -1,14 +1,6 @@
-/*********************************************************************************
- Copyright 2009-2012 Ellucian. All Rights Reserved.
- This copyrighted software contains confidential and proprietary information of 
- Ellucian and its subsidiaries. Any use of this software is limited 
- solely to Ellucian licensees, and is further subject to the terms 
- and conditions of one or more written license agreements between Ellucian 
- and the licensee in question. Ellucian is either a registered trademark or
- trademark of Ellucian in the U.S.A. and/or other regions and/or countries.
- Banner and Luminis are either registered trademarks or trademarks of Ellucian 
- in the U.S.A. and/or other regions and/or countries.
- **********************************************************************************/
+/*******************************************************************************
+Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 
 grails.doc.authors = '''Prepared by: Ellucian
                         |4 Country View Road Malvern, Pennsylvania 19355 United States of America (800) 522 - 4827'''.stripMargin()

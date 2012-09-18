@@ -1,10 +1,8 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: Vijendra.Rao
-  Date: 3/11/11
-  Time: 1:37 PM
-  To change this template use File | Settings | File Templates.
---%>
+<!--
+/*******************************************************************************
+Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
+-->
 
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
