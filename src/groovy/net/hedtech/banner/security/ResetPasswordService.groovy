@@ -173,8 +173,8 @@ class ResetPasswordService {
      */
     def isPidmUser(pidm_id) throws SQLException{
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String query = "SELECT SPRIDEN_ID FROM spriden WHERE SPRIDEN_ID='${pidm_id}'"
-        if(sql.rows(query).size() > 0){
+        String query = "SELECT SPRIDEN_ID FROM spriden WHERE SPRIDEN_ID=?"
+        if(sql.rows(query,[pidm_id]).size() > 0){
             sql.close()
             true
         }
@@ -195,10 +195,12 @@ class ResetPasswordService {
      *
      */
     def isNonPidmUser(userId) throws SQLException{
-        Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String queryGpbprxy = "SELECT GPBPRXY_EMAIL_ADDRESS FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) ='${userId?.toUpperCase()}'"
 
-        if(sql.rows(queryGpbprxy).size() > 0){
+        Sql sql = new Sql(dataSource.getUnproxiedConnection())
+
+        String queryGpbprxy = "SELECT GPBPRXY_EMAIL_ADDRESS FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) = ?"
+
+        if(sql.rows(queryGpbprxy,[userId]).size() > 0){
             sql.close()
             true
         }

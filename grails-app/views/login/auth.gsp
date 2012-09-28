@@ -42,12 +42,12 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
       <form action='${postUrl}' method='POST' id='loginForm'>
 		<div class="textfield-wrapper">
             <g:if test='${userNameRequired}'>
-				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' /></span></div>
-				<div class="password"><span><input type='password' name='j_password' id='j_password' autocomplete="off" /></span></div>
+				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' length=30/></span></div>
+				<div class="password"><span><input type='password' name='j_password' id='j_password' autocomplete="off" length=30/></span></div>
 			</g:if>
 			<g:elseif test='${flash.message}'>
-				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' /></span></div>
-				<div class="password-error-state"><span><input type='password' name='j_password' id='j_password' autocomplete="off" /></span></div>
+				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' length=30/></span></div>
+				<div class="password-error-state"><span><input type='password' name='j_password' id='j_password' autocomplete="off" length=30/></span></div>
 			</g:elseif>
 			<g:else>
 				<div class="userName"><span><input type='text'  name='j_username' id='j_username' /></span></div>
