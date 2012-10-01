@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat
 import java.text.ParseException
 import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 /**
  * DAO for supplemental data. This strategy works against the
@@ -258,7 +259,15 @@ class SupplementalDataPersistenceManager {
                       govsdav_attr_data_scale,
                       govsdav_attr_info,
                       govsdav_attr_order,
-                      govsdav_disc_method
+                      govsdav_disc_method,
+                      govsdav_GJAPDEF_VALIDATION,
+                      govsdav_LOV_FORM,
+                      govsdav_LOV_TABLE_OVRD,
+                      govsdav_LOV_ATTR_OVRD,
+                      govsdav_LOV_CODE_TITLE,
+                      govsdav_LOV_DESC_TITLE
+
+
                FROM govsdav x
                    WHERE govsdav_table_name = :tableName
                    AND govsdav_attr_name = :attributeName
@@ -271,6 +280,36 @@ class SupplementalDataPersistenceManager {
 
             if (!it[9]?.isInteger())
                 it[9] = '1'
+
+            String lovValidation = it[15]
+            String lovForm = it[16]
+            String lovTable = (lovForm == 'GTQSDLV')?'GTVSDLV':lovForm
+
+            def columnNames = []
+
+            /**
+             * TODO need to move this logic into SupplementalDataService's resetSDE method
+             */
+            if (lovValidation == 'LOV_VALIDATION') {
+                log.debug("Querying for $lovForm for Table Metadata")
+                Sql sql = new Sql(ApplicationHolder.getApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+                String query = "select * from " + lovTable
+                sql.query(query){ rs ->
+                    def meta = rs.metaData
+                    if (meta.columnCount <= 0) return
+
+                    log.debug("LOV Table column names ....")
+                    for (i in 0..<meta.columnCount) {
+                        log.debug "${i}: ${meta.getColumnLabel(i+1)}".padRight(20)
+                        columnNames << meta.getColumnLabel(i+1)
+                        log.debug "\n"
+                    }
+                    log.debug '-' * 40
+                }
+
+                log.debug("Querying on SDE Lookup Table executed" )
+                sql.connection.close()
+            }
 
             SupplementalPropertyDiscriminatorContent discProp =
             new SupplementalPropertyDiscriminatorContent(required: it[1],
@@ -286,7 +325,21 @@ class SupplementalDataPersistenceManager {
                     dataScale: it[11],
                     attrInfo: it[12],
                     attrOrder: it[13],
-                    discMethod: it[14])
+                    discMethod: it[14],
+                    lovValidation: lovValidation,
+                    lovProperties: [
+                            lovForm: lovForm,
+                            lovTableOverride: it[17],
+                            lovAttributeOverride: it[18],
+                            lovCodeTitle: it[19],
+                            lovDescTitle: it[20],
+                            columnNames: columnNames
+                    ]
+            )
+
+            if (discProp.lovValidation && !(discProp.lovProperties?.lovForm)) {
+                log.error "LOV_FORM is NOT mentioned for LOV $attributeName in the table GORSDAM"
+            }
 
             SupplementalPropertyValue propValue = new SupplementalPropertyValue([(discProp.disc): discProp])
             supplementalProperties."${attributeName}" << propValue

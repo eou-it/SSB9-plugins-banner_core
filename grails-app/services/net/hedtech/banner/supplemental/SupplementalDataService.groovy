@@ -3,16 +3,19 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.supplemental
 
-import org.hibernate.persister.entity.SingleTableEntityPersister
-import org.apache.log4j.Logger
-import groovy.sql.Sql
-import java.sql.Connection;
 import net.hedtech.banner.db.BannerDS as BannerDataSource
+
+import groovy.sql.GroovyRowResult
+import groovy.sql.Sql
+import java.sql.Connection
+import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.db.BannerConnection
-import org.springframework.context.ApplicationContext
+import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import net.hedtech.banner.configuration.SupplementalDataUtils
+import org.hibernate.persister.entity.SingleTableEntityPersister
+import org.springframework.context.ApplicationContext
+import org.hibernate.MappingException
 
 /**
  * A service used to support persistence of supplemental data.
@@ -21,6 +24,7 @@ class SupplementalDataService {
 
     static transactional = true
     private final Logger log = Logger.getLogger(getClass())
+    private static final Logger staticLogger = Logger.getLogger(SupplementalDataService.class)
 
     def dataSource                         // injected by Spring
     def sessionFactory                     // injected by Spring
@@ -29,6 +33,13 @@ class SupplementalDataService {
 
     def supplementalDataConfiguration = [:]
 
+    def tableToDomainMap = [:]
+
+    def static session = null
+
+    public String getMappedDomain (String tableName) {
+        return tableToDomainMap[tableName]
+    }
 
     public def getSupplementalDataConfigurationFor(Class modelClass) {
         supplementalDataConfiguration."${modelClass.name}"
@@ -39,7 +50,12 @@ class SupplementalDataService {
         Map x = sessionFactory.getAllClassMetadata()
         for (Iterator i = x.values().iterator(); i.hasNext();) {
             SingleTableEntityPersister y = (SingleTableEntityPersister) i.next();
-            setSDE(y.getName(), SupplementalDataUtils.getTableName(y.getTableName().toUpperCase()))
+
+            String underlyingTableName = SupplementalDataUtils.getTableName(y.getTableName().toUpperCase())
+
+            tableToDomainMap[underlyingTableName] = y.getName()
+
+            setSDE(y.getName(), underlyingTableName)
             // for (int j = 0; j < y.getPropertyNames().length; j++) {
             //     println( " " + y.getPropertyNames()[ j ] + " -> " + (y.getPropertyColumnNames( j ).length > 0 ? y.getPropertyColumnNames( j )[ 0 ] : ""))
             // }
@@ -206,4 +222,150 @@ class SupplementalDataService {
             log.debug "SDE Table: ${tableName}"
         }
     }
+
+    /**
+     * Find LOV for a specific lov code and return it in a
+     * generic lookup domain object.
+     *
+     * @param lovCode
+     * @param additionalParams - carries the LOV Table info.
+     * @return  - generic lookup domain object
+     */
+    def static findByLov (String lovCode, additionalParams= [:]) {
+        def lookupDomainList = []
+
+        if (additionalParams) {
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            String query = "SELECT * FROM $lovTable"
+            query += " WHERE ${lovTable}_CODE='$lovCode'"
+
+            if (lovTable == 'GTVSDLV') {
+                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                    query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
+                    query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
+                } else {
+                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                }
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table started")
+            Sql sql = new Sql(ApplicationHolder.getApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+
+            sql.rows(query)?.each { row ->
+                createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            sql.connection.close()
+        }
+        (lookupDomainList == [])?null:lookupDomainList[0]
+    }
+
+    /**
+     * Find all LOV objects belong to a validation table.
+     *
+     * @param additionalParams - info on LOV table
+     * @return  - list of generic lookup domain objects
+     */
+    def static findAllLovs (additionalParams = [:]) {
+        def lookupDomainList = []
+
+        if (additionalParams) {
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            String query = "SELECT * FROM $lovTable"
+
+            if (lovTable == 'GTVSDLV') {
+                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                    query += " where GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
+                    query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
+                } else {
+                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                }
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table started")
+            Sql sql = new Sql(ApplicationHolder.getApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+
+            sql.rows(query)?.each { row ->
+                createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            sql.connection.close()
+        }
+
+        return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
+    }
+
+    /**
+     * Filter LOV objects belong to a validation table based on a filter passed-in
+     *
+     * @param filter
+     * @param additionalParams
+     * @return - list of generic lookup domain objects
+     */
+    def static findAllLovs (filter, additionalParams) {
+        def lookupDomainList = []
+
+        if (additionalParams) {
+            def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
+            String query = "SELECT * FROM $lovTable"
+            query += " WHERE (upper(${lovTable}_CODE) like upper('%${filter}%') OR upper(${lovTable}_DESC) like upper('%${filter}%'))"
+
+            if (lovTable == 'GTVSDLV') {
+                if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
+                    query += " and GTVSDLV_TABLE_NAME='$additionalParams.lovTableOverride'"
+                    query += " and GTVSDLV_ATTR_NAME='$additionalParams.lovAttributeOverride'"
+                } else {
+                    staticLogger.error ("SDE configuration : when LOV_FORM is GTVSDLV, TABLE_OVRD and ATTR_OVRD cannot be empty")
+                }
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table started")
+            Sql sql = new Sql(ApplicationHolder.getApplication().getMainContext().sessionFactory.getCurrentSession().connection())
+
+            sql.rows(query)?.each { row ->
+                createLookupDomainObject(lovTable, additionalParams, row, lookupDomainList)
+            }
+
+            staticLogger.debug("Querying on SDE Lookup Table executed" )
+            sql.connection.close()
+        }
+        (lookupDomainList == [])?null:lookupDomainList
+    }
+
+
+    static def createLookupDomainObject(lovTable, additionalParams, GroovyRowResult row, ArrayList lookupDomainList) {
+        DynamicLookupDomain lookupDomain = new DynamicLookupDomain()
+
+        row.each { prop, propValue ->
+            def modelProperty = SupplementalDataUtils.formatProperty(prop, additionalParams.lovForm)
+            lookupDomain."${modelProperty}" = propValue
+        }
+        lookupDomainList << lookupDomain
+    }
+
+    /**
+     * Find and return the matching domain property names
+     * for the given list of table column names.
+     *
+     * @param domainClass
+     * @param tableColumnNames
+     * @return
+     */
+    def getDomainPropertyNames (Class domainClass, tableColumnNames) {
+        def columnMappings = [:]
+
+        def metadata = ApplicationHolder.getApplication().getMainContext().sessionFactory.getClassMetadata(domainClass)
+        metadata.getPropertyNames().eachWithIndex { propertyName, i ->
+            try {
+                columnMappings[propertyName] = metadata.getPropertyColumnNames(i)[0]
+            } catch (MappingException e){
+                // no mapping for this property; so need to skip it.
+            }
+        }
+
+        columnMappings?.findAll{ String prop, col ->  !prop.startsWith("_")}.keySet()    // returns keys which are prop names.
+    }
+
 }
