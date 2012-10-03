@@ -310,7 +310,13 @@ class SupplementalDataService {
         if (additionalParams) {
             def lovTable = (additionalParams.lovForm == 'GTQSDLV')?'GTVSDLV':additionalParams.lovForm
             String query = "SELECT * FROM $lovTable"
-            query += " WHERE (upper(${lovTable}_CODE) like upper('%${filter}%') OR upper(${lovTable}_DESC) like upper('%${filter}%'))"
+            query += " WHERE (upper(${lovTable}_CODE) like upper('%${filter}%')"
+            if (additionalParams.descNotAvailable) {
+                // skip the desc part.
+            } else {
+                query += " OR upper(${lovTable}_DESC) like upper('%${filter}%')"
+            }
+            query += ")"
 
             if (lovTable == 'GTVSDLV') {
                 if ( additionalParams.lovTableOverride && additionalParams.lovAttributeOverride) {
