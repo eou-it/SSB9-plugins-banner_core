@@ -337,7 +337,7 @@ class SupplementalDataService {
             staticLogger.debug("Querying on SDE Lookup Table executed" )
             sql.connection.close()
         }
-        (lookupDomainList == [])?null:lookupDomainList
+        return (lookupDomainList == [])?([:]):([list:lookupDomainList, totalCount:lookupDomainList.size()])
     }
 
 
