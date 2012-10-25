@@ -4,6 +4,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 import net.hedtech.banner.menu.Menu
 import org.apache.log4j.Logger
 import net.hedtech.banner.security.FormContext
+import grails.converters.JSON
 
 /**
  * Menu controller returns menu as XML format
@@ -52,8 +53,8 @@ class MenuController {
                   def pageName = a.pageName ? a.pageName : "null"
                   NavigationEntryValueObject(id: a.seq, menu: a.menu, form: a.formName, path: pageName + ".zul", name: a.formName, caption: a.caption, type: a.type, url: a.url, parent: a.parent, params: mnuParams,captionProperty: a.captionProperty, pageCaption: a.pageCaption)
               }
-            }
-            render(text:sw.toString(),contentType:"text/xml",encoding:"UTF-8")
+        }
+        render(list as JSON)
     }
     /**
     * Driver for banner menu

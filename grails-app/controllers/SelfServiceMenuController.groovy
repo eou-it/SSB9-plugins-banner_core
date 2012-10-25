@@ -4,6 +4,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
+import grails.converters.JSON
 
 /**
  * SelfService controller returns menu as XML format
@@ -51,7 +52,7 @@ class SelfServiceMenuController {
                 NavigationEntryValueObject(id: a.seq, menu: a.menu, form: a.formName, path: pageName + ".zul", name: a.name, caption: a.caption, type: a.type, url: a.url, parent: a.parent, params: mnuParams, captionProperty: a.captionProperty, pageCaption: a.pageCaption)
             }
         }
-        render(text: sw.toString(), contentType: "text/xml", encoding: "UTF-8")
+        render list as JSON
     }
 
 
