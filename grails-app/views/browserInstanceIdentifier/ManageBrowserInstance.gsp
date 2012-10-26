@@ -13,12 +13,12 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
     <body>
         <script type="text/javascript">
             $( document ).ready( function() {
-                var browserInstanceCookie = getCookie("BrowserInstanceID");
-                if (browserInstanceCookie == null) { //first request so create cookie
+                var browserInstanceCookieValue = getCookie('${cookieName}');
+                if (browserInstanceCookieValue == null) { //first request so create cookie
                     initializeBrowserInstance ();
                     $("#dummyForm").submit();
                     return;
-                } else if (browserInstanceCookie != window.name) {
+                } else if ((window.name).indexOf(browserInstanceCookieValue) == -1) {
                     closeBrowserInstance ();
                     return;
                 } else {
@@ -34,9 +34,10 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
             };
 
             function initializeBrowserInstance() {
-                var currentCookieValue = new Date();
-                setCookie("BrowserInstanceID", currentCookieValue);
-                window.name = currentCookieValue;
+                %{--var currentCookieValue = '${cookieValue}';--}%
+                var currentCookieValue = '${cookieName}';
+                setCookie('${cookieName}', currentCookieValue);
+                window.name = window.name + currentCookieValue;
             };
 
             function closeWindow () {
@@ -77,7 +78,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                 var date = new Date();
                 date.setTime(date.getTime() + (ttl * 60 * 1000));
                 var expires = "expires=" + date.toGMTString();
-                document.cookie = name + "=" + value + "; " + expires + "; path=/";
+                document.cookie = name + "=" + value + "; path="+'${appContextName}';
             }
 
         </script>
