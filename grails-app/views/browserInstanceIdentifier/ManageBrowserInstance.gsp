@@ -15,7 +15,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
             $( document ).ready( function() {
                 var browserInstanceCookieValue = getCookie('${cookieName}');
                 if (browserInstanceCookieValue == null) { //first request so create cookie
-                    initializeBrowserInstance ();
+                    initializeBrowserInstance ('${cookieName}', '${cookieName}');
                     $("#dummyForm").submit();
                     return;
                 } else if ((window.name).indexOf(browserInstanceCookieValue) == -1) {
@@ -33,11 +33,9 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                 closeWindow ();
             };
 
-            function initializeBrowserInstance() {
-                %{--var currentCookieValue = '${cookieValue}';--}%
-                var currentCookieValue = '${cookieName}';
-                setCookie('${cookieName}', currentCookieValue);
-                window.name = window.name + currentCookieValue;
+            function initializeBrowserInstance(cookieName, cookieValue) {
+                setCookie(cookieName, cookieValue);
+                window.name = window.name + cookieValue;
             };
 
             function closeWindow () {
