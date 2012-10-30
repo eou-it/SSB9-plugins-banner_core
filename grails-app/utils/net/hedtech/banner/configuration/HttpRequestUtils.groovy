@@ -1,8 +1,11 @@
+/*******************************************************************************
+Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
+
 package net.hedtech.banner.configuration
 
-import org.springframework.web.context.request.RequestContextHolder
-import org.zkoss.zk.ui.Executions
 import javax.servlet.http.Cookie
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,7 +17,7 @@ import javax.servlet.http.Cookie
 class HttpRequestUtils {
 
     public static URL getRequestUrlInfo () {
-        new URL(getRequest()?.requestURL?.toString())
+        new URL(request?.requestURL?.toString())
     }
 
     public static def getRequest () {
@@ -22,23 +25,37 @@ class HttpRequestUtils {
     }
 
     public static def getAppContextName () {
-        getRequest().contextPath
+        request.contextPath
     }
 
     def static getBrowserInstanceCookieName () {
-        requestUrlInfo.host + "_" + requestUrlInfo.port + "_" + request.contextPath[1..(request.contextPath.size()-1)]
+        def requestUrl = requestUrlInfo
+        requestUrl.host + "_" + requestUrl.port + "_" + request.contextPath[1..(request.contextPath.size()-1)]
 
     }
 
     def static Cookie getCookie (String cookieName) {
-        Cookie[] cookies = Executions.getCurrent().getNativeRequest().getCookies ()
+        Cookie[] cookies = getAllCookies()?.find{it.name == browserInstanceCookieName}
         return cookies?.find { it.getName() == cookieName }
     }
 
-    def static getBrowserInstanceCookie () {
-        getCookie(HttpRequestUtils.getBrowserInstanceCookieName())
+    static def isCookieEmpty (String cookieName) {
+        getCookie(cookieName)?.value == ""
     }
 
+    static def getAllCookies() {
+        request.getCookies()
+    }
 
+    def static getBrowserInstanceCookie () {
+        getCookie(browserInstanceCookieName)
+    }
+
+    def static deleteCookie (String cookieName, response) {
+        Cookie cookie = new Cookie(cookieName, null);
+        cookie.setPath(appContextName);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
 
 }

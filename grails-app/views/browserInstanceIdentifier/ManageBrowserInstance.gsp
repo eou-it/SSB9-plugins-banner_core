@@ -72,10 +72,6 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
             }
 
             function setCookie(name, value){
-                var ttl = 7200;
-                var date = new Date();
-                date.setTime(date.getTime() + (ttl * 60 * 1000));
-                var expires = "expires=" + date.toGMTString();
                 document.cookie = name + "=" + value + "; path="+'${appContextName}';
             }
 
