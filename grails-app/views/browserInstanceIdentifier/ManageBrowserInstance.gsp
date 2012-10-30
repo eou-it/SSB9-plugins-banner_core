@@ -14,11 +14,11 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
         <script type="text/javascript">
             $( document ).ready( function() {
                 var browserInstanceCookieValue = getCookie('${cookieName}');
-                if (browserInstanceCookieValue == null) { //first request so create cookie
+                if (browserInstanceCookieValue == "" || browserInstanceCookieValue == null) { //first request so create cookie
                     initializeBrowserInstance ('${cookieName}', '${cookieName}');
                     $("#dummyForm").submit();
                     return;
-                } else if ((window.name).indexOf(browserInstanceCookieValue) == -1) {
+                } else if (window.name != browserInstanceCookieValue) {
                     closeBrowserInstance ();
                     return;
                 } else {
@@ -35,7 +35,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 
             function initializeBrowserInstance(cookieName, cookieValue) {
                 setCookie(cookieName, cookieValue);
-                window.name = window.name + cookieValue;
+                window.name = cookieValue;
             };
 
             function closeWindow () {

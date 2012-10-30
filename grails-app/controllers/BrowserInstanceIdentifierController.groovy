@@ -10,9 +10,9 @@ class BrowserInstanceIdentifierController {
     def redirect = {
         String cookieName = HttpRequestUtils.getBrowserInstanceCookieName()
 
-        if (HttpRequestUtils.isCookieEmpty(cookieName)){
-            HttpRequestUtils.deleteCookie(cookieName, response)
-        }
+//        if (HttpRequestUtils.isCookieEmpty(cookieName)){
+//            HttpRequestUtils.deleteCookie(cookieName, response)
+//        }
 
         render view: "ManageBrowserInstance",
                 model: [
