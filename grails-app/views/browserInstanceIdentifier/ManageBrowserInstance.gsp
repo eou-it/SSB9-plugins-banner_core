@@ -15,7 +15,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
             $( document ).ready( function() {
                 var browserInstanceCookieValue = getCookie('${cookieName}');
                 if (browserInstanceCookieValue == "" || browserInstanceCookieValue == null) { //first request so create cookie
-                    initializeBrowserInstance ('${cookieName}', '${cookieName}');
+                    initializeBrowserInstance ('${cookieName}', '${cookieValue}');
                     $("#dummyForm").submit();
                     return;
                 } else if (window.name != browserInstanceCookieValue) {
@@ -28,7 +28,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
             } );
 
             function closeBrowserInstance() {
-                var prompt = '${message( code: "net.hedtech.banner.browserInstanceIdentifier.multiWindow.error")}';
+                var prompt = '${message( code: "net.hedtech.banner.browserInstanceIdentifier.multiWindow.error", args: [appContextName, serverName, serverPort])}';
                 alert(prompt);
                 closeWindow ();
             };

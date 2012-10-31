@@ -10,23 +10,15 @@ class BrowserInstanceIdentifierController {
     def redirect = {
         String cookieName = HttpRequestUtils.getBrowserInstanceCookieName()
 
-//        if (HttpRequestUtils.isCookieEmpty(cookieName)){
-//            HttpRequestUtils.deleteCookie(cookieName, response)
-//        }
-
         render view: "ManageBrowserInstance",
                 model: [
-                    urlToRedirect: getUrlToRedirect (), cookieName: cookieName,
-                    cookieValue: new Date(),
-                    appContextName:HttpRequestUtils.appContextName
+                        urlToRedirect: HttpRequestUtils.getUrlToRedirect (),
+                        cookieName: cookieName,
+                        cookieValue: cookieName,
+                        appContextName: HttpRequestUtils.appContextName,
+                        serverName: HttpRequestUtils.serverName(),
+                        serverPort: HttpRequestUtils.serverPort()
                 ]
     }
 
-    private def getUrlToRedirect () {
-        def urlToRedirect = request.contextPath + "/banner.zul"
-        if (RequestContextHolder.currentRequestAttributes()?.request?.getQueryString()) {
-            urlToRedirect = urlToRedirect + "?" + RequestContextHolder.currentRequestAttributes()?.request?.getQueryString()
-        }
-        urlToRedirect
-    }
 }

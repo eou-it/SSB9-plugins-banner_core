@@ -31,12 +31,18 @@ class HttpRequestUtils {
     def static getBrowserInstanceCookieName () {
         def requestUrl = requestUrlInfo
         requestUrl.host + "_" + requestUrl.port + "_" + request.contextPath[1..(request.contextPath.size()-1)]
+    }
 
+    def static serverName () {
+        requestUrlInfo.host
+    }
+
+    def static serverPort () {
+        ""+requestUrlInfo.port
     }
 
     def static Cookie getCookie (String cookieName) {
-        Cookie[] cookies = getAllCookies()?.find{it.name == browserInstanceCookieName}
-        return cookies?.find { it.getName() == cookieName }
+        return getAllCookies()?.find { it.getName() == cookieName }
     }
 
     static def isCookieEmpty (String cookieName) {
@@ -56,6 +62,15 @@ class HttpRequestUtils {
         cookie.setPath(appContextName);
         cookie.setMaxAge(0);
         response.addCookie(cookie);
+    }
+
+    static def getUrlToRedirect () {
+        def urlToRedirect = request.contextPath + "/banner.zul"
+        String queryString = request?.getQueryString()
+        if (queryString) {
+            urlToRedirect = urlToRedirect + "?" + queryString
+        }
+        urlToRedirect
     }
 
 }
