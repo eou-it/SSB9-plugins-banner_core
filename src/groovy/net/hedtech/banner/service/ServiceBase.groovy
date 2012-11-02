@@ -108,7 +108,7 @@ class ServiceBase {
             log.trace "${this.class.simpleName}.create will now save the ${getDomainClass()}"
             def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
             
-            createdModel = persistSupplementalDataFor( createdModel )
+            /*createdModel = persistSupplementalDataFor( createdModel )*/
         
             refreshIfNeeded( createdModel )
         
@@ -194,10 +194,10 @@ class ServiceBase {
             }
         
             // regardless of whether the model was dirty, we'll always persist supplemental properties (if they are dirty)
-            if (content.supplementalProperties) {
+            /*if (content.supplementalProperties) {
                 updatedModel.setSupplementalProperties( content.supplementalProperties )
                 updatedModel = persistSupplementalDataFor( updatedModel )
-            }
+            }*/
             
             refreshIfNeeded( updatedModel ) // after we persist everything, including supplemental data...
         
@@ -816,13 +816,13 @@ class ServiceBase {
      * may be the only data changed in the object.  That is, since the object may not be 'dirty' we can 
      * not rely on hibernate listeners or events. 
      **/
-    protected def persistSupplementalDataFor( modelInstance ) {
+  /*  protected def persistSupplementalDataFor( modelInstance ) {
         if (getSupplementalDataService().supportsSupplementalProperties( modelInstance.class )) {
             return getSupplementalDataService().persistSupplementalDataFor( modelInstance )
         } else {
             modelInstance
         }
-    }
+    }*/
 
 
     /**

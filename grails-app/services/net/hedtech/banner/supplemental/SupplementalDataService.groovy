@@ -16,6 +16,8 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.hibernate.persister.entity.SingleTableEntityPersister
 import org.springframework.context.ApplicationContext
 import org.hibernate.MappingException
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.annotation.Propagation
 
 /**
  * A service used to support persistence of supplemental data.
@@ -374,4 +376,24 @@ class SupplementalDataService {
         columnMappings?.findAll{ String prop, col ->  !prop.startsWith("_")}.keySet()    // returns keys which are prop names.
     }
 
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED )
+    public boolean shouldShowSDE(def domain, def service) {
+        def showSDEWindow = true
+
+        if(service?.respondsTo("extractParams") && service?.respondsTo("fetch")) {
+            def content =  service.extractParams( domain.getClass(), domain, log )
+            def domainObject = service.fetch(  domain.getClass(), content?.id, log )
+            domainObject.properties = content
+            showSDEWindow = service.isDirty(domainObject)
+        }
+
+        return !showSDEWindow
+    }
+
+    public void restoreOriginalSupplementalProperties(domain, service) {
+        if(supportsSupplementalProperties( domain.class )) {
+            def originalDomain = service.fetch(  domain.getClass(), domain?.id, log )
+            domain?.supplementalProperties = originalDomain.supplementalProperties
+        }
+    }
 }
