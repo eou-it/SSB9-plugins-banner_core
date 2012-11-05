@@ -108,7 +108,7 @@ class ServiceBase {
             log.trace "${this.class.simpleName}.create will now save the ${getDomainClass()}"
             def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
             
-            /*createdModel = persistSupplementalDataFor( createdModel )*/
+            createdModel = persistSupplementalDataFor( createdModel )
         
             refreshIfNeeded( createdModel )
         
@@ -200,7 +200,7 @@ class ServiceBase {
             }*/
             
             refreshIfNeeded( updatedModel ) // after we persist everything, including supplemental data...
-        
+
             log.trace "${this.class.simpleName}.update will now invoke the postUpdate callback if it exists"
             if (this.respondsTo( 'postUpdate' )) this.postUpdate( [ before: domainModelOrMap, after: updatedModel ] )
             updatedModel        
@@ -550,6 +550,7 @@ class ServiceBase {
         if (databaseMayAlterPropertiesOf( model )) {
             log.debug "Model ${model.class} is identified as a model that may be modified within the database, and will therefore be refreshed" 
             model.refresh()
+
         }    
     }
 
@@ -816,13 +817,13 @@ class ServiceBase {
      * may be the only data changed in the object.  That is, since the object may not be 'dirty' we can 
      * not rely on hibernate listeners or events. 
      **/
-  /*  protected def persistSupplementalDataFor( modelInstance ) {
+    protected def persistSupplementalDataFor( modelInstance ) {
         if (getSupplementalDataService().supportsSupplementalProperties( modelInstance.class )) {
             return getSupplementalDataService().persistSupplementalDataFor( modelInstance )
         } else {
             modelInstance
         }
-    }*/
+    }
 
 
     /**
