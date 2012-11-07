@@ -195,8 +195,18 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         try {
             // We query the database for all role assignments for the user, using an unproxied connection.
             // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
-            db.eachRow( "select * from govurol where govurol_userid = ?", [authenticationResults.oracleUserName.toUpperCase()] ) { row ->
-                def authority = BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, row.GOVUROL_ROLE_PSWD )
+            /**
+             * Performance Tuning - Removed Select * since fetching role password is very expensive.
+             * Password would be fetch on demand while applying the roles for the connection in BannerDS.
+             */
+            db.eachRow( "select GOVUROL_OBJECT, GOVUROL_ROLE from govurol where govurol_userid = ?", [authenticationResults.oracleUserName.toUpperCase()] ) { row ->
+            //db.eachRow( "select * from govurol where govurol_userid = ?", [authenticationResults.oracleUserName.toUpperCase()] ) { row ->
+                /**
+                 * Performance Tuning - Set the role password as null initially as we are no longer fetching it during login.
+                 */
+                def authority = BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, null )
+                //def authority = BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, row.GOVUROL_ROLE_PSWD )
+
                 // log.trace "BannerAuthenticationProvider.determineAuthorities is adding authority $authority"
                 authorities << authority
             }
