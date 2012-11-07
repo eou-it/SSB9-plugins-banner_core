@@ -21,7 +21,11 @@ public class BannerUser extends GrailsUser {
     public String mepHomeContext
     public String mepProcessContext
     public String mepHomeContextDescription
-    
+    /**
+     * Performance - Tuning (Storing role password map as part of user).
+     */
+    Map rolePass = [:]
+
     public BannerUser( final String username, final String password, 
                        final String oracleUserName, final boolean enabled,
 			           final boolean accountNonExpired, final boolean credentialsNonExpired,

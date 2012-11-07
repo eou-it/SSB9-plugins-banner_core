@@ -82,7 +82,7 @@ public class BannerDS implements DataSource {
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
             proxy(oconn, user?.oracleUserName)
-            setRoles(oconn, user?.oracleUserName, applicableAuthorities)
+            setRoles(oconn, user, applicableAuthorities)
 
             setMep(conn, user)
             setFGAC(conn)
@@ -119,7 +119,7 @@ public class BannerDS implements DataSource {
             if (user?.username && user?.password) {
                 List applicableAuthorities = extractApplicableAuthorities(user?.authorities)
                 proxyConnection(bconn, userName)
-                setRoles(bconn.extractOracleConnection(), user?.username, applicableAuthorities)
+                setRoles(bconn.extractOracleConnection(), user, applicableAuthorities)
             }
         }
     }
@@ -349,25 +349,40 @@ public class BannerDS implements DataSource {
     }
 
 
-    private setRoles(OracleConnection oconn, String proxiedUserName, applicableAuthorities) {
+    private setRoles(OracleConnection oconn, user, applicableAuthorities) {
 
         log.debug "BannerDS will set applicable role(s): ${applicableAuthorities*.authority}"
 
         try {
-            log.trace "BannerDS.setRoles - will unlock role(s) for the connection proxied for $proxiedUserName"
-            applicableAuthorities?.each { auth -> unlockRole(oconn, (BannerGrantedAuthority) auth) }
-            log.trace "BannerDS.setRoles unlocked role(s) for the connection proxied for $proxiedUserName"
+            log.trace "BannerDS.setRoles - will unlock role(s) for the connection proxied for ${user?.oracleUserName}"
+            applicableAuthorities?.each { auth -> unlockRole(oconn, (BannerGrantedAuthority) auth, user) }
+            log.trace "BannerDS.setRoles unlocked role(s) for the connection proxied for ${user?.oracleUserName}"
         }
         catch (e) {
             //if we cannot unlock a role, abort the proxy session and rollback
             log.error "Failed to unlock role for proxy session for Oracle connection $oconn  Exception: $e "
-            closeProxySession(oconn, proxiedUserName)
+            closeProxySession(oconn, user?.oracleUserName)
             throw e
         }
     }
 
 
-    private unlockRole(Connection conn, BannerGrantedAuthority bannerAuth) throws SQLException {
+    private unlockRole(Connection conn, BannerGrantedAuthority bannerAuth, user) throws SQLException {
+
+        /**
+         * Performance Tuning - role password is no longer fetched during login. We are doing an on demand
+         * password fetching since loading role password was very expensive. We are also fetching the role password
+         * only once for a role name. This password is stored inside a Map in the BannerUser session object
+         */
+        if(bannerAuth.bannerPassword == null) {
+            def rolePassword = user.rolePass."${bannerAuth.roleName}"
+            if(rolePassword == null) {
+                Sql sql = new Sql( conn )
+                sql.call("{$Sql.VARCHAR = call g\$_security.G\$_GET_ROLE_PASSWORD_FNC(${bannerAuth.roleName},${user?.oracleUserName?.toUpperCase()})}") {pwd -> rolePassword = pwd }
+                user.rolePass."${bannerAuth.roleName}" = rolePassword
+            }
+            bannerAuth.bannerPassword = rolePassword
+        }
 
         switch (bannerAuth.bannerPassword) {
             case null: log.trace "BannerDS.unlockRole will not unlock any roles -- the password was null"
