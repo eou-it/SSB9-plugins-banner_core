@@ -42,7 +42,7 @@ public class SupplementalDataHibernateListener implements PostLoadEventListener,
     public void onPostLoad( final PostLoadEvent event ) {
         try {
             if (supportsSupplementalData( event )) {
-                getSupplementalDataService().loadSupplementalDataFor( event.getEntity() )
+                getSupplementalDataService().markDomainForSupplementalData( event.getEntity() )
             }
         } catch (e) {
             e.printStackTrace()

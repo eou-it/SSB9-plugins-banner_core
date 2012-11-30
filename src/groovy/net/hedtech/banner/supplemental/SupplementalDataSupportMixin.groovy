@@ -45,6 +45,24 @@ class SupplementalDataSupportMixin {
     @Transient
     Map<String,SupplementalPropertyValue> supplementalDataContent = new HashMap()
 
+    boolean isSdeAvailable() {
+        return isSdeAvailable
+    }
+
+    void setIsSdeAvailable(boolean sdeAvailable) {
+        isSdeAvailable = sdeAvailable
+    }
+
+    boolean hasSdeValues() {
+        return hasSdeValues
+    }
+
+    void setHasSdeValues(boolean hasSdeValues) {
+        this.hasSdeValues = hasSdeValues
+    }
+
+    boolean isSdeAvailable = false;
+    boolean hasSdeValues = false;
 
     /**
      * Returns true if this model instance has supplemental data.

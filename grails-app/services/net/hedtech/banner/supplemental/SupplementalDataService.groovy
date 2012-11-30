@@ -120,6 +120,10 @@ class SupplementalDataService {
         supplementalDataPersistenceManager.removeSupplementalDataFor(model)
     }
 
+    public void markDomainForSupplementalData(model) {
+        supplementalDataPersistenceManager.markDomainForSupplementalData(model)
+    }
+
     public boolean hasSde(id) {
 
         def sdeFound = false
