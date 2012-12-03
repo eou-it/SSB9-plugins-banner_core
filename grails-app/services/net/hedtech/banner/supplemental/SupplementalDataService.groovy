@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.supplemental
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
@@ -377,7 +377,7 @@ class SupplementalDataService {
             }
         }
 
-        columnMappings?.findAll{ String prop, col ->  !prop.startsWith("_")}.keySet()    // returns keys which are prop names.
+        columnMappings?.findAll{ String prop, col ->  !prop.startsWith("_")}    // returns keys which are prop names.
     }
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED )
