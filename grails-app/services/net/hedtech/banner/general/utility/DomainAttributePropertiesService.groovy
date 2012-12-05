@@ -1,6 +1,6 @@
-/*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+/** *****************************************************************************
+ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ ****************************************************************************** */
 
 package net.hedtech.banner.general.utility
 
@@ -87,18 +87,26 @@ class DomainAttributePropertiesService {
             def constraintProperty = grailsDomainClass.constrainedProperties."$propName"
             if (constraintProperty?.propertyName) {
 
-                if (!constraintProperty?.maxSize) {
+                if (constraintProperty?.maxSize) {
+                    maxSize = constraintProperty?.maxSize
+                } else {
                     if (ClassUtils.getShortClassName(constraintProperty?.propertyType?.name) == "String" ||
                             constraintProperty?.propertyType?.name.indexOf("net.") == 0) { //association atributes
                         maxSize = getCharLengthForColumn(tableName, entityMap.attributes."${constraintProperty?.propertyName}"?.columnName)
                     } else if (ClassUtils.getShortClassName(constraintProperty?.propertyType?.name) == "Date") {
                         maxSize = getDefaultDateFormat()
+                    } else if (ClassUtils.getShortClassName(constraintProperty?.propertyType?.name) == "Boolean") {
+                        maxSize = getCharLengthForColumn(tableName, entityMap.attributes."${constraintProperty?.propertyName}"?.columnName)
+                    } else if (ClassUtils.getShortClassName(constraintProperty?.propertyType?.name) == "BigDecimal" ||
+                            ClassUtils.getShortClassName(constraintProperty?.propertyType?.name) == "Long" ||
+                            ClassUtils.getShortClassName(constraintProperty?.propertyType?.name) == "Integer" ||
+                            ClassUtils.getShortClassName(constraintProperty?.propertyType?.name) == "Double") {
+                        maxSize = getNumLengthForColumn(tableName, entityMap.attributes."${constraintProperty?.propertyName}"?.columnName)
                     } else {
                         maxSize = getDataLengthForColumn(tableName, entityMap.attributes."${constraintProperty?.propertyName}"?.columnName)
                     }
-                } else {
-                    maxSize = constraintProperty?.maxSize
                 }
+
 
                 entityMap.attributes."${constraintProperty?.propertyName}"?.nullable = constraintProperty?.nullable
                 entityMap.attributes."${constraintProperty?.propertyName}"?.maxSize = maxSize
@@ -108,7 +116,7 @@ class DomainAttributePropertiesService {
                 entityMap.attributes."${constraintProperty?.propertyName}"?.scale = constraintProperty?.scale
                 entityMap.attributes."${constraintProperty?.propertyName}"?.propertyType = ClassUtils.getShortClassName(constraintProperty?.propertyType?.name)
 
-            }  else {
+            } else {
                 entityMap.attributes."${it.name}"?.propertyType = ClassUtils.getShortClassName(it.type)
 
                 if (ClassUtils.getShortClassName(it.type) == "String" ||
@@ -116,6 +124,13 @@ class DomainAttributePropertiesService {
                     maxSize = getCharLengthForColumn(tableName, entityMap.attributes."${it.name}"?.columnName)
                 } else if (ClassUtils.getShortClassName(it.type) == "Date") {
                     maxSize = getDefaultDateFormat()
+                } else if (ClassUtils.getShortClassName(it.type) == "Boolean") {
+                    maxSize = getCharLengthForColumn(tableName, entityMap.attributes."${it.name}"?.columnName)
+                } else if (ClassUtils.getShortClassName(it.type) == "BigDecimal" ||
+                        ClassUtils.getShortClassName(it.type) == "Long" ||
+                        ClassUtils.getShortClassName(it.type) == "Integer" ||
+                        ClassUtils.getShortClassName(it.type) == "Double") {
+                    maxSize = getNumLengthForColumn(tableName, entityMap.attributes."${it.name}"?.columnName)
                 } else {
                     maxSize = getDataLengthForColumn(tableName, entityMap.attributes."${it.name}"?.columnName)
                 }
@@ -127,6 +142,7 @@ class DomainAttributePropertiesService {
         return entityMap
 
     }
+
 
     public extractClassMetadataByPojo(pojo) {
         def entityMap = [:]
@@ -178,7 +194,35 @@ class DomainAttributePropertiesService {
 
         try {
             sql.eachRow("""
-                     SELECT CHAR_LENGTH
+                     SELECT CHAR_LENGTH,DATA_TYPE
+                       FROM ALL_TAB_COLUMNS
+                       WHERE TABLE_NAME = ?
+                       AND COLUMN_NAME = ?
+                   """, [tableName, columnName]) {
+                if (it[1] == 'CLOB') {
+                    maxSize = 32767
+                } else {
+                    maxSize = it[0]
+                }
+            };
+
+        } catch (Exception e) {
+            log.error("Error:  Data failed to be selected from ALL TAB COLUMNS for item properties due to exception $e")
+            throw e
+        } finally {
+            sql?.close()
+        }
+
+        maxSize
+    }
+
+    def getNumLengthForColumn(tableName, columnName) {
+        def maxSize
+        def sql = new Sql(sessionFactory.getCurrentSession().connection())
+
+        try {
+            sql.eachRow("""
+                     SELECT TO_CHAR(DATA_PRECISION) ||',' || TO_CHAR(DATA_SCALE)
                        FROM ALL_TAB_COLUMNS
                        WHERE TABLE_NAME = ?
                        AND COLUMN_NAME = ?
@@ -188,13 +232,15 @@ class DomainAttributePropertiesService {
 
             };
 
+        } catch (Exception e) {
+            log.error("Error:  Data failed to be selected from ALL TAB COLUMNS for item properties due to exception $e")
+            throw e
         } finally {
             sql?.close()
         }
 
         maxSize
     }
-
 
     def getDataLengthForColumn(tableName, columnName) {
         def maxSize
@@ -211,12 +257,16 @@ class DomainAttributePropertiesService {
                 maxSize = it[0]
 
             };
+        } catch (Exception e) {
+            log.error("Error:  Data failed to be selected from ALL TAB COLUMNS for item properties due to exception $e")
+            throw e
         } finally {
             sql?.close()
         }
 
         maxSize
     }
+
 
 
     def getDefaultDateFormat() {
@@ -234,6 +284,9 @@ class DomainAttributePropertiesService {
                     defaultDateFormat = it[0]
 
                 };
+            } catch (Exception e) {
+                log.error("ERROR: Incorrect Default Date Format. $e")
+                throw e
             } finally {
                 sql?.close()
             }
