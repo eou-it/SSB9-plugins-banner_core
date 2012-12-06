@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.query
 
 class QueryBuilder {
@@ -48,7 +48,7 @@ class QueryBuilder {
              returnQuery += CriteriaOperatorFactory.operators."${it.operator}"?.dynamicQuery(tableIdentifier,it)
         }
 
-        returnQuery = "select count(*) ${returnQuery}"
+        returnQuery = "select count(1) ${returnQuery}"
         return returnQuery
     }
 
