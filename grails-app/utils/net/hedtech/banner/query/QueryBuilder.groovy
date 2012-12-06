@@ -48,7 +48,7 @@ class QueryBuilder {
              returnQuery += CriteriaOperatorFactory.operators."${it.operator}"?.dynamicQuery(tableIdentifier,it)
         }
 
-        returnQuery = "select count(1) ${returnQuery}"
+        returnQuery = "select count(${tableIdentifier}.id) ${returnQuery}"
         return returnQuery
     }
 
