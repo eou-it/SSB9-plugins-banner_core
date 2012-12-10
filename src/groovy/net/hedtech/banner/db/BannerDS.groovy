@@ -69,7 +69,7 @@ public class BannerDS implements DataSource {
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (((user instanceof BannerUser && !user?.oracleUserName) || (user instanceof String && user == 'anonymousUser')) && isSelfServiceRequest()) {
             conn = underlyingSsbDataSource.getConnection()
-            setRoleSSB(conn)
+            // setRoleSSB(conn)
             // SSB Mep setup
             setMepSsb(conn)
 
