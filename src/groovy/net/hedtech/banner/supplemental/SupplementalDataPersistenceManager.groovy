@@ -175,18 +175,24 @@ class SupplementalDataPersistenceManager {
 					              end;
 	                           """)
                 }
+
+                if (disc && disc.isNumber()) {
+                    def b = sql.executeUpdate("""
+                                       update GORSDAV
+                                          set GORSDAV_DISC = rownum
+                                        where  GORSDAV_TABLE_NAME = ${tableName}
+                                          and GORSDAV_PK_PARENTTAB = ${parentTab}
+                                          and GORSDAV_ATTR_NAME = ${attributeName}
+                                       """
+                    )
+
+                    if (b == 0) {
+                        log.info "No records are updated for the entity ${model.class.name}-${parentTab}-${attributeName} "
+                    }
+                }
+
             }
 
-            if (disc && disc.isNumber()) {
-                sql.executeUpdate("""
-                                   update GORSDAV
-                                      set GORSDAV_DISC = rownum
-                                    where  GORSDAV_TABLE_NAME = ${tableName}
-                                      and GORSDAV_PK_PARENTTAB = ${parentTab}
-                                      and GORSDAV_ATTR_NAME = ${attributeName}
-                                   """
-                )
-            }
 
             loadSupplementalDataFor(model)
         } catch (e) {
