@@ -95,10 +95,10 @@ class SelfServiceMenuService {
 
 
         else
-            sqlQuery = "select * from twgrmenu  where  twgrmenu_name = ?  and ? = ? and   twgrmenu_enabled = 'Y'  and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where " + pidmCondition + " and twgrrole_role = twgrwmrl_role   and twgrmenu_source_ind =  (select nvl( max(twgrmenu_source_ind ),'B')   from twgrmenu where  twgrmenu_name = ? and twgrmenu_source_ind='L') )  or twgrmenu_db_link_ind = 'N')  order by twgrmenu_sequence"
+            sqlQuery = "select * from twgrmenu  where  twgrmenu_name = ? and ? = ? and   twgrmenu_enabled = 'Y'  and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where " + pidmCondition + " and twgrrole_role = twgrwmrl_role   and twgrmenu_source_ind =  (select nvl( max(twgrmenu_source_ind ),'B')   from twgrmenu where  twgrmenu_name = ? and twgrmenu_source_ind='L' and ? = ?) )  or twgrmenu_db_link_ind = 'N')  order by twgrmenu_sequence"
 
         def randomSequence = RandomUtils.nextInt(1000);
-
+		
         sql.eachRow(sqlQuery, [menuName, menuName, menuName, menuName, menuName, menuName]) {
 
             def mnu = new SelfServiceMenu()

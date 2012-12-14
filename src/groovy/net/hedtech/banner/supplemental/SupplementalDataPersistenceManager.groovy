@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.supplemental
 
 import groovy.sql.Sql
@@ -229,8 +229,10 @@ class SupplementalDataPersistenceManager {
                      and  govsdav_pk_parenttab = :recordPk
             """).setString("tableName", tableName).setString("recordPk", recordPk).list()
 
-            if(resultSetAttributesList.size() > 0) {
+            if (resultSetAttributesList.size() > 0) {
                 model.setHasSdeValues(true);
+            } else {
+                model.setHasSdeValues(false);
             }
         }
     }
