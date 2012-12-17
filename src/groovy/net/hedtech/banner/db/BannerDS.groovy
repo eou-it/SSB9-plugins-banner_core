@@ -320,7 +320,7 @@ public class BannerDS implements DataSource {
 
         if (!grantedAuthorities) return []
 
-        List formContext = FormContext.get()
+        List formContext = new ArrayList(FormContext.get())
         log.debug "BannerDS has retrieved the FormContext value: $formContext"
         // log.debug "The user's granted authorities are $grantedAuthorities*.authority" // re-enable in development to see all the user's privileges
 
@@ -355,7 +355,16 @@ public class BannerDS implements DataSource {
 
         try {
             log.trace "BannerDS.setRoles - will unlock role(s) for the connection proxied for ${user?.oracleUserName}"
-            applicableAuthorities?.each { auth -> unlockRole(oconn, (BannerGrantedAuthority) auth, user) }
+            Map unlockedRoles = [:]
+            applicableAuthorities?.each { auth ->
+
+                if(!unlockedRoles."${auth.roleName}") {
+                    unlockRole(oconn, (BannerGrantedAuthority) auth, user)
+                    unlockedRoles.put(auth.roleName, true)
+                }else {
+                    println "Role already unlocked : " + auth.roleName  + "  :  " + auth.objectName
+                }
+            }
             log.trace "BannerDS.setRoles unlocked role(s) for the connection proxied for ${user?.oracleUserName}"
         }
         catch (e) {
