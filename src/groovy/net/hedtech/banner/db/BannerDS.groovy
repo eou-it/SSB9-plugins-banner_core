@@ -361,8 +361,6 @@ public class BannerDS implements DataSource {
                 if(!unlockedRoles."${auth.roleName}") {
                     unlockRole(oconn, (BannerGrantedAuthority) auth, user)
                     unlockedRoles.put(auth.roleName, true)
-                }else {
-                    println "Role already unlocked : " + auth.roleName  + "  :  " + auth.objectName
                 }
             }
             log.trace "BannerDS.setRoles unlocked role(s) for the connection proxied for ${user?.oracleUserName}"

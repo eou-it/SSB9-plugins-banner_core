@@ -187,7 +187,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
     }
 
       public static boolean isUserAuthorized( String pageName ) {
-          List formNames = CH.config.formControllerMap[ pageName.toLowerCase() ]
+          List formNames = new ArrayList( CH.config.formControllerMap[ pageName.toLowerCase() ] )
           def authentication = SecurityContextHolder.getContext().getAuthentication()
 
           List applicableAuthorities = []
