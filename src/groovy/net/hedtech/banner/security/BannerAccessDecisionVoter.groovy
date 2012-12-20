@@ -99,7 +99,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
         if (splitIndex && !(urlParts[1] in base)) {
             def pageName = RequestContextHolder.currentRequestAttributes().request.getParameter("page")?.toLowerCase()
             if (!pageName) pageName="mainpage"
-            return CH.config.formControllerMap[pageName]
+            return new ArrayList( CH.config.formControllerMap[pageName])
         }
 
         log.debug "BannerAccessDecisionVoter.vote() has parsed url into: $urlParts"
