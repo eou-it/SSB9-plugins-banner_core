@@ -18,6 +18,8 @@ import org.springframework.context.ApplicationContext
 import org.hibernate.MappingException
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.annotation.Propagation
+import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.service.ServiceBase
 
 /**
  * A service used to support persistence of supplemental data.
@@ -380,18 +382,30 @@ class SupplementalDataService {
         columnMappings?.findAll{ String prop, col ->  !prop.startsWith("_")}    // returns keys which are prop names.
     }
 
+    /**
+     * This method will allow us to check if the SDE should be shown or not. If a domain is dirty then it should be
+     * false. Here since a number of methods in ServiceBase are needed we ended up creating an object of ServiceBase
+     * and then using it, to avoid duplicating the code.
+     *
+     * *** If at all ServiceBase is altered and made Abstract then this logic needs to be revisited. ***
+     * @param domain
+     * @return
+     * @throws ApplicationException
+     */
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED )
-    public boolean shouldShowSDE(def domain, def service) {
-        def showSDEWindow = true
+    public boolean shouldShowSDE(def domain) throws ApplicationException {
+        def shouldShowSDE = true
 
-        if(service?.respondsTo("extractParams") && service?.respondsTo("fetch")) {
-            def content =  service.extractParams( domain.getClass(), domain, log )
-            def domainObject = service.fetch(  domain.getClass(), content?.id, log )
-            domainObject.properties = content
-            showSDEWindow = service.isDirty(domainObject)
-        }
+        def content =  ServiceBase.extractParams( domain.getClass(), domain, log )
+        def domainObject =  domain.get(content?.id)
 
-        return !showSDEWindow
+        ServiceBase sb = new ServiceBase();
+        sb.checkOptimisticLock(domainObject, content, log)
+
+        domainObject.properties = content
+        shouldShowSDE = sb.isDirty(domainObject)
+
+        return !shouldShowSDE
     }
 
     public void restoreOriginalSupplementalProperties(domain, service) {
