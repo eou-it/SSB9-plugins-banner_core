@@ -408,9 +408,9 @@ class SupplementalDataService {
         return !shouldShowSDE
     }
 
-    public void restoreOriginalSupplementalProperties(domain, service) {
+    public void restoreOriginalSupplementalProperties(domain) {
         if(supportsSupplementalProperties( domain.class )) {
-            def originalDomain = service.fetch(  domain.getClass(), domain?.id, log )
+            def originalDomain = domain.get(domain?.id)
             loadSupplementalDataFor(originalDomain)
             domain?.supplementalProperties = originalDomain.supplementalProperties
         }
