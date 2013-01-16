@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.supplemental
 
 import groovy.sql.Sql
@@ -175,23 +175,65 @@ class SupplementalDataPersistenceManager {
 					              end;
 	                           """)
                 }
+
+                if (disc && disc.isNumber()) {
+                    def b = sql.executeUpdate("""
+                                       update GORSDAV
+                                          set GORSDAV_DISC = rownum
+                                        where  GORSDAV_TABLE_NAME = ${tableName}
+                                          and GORSDAV_PK_PARENTTAB = ${parentTab}
+                                          and GORSDAV_ATTR_NAME = ${attributeName}
+                                       """
+                    )
+
+                    if (b == 0) {
+                        log.info "No records are updated for the entity ${model.class.name}-${parentTab}-${attributeName} "
+                    }
+                }
+
             }
 
-            if (disc && disc.isNumber()) {
-                sql.executeUpdate("""
-                                   update GORSDAV
-                                      set GORSDAV_DISC = rownum
-                                    where  GORSDAV_TABLE_NAME = ${tableName}
-                                      and GORSDAV_PK_PARENTTAB = ${parentTab}
-                                      and GORSDAV_ATTR_NAME = ${attributeName}
-                                   """
-                )
-            }
 
             loadSupplementalDataFor(model)
         } catch (e) {
             log.error "Failed to save SDE for the entity ${model.class.name}-${model.id}  Exception: $e "
             throw e
+        }
+    }
+
+    public def markDomainForSupplementalData(model) {
+        def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(model.getClass()).tableName.toUpperCase())
+
+        def isSdeAvailable = false
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        try {
+           sql.call("{$Sql.VARCHAR = call gb_sde_table.f_exists($tableName)}") { sde ->
+               isSdeAvailable = "Y".equals(sde)
+           }
+
+           model.setIsSdeAvailable(isSdeAvailable);
+       } catch (e) {
+           log.error("ERROR: Could not SDE set up for table - $tableName . ${e.message}")
+           throw e
+       } finally {
+           sql?.close()
+       }
+
+        if(isSdeAvailable) {
+            //TODO improve performance
+            String recordPk = getPk(tableName, model.id)
+
+            def resultSetAttributesList = sessionFactory.getCurrentSession().createSQLQuery(
+                   """SELECT DISTINCT govsdav_attr_name as attrName
+                     FROM govsdav WHERE govsdav_table_name= :tableName
+                     and  govsdav_pk_parenttab = :recordPk
+            """).setString("tableName", tableName).setString("recordPk", recordPk).list()
+
+            if (resultSetAttributesList.size() > 0) {
+                model.setHasSdeValues(true);
+            } else {
+                model.setHasSdeValues(false);
+            }
         }
     }
 
