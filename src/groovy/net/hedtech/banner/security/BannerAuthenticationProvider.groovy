@@ -199,8 +199,11 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
              * Performance Tuning - Removed Select * since fetching role password is very expensive.
              * Password would be fetch on demand while applying the roles for the connection in BannerDS.
              */
-            db.eachRow( "select GOVUROL_OBJECT, GOVUROL_ROLE from govurol where govurol_userid = ?", [authenticationResults.oracleUserName.toUpperCase()] ) { row ->
-            //db.eachRow( "select * from govurol where govurol_userid = ?", [authenticationResults.oracleUserName.toUpperCase()] ) { row ->
+
+	            db.eachRow( "select GOVUROL_OBJECT, GOVUROL_ROLE from govurol,gubobjs  where govurol_userid = ? and (govurol_object = gubobjs_name     and  (gubobjs_ui_version in ('A','C') OR gubobjs_name in ('GUAGMNU')) )", [authenticationResults.oracleUserName.toUpperCase()] ) { row ->
+	         //   db.eachRow( "select GOVUROL_OBJECT, GOVUROL_ROLE from govurol  where govurol_userid = ? ", [authenticationResults.oracleUserName.toUpperCase()] ) { row ->
+
+
                 /**
                  * Performance Tuning - Set the role password as null initially as we are no longer fetching it during login.
                  */
