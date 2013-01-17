@@ -223,10 +223,20 @@ class SupplementalDataPersistenceManager {
             //TODO improve performance
             String recordPk = getPk(tableName, model.id)
 
+            /**
+             *   VERY IMPORTANT NOTE:- For some reason, for domains loaded through
+             *   deferred-tab-load, when the data-extract logic pulls it again through
+             *   fetch closure invocation, GOVSDAV view does not seem to return any rows
+             *   though the arguments are absolutely correct. And the base table GORSDAV
+             *   does have the correct values.
+             *
+             *   So, it is discouraged to depend on GOVSDAV table in this method, until
+             *   we find out the reason for that.
+             */
             def resultSetAttributesList = sessionFactory.getCurrentSession().createSQLQuery(
-                   """SELECT DISTINCT govsdav_attr_name as attrName
-                     FROM govsdav WHERE govsdav_table_name= :tableName
-                     and  govsdav_pk_parenttab = :recordPk
+                   """SELECT DISTINCT gorsdav_attr_name as attrName
+                     FROM gorsdav WHERE gorsdav_table_name= :tableName
+                     and  gorsdav_pk_parenttab = :recordPk
             """).setString("tableName", tableName).setString("recordPk", recordPk).list()
 
             if (resultSetAttributesList.size() > 0) {
