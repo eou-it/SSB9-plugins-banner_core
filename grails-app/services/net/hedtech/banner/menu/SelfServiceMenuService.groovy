@@ -53,7 +53,7 @@ class SelfServiceMenuService {
             sql.eachRow("select govrole_student_ind, govrole_alumni_ind, govrole_employee_ind, govrole_faculty_ind, govrole_finance_ind ,govrole_friend_ind ,govrole_finaid_ind, govrole_bsac_ind from govrole where govrole_pidm = ? ", [pidm]) {
                 if (it.govrole_student_ind == "Y" )  govroles.add ("STUDENT")
                 if (it.govrole_faculty_ind == "Y" )  govroles.add ("FACULTY")
-                if (it.govrole_employee_ind == "Y" )  govroles.add ("EMPOLYEE")
+                if (it.govrole_employee_ind == "Y" )  govroles.add ("EMPLOYEE")
                 if (it.govrole_alumni_ind == "Y" )  govroles.add ("ALUMNI")
                 if (it.govrole_finance_ind == "Y" )  govroles.add ("FINANCE")
                 if (it.govrole_finaid_ind == "Y" )  govroles.add ("FINAID")
@@ -87,7 +87,7 @@ class SelfServiceMenuService {
                         " where  twgrmenu_name = ?  " +
                         " and twgrmenu_enabled = 'Y' "+
                         " and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,govrole where govrole_pidm =  " + pidm + " and " +
-                        " twgrwmrl_role in ('STUDENT' ,'FACULTY' ,'FRIEND','EMPLOYEE','FINANCE','ALUMNI') and twgrmenu_source_ind = "+
+                        " twgrwmrl_role in " +govroleCriteria +" and twgrmenu_source_ind = "+
                         " ( select nvl( max(twgrmenu_source_ind ),'B') from twgrmenu        where  twgrmenu_name = ? " +
                         " and twgrmenu_source_ind='L') )) or (twgrmenu_name = ? and twgrmenu_db_link_ind = 'N' and twgrmenu_enabled = 'Y' and twgrmenu_source_ind = " +
                         " (  select nvl( max(twgrmenu_source_ind ),'B') from twgrmenu  where  twgrmenu_name = ?  " +
