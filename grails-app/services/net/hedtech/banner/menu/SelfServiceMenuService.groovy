@@ -87,7 +87,7 @@ class SelfServiceMenuService {
                         " where  twgrmenu_name = ?  " +
                         " and twgrmenu_enabled = 'Y' "+
                         " and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,govrole where govrole_pidm =  " + pidm + " and " +
-                        " twgrwmrl_role in ('STUDENT' ,'FACULTY' ,'FRIEND') and twgrmenu_source_ind = "+
+                        " twgrwmrl_role in ('STUDENT' ,'FACULTY' ,'FRIEND','EMPLOYEE','FINANCE','ALUMNI') and twgrmenu_source_ind = "+
                         " ( select nvl( max(twgrmenu_source_ind ),'B') from twgrmenu        where  twgrmenu_name = ? " +
                         " and twgrmenu_source_ind='L') )) or (twgrmenu_name = ? and twgrmenu_db_link_ind = 'N' and twgrmenu_enabled = 'Y' and twgrmenu_source_ind = " +
                         " (  select nvl( max(twgrmenu_source_ind ),'B') from twgrmenu  where  twgrmenu_name = ?  " +
