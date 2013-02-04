@@ -159,6 +159,11 @@ class BannerCoreGrailsPlugin {
             bean.initMethod = 'init'
         }
 
+        tabLevelSecurityService( TabLevelSecurityService ) { bean ->
+            sessionFactory = ref( sessionFactory )
+
+        }
+
         multiEntityProcessingService( MultiEntityProcessingService ) { bean ->
             dataSource = ref( dataSource )
             sessionFactory = ref( sessionFactory )
