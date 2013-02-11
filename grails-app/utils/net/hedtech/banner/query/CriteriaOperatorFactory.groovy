@@ -114,6 +114,11 @@ class CriteriaOperatorFactory {
                                             operator:"sounds like",
                                             key:"soundslike",
                                             dynamicQuery: {tableIdentifier, parammap-> " and ((soundex($tableIdentifier.${parammap.binding}) = soundex(:${parammap.key})) or :${parammap.key} is null)"},
+                                            formatvalue : {value -> value }],
+                                in:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.in",
+                                            operator:"in",
+                                            key:"in",
+                                            dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} IN (:${parammap.key}) "},
                                             formatvalue : {value -> value }]
                               ]
 
