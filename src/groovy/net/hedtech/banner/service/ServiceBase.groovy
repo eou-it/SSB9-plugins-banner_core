@@ -113,10 +113,12 @@ class ServiceBase {
             refreshIfNeeded( createdModel )
 			
 			//Populate the metadata information that is needed for supplemental data.
-			if (!databaseMayAlterPropertiesOf( createdModel )) {
-                getSupplementalDataService().markDomainForSupplementalData( createdModel )
+            if (getSupplementalDataService()?.supportsSupplementalProperties( createdModel.class )) {
+                if (!databaseMayAlterPropertiesOf( createdModel )) {
+                    getSupplementalDataService().markDomainForSupplementalData( createdModel )
+                }
             }
-			
+
             log.trace "${this.class.simpleName}.create will now invoke the postCreate callback if it exists"
             if (this.respondsTo( 'postCreate' )) this.postCreate( [  before: domainModelOrMap, after: createdModel ] )
         
