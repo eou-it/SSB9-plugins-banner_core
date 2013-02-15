@@ -14,7 +14,7 @@ import org.springframework.security.core.GrantedAuthority
 import net.hedtech.banner.ListManipulator
 
 /**
- * A service used to support persistence of supplemental data.
+ * Service to support the tab-level-security implementation.
  */
 class TabLevelSecurityService {
 
