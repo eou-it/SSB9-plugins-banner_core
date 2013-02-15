@@ -159,10 +159,14 @@ class BannerCoreGrailsPlugin {
             bean.initMethod = 'init'
         }
 
-        tabLevelSecurityService( TabLevelSecurityService ) { bean ->
-            sessionFactory = ref( sessionFactory )
+//        tabLevelSecurityService( TabLevelSecurityService ) { bean ->
+//            sessionFactory = ref( sessionFactory )
+//
+//        }
 
+        userAuthorityService( UserAuthorityService ) { bean ->
         }
+
 
         multiEntityProcessingService( MultiEntityProcessingService ) { bean ->
             dataSource = ref( dataSource )
@@ -170,7 +174,8 @@ class BannerCoreGrailsPlugin {
             bean.initMethod = 'init'
         }
 
-        roleVoter( BannerAccessDecisionVoter )
+        roleVoter( BannerAccessDecisionVoter ) {
+        }
 
         authenticationDataSource( OracleDataSource )
 

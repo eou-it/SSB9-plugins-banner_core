@@ -36,7 +36,6 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
     private final Logger log = Logger.getLogger( getClass() )
 
-
     boolean supports( ConfigAttribute configAttribute ) {
         log.debug "BannerAccessDecisionVoter.supports(ConfigAttribute) invoked with $configAttribute and will return ${configAttribute.attribute.startsWith( ROLE_PREFIX )}"
         configAttribute.attribute.startsWith( ROLE_PREFIX )
@@ -116,13 +115,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
 
     private List getApplicableAuthorities( List forms, Authentication authentication ) {
-        if (authentication.principal instanceof String) return []
-        List applicableAuthorities = []
-        forms?.each { form ->
-            def authoritiesForForm = authentication.principal.authorities.findAll { it.authority ==~ /\w+_${form}_\w+/ }
-            authoritiesForForm.each { applicableAuthorities << it }
-        }
-        applicableAuthorities
+        return UserAuthorityService.filterAuthorities(forms, authentication)
     }
 
 

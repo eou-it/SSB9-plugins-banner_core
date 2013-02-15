@@ -3,33 +3,23 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.db
 
-
-import net.hedtech.banner.security.FormContext
-import net.hedtech.banner.security.BannerGrantedAuthority
-
-import groovy.sql.Sql
-
-import java.sql.Connection
-import java.sql.SQLException
-import java.sql.CallableStatement
-
-import javax.sql.DataSource
-
-import oracle.jdbc.OracleConnection
-
-import org.apache.log4j.Logger
-
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.context.SecurityContextHolder
-
+import groovy.sql.Sql
+import java.sql.Connection
+import java.sql.SQLException
+import javax.sql.DataSource
 import net.hedtech.banner.mep.MultiEntityProcessingService
+import net.hedtech.banner.security.BannerGrantedAuthority
+import net.hedtech.banner.security.BannerUser
+import net.hedtech.banner.security.FormContext
+import net.hedtech.banner.security.UserAuthorityService
+import oracle.jdbc.OracleConnection
+import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.springframework.context.ApplicationContext
-
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
-import net.hedtech.banner.security.BannerUser
 
 /**
  * A dataSource that wraps an 'underlying' datasource.  When this datasource is asked for a
@@ -78,6 +68,7 @@ public class BannerDS implements DataSource {
         }
         else if ((user instanceof BannerUser && user?.oracleUserName)  && shouldProxy()) {
             List applicableAuthorities = extractApplicableAuthorities(user?.authorities)
+
             conn = underlyingDataSource.getConnection()
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
@@ -317,20 +308,7 @@ public class BannerDS implements DataSource {
 
 
     private List extractApplicableAuthorities(grantedAuthorities) {
-
-        if (!grantedAuthorities) return []
-
-        List formContext = new ArrayList(FormContext.get())
-        log.debug "BannerDS has retrieved the FormContext value: $formContext"
-        // log.debug "The user's granted authorities are $grantedAuthorities*.authority" // re-enable in development to see all the user's privileges
-
-        List applicableAuthorities = []
-        formContext.each { form ->
-            def authoritiesForForm = grantedAuthorities.findAll { it.authority ==~ /\w+_${form}_\w+/ }
-            authoritiesForForm.each { applicableAuthorities << it }
-        }
-        log.debug "Given FormContext of ${formContext?.join(',')}, the user's applicable authorities are $applicableAuthorities"
-        applicableAuthorities
+        return UserAuthorityService.filterAuthorities(grantedAuthorities.asList())
     }
 
 

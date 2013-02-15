@@ -4,15 +4,12 @@
 package net.hedtech.banner.security
 
 import groovy.sql.Sql
+import java.sql.SQLException
 import java.util.regex.Pattern
-
+import javax.sql.DataSource
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import org.springframework.security.core.GrantedAuthority
-
-import java.sql.SQLException
-import javax.sql.DataSource
-import org.springframework.security.core.Authentication
 
 /**
  * A service used to determine and manipulate the user authorities
@@ -43,7 +40,7 @@ class UserAuthorityService {
      * @param dataSource
      * @return
      */
-    public Collection<GrantedAuthority> determineAuthorities( Authentication authentication, DataSource dataSource ) {
+    public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, DataSource dataSource ) {
 
         def conn
         def db
@@ -52,7 +49,7 @@ class UserAuthorityService {
             // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
             conn = dataSource.unproxiedConnection
             db = new Sql( conn )
-            return determineAuthorities( authentication, db )
+            return determineAuthorities( authenticationResults, db )
         } finally {
             conn?.close()
         }
@@ -74,11 +71,11 @@ class UserAuthorityService {
      * @param db
      * @return
      */
-    private Collection<GrantedAuthority> determineAuthorities (Authentication authentication, Sql db) {
+    private static Collection<GrantedAuthority> determineAuthorities (Map authenticationResults, Sql db) {
 
         def authorities = [] as Collection<GrantedAuthority>
 
-        if (!authentication.name) {
+        if (!authenticationResults['oracleUserName']) {
             return authorities   // empty list
         }
 
@@ -87,7 +84,7 @@ class UserAuthorityService {
 	                select GOVUROL_OBJECT, GOVUROL_ROLE from govurol,gubobjs
 	                    where govurol_userid = ? and
 	                        (govurol_object = gubobjs_name and (gubobjs_ui_version in ('A','C') OR gubobjs_name in ('GUAGMNU')) )"""
-            db.eachRow( query, [authentication.name.toUpperCase()] ) { row ->
+            db.eachRow( query, [authenticationResults['oracleUserName'].toUpperCase()] ) { row ->
                 /**
                  * Performance Tuning - Removed Select * since fetching role password is very expensive.
                  * Password would be fetch on demand while applying the roles for the connection in BannerDS.
@@ -96,10 +93,10 @@ class UserAuthorityService {
                 authorities << BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, null )
             }
         } catch (SQLException e) {
-            log.error "UserAuthorityService not able to determine Authorities for user ${authentication.name} due to exception $e.message"
+            staticLogger.error "UserAuthorityService not able to determine Authorities for user ${authenticationResults['oracleUserName']} due to exception $e.message"
             return new ArrayList<GrantedAuthority>()
         }
-        log.trace "UserAuthorityService.determineAuthorities is returning ${authorities?.size()} authorities. "
+        staticLogger.trace "UserAuthorityService.determineAuthorities is returning ${authorities?.size()} authorities. "
         authorities
     }
 
@@ -111,12 +108,12 @@ class UserAuthorityService {
      * @param grantedAuthorities
      * @return
      */
-    public def filterAuthorities (List<GrantedAuthority> grantedAuthorities) {
+    public static def filterAuthorities (List<GrantedAuthority> grantedAuthorities) {
         if (!grantedAuthorities) {
             return []
         }
         List formContext = new ArrayList(FormContext.get())
-        log.debug "UserAuthorityService has retrieved the FormContext value: $formContext"
+        staticLogger.debug "UserAuthorityService has retrieved the FormContext value: $formContext"
         return filterAuthoritiesForFormNames(grantedAuthorities, formContext)
     }
 
@@ -128,7 +125,7 @@ class UserAuthorityService {
      * @param authentication
      * @return
      */
-    public def filterAuthorities (formNames, authentication) {
+    public static def filterAuthorities (formNames, authentication) {
         if (authentication.principal instanceof String) {
             return []
         }
@@ -142,13 +139,13 @@ class UserAuthorityService {
      * @param formNames
      * @return
      */
-    private List filterAuthoritiesForFormNames(def grantedAuthorities, List formNames) {
+    private static List filterAuthoritiesForFormNames(def grantedAuthorities, List formNames) {
         List applicableAuthorities = grantedAuthorities.asList().grep { authorityHolder ->
             formNames.find { formName ->
                 authorityHolder.authority ==~ getACEGICompatibleRolePattern(formName)
             }
         }
-        log.debug "Given FormContext of ${formNames?.join(',')}, the user's applicable authorities are $applicableAuthorities"
+        staticLogger.debug "Given FormContext of ${formNames?.join(',')}, the user's applicable authorities are $applicableAuthorities"
         return applicableAuthorities
     }
 
@@ -160,9 +157,9 @@ class UserAuthorityService {
      *     1. Spring security authorities are already loaded.
      *
      * @param formName
-     * @return
+     * @return  String value either of [READ_ONLY_ACCESS, READ_WRITE_ACCESS, UNDEFINED_ACCESS]
      */
-    public def resolveAuthority (formName) {
+    public static def resolveAuthority (formName) {
         def authority = getAuthority(formName, [(READONLY_PATTERN), (READ_WRITE_PATTERN)])
         if (authority) {
             return (isReadonlyPattern(authority))? READ_ONLY_ACCESS : ((isReadWritePattern(authority))?READ_WRITE_ACCESS :UNDEFINED_ACCESS)
@@ -180,11 +177,24 @@ class UserAuthorityService {
      * @param formName
      * @return
      */
-    public def getAuthority(String formName, List patternList) { // should get authorities from SpringSecurityUtils.getPrincipalAuthorities()
+    public static def getAuthority(String formName, List patternList) { // should get authorities from SpringSecurityUtils.getPrincipalAuthorities()
         SpringSecurityUtils.getPrincipalAuthorities().find { authority ->
             authority.objectName == formName && patternList.any{pattern -> pattern.matcher(authority.roleName)}
         }
     }
+
+    public static boolean isReadWriteAccessLevel(String userAccessLevel) {
+        return userAccessLevel == READ_WRITE_ACCESS
+    }
+
+    public static boolean isReadonlyAccessLevel(String userAccessLevel) {
+        return userAccessLevel == READ_ONLY_ACCESS
+    }
+
+    public static boolean isUndefinedAccessLevel(String userAccessLevel) {
+        return userAccessLevel == UNDEFINED_ACCESS
+    }
+
 
     /**
      * Get the authority for given form name for a given pattern.
@@ -193,7 +203,7 @@ class UserAuthorityService {
      * @param pattern
      * @return
      */
-    public def getAuthority (String formName, def pattern) {
+    public static def getAuthority (String formName, def pattern) {
         getAuthority (formName, [(pattern)])
     }
 
@@ -203,7 +213,7 @@ class UserAuthorityService {
      * @param formName
      * @return
      */
-    private def getACEGICompatibleRolePattern(String formName) {
+    private static def getACEGICompatibleRolePattern(String formName) {
         /\w+_${formName}_\w+/
     }
 
@@ -213,7 +223,7 @@ class UserAuthorityService {
      * @param authority
      * @return
      */
-    private boolean isReadWritePattern(GrantedAuthority authority) {
+    public static boolean isReadWritePattern(GrantedAuthority authority) {
         READ_WRITE_PATTERN.matcher(authority.roleName)
     }
 
@@ -223,7 +233,7 @@ class UserAuthorityService {
      * @param authority
      * @return
      */
-    private boolean isReadonlyPattern(GrantedAuthority authority) {
+    public static boolean isReadonlyPattern(GrantedAuthority authority) {
         READONLY_PATTERN.matcher(authority.roleName)
     }
 

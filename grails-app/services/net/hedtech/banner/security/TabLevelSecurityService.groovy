@@ -23,11 +23,9 @@ class TabLevelSecurityService {
     private final Logger log = Logger.getLogger(getClass())
     private static final Logger staticLogger = Logger.getLogger(TabLevelSecurityService.class)
 
-    public static final String READ__ONLY_ACCESS = "READ_ONLY"
-    public static final String READ__WRITE_ACCESS = "READ_WRITE"
-    public static final String UNDEFINED_ACCESS = "UNDEFINED"
-
     def sessionFactory                     // injected by Spring
+
+    def userAuthorityService
 
     /**
      * Method finds the user from the Spring Context. The role specified for
@@ -57,7 +55,7 @@ class TabLevelSecurityService {
 
         String userAccessLevel = getUserAccessLevel(userName, formName)
 
-        if (! isUndefinedAccessLevel(userAccessLevel)) {
+        if (! userAuthorityService.isUndefinedAccessLevel(userAccessLevel)) {
             dbConfiguredTabPrivilegeMap = getDBConfiguredTabSecurityRestrictions (userName, formName)
             return limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, userAccessLevel)
         } else {
@@ -76,15 +74,7 @@ class TabLevelSecurityService {
      * @return
      */
     private String getUserAccessLevel(String userName, String formName) {
-        def authorities = SpringSecurityUtils.getPrincipalAuthorities()
-        def authority =  authorities?.find { authority ->
-            (authority.objectName == formName && ( isReadonlyPattern(authority) || isReadWritePattern(authority)))
-        }
-        if (authority) {
-            return (isReadonlyPattern(authority))? READ__ONLY_ACCESS : ((isReadWritePattern(authority))?READ__WRITE_ACCESS :UNDEFINED_ACCESS)
-        } else {
-            return UNDEFINED_ACCESS
-        }
+        return userAuthorityService.resolveAuthority(formName)
     }
 
     /**
@@ -121,9 +111,9 @@ class TabLevelSecurityService {
      */
     private def limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, userAccessLevel) {
         def revisedTabPrivileges = dbConfiguredTabPrivilegeMap
-        if (isReadonlyAccessLevel(userAccessLevel)) {
+        if (userAuthorityService.isReadonlyAccessLevel(userAccessLevel)) {
             revisedTabPrivileges = lowerFullQueryAccessToReadonlyAccess (dbConfiguredTabPrivilegeMap)
-        } else if (isReadWriteAccessLevel(userAccessLevel)) {
+        } else if (userAuthorityService.isReadWriteAccessLevel(userAccessLevel)) {
             // no limiting to be done here.
         } else {
             // An impossible case. Form should have an access level set for the user.
@@ -146,29 +136,8 @@ class TabLevelSecurityService {
         return revisedTabPrivileges
     }
 
-
     private def getTabSecurityPrivilegeMap (String tabSecurityPrivilegeString) {
         return ListManipulator.stringRepresentationToMap (tabSecurityPrivilegeString, ":")
-    }
-
-    private boolean isReadWriteAccessLevel(String userAccessLevel) {
-        return userAccessLevel == READ__WRITE_ACCESS
-    }
-
-    private boolean isReadonlyAccessLevel(String userAccessLevel) {
-        return userAccessLevel == READ__ONLY_ACCESS
-    }
-
-    private boolean isUndefinedAccessLevel(String userAccessLevel) {
-        return userAccessLevel == UNDEFINED_ACCESS
-    }
-
-    private boolean isReadWritePattern(GrantedAuthority authority) {
-        (~/DEFAULT_M/ as Pattern).matcher(authority.roleName)
-    }
-
-    private boolean isReadonlyPattern(GrantedAuthority authority) {
-        (~/DEFAULT_Q/ as Pattern).matcher(authority.roleName)
     }
 
 }
