@@ -160,12 +160,23 @@ class UserAuthorityService {
      * @return  String value either of [READ_ONLY_ACCESS, READ_WRITE_ACCESS, UNDEFINED_ACCESS]
      */
     public static def resolveAuthority (formName) {
-        def authority = getAuthority(formName, [(READONLY_PATTERN), (READ_WRITE_PATTERN)])
+        def authority = getAuthorityForAnyPattern(formName)
         if (authority) {
             return (isReadonlyPattern(authority))? READ_ONLY_ACCESS : ((isReadWritePattern(authority))?READ_WRITE_ACCESS :UNDEFINED_ACCESS)
         } else {
             return UNDEFINED_ACCESS
         }
+    }
+
+    /**
+     * Get authority for the given form matching any of the
+     * patterns.
+     *
+     * @param formName
+     * @return
+     */
+    public static GrantedAuthority getAuthorityForAnyPattern(formName) {
+        return getAuthority(formName, [(READONLY_PATTERN), (READ_WRITE_PATTERN)])
     }
 
     /**
@@ -234,6 +245,28 @@ class UserAuthorityService {
      * @return
      */
     public static boolean isReadonlyPattern(GrantedAuthority authority) {
+        READONLY_PATTERN.matcher(authority.roleName)
+    }
+
+    /**
+     * checks if the given form is a read-write access.
+     *
+     * @param authority
+     * @return
+     */
+    public static boolean isReadWritePattern(String formName) {
+        def authority = getAuthorityForAnyPattern (formName)
+        READ_WRITE_PATTERN.matcher(authority.roleName)
+    }
+
+    /**
+     * checks if the given form has a readonly access.
+     *
+     * @param form name
+     * @return
+     */
+    public static boolean isReadonlyPattern(String formName) {
+        def authority = getAuthorityForAnyPattern (formName)
         READONLY_PATTERN.matcher(authority.roleName)
     }
 
