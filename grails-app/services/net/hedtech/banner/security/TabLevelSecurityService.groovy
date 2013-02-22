@@ -3,15 +3,12 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
-import groovy.sql.Sql
-
-import org.apache.log4j.Logger
-
-import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
-import java.util.regex.Pattern
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.GrantedAuthority
+
+import groovy.sql.Sql
 import net.hedtech.banner.ListManipulator
+import org.apache.log4j.Logger
 
 /**
  * Service to support the tab-level-security implementation.
