@@ -43,7 +43,7 @@ class TabLevelSecurityService {
 
         def dbConfiguredTabPrivilegeMap = [:]
 
-        String userName = SecurityContextHolder.context.authentication?.user?.username
+        String userName = SecurityContextHolder.context.authentication?.user?.username?.toUpperCase()
 
         if (!userName) {
             log.error("Error:- There must be a user signed-in")
