@@ -307,16 +307,10 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
        // def selfServiceRolePassword
         if (authentictionResults.oracleUserName) {
-            Collection<GrantedAuthority> adminAuthorities = BannerAuthenticationProvider.determineAuthorities( authentictionResults, db )
-            authorities.addAll( adminAuthorities )
+                authorities << BannerGrantedAuthority.create( "SELFSERVICE", "BAN_DEFAULT_M", null )
         }
-
-        // Users should be given the 'ROLE_SELFSERVICE_BAN_DEFAULT_M' role to have access to self service pages
-        // that are associated to the 'SELFSERVICE' FormContext.
-        //if (authorities.size() > 0) authorities << BannerGrantedAuthority.create( "SELFSERVICE", "BAN_DEFAULT_M", selfServiceRolePassword )
-
-        log.trace "SelfServiceAuthenticationProvider.determineAuthorities will return $authorities"
-        authorities
+       log.trace "SelfServiceAuthenticationProvider.determineAuthorities will return $authorities"
+       authorities
     }
 
 
