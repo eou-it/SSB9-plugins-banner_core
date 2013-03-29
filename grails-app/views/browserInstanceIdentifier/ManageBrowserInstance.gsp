@@ -3,7 +3,6 @@
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
-<%@ page contentType="text/html;charset=UTF-8" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
@@ -11,7 +10,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
         <script type="text/javascript" src="../js/jquery/jquery-1.4.1.min.js"></script>
     </head>
     <body>
-        <script type="text/javascript">
+        <script  language="javascript" type="text/javascript" charset="UTF-8">
             $( document ).ready( function() {
                 var browserInstanceCookieValue = getCookie('${cookieName}');
                 if (browserInstanceCookieValue == "" || browserInstanceCookieValue == null) { //first request so create cookie
@@ -27,9 +26,13 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                 }
             } );
 
+            // to decode the html special characters eg: &eacute; to accented-e.
+            function html_entity_decode(str) {
+                 return $('<div />').html(str).text();
+            }
+
             function closeBrowserInstance() {
-                var prompt = '${message( code: "net.hedtech.banner.browserInstanceIdentifier.multiWindow.error", args: [appContextName, serverName, serverPort])}';
-                alert(prompt);
+                alert(html_entity_decode('${prompt}'));
                 closeWindow ();
             };
 
