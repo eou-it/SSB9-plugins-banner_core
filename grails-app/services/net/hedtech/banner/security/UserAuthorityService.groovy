@@ -190,7 +190,9 @@ class UserAuthorityService {
      */
     public static def getAuthority(String formName, List patternList) { // should get authorities from SpringSecurityUtils.getPrincipalAuthorities()
         SpringSecurityUtils.getPrincipalAuthorities().find { authority ->
-            authority.objectName == formName && patternList.any{pattern -> pattern.matcher(authority.roleName)}
+            if (authority) {
+                authority.objectName == formName && patternList.any{pattern -> pattern.matcher(authority.roleName)}
+            }
         }
     }
 
@@ -235,7 +237,7 @@ class UserAuthorityService {
      * @return
      */
     public static boolean isReadWritePattern(GrantedAuthority authority) {
-        READ_WRITE_PATTERN.matcher(authority.roleName)
+        (authority)?READ_WRITE_PATTERN.matcher(authority.roleName):false
     }
 
     /**
@@ -245,7 +247,7 @@ class UserAuthorityService {
      * @return
      */
     public static boolean isReadonlyPattern(GrantedAuthority authority) {
-        READONLY_PATTERN.matcher(authority.roleName)
+        (authority)?READONLY_PATTERN.matcher(authority.roleName):false
     }
 
     /**
@@ -256,7 +258,8 @@ class UserAuthorityService {
      */
     public static boolean isReadWritePattern(String formName) {
         def authority = getAuthorityForAnyPattern (formName)
-        READ_WRITE_PATTERN.matcher(authority.roleName)
+        (authority)?READ_WRITE_PATTERN.matcher(authority.roleName):false
+
     }
 
     /**
@@ -267,7 +270,7 @@ class UserAuthorityService {
      */
     public static boolean isReadonlyPattern(String formName) {
         def authority = getAuthorityForAnyPattern (formName)
-        READONLY_PATTERN.matcher(authority.roleName)
+        (authority)?READONLY_PATTERN.matcher(authority.roleName):false
     }
 
 }
