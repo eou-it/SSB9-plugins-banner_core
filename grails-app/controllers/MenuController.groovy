@@ -76,16 +76,7 @@ class MenuController {
     private def getPersonalMenu() {
         def list
         log.debug("Menu Controller getmenu")
-        def pidm
-        try {
-            pidm = SecurityContextHolder?.context?.authentication?.principal?.pidm
-        }
-        catch (Exception e) {
-            pidm = null
-            log.debug("Non logged in user.")
-        }
-
-        def personalMenuList = pidm ? "personalMenuList" + pidm : "personalMenuList"
+        def personalMenuList =  "personalMenuList"
         if (session[personalMenuList] == null) {
             list = menuService.personalMenu()
             session[personalMenuList] = list

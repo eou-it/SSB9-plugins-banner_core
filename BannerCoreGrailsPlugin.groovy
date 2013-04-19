@@ -15,6 +15,7 @@ import net.hedtech.banner.mep.MultiEntityProcessingService
 import net.hedtech.banner.representations.ResourceRepresentationRegistry
 import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
 import net.hedtech.banner.service.DefaultLoaderService
+import net.hedtech.banner.service.HttpSessionService
 import net.hedtech.banner.service.LoginAuditService
 import net.hedtech.banner.service.ServiceBase
 import net.hedtech.banner.supplemental.SupplementalDataHibernateListener
@@ -166,6 +167,10 @@ class BannerCoreGrailsPlugin {
         }
 
         roleVoter( BannerAccessDecisionVoter )
+
+        httpSessionService(HttpSessionService) {
+            dataSource = ref(dataSource)
+        }
 
         authenticationDataSource( OracleDataSource )
 

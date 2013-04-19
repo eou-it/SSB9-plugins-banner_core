@@ -94,14 +94,30 @@ class BannerConnection {
     public void close() throws SQLException {
         try {
             log.trace "BannerConnection ${super.toString()}.close() invoked"
-            bannerDataSource.closeProxySession( this, proxyUserName )              
-            bannerDataSource.clearIdentifer( this )
+//            bannerDataSource.closeProxySession( this, proxyUserName )
+//            bannerDataSource.clearIdentifer( this )
         } finally {            
             log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
-            underlyingConnection?.close()  
+            if (!proxyUserName)  {
+                log.trace "${super.toString()} closing $underlyingConnection}"
+                underlyingConnection?.close()
+            }
         }
     }
 
+    public void connectionAdminClose() throws SQLException {
+        try {
+
+            println "*******Connect admin close INVOKKKKKKEEEEDDD******"
+            log.trace "BannerConnection ${super.toString()}.close() invoked"
+            bannerDataSource.closeProxySession( this, proxyUserName )
+            bannerDataSource.clearIdentifer( this )
+        } finally {
+            log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
+                log.trace "${super.toString()} *************** : $underlyingConnection, that wraps ${extractOracleConnection()}"
+                underlyingConnection?.close()
+        }
+    }
 
     /**
      * Invokes the supplied stored procedure call.

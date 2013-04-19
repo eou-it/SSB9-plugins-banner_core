@@ -4,6 +4,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 package net.hedtech.banner.menu
 
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.web.context.request.RequestContextHolder
 
 import groovy.sql.Sql
 import org.apache.log4j.Logger
@@ -20,8 +21,10 @@ class MenuService {
     * @return List representation of menu objects that a user has access
     */
     def bannerMenu() {
-        def map = processMenu()
-        return map
+        def map  = RequestContextHolder.currentRequestAttributes().request.session.getAttribute("menuList")
+        if (!map )
+            map = processMenu()
+        map
 
     }
     /**
@@ -29,7 +32,9 @@ class MenuService {
     * @return List representation of personal menu objects that a user has access
     */
     def personalMenu() {
-        def map = personalMenuMap()
+        def map  = RequestContextHolder.currentRequestAttributes().request.session.getAttribute("personalMenuList")
+        if (!map )
+            map = personalMenuMap()
         return map
     }
 
@@ -73,6 +78,7 @@ class MenuService {
 
     log.debug("Personal Menu executed" )
     sql.connection.close()
+    RequestContextHolder.currentRequestAttributes().request.session.setAttribute("personalMenuList", dataMap)
     return dataMap
     }
 
@@ -149,7 +155,8 @@ class MenuService {
         });
     log.debug("ProcessMenu executed" )
     sql.connection.close()
-    return dataMap
+    RequestContextHolder.currentRequestAttributes().request.session.setAttribute("menuList", dataMap)
+    dataMap
     }
 
     /**
@@ -184,7 +191,7 @@ class MenuService {
         log.debug("Goto Menu started")
         sql = new Sql( sessionFactory.getCurrentSession().connection() )
         log.debug( sql.useConnection.toString() )
-        sql.execute( "Begin gukmenu.p_bld_prod_menu('BAN9'); End;" )
+       // sql.execute( "Begin gukmenu.p_bld_prod_menu('BAN9'); End;" )
         def searchValWild = "%" +searchVal +"%"
         sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','C')  and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)",[searchValWild,searchValWild,searchValWild] ) {
             def mnu = new Menu()
@@ -204,5 +211,4 @@ class MenuService {
         sql.connection.close()
         return dataMap
     }
-
 }
