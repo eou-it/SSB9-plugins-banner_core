@@ -19,7 +19,7 @@ class LogoutController {
      * Index action. Redirects to the Spring security logout uri.
      */
     def index = {
-        httpSessionService.closeDBConnection()
+       // httpSessionService.closeDBConnection()
         session.invalidate()
         Cookie cookie = new Cookie("JSESSIONID", null);
         cookie.setPath(request.getContextPath());
@@ -30,7 +30,7 @@ class LogoutController {
 
 
     def timeout = {
-        httpSessionService.closeDBConnection()
+      //  httpSessionService.closeDBConnection()
         if(request?.getHeader("referer")?.endsWith("login/auth")){
             forward(controller:"login")
         } else {

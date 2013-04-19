@@ -187,7 +187,7 @@ public class BannerDS implements DataSource {
             }
         } finally {
            log.trace "${super.toString()} will close it's underlying connection: $connection}"
-            connection.close()
+            connection?.close()
         }
     }
     // Note: This method should be used only for initial authentication, and for testing purposes.

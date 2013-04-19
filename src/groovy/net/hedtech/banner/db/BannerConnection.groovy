@@ -107,8 +107,6 @@ class BannerConnection {
 
     public void connectionAdminClose() throws SQLException {
         try {
-
-            println "*******Connect admin close INVOKKKKKKEEEEDDD******"
             log.trace "BannerConnection ${super.toString()}.close() invoked"
             bannerDataSource.closeProxySession( this, proxyUserName )
             bannerDataSource.clearIdentifer( this )
