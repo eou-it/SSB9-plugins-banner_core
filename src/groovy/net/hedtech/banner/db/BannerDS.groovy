@@ -177,20 +177,17 @@ public class BannerDS implements DataSource {
         unlockedRoles
     }
 
-    public void removeConnection() {
+    public void removeConnection(Connection connection) {
         log.trace "${super.toString()}.removeConnection() invoked"
-        OracleConnection conn
-        conn = underlyingDataSource.getConnection()
-        log.trace "${super.toString()}.removeConnection() will remove for $conn"
+        log.trace "${super.toString()}.removeConnection() will remove for $connection"
         try {
-            if (conn.getConnectionAttributes().size() > 0) {
-                OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
-                log.trace "BannerDS.removeConnection proxy connection ${super.toString()}.close() invoked"
-                oconn?.close()
+            OracleConnection nativeConnection =  nativeJdbcExtractor.getNativeConnection( connection )
+            if(nativeConnection.isProxySession()) {
+                nativeConnection.close(OracleConnection.PROXY_SESSION)
             }
         } finally {
-           log.trace "${super.toString()} will close it's underlying connection: $conn}"
-           conn?.close()
+           log.trace "${super.toString()} will close it's underlying connection: $connection}"
+            connection.close()
         }
     }
     // Note: This method should be used only for initial authentication, and for testing purposes.

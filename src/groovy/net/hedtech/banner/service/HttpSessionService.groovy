@@ -19,22 +19,15 @@ class HttpSessionService {
 
     def sessionDestroyed(HttpSession session) {
         log.info("Session destroyed: " + session.id)
-        // SessionDestroyed event is fired for every session that is invalidated, which include explicit invalidation
-        // during logout. We close connections during logout and need to only handle cases where session timeout
-        def currentTime = System.currentTimeMillis()
-        def timeElapsedSinceLastAccess = currentTime - session.lastAccessedTime
-        if(timeElapsedSinceLastAccess > session.maxInactiveInterval * 1000)  {
-            closeDBConnection()
-        }
+        closeDBConnection()
         RequestContextHolder.currentRequestAttributes().request.session.setAttribute("cachedConnection", null)
     }
 
     def closeDBConnection() {
-        dataSource.removeConnection()
         try {
             Connection conn  = RequestContextHolder.currentRequestAttributes().request.session.getAttribute("cachedConnection")
-            if (!conn)
-                conn.close()
+            if (conn)
+                dataSource.removeConnection(conn)
         }
         catch (e) {
             log.error("HttpSessionService.closeDBconnect connection close error $e")

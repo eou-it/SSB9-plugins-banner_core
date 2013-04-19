@@ -26,7 +26,11 @@ class DbConnectionCacheSessionListener implements HttpSessionListener {
     @Override
     void sessionDestroyed(HttpSessionEvent event) {
         HttpSession session = event.getSession()
-        getHttpSessionService().sessionDestroyed(session)
+        // Ensure that the service is called only when the session contains a connection
+        // Login causes the earlier established session to be destroyed and then no request
+        // is avaiable and HTTPSerice sessionDestroyed throws an Exception
+        if(session.getAttribute("cachedConnection"))
+            getHttpSessionService().sessionDestroyed(session)
     }
 
 
