@@ -14,23 +14,25 @@ class HttpSessionService {
     private final Logger log = Logger.getLogger( getClass() )
 
     def sessionCreated(HttpSession session) {
-        log.info("Session created: " + session.id)
+        log.trace("Session created: " + session.id)
     }
 
     def sessionDestroyed(HttpSession session) {
-        log.info("Session destroyed: " + session.id)
+        log.trace("Session destroyed: " + session.id)
         closeDBConnection()
-        RequestContextHolder.currentRequestAttributes().request.session.setAttribute("cachedConnection", null)
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("cachedConnection", null)
     }
 
     def closeDBConnection() {
+        log.trace("HttpSessionService.closeDBConnection invoked")
         try {
-            Connection conn  = RequestContextHolder.currentRequestAttributes().request.session.getAttribute("cachedConnection")
+            Connection conn  = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("cachedConnection")
+            log.trace("HttpSessionService.closeDBConnection invoked $conn cleaned up")
             if (conn)
                 dataSource.removeConnection(conn)
         }
         catch (e) {
-            log.error("HttpSessionService.closeDBconnect connection close error $e")
+           //Ignore this exception
         }
     }
 }
