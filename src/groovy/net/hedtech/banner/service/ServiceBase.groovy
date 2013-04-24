@@ -108,7 +108,7 @@ class ServiceBase {
             log.trace "${this.class.simpleName}.create will now save the ${getDomainClass()}"
             def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
             
-            createdModel = persistSupplementalDataFor( createdModel )
+            //createdModel = persistSupplementalDataFor( createdModel )
         
             refreshIfNeeded( createdModel )
 			
