@@ -134,7 +134,7 @@ public class BannerDS implements DataSource {
 
 
     private Connection getCachedConnection(BannerUser user) {
-        Connection conn  = RequestContextHolder.currentRequestAttributes().request.session.getAttribute("cachedConnection")
+        Connection conn  = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("cachedConnection")
         String [] userRoles
 
         if (conn)  {

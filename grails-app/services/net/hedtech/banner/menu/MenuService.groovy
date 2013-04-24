@@ -46,6 +46,7 @@ class MenuService {
 
     def personalMenuMap() {
         def dataMap = []
+        /**
 		def mnuPrf = getMnuPref()
         Sql sql
         def parent
@@ -79,8 +80,11 @@ class MenuService {
     log.debug("Personal Menu executed" )
     sql.connection.close()
     RequestContextHolder.currentRequestAttributes().request.session.setAttribute("personalMenuList", dataMap)
+         **/
+    dataMap = dummyMenu()
     return dataMap
     }
+
 
 
     def setParent(def level,def map) {
@@ -117,6 +121,7 @@ class MenuService {
     * @return Map of menu objects that a user has access
     */
     private def processMenu() {
+        /**
         def dataMap = []
         def menuMap = []
 		def mnuPrf = getMnuPref()
@@ -151,14 +156,63 @@ class MenuService {
                 mnu.seq = it.gutmenu_seq_no
                 mnu.captionProperty = mnuPrf
                 dataMap.add(mnu)
+
             }
         });
     log.debug("ProcessMenu executed" )
     sql.connection.close()
     RequestContextHolder.currentRequestAttributes().request.session.setAttribute("menuList", dataMap)
+         **/
+    def dataMap  = dummyMenu()
     dataMap
     }
 
+
+    def dummyMenu() {
+        def dataMap = []
+      	def mnu = new Menu()
+    mnu.formName = "*STUDENT"
+    mnu.pageName = null
+    mnu.caption = "Student(*STUDENT)"
+    mnu.pageCaption = "Student"
+    mnu.level = 1
+    mnu.type = "MENU"
+    mnu.parent = null
+    mnu.module = null
+    mnu.url = null
+    mnu.seq = 22
+    mnu.captionProperty = "true"
+    dataMap.add(mnu)
+
+	def mnu1 = new Menu()
+    mnu1.formName = "*CATALOG"
+    mnu1.pageName = null
+    mnu1.caption = "Course Catalog(*CATALOG)"
+    mnu1.pageCaption = "Course Catalog"
+    mnu1.level = 2
+    mnu1.type = "MENU"
+    mnu1.parent ="*STUDENT"
+    mnu1.module = null
+    mnu1.url = null
+    mnu1.seq = 23
+    mnu1.captionProperty = "true"
+    dataMap.add(mnu1)
+
+	def mnu2 = new Menu()
+    mnu2.formName = "SCACRSE"
+    mnu2.pageName = "basicCourseInformation"
+    mnu2.caption = "Basic Course Information(SCACRSE)"
+    mnu2.pageCaption = "Basic Course Information"
+    mnu2.level = 3
+    mnu2.type = "FORM"
+    mnu2.parent = "*CATALOG"
+    mnu2.module = null
+    mnu2.url = null
+    mnu2.seq = 24
+    mnu2.captionProperty = "true"
+    dataMap.add(mnu2)
+    dataMap
+    }
     /**
     * This is returns map of all personal items based on user access
     * @return Map of menu objects that a user has access
@@ -184,8 +238,11 @@ class MenuService {
     * @return Map of menu objects that a user has access
     */
     def gotoMenu( String searchVal ) {
+
+     /**
         searchVal = searchVal.toUpperCase()
         def dataMap = []
+
         def mnuPrf = getMnuPref()
         Sql sql
         log.debug("Goto Menu started")
@@ -209,6 +266,21 @@ class MenuService {
         }
         log.debug( "GotoMenu executed" )
         sql.connection.close()
-        return dataMap
+ **/
+    def dataMap = []
+    def mnu2 = new Menu()
+    mnu2.formName = "SCACRSE"
+    mnu2.pageName = "basicCourseInformation"
+    mnu2.caption = "Basic Course Information(SCACRSE)"
+    mnu2.pageCaption = "Basic Course Information"
+    mnu2.level = 3
+    mnu2.type = "FORM"
+    mnu2.parent = "*CATALOG"
+    mnu2.module = null
+    mnu2.url = null
+    mnu2.seq = 24
+    mnu2.captionProperty = "true"
+    dataMap.add(mnu2)
+    return dataMap
     }
 }
