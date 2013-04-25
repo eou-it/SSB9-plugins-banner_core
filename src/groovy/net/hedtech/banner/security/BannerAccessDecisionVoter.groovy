@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.web.FilterInvocation
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.security.core.GrantedAuthority
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.context.ApplicationContext
@@ -186,23 +187,25 @@ class BannerAccessDecisionVoter extends RoleVoter {
         publishViolation(authentication, message, forms)
     }
 
-      public static boolean isUserAuthorized( String pageName ) {
-          List formNames = new ArrayList( CH.config.formControllerMap[ pageName.toLowerCase() ] )
-          def authentication = SecurityContextHolder.getContext().getAuthentication()
-
-          List applicableAuthorities = []
-          formNames?.each { form ->
-              def authoritiesForForm = authentication.principal.authorities.findAll { it.authority ==~ /\w+_${form}_\w+/ }
-              authoritiesForForm.each { applicableAuthorities << it }
-          }
-          applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
-          if( ! (applicableAuthorities.size() > 0) ) {
+    public static boolean isUserAuthorized( String pageName ) {
+        List formNames = new ArrayList( CH.config.formControllerMap[ pageName.toLowerCase() ] )
+        def authentication = SecurityContextHolder.getContext().getAuthentication()
+        def user = authentication.user
+        List applicableAuthorities = []
+        List<GrantedAuthority> authoritiesForForm
+        FormContext.get()?.each { form ->
+            authoritiesForForm = user.getAuthoritiesFor(form)
+            authoritiesForForm.each { applicableAuthorities << it }
+        }
+        applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
+        if( ! (applicableAuthorities.size() > 0) ) {
               String message = "User ${authentication.name} is not authorized to access ${pageName}(${formNames[0]})"
               publishViolation( authentication, message, formNames )
               return false
-          }
-          return true
+        }
+        return true
     }
+
 
     private static def publishViolation( def authentication, String message, def forms ) {
         def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)

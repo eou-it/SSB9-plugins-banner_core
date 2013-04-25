@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.db
 
 
@@ -67,6 +67,7 @@ public class BannerDS implements DataSource {
 
 
         Connection conn
+        BannerConnection bannerConnection
         String[] roles
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (((user instanceof BannerUser && !user?.oracleUserName) || (user instanceof String && user == 'anonymousUser')) && isSelfServiceRequest()) {
@@ -79,19 +80,23 @@ public class BannerDS implements DataSource {
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
         else if ((user instanceof BannerUser && user?.oracleUserName)  && shouldProxy()) {
-            conn = getCachedConnection (user)
-            if (!conn) {
-                List applicableAuthorities = extractApplicableAuthorities(user?.authorities)
+            bannerConnection = getCachedConnection (user)
+            if (!bannerConnection) {
+                List applicableAuthorities = extractApplicableAuthorities(user)
                 conn = underlyingDataSource.getConnection()
                 OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
                 log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
                 proxy(oconn, user?.oracleUserName)
                 roles = setRoles(oconn, user, applicableAuthorities)?.keySet() as String[]
-                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("BANNER_ROLES", roles)
+
                 setRoles(oconn, user, applicableAuthorities)
                 setMep(conn, user)
                 setFGAC(conn)
-                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("cachedConnection", conn)
+                bannerConnection =   new BannerConnection(conn, user?.username, this)
+                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("bannerRoles", roles)
+                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("cachedConnection",bannerConnection)
+                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("formContext",FormContext.get())
+
             }
         }
         else {
@@ -101,7 +106,7 @@ public class BannerDS implements DataSource {
         }
 
         if (user instanceof BannerUser)
-            return new BannerConnection(conn, user?.username, this)
+            return bannerConnection
         else
             return new BannerConnection(conn, user, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
     }
@@ -134,11 +139,14 @@ public class BannerDS implements DataSource {
 
 
     private Connection getCachedConnection(BannerUser user) {
-        Connection conn  = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("cachedConnection")
+        BannerConnection bannerConnection  = RequestContextHolder?.currentRequestAttributes()?.request?.session.getAttribute("cachedConnection")
+        def formContext  = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("formContext")
+
         String [] userRoles
 
-        if (conn)  {
+        if (bannerConnection)  {
             //Validate Connection
+            Connection conn = bannerConnection.underlyingConnection
             Sql sql = new Sql(conn)
             try {
                 String stmt = "select 1 from dual" as String
@@ -146,24 +154,27 @@ public class BannerDS implements DataSource {
             }
             catch (e) {
                 log.info("BannerDS.validateConnection connection $conn could not be validated from session $e")
-                return
+                return null
             }
-            log.debug "BannerDS.getConnection()  is using ${conn} from session cache"
-            List applicableAuthorities = extractApplicableAuthorities(user?.authorities)
-            userRoles = getUserRoles(user, applicableAuthorities)?.keySet() as String[]
-            def roles = RequestContextHolder.currentRequestAttributes().request.session.getAttribute("BANNER_ROLES")
-            if (roles as Set == userRoles as Set) {
-                setFGAC(conn)
-                log.debug "BannerDS.getConnection()  has same roles ${conn} from session cache"
-            }  else
-            {
-               OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
-               setRoles(oconn, user, applicableAuthorities)
-               setFGAC(conn)
+            def currentFormContext =  FormContext.get()
+            if (currentFormContext as Set != formContext as Set ) {
+                log.debug "BannerDS.getConnection()  is using ${conn} from session cache"
+                List applicableAuthorities = extractApplicableAuthorities(user)
+                userRoles = getUserRoles(user, applicableAuthorities)?.keySet() as String[]
+                def roles = RequestContextHolder.currentRequestAttributes().request.session.getAttribute("BANNER_ROLES")
+                if (roles as Set == userRoles as Set) {
+                    setFGAC(conn)
+                    log.debug "BannerDS.getConnection()  has same roles ${conn} from session cache"
+                }   else
+                {
+                    OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
+                    setRoles(oconn, user, applicableAuthorities)
+                    setFGAC(conn)
+                }
             }
         }
 
-      conn
+      bannerConnection
     }
 
 
@@ -403,6 +414,15 @@ public class BannerDS implements DataSource {
         applicableAuthorities
     }
 
+    private List<GrantedAuthority> extractApplicableAuthorities(BannerUser user) {
+        List<GrantedAuthority> applicableAuthorities = []
+        List<GrantedAuthority> authoritiesForForm
+        FormContext.get()?.each { form ->
+            authoritiesForForm = user.getAuthoritiesFor(form)
+            authoritiesForForm.each { applicableAuthorities << it }
+        }
+        applicableAuthorities
+    }
 
     private setRoleSSB (Connection conn) {
         def rolePassword
@@ -575,4 +595,6 @@ public class BannerDS implements DataSource {
 
 
 }
+
+
 

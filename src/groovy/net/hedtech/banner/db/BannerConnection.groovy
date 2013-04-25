@@ -44,7 +44,7 @@ class BannerConnection {
         underlyingConnection = conn
         this.bannerDataSource = bannerDataSource
         log.trace "BannerConnection has been constructed: ${this}"
-        invokeProcedureCall "{ call DBMS_SESSION.MODIFY_PACKAGE_STATE(2) }" // Constant DBMS_SESSION.REINITIALIZE = 2
+//        invokeProcedureCall "{ call DBMS_SESSION.MODIFY_PACKAGE_STATE(2) }" // Constant DBMS_SESSION.REINITIALIZE = 2
     }
 
 
