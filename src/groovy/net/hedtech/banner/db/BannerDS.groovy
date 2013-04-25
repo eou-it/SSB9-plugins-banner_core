@@ -1,6 +1,6 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/
+ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ ****************************************************************************** */
 package net.hedtech.banner.db
 
 
@@ -79,8 +79,8 @@ public class BannerDS implements DataSource {
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
-        else if ((user instanceof BannerUser && user?.oracleUserName)  && shouldProxy()) {
-            bannerConnection = getCachedConnection (user)
+        else if ((user instanceof BannerUser && user?.oracleUserName) && shouldProxy()) {
+            bannerConnection = getCachedConnection(user)
             if (!bannerConnection) {
                 List applicableAuthorities = extractApplicableAuthorities(user)
                 conn = underlyingDataSource.getConnection()
@@ -92,10 +92,10 @@ public class BannerDS implements DataSource {
                 setRoles(oconn, user, applicableAuthorities)
                 setMep(conn, user)
                 setFGAC(conn)
-                bannerConnection =   new BannerConnection(conn, user?.username, this)
+                bannerConnection = new BannerConnection(conn, user?.username, this)
                 RequestContextHolder.currentRequestAttributes().request.session.setAttribute("bannerRoles", roles)
-                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("cachedConnection",bannerConnection)
-                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("formContext",FormContext.get())
+                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("cachedConnection", bannerConnection)
+                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("formContext", FormContext.get())
 
             }
         }
@@ -114,7 +114,7 @@ public class BannerDS implements DataSource {
     public void setFGAC(conn) {
 
         String form = (FormContext.get() ? FormContext.get()[0] : null) // FormContext returns a list, but we'll just use the first entry
-        if( form ) {
+        if (form) {
             Sql db = new Sql(conn)
             db.call("{call gokfgac.p_object_excluded (?) }", [form])
         }
@@ -139,12 +139,12 @@ public class BannerDS implements DataSource {
 
 
     private Connection getCachedConnection(BannerUser user) {
-        BannerConnection bannerConnection  = RequestContextHolder?.currentRequestAttributes()?.request?.session.getAttribute("cachedConnection")
-        def formContext  = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("formContext")
+        BannerConnection bannerConnection = RequestContextHolder?.currentRequestAttributes()?.request?.session.getAttribute("cachedConnection")
+        def formContext = new ArrayList(RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("formContext"))
 
-        String [] userRoles
+        String[] userRoles
 
-        if (bannerConnection)  {
+        if (bannerConnection) {
             //Validate Connection
             Connection conn = bannerConnection.underlyingConnection
             Sql sql = new Sql(conn)
@@ -156,8 +156,8 @@ public class BannerDS implements DataSource {
                 log.info("BannerDS.validateConnection connection $conn could not be validated from session $e")
                 return null
             }
-            def currentFormContext =  new ArrayList(FormContext.get())
-            if (currentFormContext as Set != formContext as Set ) {
+            def currentFormContext = new ArrayList(FormContext.get())
+            if (currentFormContext as Set != formContext as Set) {
                 log.debug "BannerDS.getConnection()  is using ${conn} from session cache"
                 List applicableAuthorities = extractApplicableAuthorities(user)
                 userRoles = getUserRoles(user, applicableAuthorities)?.keySet() as String[]
@@ -165,8 +165,7 @@ public class BannerDS implements DataSource {
                 if (roles as Set == userRoles as Set) {
                     setFGAC(conn)
                     log.debug "BannerDS.getConnection()  has same roles ${conn} from session cache"
-                }   else
-                {
+                } else {
                     OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
                     setRoles(oconn, user, applicableAuthorities)
                     setFGAC(conn)
@@ -174,17 +173,17 @@ public class BannerDS implements DataSource {
             }
         }
 
-      bannerConnection
+        bannerConnection
     }
 
 
-    private getUserRoles( user, applicableAuthorities) {
+    private getUserRoles(user, applicableAuthorities) {
         Map unlockedRoles = [:]
         applicableAuthorities?.each { auth ->
-            if(!unlockedRoles."${auth.roleName}") {
-                    unlockedRoles.put(auth.roleName, true)
-                }
+            if (!unlockedRoles."${auth.roleName}") {
+                unlockedRoles.put(auth.roleName, true)
             }
+        }
         unlockedRoles
     }
 
@@ -192,13 +191,13 @@ public class BannerDS implements DataSource {
         log.trace "${super.toString()}.removeConnection() invoked"
         log.trace "${super.toString()}.removeConnection() will remove for $connection"
         try {
-            OracleConnection nativeConnection =  connection.extractOracleConnection()
-            if(nativeConnection.isProxySession()) {
+            OracleConnection nativeConnection = connection.extractOracleConnection()
+            if (nativeConnection.isProxySession()) {
                 nativeConnection.close(OracleConnection.PROXY_SESSION)
             }
         } finally {
-           log.trace "${super.toString()} will close it's underlying connection: $connection}"
-           connection?.underlyingConnection.close()
+            log.trace "${super.toString()} will close it's underlying connection: $connection}"
+            connection?.underlyingConnection.close()
         }
     }
     // Note: This method should be used only for initial authentication, and for testing purposes.
@@ -263,10 +262,10 @@ public class BannerDS implements DataSource {
      * @param identifer the identifier to set
      * */
     public void setIdentifier(conn, identifier) {
-        if (log.isTraceEnabled())  {
-        log.trace "BannerConnection.setIdentifier will execute 'dbms_session.set_identifier' using identifer '$identifier' for '$conn'"
-        Sql db = new Sql(conn)
-        db.call("{call dbms_session.set_identifier(?)}", [identifier])
+        if (log.isTraceEnabled()) {
+            log.trace "BannerConnection.setIdentifier will execute 'dbms_session.set_identifier' using identifer '$identifier' for '$conn'"
+            Sql db = new Sql(conn)
+            db.call("{call dbms_session.set_identifier(?)}", [identifier])
         }
     }
 
@@ -276,11 +275,11 @@ public class BannerDS implements DataSource {
      * @param conn the connection upon which to clear the dbms session identifer
      * */
     public void clearIdentifer(conn) {
-       if (log.isTraceEnabled())  {
-        log.trace "BannerConnection.clearIdentifier will execute 'dbms_session.set_identifier' using a null value, for '$conn'"
-        Sql db = new Sql(conn)
-        db.call("{call dbms_session.set_identifier( NULL )}")
-       }
+        if (log.isTraceEnabled()) {
+            log.trace "BannerConnection.clearIdentifier will execute 'dbms_session.set_identifier' using a null value, for '$conn'"
+            Sql db = new Sql(conn)
+            db.call("{call dbms_session.set_identifier( NULL )}")
+        }
     }
 
     // note: This method would ideally be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session
@@ -292,7 +291,7 @@ public class BannerDS implements DataSource {
      * @param action the 'action' to set, which will be NULL if not provided
      * */
     public void setDbmsApplicationInfo(conn, module = null, action = null) {
-        if (log.isTraceEnabled())  {
+        if (log.isTraceEnabled()) {
             String mod = module ?: (FormContext.get() ? FormContext.get()[0] : null) // FormContext returns a list, but we'll just use the first entry
             log.trace "BannerConnection.setDbmsApplicationInfo will call Oracle 'dbms_application_info.set_module' using module = '$mod' and action = '$action' for '$conn'"
 
@@ -308,10 +307,10 @@ public class BannerDS implements DataSource {
      * @param conn the connection upon which to clear DBMS application info
      * */
     public void clearDbmsApplicationInfo(conn) {
-        if (log.isTraceEnabled())  {
-        log.trace "BannerConnection.clearDbmsApplicationInfo will call Oracle 'dbms_application_info.set_module' with null values, for '$conn'"
-        Sql db = new Sql(conn)
-        db.call "{call dbms_application_info.set_module( NULL,NULL )}"
+        if (log.isTraceEnabled()) {
+            log.trace "BannerConnection.clearDbmsApplicationInfo will call Oracle 'dbms_application_info.set_module' with null values, for '$conn'"
+            Sql db = new Sql(conn)
+            db.call "{call dbms_application_info.set_module( NULL,NULL )}"
         }
         // Note: Don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
     }
@@ -425,7 +424,7 @@ public class BannerDS implements DataSource {
         applicableAuthorities
     }
 
-    private setRoleSSB (Connection conn) {
+    private setRoleSSB(Connection conn) {
         def rolePassword
         def roleName = "BAN_DEFAULT_M"
         Sql sql = new Sql(conn)
@@ -446,7 +445,7 @@ public class BannerDS implements DataSource {
         try {
             log.trace "BannerDS.setRoles - will unlock role(s) for the connection proxied for ${user?.oracleUserName}"
             applicableAuthorities?.each { auth ->
-                if(!unlockedRoles."${auth.roleName}") {
+                if (!unlockedRoles."${auth.roleName}") {
                     unlockRole(oconn, (BannerGrantedAuthority) auth, user)
                     unlockedRoles.put(auth.roleName, true)
                 }
@@ -470,10 +469,10 @@ public class BannerDS implements DataSource {
          * password fetching since loading role password was very expensive. We are also fetching the role password
          * only once for a role name. This password is stored inside a Map in the BannerUser session object
          */
-        if(bannerAuth.bannerPassword == null) {
+        if (bannerAuth.bannerPassword == null) {
             def rolePassword = user.rolePass."${bannerAuth.roleName}"
-            if(rolePassword == null) {
-                Sql sql = new Sql( conn )
+            if (rolePassword == null) {
+                Sql sql = new Sql(conn)
                 sql.call("{$Sql.VARCHAR = call g\$_security.G\$_GET_ROLE_PASSWORD_FNC(${bannerAuth.roleName},${user?.oracleUserName?.toUpperCase()})}") {pwd -> rolePassword = pwd }
                 user.rolePass."${bannerAuth.roleName}" = rolePassword
             }
@@ -573,26 +572,25 @@ public class BannerDS implements DataSource {
         multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
 
         if (multiEntityProcessingService?.isMEP(conn)) {
-                if (!RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")) {
-                  log.error "The Mep Code must be provided when running in multi institution context"
-                  conn?.close()
-                  throw new RuntimeException("The Mep Code must be provided when running in multi institution context")
-                }
+            if (!RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")) {
+                log.error "The Mep Code must be provided when running in multi institution context"
+                conn?.close()
+                throw new RuntimeException("The Mep Code must be provided when running in multi institution context")
+            }
 
-          def desc =  multiEntityProcessingService?.getMepDescription(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
+            def desc = multiEntityProcessingService?.getMepDescription(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
 
-          if(!desc){
-             log.error "Mep Code is invalid"
-             conn?.close()
-             throw new RuntimeException("Mep Code is invalid")
-          }else{
-              RequestContextHolder.currentRequestAttributes()?.request?.session.setAttribute("ssbMepDesc",desc)
-              multiEntityProcessingService?.setHomeContext(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
-              multiEntityProcessingService?.setProcessContext(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
-          }
+            if (!desc) {
+                log.error "Mep Code is invalid"
+                conn?.close()
+                throw new RuntimeException("Mep Code is invalid")
+            } else {
+                RequestContextHolder.currentRequestAttributes()?.request?.session.setAttribute("ssbMepDesc", desc)
+                multiEntityProcessingService?.setHomeContext(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
+                multiEntityProcessingService?.setProcessContext(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
+            }
         }
     }
-
 
 
 }
