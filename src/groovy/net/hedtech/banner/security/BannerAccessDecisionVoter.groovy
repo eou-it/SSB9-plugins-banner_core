@@ -193,7 +193,8 @@ class BannerAccessDecisionVoter extends RoleVoter {
         def user = authentication.user
         List applicableAuthorities = []
         List<GrantedAuthority> authoritiesForForm
-        FormContext.get()?.each { form ->
+        def forms = new ArrayList(FormContext.get())
+        forms.each { form ->
             authoritiesForForm = user.getAuthoritiesFor(form)
             authoritiesForForm.each { applicableAuthorities << it }
         }

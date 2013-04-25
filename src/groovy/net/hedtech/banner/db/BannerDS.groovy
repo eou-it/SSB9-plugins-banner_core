@@ -156,7 +156,7 @@ public class BannerDS implements DataSource {
                 log.info("BannerDS.validateConnection connection $conn could not be validated from session $e")
                 return null
             }
-            def currentFormContext =  FormContext.get()
+            def currentFormContext =  new ArrayList(FormContext.get())
             if (currentFormContext as Set != formContext as Set ) {
                 log.debug "BannerDS.getConnection()  is using ${conn} from session cache"
                 List applicableAuthorities = extractApplicableAuthorities(user)
@@ -188,17 +188,17 @@ public class BannerDS implements DataSource {
         unlockedRoles
     }
 
-    public void removeConnection(Connection connection) {
+    public void removeConnection(BannerConnection connection) {
         log.trace "${super.toString()}.removeConnection() invoked"
         log.trace "${super.toString()}.removeConnection() will remove for $connection"
         try {
-            OracleConnection nativeConnection =  nativeJdbcExtractor.getNativeConnection( connection )
+            OracleConnection nativeConnection =  connection.extractOracleConnection()
             if(nativeConnection.isProxySession()) {
                 nativeConnection.close(OracleConnection.PROXY_SESSION)
             }
         } finally {
            log.trace "${super.toString()} will close it's underlying connection: $connection}"
-            connection?.close()
+           connection?.underlyingConnection.close()
         }
     }
     // Note: This method should be used only for initial authentication, and for testing purposes.
@@ -417,7 +417,8 @@ public class BannerDS implements DataSource {
     private List<GrantedAuthority> extractApplicableAuthorities(BannerUser user) {
         List<GrantedAuthority> applicableAuthorities = []
         List<GrantedAuthority> authoritiesForForm
-        FormContext.get()?.each { form ->
+        def forms = new ArrayList(FormContext.get())
+        forms?.each { form ->
             authoritiesForForm = user.getAuthoritiesFor(form)
             authoritiesForForm.each { applicableAuthorities << it }
         }
