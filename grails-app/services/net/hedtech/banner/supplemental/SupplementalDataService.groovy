@@ -49,7 +49,7 @@ class SupplementalDataService {
         supplementalDataConfiguration."${modelClass.name}"
     }
 
-
+    /*
     def init() {
         Map x = sessionFactory.getAllClassMetadata()
         for (Iterator i = x.values().iterator(); i.hasNext();) {
@@ -66,6 +66,65 @@ class SupplementalDataService {
         }
         log.info "SupplementalDataService initialization complete."
     }
+    */
+    def init() {
+
+        def sdeDataView = []
+
+        Sql db
+
+        try {
+
+            Connection conn = (dataSource as BannerDataSource).getUnproxiedConnection() as BannerConnection
+            db = new Sql(conn)
+
+            String rolePswd = ""
+
+            db.call("{$Sql.VARCHAR = call g\$_security.g\$_get_role_password_fnc('BAN_DEFAULT_M' ,'SEED-DATA')}") {role -> rolePswd = role }
+            String roleM = """SET ROLE "BAN_DEFAULT_M" IDENTIFIED BY "${rolePswd}" """
+            db.execute(roleM)
+            Connection sessionConnection = db.getConnection()
+
+            def session = sessionFactory.openSession(sessionConnection);
+            def resultSet = session.createSQLQuery("SELECT  gorsdam_table_name, gorsdam_attr_name, gorsdam_attr_reqd_ind, gorsdam_attr_data_type FROM gorsdam ORDER BY gorsdam_table_name  ").list()
+
+            resultSet.each() {
+                def sdeDataModel = [:]
+                sdeDataModel."tableName" = "${it[0]}"
+                sdeDataModel."attrName" = "${it[1]}"
+                sdeDataModel."attrReqIdnd" = "${it[2]}"
+                sdeDataModel."dataType" = "${it[3]}"
+                sdeDataView << sdeDataModel
+            }
+
+            Map x = sessionFactory.getAllClassMetadata()
+            for (Iterator i = x.values().iterator(); i.hasNext();) {
+                SingleTableEntityPersister y = (SingleTableEntityPersister) i.next();
+
+                String underlyingTableName = SupplementalDataUtils.getTableName(y.getTableName().toUpperCase())
+
+                if (sdeDataView.find{ it.tableName == underlyingTableName}) {
+
+                    tableToDomainMap[underlyingTableName] = y.getName()
+
+                    setSDE(y.getName(), underlyingTableName, sdeDataView)
+
+                }
+                // for (int j = 0; j < y.getPropertyNames().length; j++) {
+                //     println( " " + y.getPropertyNames()[ j ] + " -> " + (y.getPropertyColumnNames( j ).length > 0 ? y.getPropertyColumnNames( j )[ 0 ] : ""))
+                // }
+            }
+
+        } catch (e) {
+            log.error("ERROR: Could not establish role set up to the database. ${e.message}")
+            throw e
+        } finally {
+            db?.close()
+        }
+
+        log.info "SupplementalDataService initialization complete."
+    }
+
 
     /**
      * Resets the sde attributes if they are altered in run time
@@ -168,7 +227,7 @@ class SupplementalDataService {
         model.supplementalProperties = supportedProperties
     }
 
-
+    /*
     private setSDE(entityName, tableName) {
 
         boolean found = false
@@ -206,6 +265,29 @@ class SupplementalDataService {
         } finally {
             db?.close()
         }
+    }
+    */
+
+    private setSDE(entityName, tableName, list) {
+
+           boolean found = false
+               def resultSet = list.findAll { it.tableName == tableName }
+               def model = [:]
+               def properties = [:]
+               def sde = [:]
+
+               resultSet.each() {
+                   found = true
+                   properties.required = it.attrReqIdnd
+                   def attrName = it.attrName
+                   model."${attrName}" = properties
+               }
+
+               if (found) {
+                   sde."${entityName}" = model
+                   appendSupplementalDataConfiguration(sde)
+                   log.debug "SDE Table: ${tableName}"
+               }
     }
 
     private resetSDE(entityName, tableName) {
