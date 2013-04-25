@@ -14,6 +14,7 @@ import java.sql.SQLException
 import java.sql.CallableStatement
 
 import oracle.jdbc.OracleConnection
+import grails.util.Environment
 
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.Logger
@@ -94,11 +95,14 @@ class BannerConnection {
     public void close() throws SQLException {
         try {
             log.trace "BannerConnection ${super.toString()}.close() invoked"
-//            bannerDataSource.closeProxySession( this, proxyUserName )
-//            bannerDataSource.clearIdentifer( this )
+            if (Environment.current == Environment.TEST) {
+                bannerDataSource.closeProxySession( this, proxyUserName )
+                bannerDataSource.clearIdentifer( this )
+            }
+
         } finally {            
             log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
-            if (!proxyUserName)  {
+            if (!proxyUserName || (Environment.current == Environment.TEST))  {
                 log.trace "${super.toString()} closing $underlyingConnection}"
                 underlyingConnection?.close()
             }

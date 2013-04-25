@@ -11,6 +11,7 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 import javax.servlet.http.HttpSession
 import javax.servlet.http.HttpSessionEvent
 import javax.servlet.http.HttpSessionListener
+import grails.util.Environment
 
 class DbConnectionCacheSessionListener implements HttpSessionListener {
 
@@ -29,7 +30,7 @@ class DbConnectionCacheSessionListener implements HttpSessionListener {
         // Ensure that the service is called only when the session contains a connection
         // Login causes the earlier established session to be destroyed and then no request
         // is avaiable and HTTPSerice sessionDestroyed throws an Exception
-        if(session.getAttribute("cachedConnection"))
+        if(session.getAttribute("cachedConnection") && (Environment.current != Environment.TEST))
             getHttpSessionService().sessionDestroyed(session)
     }
 

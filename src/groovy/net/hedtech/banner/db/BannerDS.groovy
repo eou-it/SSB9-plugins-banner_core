@@ -28,6 +28,7 @@ import net.hedtech.banner.mep.MultiEntityProcessingService
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.springframework.context.ApplicationContext
 
+import grails.util.Environment
 import org.springframework.web.context.request.RequestContextHolder
 import net.hedtech.banner.security.BannerUser
 
@@ -93,10 +94,11 @@ public class BannerDS implements DataSource {
                 setMep(conn, user)
                 setFGAC(conn)
                 bannerConnection = new BannerConnection(conn, user?.username, this)
-                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("bannerRoles", roles)
-                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("cachedConnection", bannerConnection)
-                RequestContextHolder.currentRequestAttributes().request.session.setAttribute("formContext", FormContext.get())
-
+                if (Environment.current != Environment.TEST) {
+                    RequestContextHolder.currentRequestAttributes().request.session.setAttribute("bannerRoles", roles)
+                    RequestContextHolder.currentRequestAttributes().request.session.setAttribute("cachedConnection", bannerConnection)
+                    RequestContextHolder.currentRequestAttributes().request.session.setAttribute("formContext", FormContext.get())
+                }
             }
         }
         else {
@@ -139,14 +141,23 @@ public class BannerDS implements DataSource {
 
 
     private Connection getCachedConnection(BannerUser user) {
-        BannerConnection bannerConnection = RequestContextHolder?.currentRequestAttributes()?.request?.session.getAttribute("cachedConnection")
-        def formContext = new ArrayList(RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("formContext"))
 
+        BannerConnection bannerConnection
+        def formContext
+        if (Environment.current == Environment.TEST) {
+            bannerConnection = null;
+            formContext = null
+
+        } else {
+            bannerConnection = RequestContextHolder?.currentRequestAttributes()?.request?.session.getAttribute("cachedConnection")
+            formContext = new ArrayList(RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("formContext"))
+        }
         String[] userRoles
 
         if (bannerConnection) {
             //Validate Connection
             Connection conn = bannerConnection.underlyingConnection
+            def roles
             Sql sql = new Sql(conn)
             try {
                 String stmt = "select 1 from dual" as String
@@ -160,8 +171,10 @@ public class BannerDS implements DataSource {
             if (currentFormContext as Set != formContext as Set) {
                 log.debug "BannerDS.getConnection()  is using ${conn} from session cache"
                 List applicableAuthorities = extractApplicableAuthorities(user)
+
                 userRoles = getUserRoles(user, applicableAuthorities)?.keySet() as String[]
-                def roles = RequestContextHolder.currentRequestAttributes().request.session.getAttribute("BANNER_ROLES")
+                if (Environment.current != Environment.TEST)
+                    roles = RequestContextHolder.currentRequestAttributes().request.session.getAttribute("BANNER_ROLES")
                 if (roles as Set == userRoles as Set) {
                     setFGAC(conn)
                     log.debug "BannerDS.getConnection()  has same roles ${conn} from session cache"
@@ -172,7 +185,6 @@ public class BannerDS implements DataSource {
                 }
             }
         }
-
         bannerConnection
     }
 
