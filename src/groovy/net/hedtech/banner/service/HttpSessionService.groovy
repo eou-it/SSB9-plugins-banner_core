@@ -20,7 +20,6 @@ class HttpSessionService {
     def sessionDestroyed(HttpSession session) {
         log.trace("Session destroyed: " + session.id)
         closeDBConnection()
-        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("cachedConnection", null)
     }
 
     def closeDBConnection() {

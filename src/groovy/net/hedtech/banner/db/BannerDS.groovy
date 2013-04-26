@@ -142,15 +142,12 @@ public class BannerDS implements DataSource {
 
     private Connection getCachedConnection(BannerUser user) {
 
-        BannerConnection bannerConnection
-        def formContext
-        if (Environment.current == Environment.TEST) {
-            bannerConnection = null;
-            formContext = null
-
-        } else {
+        BannerConnection bannerConnection = null
+        def formContext = null
+        if (Environment.current != Environment.TEST) {
             bannerConnection = RequestContextHolder?.currentRequestAttributes()?.request?.session.getAttribute("cachedConnection")
-            formContext = new ArrayList(RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("formContext"))
+            if (RequestContextHolder.currentRequestAttributes().request.session.getAttribute("formContext"))
+                formContext = new ArrayList(RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("formContext"))
         }
         String[] userRoles
 
@@ -173,7 +170,7 @@ public class BannerDS implements DataSource {
                 List applicableAuthorities = extractApplicableAuthorities(user)
 
                 userRoles = getUserRoles(user, applicableAuthorities)?.keySet() as String[]
-                if (Environment.current != Environment.TEST)
+
                     roles = RequestContextHolder.currentRequestAttributes().request.session.getAttribute("BANNER_ROLES")
                 if (roles as Set == userRoles as Set) {
                     setFGAC(conn)
@@ -428,7 +425,9 @@ public class BannerDS implements DataSource {
     private List<GrantedAuthority> extractApplicableAuthorities(BannerUser user) {
         List<GrantedAuthority> applicableAuthorities = []
         List<GrantedAuthority> authoritiesForForm
-        def forms = new ArrayList(FormContext.get())
+        def forms
+        if (FormContext.get())
+            forms = new ArrayList(FormContext.get())
         forms?.each { form ->
             authoritiesForForm = user.getAuthoritiesFor(form)
             authoritiesForForm.each { applicableAuthorities << it }
