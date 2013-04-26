@@ -182,7 +182,7 @@ class SupplementalDataService {
     }
 
     public void markDomainForSupplementalData(model) {
-        supplementalDataPersistenceManager.markDomainForSupplementalData(model)
+        supplementalDataPersistenceManager?.markDomainForSupplementalData(model)
     }
 
     public boolean hasSde(id) {
