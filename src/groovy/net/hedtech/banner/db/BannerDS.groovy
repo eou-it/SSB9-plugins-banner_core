@@ -173,8 +173,8 @@ public class BannerDS implements DataSource {
                 List applicableAuthorities = extractApplicableAuthorities(user)
 
                 userRoles = getUserRoles(user, applicableAuthorities)?.keySet() as String[]
-
-                    roles = session.getAttribute("BANNER_ROLES")
+                def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
+                roles = session.getAttribute("BANNER_ROLES")
                 if (roles as Set == userRoles as Set) {
                     setFGAC(conn)
                     log.debug "BannerDS.getConnection()  has same roles ${conn} from session cache"

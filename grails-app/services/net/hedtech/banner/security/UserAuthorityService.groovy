@@ -132,6 +132,19 @@ class UserAuthorityService {
         return filterAuthoritiesForFormNames(authentication.principal.authorities, formNames)
     }
 
+    public static List<GrantedAuthority> filterAuthorities(BannerUser user) {
+        List<GrantedAuthority> applicableAuthorities = []
+        List<GrantedAuthority> authoritiesForForm
+        def forms
+        if (FormContext.get())
+            forms = new ArrayList(FormContext.get())
+        forms?.each { form ->
+            authoritiesForForm = user.getAuthoritiesFor(form)
+            authoritiesForForm.each { applicableAuthorities << it }
+        }
+        applicableAuthorities
+    }
+
     /**
      * Find matching authoritiese for each of the form names.
      *
