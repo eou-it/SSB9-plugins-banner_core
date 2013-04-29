@@ -119,7 +119,27 @@ class CriteriaOperatorFactory {
                                             operator:"in",
                                             key:"in",
                                             dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} IN (:${parammap.key}) "},
-                                            formatvalue : {value -> value }]
+                                            formatvalue : {value -> value }],
+                                datetimeequals: [label: "net.hedtech.banner.ui.zk.search.advancedSearch.operator.equals",
+                                            operator: "=",
+                                            key: "dateequals",
+                                            dynamicQuery: {tableIdentifier, parammap -> " and to_timestamp(TO_CHAR($tableIdentifier.${parammap.binding},'MM-DD-YYYY HH24:MI:SS'), 'MM-DD-YYYY HH24:MI:SS') = to_timestamp(TO_CHAR(:${parammap.key},'MM-DD-YYYY HH24:MI:SS'), 'MM-DD-YYYY HH24:MI:SS') "},
+                                            formatvalue: {value -> value }],
+                                dateequals: [label: "net.hedtech.banner.ui.zk.search.advancedSearch.operator.equals",
+                                            operator: "=",
+                                            key: "dateequalsIgonreTime",
+                                            dynamicQuery: {tableIdentifier, parammap -> " and trunc($tableIdentifier.${parammap.binding}) = trunc(:${parammap.key}) "},
+                                            formatvalue: {value -> value }],
+                                datebetween:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.between",
+                                            operator:"like",
+                                            key:"between",
+                                            dynamicQuery: {tableIdentifier, parammap -> " and (trunc($tableIdentifier.${parammap.binding}) between trunc(:${parammap.key}) and trunc(:${parammap.key}_and)) " },
+                                            formatvalue : {value -> value }],
+                                datetimebetween: [label: "net.hedtech.banner.ui.zk.search.advancedSearch.operator.equals",
+                                                       operator: "=",
+                                                       key: "dateequals",
+                                                       dynamicQuery: {tableIdentifier, parammap -> " and to_timestamp(TO_CHAR($tableIdentifier.${parammap.binding},'MM-DD-YYYY HH24:MI:SS'), 'MM-DD-YYYY HH24:MI:SS') between to_timestamp(TO_CHAR(:${parammap.key},'MM-DD-YYYY HH24:MI:SS'), 'MM-DD-YYYY HH24:MI:SS') and to_timestamp(TO_CHAR(:${parammap.key}_and,'MM-DD-YYYY HH24:MI:SS'), 'MM-DD-YYYY HH24:MI:SS') "},
+                                                       formatvalue: {value -> value }],
                               ]
 
         static final operatorGroups = [alphanumeric:[
