@@ -46,12 +46,12 @@ class BannerCoreGrailsPlugin {
     String version = "2.4.1"
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "1.3.7 > *"
+    def grailsVersion = "2.2.1 > *"
 
     // the other plugins this plugin depends on
-    def dependsOn = ['springSecurityCore': '1.0.1',
-//                      'resources': '1.0.2',
-    ]
+    def dependsOn = [ 'springSecurityCore': '1.2.7.3',
+//                      'resources': '1.1.6',
+                    ]
 
     // resources that are excluded from plugin packaging
     def pluginExcludes = ["grails-app/views/error.gsp"]
@@ -149,8 +149,6 @@ class BannerCoreGrailsPlugin {
         supplementalDataPersistenceManager(SupplementalDataPersistenceManager) {
             dataSource = ref(dataSource)
             sessionFactory = ref(sessionFactory)
-            supplementalDataService = ref(supplementalDataService)
-
         }
 
         supplementalDataService(SupplementalDataService) { bean ->

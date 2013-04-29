@@ -2,6 +2,7 @@
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
+grails.servlet.version = "2.5"
 grails.project.class.dir        = "target/classes"
 grails.project.test.class.dir   = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
@@ -18,27 +19,35 @@ grails.project.dependency.resolution = {
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
 
     plugins {
+        compile ":hibernate:$grailsVersion"
+        compile ":spring-security-core:1.2.7.3"
+        compile ':functional-test:1.2.7'
+        compile ':resources:1.1.6'
     }
 
     distribution = {
     }
 
     repositories {
-    if (System.properties['PROXY_SERVER_NAME']) {
-        mavenRepo "${System.properties['PROXY_SERVER_NAME']}"
-    } else
-    {
-        grailsPlugins()
-        grailsHome()
-        grailsCentral()
-
-        mavenCentral()
-        mavenRepo "http://repository.jboss.org/maven2/"
-        mavenRepo "http://repository.codehaus.org"
-	}
+        if (System.properties['PROXY_SERVER_NAME']) {
+            mavenRepo "${System.properties['PROXY_SERVER_NAME']}"
+        } else
+        {
+            grailsPlugins()
+            grailsHome()
+            grailsCentral()
+            mavenCentral()
+            mavenRepo "http://repository.jboss.org/maven2/"
+            mavenRepo "http://repository.codehaus.org"
+        }
     }
 
     dependencies {
     }
 
 }
+
+// CodeNarc rulesets
+codenarc.ruleSetFiles="rulesets/banner.groovy"
+codenarc.reportName="target/CodeNarcReport.html"
+codenarc.propertiesFile="grails-app/conf/codenarc.properties"

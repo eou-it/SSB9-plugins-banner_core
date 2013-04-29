@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 import grails.converters.JSON
 
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
@@ -110,7 +110,7 @@ class LoginController {
 
 		def username = session[UsernamePasswordAuthenticationFilter.SPRING_SECURITY_LAST_USERNAME_KEY]
 		def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
-		
+
 		String msg = getMessageFor( exception )
 
 		if (springSecurityService.isAjax( request )) {
@@ -121,13 +121,12 @@ class LoginController {
 			redirect action: auth, params: params
 		}
 	}
-	
-	
+
+
 	/**
 	 * Returns a localized message appropriate for the supplied exception.
 	 **/
-	def getMessageFor( Throwable exception ) {
-	    
+	private def getMessageFor( Throwable exception ) {
 	    def msg = ''
 	    if (exception) {
             if (exception instanceof AccountExpiredException) {
@@ -151,7 +150,7 @@ class LoginController {
         }
         msg
 	}
-	
+
 
 	/**
 	 * The Ajax success redirect url.
@@ -159,7 +158,7 @@ class LoginController {
 	def ajaxSuccess = {
 		render([success: true, username: springSecurityService.authentication.name] as JSON)
 	}
-	
+
 
 	/**
 	 * The Ajax denied redirect url.

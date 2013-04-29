@@ -7,11 +7,11 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title><g:message code="net.hedtech.banner.login.title"/></title>
-    <link rel="shortcut icon" href="${resource(dir:'images',file:'favicon.ico')}" type="image/x-icon"/>
-    <link rel="stylesheet" href="${resource(dir: 'css', file: 'login.css')}"/>
-<!--<link rel="stylesheet" href="${resource(dir: 'css', file: 'rtl-login.css')}"/>-->
+    <link rel="shortcut icon" href="${resource(plugin: 'bannerCore', dir:'images',file:'favicon.ico')}" type="image/x-icon"/>
+    <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login.css')}"/>
+<!--<link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login.css')}"/>-->
     <g:if test="${message(code: 'default.language.direction')  == 'rtl'}">
-        <link rel="stylesheet" href="${resource(dir: 'css', file: 'rtl-login.css')}"/>
+        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login.css')}"/>
     </g:if>
 <!--[if IE 7]>
 	<link href="fix-ie7.css" rel="stylesheet" type="text/css" />
@@ -108,6 +108,5 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
          form.submit();
     }
 </script>
-
 </body>
 </html>

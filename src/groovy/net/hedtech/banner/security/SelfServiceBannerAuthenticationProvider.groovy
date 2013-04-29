@@ -33,7 +33,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 
-import org.jasig.cas.client.util.AbstractCasFilter
+// import org.jasig.cas.client.util.AbstractCasFilter
 
 import org.springframework.context.ApplicationContext
 

@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.controllers
 
 import net.hedtech.banner.exceptions.*
@@ -108,7 +108,7 @@ class RestfulControllerMixin {
     def resourceRepresentationRegistry   // note: the actions will set this when needed, as we cannot inject directly into a mixin
 
     @Lazy // note: Lazy needed here to ensure 'this' refers to the controller we're mixed into
-    def log = Logger.getLogger( this.getClass() ) 
+    def log = Logger.getLogger( this.getClass() )
 
 
     // wrap the 'message' invocation within a closure, so it can be passed into an ApplicationException to localize error messages
@@ -118,7 +118,8 @@ class RestfulControllerMixin {
 
 
     Class getDomainClass() {
-        domainClass = domainClass ?: ApplicationHolder.getApplication().getClassForName( this.class.name.substring( 0, this.class.name.length() - "Controller".length() ) )
+        def domainClassName = this.class.name.substring( 0, this.class.name.length() - "Controller".length() )
+        domainClass = domainClass ?: Class.forName( domainClassName, true, Thread.currentThread().getContextClassLoader() )
         domainClass
     }
 
