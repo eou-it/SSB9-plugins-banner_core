@@ -78,6 +78,7 @@ public class BannerDS implements DataSource {
             setMepSsb(conn)
 
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
+            bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
         else if ((user instanceof BannerUser && user?.oracleUserName) && shouldProxy()) {
@@ -234,7 +235,7 @@ public class BannerDS implements DataSource {
 
         Connection conn = underlyingSsbDataSource.getConnection()
         new BannerConnection(conn, null, this)  // Note that while an IDE may not like this, the delegate supports this type coersion
-        setRoleSSB(conn)
+        //setRoleSSB(conn)
         conn
     }
 
