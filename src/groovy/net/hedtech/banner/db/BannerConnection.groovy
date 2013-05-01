@@ -94,13 +94,13 @@ class BannerConnection {
         try {
             log.trace "BannerConnection ${super.toString()}.close() invoked"
             if (Environment.current == Environment.TEST || !isWebRequest()) {
-                bannerDataSource.closeProxySession(this, proxyUserName)
-                bannerDataSource.clearIdentifer(this)
+                bannerDataSource.closeProxySession( this, proxyUserName )
+                bannerDataSource.clearIdentifer( this )
             }
 
-        } finally {
+        } finally {            
             log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
-            if (!proxyUserName || (Environment.current == Environment.TEST) || !isWebRequest()) {
+            if (!proxyUserName || (proxyUserName == "anonymousUser") || (Environment.current == Environment.TEST))  {
                 log.trace "${super.toString()} closing $underlyingConnection}"
                 underlyingConnection?.close()
             }
