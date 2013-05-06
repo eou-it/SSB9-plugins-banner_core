@@ -3,13 +3,12 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
+import org.springframework.security.core.GrantedAuthority
 import groovy.sql.Sql
 import java.sql.SQLException
-import java.util.regex.Pattern
 import javax.sql.DataSource
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
-import org.springframework.security.core.GrantedAuthority
 
 /**
  * A service used to determine and manipulate the user authorities
@@ -27,20 +26,13 @@ class UserAuthorityService {
     private final Logger log = Logger.getLogger(getClass())
     private static final Logger staticLogger = Logger.getLogger(UserAuthorityService.class)
 
-    public static final def READONLY_PATTERN =  (~/DEFAULT_Q/ as Pattern)
-    public static final def READ_WRITE_PATTERN = (~/DEFAULT_M/ as Pattern)
-
-    public static final String READ_ONLY_ACCESS = "READ_ONLY"
-    public static final String READ_WRITE_ACCESS = "READ_WRITE"
-    public static final String UNDEFINED_ACCESS = "UNDEFINED"
-
     /**
      *
      * @param authentication
      * @param dataSource
      * @return
      */
-    public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, DataSource dataSource ) {
+    public static Collection<BannerGrantedAuthority> determineAuthorities( Map authenticationResults, DataSource dataSource ) {
 
         def conn
         def db
@@ -71,9 +63,9 @@ class UserAuthorityService {
      * @param db
      * @return
      */
-    private static Collection<GrantedAuthority> determineAuthorities (Map authenticationResults, Sql db) {
+    private static Collection<BannerGrantedAuthority> determineAuthorities (Map authenticationResults, Sql db) {
 
-        def authorities = [] as Collection<GrantedAuthority>
+        def authorities = [] as Collection<BannerGrantedAuthority>
 
         if (!authenticationResults['oracleUserName']) {
             return authorities   // empty list
@@ -94,7 +86,7 @@ class UserAuthorityService {
             }
         } catch (SQLException e) {
             staticLogger.error "UserAuthorityService not able to determine Authorities for user ${authenticationResults['oracleUserName']} due to exception $e.message"
-            return new ArrayList<GrantedAuthority>()
+            return new ArrayList<BannerGrantedAuthority>()
         }
         staticLogger.trace "UserAuthorityService.determineAuthorities is returning ${authorities?.size()} authorities. "
         authorities
@@ -108,7 +100,7 @@ class UserAuthorityService {
      * @param grantedAuthorities
      * @return
      */
-    public static def filterAuthorities (List<GrantedAuthority> grantedAuthorities) {
+    public static def filterAuthorities (List<BannerGrantedAuthority> grantedAuthorities) {
         if (!grantedAuthorities) {
             return []
         }
@@ -132,9 +124,9 @@ class UserAuthorityService {
         return filterAuthoritiesForFormNames(authentication.principal.authorities, formNames)
     }
 
-    public static List<GrantedAuthority> filterAuthorities(BannerUser user) {
-        List<GrantedAuthority> applicableAuthorities = []
-        List<GrantedAuthority> authoritiesForForm
+    public static List<BannerGrantedAuthority> filterAuthorities(BannerUser user) {
+        List<BannerGrantedAuthority> applicableAuthorities = []
+        List<BannerGrantedAuthority> authoritiesForForm
         def forms
         if (FormContext.get())
             forms = new ArrayList(FormContext.get())
@@ -155,7 +147,8 @@ class UserAuthorityService {
     private static List filterAuthoritiesForFormNames(def grantedAuthorities, List formNames) {
         List applicableAuthorities = grantedAuthorities.asList().grep { authorityHolder ->
             formNames.find { formName ->
-                authorityHolder.authority ==~ getACEGICompatibleRolePattern(formName)
+                final BannerGrantedAuthority authority = authorityHolder?.authority
+                authority?.checkIfCompatibleWithACEGIRolePattern(formName)
             }
         }
         staticLogger.debug "Given FormContext of ${formNames?.join(',')}, the user's applicable authorities are $applicableAuthorities"
@@ -172,13 +165,9 @@ class UserAuthorityService {
      * @param formName
      * @return  String value either of [READ_ONLY_ACCESS, READ_WRITE_ACCESS, UNDEFINED_ACCESS]
      */
-    public static def resolveAuthority (formName) {
-        def authority = getAuthorityForAnyPattern(formName)
-        if (authority) {
-            return (isReadonlyPattern(authority))? READ_ONLY_ACCESS : ((isReadWritePattern(authority))?READ_WRITE_ACCESS :UNDEFINED_ACCESS)
-        } else {
-            return UNDEFINED_ACCESS
-        }
+    public static AccessPrivilegeType resolveAuthority (formName) {
+        BannerGrantedAuthority authority = getAuthorityForAnyPattern(formName)
+        authority?.getAccessPrivilegeType()
     }
 
     /**
@@ -188,7 +177,7 @@ class UserAuthorityService {
      * @param formName
      * @return
      */
-    public static GrantedAuthority getAuthorityForAnyPattern(formName) {
+    public static BannerGrantedAuthority getAuthorityForAnyPattern(formName) {
         return getAuthority(formName, [(READONLY_PATTERN), (READ_WRITE_PATTERN)])
     }
 
@@ -201,26 +190,13 @@ class UserAuthorityService {
      * @param formName
      * @return
      */
-    public static def getAuthority(String formName, List patternList) { // should get authorities from SpringSecurityUtils.getPrincipalAuthorities()
+    public static BannerGrantedAuthority getAuthority(String formName, List patternList) { // should get authorities from SpringSecurityUtils.getPrincipalAuthorities()
         SpringSecurityUtils.getPrincipalAuthorities().find { authority ->
             if (authority) {
                 authority.objectName == formName && patternList.any{pattern -> pattern.matcher(authority.roleName)}
             }
         }
     }
-
-    public static boolean isReadWriteAccessLevel(String userAccessLevel) {
-        return userAccessLevel == READ_WRITE_ACCESS
-    }
-
-    public static boolean isReadonlyAccessLevel(String userAccessLevel) {
-        return userAccessLevel == READ_ONLY_ACCESS
-    }
-
-    public static boolean isUndefinedAccessLevel(String userAccessLevel) {
-        return userAccessLevel == UNDEFINED_ACCESS
-    }
-
 
     /**
      * Get the authority for given form name for a given pattern.
@@ -234,56 +210,18 @@ class UserAuthorityService {
     }
 
     /**
-     * Get the ACEGI friendly role pattern("ROLE_<formName>_<roleName>") for the form name.
-     *
-     * @param formName
-     * @return
-     */
-    private static def getACEGICompatibleRolePattern(String formName) {
-        /\w+_${formName}_\w+/
-    }
-
-    /**
-     * checks if the given authority is a read-write pattern.
-     *
-     * @param authority
-     * @return
-     */
-    public static boolean isReadWritePattern(GrantedAuthority authority) {
-        (authority)?READ_WRITE_PATTERN.matcher(authority.roleName):false
-    }
-
-    /**
-     * checks if the given authority is a readonly pattern.
-     *
-     * @param authority
-     * @return
-     */
-    public static boolean isReadonlyPattern(GrantedAuthority authority) {
-        (authority)?READONLY_PATTERN.matcher(authority.roleName):false
-    }
-
-    /**
-     * checks if the given form is a read-write access.
-     *
-     * @param authority
-     * @return
      */
     public static boolean isReadWritePattern(String formName) {
         def authority = getAuthorityForAnyPattern (formName)
-        (authority)?READ_WRITE_PATTERN.matcher(authority.roleName):false
+        authority?.isReadWriteAccess()
 
     }
 
     /**
-     * checks if the given form has a readonly access.
-     *
-     * @param form name
-     * @return
      */
     public static boolean isReadonlyPattern(String formName) {
-        def authority = getAuthorityForAnyPattern (formName)
-        (authority)?READONLY_PATTERN.matcher(authority.roleName):false
+        BannerGrantedAuthority authority = getAuthorityForAnyPattern (formName)
+        authority?.isReadOnlyAccess()
     }
 
 }

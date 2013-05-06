@@ -50,11 +50,11 @@ class TabLevelSecurityService {
             throw new IllegalArgumentException("Error:- There must be a user signed-in")
         }
 
-        String userAccessLevel = getUserAccessLevel(userName, formName)
+        AccessPrivilegeType accessPrivilegeType = getUserAccessLevel(userName, formName)
 
-        if (! userAuthorityService.isUndefinedAccessLevel(userAccessLevel)) {
+        if (! accessPrivilegeType.UNDEFINED) {
             dbConfiguredTabPrivilegeMap = getDBConfiguredTabSecurityRestrictions (userName, formName)
-            return limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, userAccessLevel)
+            return limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, accessPrivilegeType)
         } else {
             // It is an impossible case. There must be an access level defined for the user to
             // access this form at the time when this method is being invoked.
@@ -70,7 +70,7 @@ class TabLevelSecurityService {
      * @param formName
      * @return
      */
-    private String getUserAccessLevel(String userName, String formName) {
+    private AccessPrivilegeType getUserAccessLevel(String userName, String formName) {
         return userAuthorityService.resolveAuthority(formName)
     }
 
@@ -106,11 +106,11 @@ class TabLevelSecurityService {
      * @param userAccessLevel
      * @return
      */
-    private def limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, userAccessLevel) {
+    private def limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, AccessPrivilegeType userAccessLevel) {
         def revisedTabPrivileges = dbConfiguredTabPrivilegeMap
-        if (userAuthorityService.isReadonlyAccessLevel(userAccessLevel)) {
+        if (userAccessLevel.READONLY) {
             revisedTabPrivileges = lowerFullQueryAccessToReadonlyAccess (dbConfiguredTabPrivilegeMap)
-        } else if (userAuthorityService.isReadWriteAccessLevel(userAccessLevel)) {
+        } else if (userAccessLevel.READWRITE) {
             // no limiting to be done here.
         } else {
             // An impossible case. Form should have an access level set for the user.
