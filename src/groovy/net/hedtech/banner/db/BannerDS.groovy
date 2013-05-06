@@ -78,6 +78,7 @@ public class BannerDS implements DataSource {
             setMepSsb(conn)
 
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
+			bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
         else if ((user instanceof BannerUser && user?.oracleUserName) && shouldProxy()) {
