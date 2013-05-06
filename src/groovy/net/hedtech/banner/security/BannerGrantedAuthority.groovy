@@ -27,8 +27,7 @@ public class BannerGrantedAuthority extends GrantedAuthorityImpl {
 		def authority = "ROLE_${objectName?.toUpperCase()}_${roleName?.toUpperCase()}"
 		new BannerGrantedAuthority( authority, objectName, roleName, bannerPassword )
 	}
-	
-	
+
 	private BannerGrantedAuthority( String authority, String objectName, String roleName, String bannerPassword ) {
 		super( authority )
 		
@@ -67,7 +66,6 @@ public class BannerGrantedAuthority extends GrantedAuthorityImpl {
     private static def getACEGICompatibleRolePattern(String formName) {
         /\w+_${formName}_\w+/
     }
-
 
 }
 
