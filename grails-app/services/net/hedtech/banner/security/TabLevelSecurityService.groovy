@@ -4,7 +4,6 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 package net.hedtech.banner.security
 
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.GrantedAuthority
 
 import groovy.sql.Sql
 import net.hedtech.banner.ListManipulator
@@ -50,9 +49,9 @@ class TabLevelSecurityService {
             throw new IllegalArgumentException("Error:- There must be a user signed-in")
         }
 
-        AccessPrivilegeType accessPrivilegeType = getUserAccessLevel(userName, formName)
+        AccessPrivilegeType accessPrivilegeType = userAuthorityService.getAccessPrivilegeType(formName)
 
-        if (! accessPrivilegeType.UNDEFINED) {
+        if (accessPrivilegeType != AccessPrivilegeType.UNDEFINED) {
             dbConfiguredTabPrivilegeMap = getDBConfiguredTabSecurityRestrictions (userName, formName)
             return limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, accessPrivilegeType)
         } else {
@@ -60,18 +59,6 @@ class TabLevelSecurityService {
             // access this form at the time when this method is being invoked.
         }
         return dbConfiguredTabPrivilegeMap
-    }
-
-    /**
-     * Method depends on the authorities loaded on to the spring
-     * security.
-     *
-     * @param userName
-     * @param formName
-     * @return
-     */
-    private AccessPrivilegeType getUserAccessLevel(String userName, String formName) {
-        return userAuthorityService.resolveAuthority(formName)
     }
 
     /**
@@ -106,11 +93,11 @@ class TabLevelSecurityService {
      * @param userAccessLevel
      * @return
      */
-    private def limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, AccessPrivilegeType userAccessLevel) {
+    private def limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, AccessPrivilegeType accessPrivilegeType) {
         def revisedTabPrivileges = dbConfiguredTabPrivilegeMap
-        if (userAccessLevel.READONLY) {
+        if (accessPrivilegeType == AccessPrivilegeType.READONLY) {
             revisedTabPrivileges = lowerFullQueryAccessToReadonlyAccess (dbConfiguredTabPrivilegeMap)
-        } else if (userAccessLevel.READWRITE) {
+        } else if (accessPrivilegeType == AccessPrivilegeType.READWRITE) {
             // no limiting to be done here.
         } else {
             // An impossible case. Form should have an access level set for the user.

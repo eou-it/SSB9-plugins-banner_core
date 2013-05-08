@@ -3,7 +3,6 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
-import org.springframework.security.core.GrantedAuthority
 import groovy.sql.Sql
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -102,11 +101,12 @@ class UserAuthorityService {
      * @param authentication
      * @return
      */
-    public static def filterAuthorities (List<String> formNames, authentication) {
+    public static List<BannerGrantedAuthority> filterAuthorities (List<String> formNames, authentication) {
         if (authentication.principal instanceof String) {
             return []
         }
-        return filterAuthoritiesForFormNames(authentication.principal.authorities, formNames)
+        final authorityList = (authentication.principal.authorities).asList()
+        return filterAuthoritiesForFormNames(authorityList, formNames)
     }
 
     /**
@@ -117,9 +117,8 @@ class UserAuthorityService {
      * @return
      */
     private static List<BannerGrantedAuthority> filterAuthoritiesForFormNames(List<BannerGrantedAuthority> grantedAuthorities, List<String> formNames) {
-        List<BannerGrantedAuthority> applicableAuthorities = grantedAuthorities?.asList().grep { authorityHolder ->
+        List<BannerGrantedAuthority> applicableAuthorities = grantedAuthorities.grep { BannerGrantedAuthority authority ->
             formNames?.find { String formName ->
-                final BannerGrantedAuthority authority = authorityHolder?.authority
                 authority?.checkIfCompatibleWithACEGIRolePattern(formName)
             }
         }
@@ -148,7 +147,7 @@ class UserAuthorityService {
      *
      */
     public static AccessPrivilegeType resolveAuthority (String formName) {
-        BannerGrantedAuthority authority = getAuthorityForAnyPattern(formName)
+        BannerGrantedAuthority authority = getAuthorityForAnyAccessPrivilegeType(formName)
         authority?.getAccessPrivilegeType()
     }
 
@@ -157,8 +156,8 @@ class UserAuthorityService {
      * patterns.
      *
      */
-    public static BannerGrantedAuthority getAuthorityForAnyPattern(String formName) {
-        return getAuthority(formName, [AccessPrivilegeType.READONLY, AccessPrivilegeType.READWRITE])
+    public static BannerGrantedAuthority getAuthorityForAnyAccessPrivilegeType(String formName) {
+        return getAuthority(formName, [(AccessPrivilegeType.READONLY), (AccessPrivilegeType.READWRITE)])
     }
 
     /**
@@ -170,14 +169,13 @@ class UserAuthorityService {
     public static BannerGrantedAuthority getAuthority(String formName, List<AccessPrivilegeType> accessPrivilegeTypeList) {
         SpringSecurityUtils.getPrincipalAuthorities().find { BannerGrantedAuthority authority ->
             if (authority) {
-                authority.objectName == formName && accessPrivilegeTypeList.any{ it == authority.getAccessPrivilegeType()}
+                authority?.hasAnyAccessToForm (formName, accessPrivilegeTypeList)
             }
         }
     }
 
     /**
      * Get the authority for given form name for a given pattern.
-     *
      */
     public static BannerGrantedAuthority getAuthority (String formName, AccessPrivilegeType accessPrivilegeType) {
         getAuthority (formName, [(accessPrivilegeType)])
@@ -185,17 +183,25 @@ class UserAuthorityService {
 
     /**
      */
-    public static boolean isReadWritePattern(String formName) {
-        def authority = getAuthorityForAnyPattern (formName)
+    public static boolean isReadWriteAccess(String formName) {
+        def authority = getAuthorityForAnyAccessPrivilegeType (formName)
         authority?.isReadWriteAccess()
 
     }
 
     /**
      */
-    public static boolean isReadonlyPattern(String formName) {
-        BannerGrantedAuthority authority = getAuthorityForAnyPattern (formName)
+    public static boolean isReadonlyAccess(String formName) {
+        BannerGrantedAuthority authority = getAuthorityForAnyAccessPrivilegeType (formName)
         authority?.isReadOnlyAccess()
     }
+
+    /**
+     * Method depends on the authorities loaded on to the spring security.
+     */
+    public AccessPrivilegeType getAccessPrivilegeType(String formName) {
+        return this.resolveAuthority(formName)
+    }
+
 
 }

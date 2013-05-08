@@ -63,8 +63,12 @@ public class BannerGrantedAuthority extends GrantedAuthorityImpl {
      * @param formName
      * @return
      */
-    private static def getACEGICompatibleRolePattern(String formName) {
+    public static def getACEGICompatibleRolePattern(String formName) {
         /\w+_${formName}_\w+/
+    }
+
+    public boolean hasAnyAccessToForm(String formName, List<AccessPrivilegeType> accessPrivilegeTypeList) {
+        this.objectName == formName && accessPrivilegeTypeList.any { it == this.getAccessPrivilegeType()}
     }
 
 }

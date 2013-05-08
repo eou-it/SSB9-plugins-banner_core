@@ -4,12 +4,15 @@ import java.util.regex.Pattern
 
 /**
  */
-enum AccessPrivilegeType {
-    READONLY((~/DEFAULT_Q/ as Pattern)){
+public enum AccessPrivilegeType {
+    READONLY(~/DEFAULT_Q/ as Pattern){
+
     },
     READWRITE(~/DEFAULT_M/  as Pattern){
+
     },
-    UNDEFINED{
+    UNDEFINED(null){
+
     };
 
     private Pattern pattern = null
