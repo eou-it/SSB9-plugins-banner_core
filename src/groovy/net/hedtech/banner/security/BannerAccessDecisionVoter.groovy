@@ -115,7 +115,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
 
     private List getApplicableAuthorities( List forms, Authentication authentication ) {
-        return UserAuthorityService.filterAuthorities(forms, authentication)
+        return BannerUserAuthorityService.filterAuthorities(forms, authentication)
     }
 
 

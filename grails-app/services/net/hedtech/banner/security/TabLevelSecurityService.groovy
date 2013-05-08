@@ -21,7 +21,7 @@ class TabLevelSecurityService {
 
     def sessionFactory                     // injected by Spring
 
-    def userAuthorityService
+    def bannerUserAuthorityService
 
     /**
      * Method finds the user from the Spring Context. The role specified for
@@ -49,7 +49,7 @@ class TabLevelSecurityService {
             throw new IllegalArgumentException("Error:- There must be a user signed-in")
         }
 
-        AccessPrivilegeType accessPrivilegeType = userAuthorityService.getAccessPrivilegeType(formName)
+        AccessPrivilegeType accessPrivilegeType = bannerUserAuthorityService.getAccessPrivilegeType(formName)
 
         if (accessPrivilegeType != AccessPrivilegeType.UNDEFINED) {
             dbConfiguredTabPrivilegeMap = getDBConfiguredTabSecurityRestrictions (userName, formName)

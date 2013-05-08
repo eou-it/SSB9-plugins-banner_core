@@ -17,18 +17,18 @@ import org.springframework.security.core.authority.GrantedAuthorityImpl
 /**
  * An implementation of the Spring Security GrantedAuthority for Banner.
  */
-public class BannerGrantedAuthority extends GrantedAuthorityImpl {
+public class BannerUserAuthority extends GrantedAuthorityImpl {
 	
 	String objectName
 	String roleName
 	String bannerPassword
 
-	static public BannerGrantedAuthority create( String objectName, String roleName, String bannerPassword ) {
+	static public BannerUserAuthority create( String objectName, String roleName, String bannerPassword ) {
 		def authority = "ROLE_${objectName?.toUpperCase()}_${roleName?.toUpperCase()}"
-		new BannerGrantedAuthority( authority, objectName, roleName, bannerPassword )
+		new BannerUserAuthority( authority, objectName, roleName, bannerPassword )
 	}
 
-	private BannerGrantedAuthority( String authority, String objectName, String roleName, String bannerPassword ) {
+	private BannerUserAuthority( String authority, String objectName, String roleName, String bannerPassword ) {
 		super( authority )
 		
 		this.objectName = objectName?.toUpperCase()

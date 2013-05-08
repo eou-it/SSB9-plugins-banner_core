@@ -3,11 +3,6 @@
  ****************************************************************************** */
 package net.hedtech.banner.db
 
-import net.hedtech.banner.security.FormContext
-import net.hedtech.banner.security.BannerGrantedAuthority
-
-import groovy.sql.Sql
-
 import javax.sql.DataSource
 import java.sql.Connection
 import java.sql.SQLException
@@ -16,7 +11,6 @@ import java.sql.CallableStatement
 import oracle.jdbc.OracleConnection
 import grails.util.Environment
 
-import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.Logger
 
 import org.springframework.security.core.GrantedAuthority

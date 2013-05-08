@@ -148,7 +148,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
      * Returns the authorities granted for the identified user.
      **/
     public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, DataSource dataSource ) {
-        return UserAuthorityService.determineAuthorities (authenticationResults, dataSource)
+        return BannerUserAuthorityService.determineAuthorities (authenticationResults, dataSource)
     }
 
 
@@ -156,7 +156,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
      * Returns the authorities granted for the identified user.
      **/
     public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, Sql db ) {
-        return UserAuthorityService.determineAuthorities (authenticationResults, db)
+        return BannerUserAuthorityService.determineAuthorities (authenticationResults, db)
     }
 
 

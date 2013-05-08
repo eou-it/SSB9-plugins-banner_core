@@ -165,7 +165,7 @@ class BannerCoreGrailsPlugin {
 //
 //        }
 
-        userAuthorityService( UserAuthorityService ) { bean ->
+        userAuthorityService( BannerUserAuthorityService ) { bean ->
         }
 
 

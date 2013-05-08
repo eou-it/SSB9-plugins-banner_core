@@ -3,10 +3,6 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.security
 
-
-import net.hedtech.banner.db.BannerDS
-import net.hedtech.banner.service.LoginAuditService
-
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.AccountExpiredException
 import org.springframework.security.authentication.BadCredentialsException
@@ -23,20 +19,11 @@ import java.sql.SQLException
 
 import groovy.sql.Sql
 
-import oracle.jdbc.pool.OracleDataSource
-import oracle.jdbc.driver.OracleTypes
-
 import org.apache.log4j.Logger
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
 
 import org.jasig.cas.client.util.AbstractCasFilter
-
-import org.springframework.context.ApplicationContext
-
 
 /**
  * An authentication provider which authenticates a self service user.  Self service users
@@ -269,7 +256,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
 
         if (authentictionResults.guest) {
-            authorities << BannerGrantedAuthority.create( "SELFSERVICE-GUEST", "BAN_DEFAULT_M", null )
+            authorities << BannerUserAuthority.create( "SELFSERVICE-GUEST", "BAN_DEFAULT_M", null )
         }
 
         def rows
@@ -301,7 +288,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                 """, [ pidm: authentictionResults.pidm ] )
 
             rows?.each { row ->
-                authorities << BannerGrantedAuthority.create( "SELFSERVICE-$row.TWGRROLE_ROLE", "BAN_DEFAULT_M", null )
+                authorities << BannerUserAuthority.create( "SELFSERVICE-$row.TWGRROLE_ROLE", "BAN_DEFAULT_M", null )
             }
         }
 
