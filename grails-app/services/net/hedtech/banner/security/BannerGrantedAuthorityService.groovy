@@ -12,12 +12,12 @@ import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 /**
  * Class for manipulating the Spring Security User Authorities.
  */
-class BannerUserAuthorityService {
+class BannerGrantedAuthorityService {
 
     static transactional = false
 
     private final Logger log = Logger.getLogger(getClass())
-    private static final Logger staticLogger = Logger.getLogger(BannerUserAuthorityService.class)
+    private static final Logger staticLogger = Logger.getLogger(BannerGrantedAuthorityService.class)
 
     /**
      *
@@ -25,10 +25,10 @@ class BannerUserAuthorityService {
      * @param dataSource
      * @return
      */
-    public static Collection<BannerUserAuthority> determineAuthorities( Map authenticationResults, DataSource dataSource ) {
+    public static Collection<BannerGrantedAuthority> determineAuthorities( Map authenticationResults, DataSource dataSource ) {
 
         def connection
-        def sqlObject
+        Sql sqlObject
         try {
             // We query the database for all role assignments for the user, using an unproxied connection.
             // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
@@ -51,11 +51,14 @@ class BannerUserAuthorityService {
      * @param sqlObject
      * @return
      */
-    public static Collection<BannerUserAuthority> determineAuthorities (Map authenticationResults, Sql sqlObject) {
+    public static Collection<BannerGrantedAuthority> determineAuthorities (Map authenticationResults, Sql sqlObject) {
 
-        def authorities = [] as Collection<BannerUserAuthority>
+        Collection<BannerGrantedAuthority> authorities = []
 
-        if (!authenticationResults['oracleUserName']) {
+        final oracleUserName = authenticationResults['oracleUserName']
+
+        if (!oracleUserName) {
+            staticLogger.debug("No authorities returned for $oracleUserName")
             return authorities   // empty list
         }
 
@@ -64,16 +67,16 @@ class BannerUserAuthorityService {
 	                select GOVUROL_OBJECT, GOVUROL_ROLE from govurol,gubobjs
 	                    where govurol_userid = ? and
 	                        (govurol_object = gubobjs_name and (gubobjs_ui_version in ('A','C') OR gubobjs_name in ('GUAGMNU')) )"""
-            sqlObject.eachRow( query, [authenticationResults['oracleUserName'].toUpperCase()] ) { row ->
+            sqlObject.eachRow( query, [oracleUserName.toUpperCase()] ) { row ->
                 /**
                  * Performance Tuning - Removed Select * since fetching role password is very expensive.
                  * Password would be fetch on demand while applying the roles for the connection in BannerDS.
                  * Set the role password as null initially as we are no longer fetching it during login.
                  */
-                authorities << BannerUserAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, null )
+                authorities << BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, null )
             }
         } catch (SQLException e) {
-            staticLogger.error "UserAuthorityService not able to determine Authorities for user ${authenticationResults['oracleUserName']} due to exception $e.message"
+            staticLogger.warn "UserAuthorityService not able to determine Authorities for user ${oracleUserName} due to exception $e.message"
         }
         staticLogger.trace "UserAuthorityService.determineAuthorities is returning ${authorities?.size()} authorities. "
         authorities
@@ -81,12 +84,10 @@ class BannerUserAuthorityService {
 
     /**
      * Entry Condition:- FormContext must be set already.
-     *
-     * @param grantedAuthorities
-     * @return
      */
-    public static List<BannerUserAuthority> filterAuthorities (List<BannerUserAuthority> grantedAuthorities) {
+    public static List<BannerGrantedAuthority> filterAuthorities (List<BannerGrantedAuthority> grantedAuthorities) {
         if (!grantedAuthorities) {
+            staticLogger.debug("Input list of Authorities were EMPTY !!!")
             return []
         }
         List formContext = new ArrayList(FormContext.get())
@@ -94,15 +95,9 @@ class BannerUserAuthorityService {
         return filterAuthoritiesForFormNames(grantedAuthorities, formContext)
     }
 
-    /**
-     *  Entry Condition: User is signed-in and authentication object is created.
-     *
-     * @param formNames
-     * @param authentication
-     * @return
-     */
-    public static List<BannerUserAuthority> filterAuthorities (List<String> formNames, authentication) {
+    public static List<BannerGrantedAuthority> filterAuthorities (List<String> formNames, authentication) {
         if (authentication.principal instanceof String) {
+            staticLogger.debug("Authentication Principal is just a String")
             return []
         }
         final authorityList = (authentication.principal.authorities).asList()
@@ -111,13 +106,9 @@ class BannerUserAuthorityService {
 
     /**
      * Find matching authoritiese for each of the form names.
-     *
-     * @param grantedAuthorities
-     * @param formNames
-     * @return
      */
-    private static List<BannerUserAuthority> filterAuthoritiesForFormNames(List<BannerUserAuthority> grantedAuthorities, List<String> formNames) {
-        List<BannerUserAuthority> applicableAuthorities = grantedAuthorities.grep { BannerUserAuthority authority ->
+    private static List<BannerGrantedAuthority> filterAuthoritiesForFormNames(List<BannerGrantedAuthority> grantedAuthorities, List<String> formNames) {
+        List<BannerGrantedAuthority> applicableAuthorities = grantedAuthorities.grep { BannerGrantedAuthority authority ->
             formNames?.find { String formName ->
                 authority?.checkIfCompatibleWithACEGIRolePattern(formName)
             }
@@ -126,12 +117,13 @@ class BannerUserAuthorityService {
         return applicableAuthorities
     }
 
-    public static List<BannerUserAuthority> filterAuthorities(BannerUser user) {
-        List<BannerUserAuthority> applicableAuthorities = []
-        List<BannerUserAuthority> authoritiesForForm
+    public static List<BannerGrantedAuthority> filterAuthorities(BannerUser user) {
+        List<BannerGrantedAuthority> applicableAuthorities = []
+        List<BannerGrantedAuthority> authoritiesForForm
         def forms
-        if (FormContext.get())
+        if (FormContext.get()) {
             forms = new ArrayList(FormContext.get())
+        }
         forms?.each { form ->
             authoritiesForForm = user.getAuthoritiesFor(form)
             authoritiesForForm.each { applicableAuthorities << it }
@@ -140,68 +132,45 @@ class BannerUserAuthorityService {
     }
 
     /**
-     *
-     * Resolve the authority for the given form name.
-     *
      * Entry Condition: Spring security authorities are already loaded.
-     *
      */
-    public static AccessPrivilegeType resolveAuthority (String formName) {
-        BannerUserAuthority authority = getAuthorityForAnyAccessPrivilegeType(formName)
-        authority?.getAccessPrivilegeType()
+    public static AccessPrivilege getAccessPrivilegeType(String formName) {
+        BannerGrantedAuthority authority = getAuthorityForAnyAccessPrivilegeType(formName)
+        authority?.getAccessPrivilege()
     }
 
-    /**
-     * Get authority for the given form matching any of the
-     * patterns.
-     *
-     */
-    public static BannerUserAuthority getAuthorityForAnyAccessPrivilegeType(String formName) {
-        return getAuthority(formName, [(AccessPrivilegeType.READONLY), (AccessPrivilegeType.READWRITE)])
+    public static BannerGrantedAuthority getAuthorityForAnyAccessPrivilegeType(String formName) {
+        return getAuthority(formName, [(AccessPrivilege.READONLY), (AccessPrivilege.READWRITE)])
     }
 
-    /**
-     * Get the authority for given form name for any of the matching patterns.
-     *
-     * Entry Condition: Spring Security Authorities are already loaded.
-     *
-     */
-    public static BannerUserAuthority getAuthority(String formName, List<AccessPrivilegeType> accessPrivilegeTypeList) {
-        SpringSecurityUtils.getPrincipalAuthorities().find { BannerUserAuthority authority ->
-            if (authority) {
-                authority?.hasAnyAccessToForm (formName, accessPrivilegeTypeList)
-            }
-        }
-    }
-
-    /**
-     * Get the authority for given form name for a given pattern.
-     */
-    public static BannerUserAuthority getAuthority (String formName, AccessPrivilegeType accessPrivilegeType) {
+    public static BannerGrantedAuthority getAuthority (String formName, AccessPrivilege accessPrivilegeType) {
         getAuthority (formName, [(accessPrivilegeType)])
     }
 
     /**
+     * Entry Condition: Spring Security Authorities are already loaded.
      */
-    public static boolean isReadWriteAccess(String formName) {
-        def authority = getAuthorityForAnyAccessPrivilegeType (formName)
-        authority?.isReadWriteAccess()
+    public static BannerGrantedAuthority getAuthority(String formName, List<AccessPrivilege> accessPrivilegeTypeList) {
+        final authorities = SpringSecurityUtils.getPrincipalAuthorities()
+        if (!authorities || authorities.isEmpty()) {
+            throw new IllegalStateException("There are no authorities loaded for the form - $formName - Seems like there is no user signed-in.")
+        }
+        authorities.find { BannerGrantedAuthority authority ->
+            if (authority) {
+                authority?.hasAccessToForm (formName, accessPrivilegeTypeList)
+            }
+        }
+    }
+
+    public static boolean isFormEditable(String formName) {
+        BannerGrantedAuthority authority = getAuthorityForAnyAccessPrivilegeType (formName)
+        authority?.isReadWrite()
 
     }
 
-    /**
-     */
-    public static boolean isReadonlyAccess(String formName) {
-        BannerUserAuthority authority = getAuthorityForAnyAccessPrivilegeType (formName)
-        authority?.isReadOnlyAccess()
+    public static boolean isFormReadonly(String formName) {
+        BannerGrantedAuthority authority = getAuthorityForAnyAccessPrivilegeType (formName)
+        authority?.isReadOnly()
     }
-
-    /**
-     * Method depends on the authorities loaded on to the spring security.
-     */
-    public AccessPrivilegeType getAccessPrivilegeType(String formName) {
-        return this.resolveAuthority(formName)
-    }
-
 
 }

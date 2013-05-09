@@ -4,7 +4,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 package net.hedtech.banner.security
 
 import org.springframework.security.authentication.AuthenticationProvider
-import org.springframework.security.authentication.AccountExpiredException
+
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.security.authentication.DisabledException
@@ -12,7 +12,7 @@ import org.springframework.security.authentication.LockedException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.authority.GrantedAuthorityImpl
+
 import org.springframework.web.context.request.RequestContextHolder
 
 import java.sql.SQLException
@@ -22,8 +22,6 @@ import groovy.sql.Sql
 import org.apache.log4j.Logger
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-
-import org.jasig.cas.client.util.AbstractCasFilter
 
 /**
  * An authentication provider which authenticates a self service user.  Self service users
@@ -256,7 +254,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
 
         if (authentictionResults.guest) {
-            authorities << BannerUserAuthority.create( "SELFSERVICE-GUEST", "BAN_DEFAULT_M", null )
+            authorities << BannerGrantedAuthority.create( "SELFSERVICE-GUEST", "BAN_DEFAULT_M", null )
         }
 
         def rows
@@ -288,7 +286,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                 """, [ pidm: authentictionResults.pidm ] )
 
             rows?.each { row ->
-                authorities << BannerUserAuthority.create( "SELFSERVICE-$row.TWGRROLE_ROLE", "BAN_DEFAULT_M", null )
+                authorities << BannerGrantedAuthority.create( "SELFSERVICE-$row.TWGRROLE_ROLE", "BAN_DEFAULT_M", null )
             }
         }
 

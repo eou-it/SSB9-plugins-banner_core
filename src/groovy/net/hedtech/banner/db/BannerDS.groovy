@@ -29,8 +29,8 @@ import org.springframework.context.ApplicationContext
 import grails.util.Environment
 import org.springframework.web.context.request.RequestContextHolder
 import net.hedtech.banner.security.BannerUser
-import net.hedtech.banner.security.BannerUserAuthorityService
-import net.hedtech.banner.security.BannerUserAuthority
+import net.hedtech.banner.security.BannerGrantedAuthorityService
+import net.hedtech.banner.security.BannerGrantedAuthority
 
 /**
  * A dataSource that wraps an 'underlying' datasource.  When this datasource is asked for a
@@ -412,11 +412,11 @@ public class BannerDS implements DataSource {
 
 
     private List extractApplicableAuthorities(grantedAuthorities) {
-        return BannerUserAuthorityService.filterAuthorities(grantedAuthorities.asList())
+        return BannerGrantedAuthorityService.filterAuthorities(grantedAuthorities.asList())
     }
 
     private List<GrantedAuthority> extractApplicableAuthorities(BannerUser user) {
-        return BannerUserAuthorityService.filterAuthorities(user)
+        return BannerGrantedAuthorityService.filterAuthorities(user)
     }
 
     private setRoleSSB(Connection conn) {
@@ -441,7 +441,7 @@ public class BannerDS implements DataSource {
             log.trace "BannerDS.setRoles - will unlock role(s) for the connection proxied for ${user?.oracleUserName}"
             applicableAuthorities?.each { auth ->
                 if (!unlockedRoles."${auth.roleName}") {
-                    unlockRole(oconn, (BannerUserAuthority) auth, user)
+                    unlockRole(oconn, (BannerGrantedAuthority) auth, user)
                     unlockedRoles.put(auth.roleName, true)
                 }
             }
@@ -457,7 +457,7 @@ public class BannerDS implements DataSource {
     }
 
 
-    private unlockRole(Connection conn, BannerUserAuthority bannerAuth, user) throws SQLException {
+    private unlockRole(Connection conn, BannerGrantedAuthority bannerAuth, user) throws SQLException {
 
         /**
          * Performance Tuning - role password is no longer fetched during login. We are doing an on demand

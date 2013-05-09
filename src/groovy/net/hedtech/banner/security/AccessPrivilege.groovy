@@ -4,7 +4,7 @@ import java.util.regex.Pattern
 
 /**
  */
-public enum AccessPrivilegeType {
+public enum AccessPrivilege {
     READONLY(~/DEFAULT_Q/ as Pattern){
 
     },
@@ -17,7 +17,7 @@ public enum AccessPrivilegeType {
 
     private Pattern pattern = null
 
-    private AccessPrivilegeType (Pattern pattern) {
+    private AccessPrivilege(Pattern pattern) {
         this.pattern = pattern
     }
 

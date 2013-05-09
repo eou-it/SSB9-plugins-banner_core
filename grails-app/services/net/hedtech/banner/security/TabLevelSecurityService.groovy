@@ -15,13 +15,15 @@ import org.apache.log4j.Logger
 class TabLevelSecurityService {
 
     static transactional = true
+    public static final String FULL_ACCESS_TO_END_USER = "F"
+    public static final String READONLY_ACCESS_TO_END_USER = "Q"
 
     private final Logger log = Logger.getLogger(getClass())
     private static final Logger staticLogger = Logger.getLogger(TabLevelSecurityService.class)
 
     def sessionFactory                     // injected by Spring
 
-    def bannerUserAuthorityService
+    def bannerGrantedAuthorityService
 
     /**
      * Method finds the user from the Spring Context. The role specified for
@@ -49,9 +51,9 @@ class TabLevelSecurityService {
             throw new IllegalArgumentException("Error:- There must be a user signed-in")
         }
 
-        AccessPrivilegeType accessPrivilegeType = bannerUserAuthorityService.getAccessPrivilegeType(formName)
+        AccessPrivilege accessPrivilegeType = bannerGrantedAuthorityService.getAccessPrivilegeType(formName)
 
-        if (accessPrivilegeType != AccessPrivilegeType.UNDEFINED) {
+        if (accessPrivilegeType != AccessPrivilege.UNDEFINED) {
             dbConfiguredTabPrivilegeMap = getDBConfiguredTabSecurityRestrictions (userName, formName)
             return limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, accessPrivilegeType)
         } else {
@@ -93,11 +95,11 @@ class TabLevelSecurityService {
      * @param userAccessLevel
      * @return
      */
-    private def limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, AccessPrivilegeType accessPrivilegeType) {
+    private def limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, AccessPrivilege accessPrivilegeType) {
         def revisedTabPrivileges = dbConfiguredTabPrivilegeMap
-        if (accessPrivilegeType == AccessPrivilegeType.READONLY) {
+        if (accessPrivilegeType == AccessPrivilege.READONLY) {
             revisedTabPrivileges = lowerFullQueryAccessToReadonlyAccess (dbConfiguredTabPrivilegeMap)
-        } else if (accessPrivilegeType == AccessPrivilegeType.READWRITE) {
+        } else if (accessPrivilegeType == AccessPrivilege.READWRITE) {
             // no limiting to be done here.
         } else {
             // An impossible case. Form should have an access level set for the user.
@@ -115,7 +117,7 @@ class TabLevelSecurityService {
     private def lowerFullQueryAccessToReadonlyAccess(dbConfiguredTabPrivilegeMap) {
         def revisedTabPrivileges =  [:]
         dbConfiguredTabPrivilegeMap?.each { key, value ->
-            revisedTabPrivileges << (value == "F"?[(key):"Q"]:[(key):value])
+            revisedTabPrivileges << (value == (FULL_ACCESS_TO_END_USER) ?[(key):(READONLY_ACCESS_TO_END_USER)]:[(key):value])
         }
         return revisedTabPrivileges
     }
