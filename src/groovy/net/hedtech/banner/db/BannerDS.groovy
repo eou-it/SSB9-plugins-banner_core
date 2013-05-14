@@ -95,7 +95,7 @@ public class BannerDS implements DataSource {
                 setMep(conn, user)
                 setFGAC(conn)
                 bannerConnection = new BannerConnection(conn, user?.username, this)
-                if (Environment.current != Environment.TEST) {
+                if (Environment.current != Environment.TEST && isWebRequest()) {
                     RequestContextHolder.currentRequestAttributes().request.session.setAttribute("bannerRoles", roles)
                     RequestContextHolder.currentRequestAttributes().request.session.setAttribute("cachedConnection", bannerConnection)
                     RequestContextHolder.currentRequestAttributes().request.session.setAttribute("formContext", FormContext.get())
@@ -145,7 +145,8 @@ public class BannerDS implements DataSource {
 
         BannerConnection bannerConnection = null
         def formContext = null
-        if (Environment.current != Environment.TEST) {
+
+        if (Environment.current != Environment.TEST && isWebRequest()) {
             bannerConnection = RequestContextHolder?.currentRequestAttributes()?.request?.session.getAttribute("cachedConnection")
             if (RequestContextHolder.currentRequestAttributes().request.session.getAttribute("formContext"))
                 formContext = new ArrayList(RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("formContext"))
@@ -186,6 +187,9 @@ public class BannerDS implements DataSource {
         bannerConnection
     }
 
+    private boolean isWebRequest() {
+        RequestContextHolder.getRequestAttributes() != null
+    }
 
     private getUserRoles(user, applicableAuthorities) {
         Map unlockedRoles = [:]
