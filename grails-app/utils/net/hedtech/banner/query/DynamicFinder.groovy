@@ -3,7 +3,7 @@ package net.hedtech.banner.query
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.context.ApplicationContext
-import net.hedtech.banner.newquery.CriteriaParam
+import net.hedtech.banner.query.criteria.CriteriaParam
 
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.

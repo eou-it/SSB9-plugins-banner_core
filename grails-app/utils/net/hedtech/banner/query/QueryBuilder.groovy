@@ -3,12 +3,12 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.query
 
-import net.hedtech.banner.newquery.Query
-import net.hedtech.banner.newquery.operators.CriteriaOperator
-import net.hedtech.banner.newquery.operators.CriteriaOperatorFactory
-import net.hedtech.banner.newquery.CriteriaData
-import net.hedtech.banner.newquery.CriteriaParam
-import net.hedtech.banner.newquery.operators.Operators
+import net.hedtech.banner.query.criteria.Query
+import net.hedtech.banner.query.operators.CriteriaOperator
+import net.hedtech.banner.query.CriteriaOperatorFactory
+import net.hedtech.banner.query.criteria.CriteriaData
+import net.hedtech.banner.query.criteria.CriteriaParam
+import net.hedtech.banner.query.operators.Operators
 
 class QueryBuilder {
     private static boolean isTimeSet(Object date) {
