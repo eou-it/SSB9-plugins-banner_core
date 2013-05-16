@@ -3,11 +3,9 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.security
 
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.GrantedAuthorityImpl
 
-
-// NOTE: This implementation holds the Banner password that must be used 
+// NOTE: This implementation holds the Banner password that must be used
 // to unlock the role associated to this authority.  This appraoch was 
 // taken since the view used to query for a users authorities includes the 
 // passwords for those roles.  This appraoch stores role password data redundantly
@@ -23,14 +21,12 @@ public class BannerGrantedAuthority extends GrantedAuthorityImpl {
 	String objectName
 	String roleName
 	String bannerPassword
-	
-	
+
 	static public BannerGrantedAuthority create( String objectName, String roleName, String bannerPassword ) {
 		def authority = "ROLE_${objectName?.toUpperCase()}_${roleName?.toUpperCase()}"
 		new BannerGrantedAuthority( authority, objectName, roleName, bannerPassword )
 	}
-	
-	
+
 	private BannerGrantedAuthority( String authority, String objectName, String roleName, String bannerPassword ) {
 		super( authority )
 		
@@ -38,7 +34,39 @@ public class BannerGrantedAuthority extends GrantedAuthorityImpl {
 		this.roleName = roleName?.toUpperCase()
 		this.bannerPassword = bannerPassword
 	}
-	
+
+    public boolean isReadOnly() {
+        AccessPrivilege.isReadOnlyPattern(this.roleName)
+    }
+
+    public boolean isReadWrite() {
+        AccessPrivilege.isReadWritePattern(this.roleName)
+    }
+
+    public def checkIfCompatibleWithACEGIRolePattern(formName) {
+        this ==~ getACEGICompatibleRolePattern(formName)
+    }
+
+    public AccessPrivilege getAccessPrivilege() {
+        if (isReadOnly()){
+            return AccessPrivilege.READONLY
+        } else if (isReadWrite()) {
+            return AccessPrivilege.READWRITE
+        }
+        return AccessPrivilege.UNDEFINED
+    }
+
+    /**
+     * Get the ACEGI friendly role pattern("ROLE_<formName>_<roleName>") for the form name.
+     */
+    public static def getACEGICompatibleRolePattern(String formName) {
+        /\w+_${formName}_\w+/
+    }
+
+    public boolean hasAccessToForm(String formName, List<AccessPrivilege> accessPrivilegeTypeList) {
+        this.objectName == formName && accessPrivilegeTypeList.any { it == this.getAccessPrivilege()}
+    }
+
 }
 
 

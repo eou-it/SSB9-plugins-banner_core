@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.security
 
 import org.apache.log4j.Logger
@@ -36,7 +36,6 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
     private final Logger log = Logger.getLogger( getClass() )
 
-
     boolean supports( ConfigAttribute configAttribute ) {
         log.debug "BannerAccessDecisionVoter.supports(ConfigAttribute) invoked with $configAttribute and will return ${configAttribute.attribute.startsWith( ROLE_PREFIX )}"
         configAttribute.attribute.startsWith( ROLE_PREFIX )
@@ -64,7 +63,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
         if (authentication.getDetails() == null) {
             return AccessDecisionVoter.ACCESS_DENIED
         }
-        
+
         if (authentication.principal instanceof String) {
             return AccessDecisionVoter.ACCESS_ABSTAIN
         }
@@ -116,24 +115,18 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
 
     private List getApplicableAuthorities( List forms, Authentication authentication ) {
-        if (authentication.principal instanceof String) return []
-        List applicableAuthorities = []
-        forms?.each { form ->
-            def authoritiesForForm = authentication.principal.authorities.findAll { it.authority ==~ /\w+_${form}_\w+/ }
-            authoritiesForForm.each { applicableAuthorities << it }
-        }
-        applicableAuthorities
+        return BannerGrantedAuthorityService.filterAuthorities(forms, authentication)
     }
 
 
     private int vote( Authentication authentication, String url, Collection<ConfigAttribute> configAttributes ) {
-        
-        def useDynamicAuthorization = configAttributes.any { it.attribute == ROLE_DETERMINED_DYNAMICALLY } 
-        
+
+        def useDynamicAuthorization = configAttributes.any { it.attribute == ROLE_DETERMINED_DYNAMICALLY }
+
         // dynamic form-based authorization due to special ROLE_DETERMINED_DYNAMICALLY role mapped to the url
         if (useDynamicAuthorization) {
 	        log.debug "BannerAccessDecisionVoter.vote() will perform dynamic form-based authorization"
-	
+
 	        def forms = getCorrespondingFormNamesFor( url )
 	        if (forms) {
     	        log.debug "BannerAccessDecisionVoter.vote() found form(s) (${forms}) mapped for URL $url"
@@ -142,7 +135,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
     	        // Now we'll exclude the special '_CONNECT' roles, as we don't want to give access for those...
     	        applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
-    	        
+
     	        if (applicableAuthorities.size() > 0) {
     	            log.debug "BannerAccessDecisionVoter.vote() has found an applicable authority and will grant access"
     	            return AccessDecisionVoter.ACCESS_GRANTED
@@ -152,14 +145,14 @@ class BannerAccessDecisionVoter extends RoleVoter {
                 logViolation( authentication, forms, url )
             }
     	    log.debug "BannerAccessDecisionVoter.vote() did NOT find any applicable authorities, and will DENY access"
-    	    return AccessDecisionVoter.ACCESS_DENIED    	        
+    	    return AccessDecisionVoter.ACCESS_DENIED
         }
 
         // explicit uri-role map based authorization
         log.debug "BannerAccessDecisionVoter.vote() will base authorization on roles explicitly specified for the url"
         def authorityNames = authentication.principal.authorities*.authority
         def hasRole = configAttributes?.any { it.attribute in authorityNames }
-        
+
         if (hasRole) {
 	        log.debug "BannerAccessDecisionVoter.vote() found user has a role that was explicitly specified for the url, and will grant access"
 	        return AccessDecisionVoter.ACCESS_GRANTED

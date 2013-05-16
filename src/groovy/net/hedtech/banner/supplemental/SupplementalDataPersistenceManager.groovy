@@ -413,7 +413,7 @@ class SupplementalDataPersistenceManager {
 		               """) { key -> pk = key }
             return pk
         } catch (e) {
-            log.error "Failed to get PK for the entity. Exception: $e "
+            log.error "Failed to get PK for the entity with table name $table & id $id . Exception: $e "
             throw e
         }
     }

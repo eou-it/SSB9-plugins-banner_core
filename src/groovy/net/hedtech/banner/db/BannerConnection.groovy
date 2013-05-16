@@ -1,12 +1,7 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ ****************************************************************************** */
 package net.hedtech.banner.db
-
-import net.hedtech.banner.security.FormContext
-import net.hedtech.banner.security.BannerGrantedAuthority
-
-import groovy.sql.Sql
 
 import javax.sql.DataSource
 import java.sql.Connection
@@ -14,18 +9,18 @@ import java.sql.SQLException
 import java.sql.CallableStatement
 
 import oracle.jdbc.OracleConnection
+import grails.util.Environment
 
-import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.Logger
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
-
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
- * A dataSource that proxies connections, sets roles needed for the current request, 
+ * A dataSource that proxies connections, sets roles needed for the current request,
  * and invokes p_commit and p_rollback.
- **/
+ * */
 class BannerConnection {
 
     @Delegate
@@ -34,34 +29,33 @@ class BannerConnection {
     def proxyUserName
     def bannerDataSource
     def oracleConnection // the native connection
-    
-    private final Logger log = Logger.getLogger( getClass() )
+
+    private final Logger log = Logger.getLogger(getClass())
 
 
-    BannerConnection( Connection conn, DataSource bannerDataSource ) {
+    BannerConnection(Connection conn, DataSource bannerDataSource) {
         assert conn
         assert bannerDataSource
         underlyingConnection = conn
         this.bannerDataSource = bannerDataSource
         log.trace "BannerConnection has been constructed: ${this}"
-        invokeProcedureCall "{ call DBMS_SESSION.MODIFY_PACKAGE_STATE(2) }" // Constant DBMS_SESSION.REINITIALIZE = 2
+//        invokeProcedureCall "{ call DBMS_SESSION.MODIFY_PACKAGE_STATE(2) }" // Constant DBMS_SESSION.REINITIALIZE = 2
     }
 
 
-    BannerConnection( Connection conn, String userName, bannerDataSource ) {
-        this( conn, bannerDataSource )
+    BannerConnection(Connection conn, String userName, bannerDataSource) {
+        this(conn, bannerDataSource)
         proxyUserName = userName
-        bannerDataSource.setIdentifier( conn, userName )
+        bannerDataSource.setIdentifier(conn, userName)
     }
 
 
     public OracleConnection extractOracleConnection() {
         if (!oracleConnection) {
-            oracleConnection = bannerDataSource.nativeJdbcExtractor.getNativeConnection( underlyingConnection )
+            oracleConnection = bannerDataSource.nativeJdbcExtractor.getNativeConnection(underlyingConnection)
         }
         oracleConnection
     }
-
 
     /**
      * Replaces the invocation of 'commit' on the underlying connection with
@@ -73,9 +67,8 @@ class BannerConnection {
     public void commit() throws SQLException {
         log.trace "BannerConnection ${super.toString()} 'commit()' invoked"
         invokeProcedureCall "{ call gb_common.p_commit() }"
-        bannerDataSource.clearDbmsApplicationInfo( this )           
+        bannerDataSource.clearDbmsApplicationInfo(this)
     }
-
 
     /**
      * Replaces the invocation of rollback on the underlying connection with
@@ -87,46 +80,67 @@ class BannerConnection {
     public void rollback() throws SQLException {
         log.trace "BannerConnection ${super.toString()}.rollback() invoked"
         invokeProcedureCall "{ call gb_common.p_rollback() }"
-        bannerDataSource.clearDbmsApplicationInfo( this )            
+        bannerDataSource.clearDbmsApplicationInfo(this)
     }
 
 
     public void close() throws SQLException {
         try {
             log.trace "BannerConnection ${super.toString()}.close() invoked"
-            bannerDataSource.closeProxySession( this, proxyUserName )              
-            bannerDataSource.clearIdentifer( this )
+            if (Environment.current == Environment.TEST || !isWebRequest()) {
+                bannerDataSource.closeProxySession( this, proxyUserName )
+                bannerDataSource.clearIdentifer( this )
+            }
+
         } finally {            
             log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
-            underlyingConnection?.close()  
+            if (!proxyUserName || (proxyUserName == "anonymousUser") || (Environment.current == Environment.TEST))  {
+                log.trace "${super.toString()} closing $underlyingConnection}"
+                underlyingConnection?.close()
+            }
         }
     }
 
+    private boolean isWebRequest() {
+        RequestContextHolder.getRequestAttributes() != null
+    }
+
+    public void connectionAdminClose() throws SQLException {
+        try {
+            log.trace "BannerConnection ${super.toString()}.close() invoked"
+            bannerDataSource.closeProxySession(this, proxyUserName)
+            bannerDataSource.clearIdentifer(this)
+        } finally {
+            log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
+            log.trace "${super.toString()} *************** : $underlyingConnection, that wraps ${extractOracleConnection()}"
+            underlyingConnection?.close()
+        }
+    }
 
     /**
      * Invokes the supplied stored procedure call.
      * @param procedureCall the stored procedure to call
      * @throws SQLException if reported when executing this stored procedure
      */
-    private void invokeProcedureCall( String procedureCall ) throws SQLException {
+    private void invokeProcedureCall(String procedureCall) throws SQLException {
         log.trace "BannerConnection ${super.toString()}.invokeProcedureCall() will execute '$procedureCall'"
         CallableStatement cs
         try {
-            cs = underlyingConnection.prepareCall( procedureCall )
+            cs = underlyingConnection.prepareCall(procedureCall)
             cs.execute()
         }
         finally {
             cs?.close()
         }
     }
-    
 
-    boolean isWrapperFor( Class clazz ) {
+
+    boolean isWrapperFor(Class clazz) {
         log.trace "isWrapperFor clazz = $clazz"
     }
 
-    
-    Object unwrap( Class clazz ) {
+
+    Object unwrap(Class clazz) {
         log.trace "unwrap clazz = $clazz"
     }
 
