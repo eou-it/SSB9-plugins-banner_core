@@ -71,7 +71,7 @@ class TabLevelSecurityService {
      * @param formName
      * @return
      */
-    private def getDBConfiguredTabSecurityRestrictions( String userName, String formName ) {
+    private Map<String, TabLevelSecurityAccessIndicator> getDBConfiguredTabSecurityRestrictions( String userName, String formName ) {
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         try {
             String strDbConfiguredTabPrivileges = ""
@@ -95,7 +95,7 @@ class TabLevelSecurityService {
      * @param userAccessLevel
      * @return
      */
-    private def limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, AccessPrivilege accessPrivilegeType) {
+    private Map<String, TabLevelSecurityAccessIndicator> limitTabPrivilegesByUserAccessLevel(Map<String, TabLevelSecurityAccessIndicator> dbConfiguredTabPrivilegeMap, AccessPrivilege accessPrivilegeType) {
         def revisedTabPrivileges = dbConfiguredTabPrivilegeMap
         if (accessPrivilegeType == AccessPrivilege.READONLY) {
             revisedTabPrivileges = lowerFullQueryAccessToReadonlyAccess (dbConfiguredTabPrivilegeMap)
@@ -114,16 +114,25 @@ class TabLevelSecurityService {
      * @param dbConfiguredTabPrivilegeMap
      * @return
      */
-    private def lowerFullQueryAccessToReadonlyAccess(dbConfiguredTabPrivilegeMap) {
-        def revisedTabPrivileges =  [:]
-        dbConfiguredTabPrivilegeMap?.each { key, value ->
-            revisedTabPrivileges << (value == (FULL_ACCESS_TO_END_USER) ?[(key):(READONLY_ACCESS_TO_END_USER)]:[(key):value])
+    private Map<String, TabLevelSecurityAccessIndicator> lowerFullQueryAccessToReadonlyAccess(Map<String, TabLevelSecurityAccessIndicator> dbConfiguredTabPrivilegeMap) {
+        Map<String, TabLevelSecurityAccessIndicator> revisedTabPrivileges =  [:]
+        dbConfiguredTabPrivilegeMap?.each {String tabId, TabLevelSecurityAccessIndicator tabLevelSecurityAccessIndicator ->
+            TabLevelSecurityAccessIndicator revisedPrivilege =
+                (tabLevelSecurityAccessIndicator == (TabLevelSecurityAccessIndicator.FULL_ACCESS_TO_END_USER) ?
+                    (TabLevelSecurityAccessIndicator.READONLY_ACCESS_TO_END_USER):tabLevelSecurityAccessIndicator)
+            revisedTabPrivileges << [(tabId):(revisedPrivilege)]
         }
         return revisedTabPrivileges
     }
 
-    private def getTabSecurityPrivilegeMap (String tabSecurityPrivilegeString) {
-        return ListManipulator.stringRepresentationToMap (tabSecurityPrivilegeString, ":")
+    private Map<String, TabLevelSecurityAccessIndicator> getTabSecurityPrivilegeMap (String tabSecurityPrivilegeString) {
+        Map<String, TabLevelSecurityAccessIndicator> tabLevelSecurityPrivilegeMap = [:]
+
+        final Map<String, String> tabAccessIndicatorStringCodeMap = ListManipulator.stringRepresentationToMap(tabSecurityPrivilegeString, ":")
+        tabAccessIndicatorStringCodeMap?.each { String tabId, String accessIndicatorCode ->
+            tabLevelSecurityPrivilegeMap[(tabId)] = TabLevelSecurityAccessIndicator.getTabLevelSecurityAccessIndicator(accessIndicatorCode)
+        }
+        return tabLevelSecurityPrivilegeMap
     }
 
 }
