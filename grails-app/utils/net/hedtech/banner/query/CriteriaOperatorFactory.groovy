@@ -34,6 +34,7 @@ class CriteriaOperatorFactory {
                 return new EqualsOperator();
                 break;
             case Operators.BETWEEN:
+            case "numericbetween": //TODO need to remove this when numeric between is removed from all zuls
                 return new BetweenOperator();
                 break;
             case Operators.CONTAINS:
