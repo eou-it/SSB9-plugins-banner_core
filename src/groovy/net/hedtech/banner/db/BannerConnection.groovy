@@ -1,12 +1,13 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.db
 
 import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.security.BannerGrantedAuthority
 
 import groovy.sql.Sql
+import org.springframework.web.context.request.RequestContextHolder
 
 import javax.sql.DataSource
 import java.sql.Connection
@@ -24,7 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 
 
 /**
- * A dataSource that proxies connections, sets roles needed for the current request, 
+ * A dataSource that proxies connections, sets roles needed for the current request,
  * and invokes p_commit and p_rollback.
  **/
 class BannerConnection {
@@ -35,7 +36,7 @@ class BannerConnection {
     def proxyUserName
     def bannerDataSource
     def oracleConnection // the native connection
-    
+
     private final Logger log = Logger.getLogger( getClass() )
 
 
@@ -74,7 +75,7 @@ class BannerConnection {
     public void commit() throws SQLException {
         log.trace "BannerConnection ${super.toString()} 'commit()' invoked"
         invokeProcedureCall "{ call gb_common.p_commit() }"
-        bannerDataSource.clearDbmsApplicationInfo( this )           
+        bannerDataSource.clearDbmsApplicationInfo( this )
     }
 
 
@@ -88,21 +89,21 @@ class BannerConnection {
     public void rollback() throws SQLException {
         log.trace "BannerConnection ${super.toString()}.rollback() invoked"
         invokeProcedureCall "{ call gb_common.p_rollback() }"
-        bannerDataSource.clearDbmsApplicationInfo( this )            
+        bannerDataSource.clearDbmsApplicationInfo( this )
     }
 
 
     public void close() throws SQLException {
         try {
             log.trace "BannerConnection ${super.toString()}.close() invoked"
-            if (Environment.current == Environment.TEST) {
+            if (Environment.current == Environment.TEST || !isWebRequest()) {
                 bannerDataSource.closeProxySession( this, proxyUserName )
                 bannerDataSource.clearIdentifer( this )
             }
 
-        } finally {            
+        } finally {
             log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
-            if (!proxyUserName || (proxyUserName == "anonymousUser") || (Environment.current == Environment.TEST))  {
+            if (!proxyUserName || (proxyUserName == "anonymousUser") || (Environment.current == Environment.TEST || !isWebRequest()))  {
                 log.trace "${super.toString()} closing $underlyingConnection}"
                 underlyingConnection?.close()
             }
@@ -137,13 +138,13 @@ class BannerConnection {
             cs?.close()
         }
     }
-    
+
 
     boolean isWrapperFor( Class clazz ) {
         log.trace "isWrapperFor clazz = $clazz"
     }
 
-    
+
     Object unwrap( Class clazz ) {
         log.trace "unwrap clazz = $clazz"
     }
@@ -154,4 +155,7 @@ class BannerConnection {
     }
 
 
+    private boolean isWebRequest() {
+        RequestContextHolder.getRequestAttributes() != null
+    }
 }
