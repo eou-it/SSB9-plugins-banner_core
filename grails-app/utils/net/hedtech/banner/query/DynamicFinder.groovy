@@ -89,7 +89,7 @@ class DynamicFinder {
         def filterDataClone = filterData.clone()
         filterDataClone.params = getCriteriaParamsFromParams(filterData.params)
 
-        def queryString =  QueryBuilder.buildCountQuery( query.flattenString(), tableIdentifier, filterData )
+        def queryString =  QueryBuilder.buildCountQuery( query.flattenString(), tableIdentifier, filterDataClone )
 
         Map params = getParamsFromCriteriaParams(filterDataClone.params)
 
