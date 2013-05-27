@@ -94,7 +94,7 @@ class BannerConnection {
 
         } finally {            
             log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
-            if (!proxyUserName || (proxyUserName == "anonymousUser") || (Environment.current == Environment.TEST))  {
+            if (!proxyUserName || (proxyUserName == "anonymousUser") || (Environment.current == Environment.TEST || !isWebRequest())) {
                 log.trace "${super.toString()} closing $underlyingConnection}"
                 underlyingConnection?.close()
             }
