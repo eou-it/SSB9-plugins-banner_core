@@ -145,19 +145,20 @@ class BannerCoreGrailsPlugin {
         resourceRepresentationRegistry(ResourceRepresentationRegistry) { bean ->
             bean.initMethod = 'init'
         }
+        if (CH.config.sdeEnabled) {
+            supplementalDataPersistenceManager(SupplementalDataPersistenceManager) {
+                dataSource = ref(dataSource)
+                sessionFactory = ref(sessionFactory)
+                supplementalDataService = ref(supplementalDataService)
 
-        supplementalDataPersistenceManager(SupplementalDataPersistenceManager) {
-            dataSource = ref(dataSource)
-            sessionFactory = ref(sessionFactory)
-            supplementalDataService = ref(supplementalDataService)
+            }
 
-        }
-
-        supplementalDataService(SupplementalDataService) { bean ->
-            dataSource = ref(dataSource)
-            sessionFactory = ref(sessionFactory)
-            supplementalDataPersistenceManager = ref(supplementalDataPersistenceManager)
-            bean.initMethod = 'init'
+            supplementalDataService(SupplementalDataService) { bean ->
+                dataSource = ref(dataSource)
+                sessionFactory = ref(sessionFactory)
+                supplementalDataPersistenceManager = ref(supplementalDataPersistenceManager)
+                bean.initMethod = 'init'
+            }
         }
 
 //        tabLevelSecurityService( TabLevelSecurityService ) { bean ->
@@ -168,15 +169,13 @@ class BannerCoreGrailsPlugin {
         userAuthorityService( BannerGrantedAuthorityService ) { bean ->
         }
 
-
-        multiEntityProcessingService( MultiEntityProcessingService ) { bean ->
-            dataSource = ref( dataSource )
-            sessionFactory = ref( sessionFactory )
+        multiEntityProcessingService(MultiEntityProcessingService) { bean ->
+            dataSource = ref(dataSource)
+            sessionFactory = ref(sessionFactory)
             bean.initMethod = 'init'
         }
 
-        roleVoter( BannerAccessDecisionVoter ) {
-        }
+        roleVoter(BannerAccessDecisionVoter)
 
         httpSessionService(HttpSessionService) {
             dataSource = ref(dataSource)
@@ -295,16 +294,18 @@ class BannerCoreGrailsPlugin {
                 controllerArtefact.clazz.mixin RestfulControllerMixin
             }
         }
-
         // mix-in supplemental data support into all models
-        application.domainClasses.each { modelArtefact ->
-            try {
-                modelArtefact.clazz.mixin SupplementalDataSupportMixin
-            } catch (e) {
-                e.printStackTrace()
-                throw e
+        if (CH.config.sdeEnabled) {
+            application.domainClasses.each { modelArtefact ->
+                try {
+                    modelArtefact.clazz.mixin SupplementalDataSupportMixin
+                } catch (e) {
+                    e.printStackTrace()
+                    throw e
+                }
             }
         }
+
 
         String.metaClass.flattenString = {
             return delegate.replace("\n", "").replaceAll(/  */, " ")
@@ -328,8 +329,9 @@ class BannerCoreGrailsPlugin {
         def listeners = applicationContext.sessionFactory.eventListeners
 
         // register hibernate listener to load supplemental data
-        addEventTypeListener(listeners, new SupplementalDataHibernateListener(), 'postLoad')
-
+        if (CH.config.sdeEnabled) {
+            addEventTypeListener(listeners, new SupplementalDataHibernateListener(), 'postLoad')
+        }
         // register hibernate listener for populating audit trail properties before inserting and updating models
         def auditTrailSupportListener = new AuditTrailPropertySupportHibernateListener()
         ['preInsert', 'preUpdate'].each {

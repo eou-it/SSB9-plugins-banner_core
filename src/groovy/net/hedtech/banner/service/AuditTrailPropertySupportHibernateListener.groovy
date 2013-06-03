@@ -1,6 +1,6 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.service
 
 import org.apache.commons.lang.ArrayUtils
@@ -15,7 +15,7 @@ import org.hibernate.event.PreInsertEventListener
 import org.hibernate.event.PreUpdateEventListener
 
 import org.springframework.security.core.context.SecurityContextHolder as SCH
-
+import net.hedtech.banner.security.BannerUser
 
 /**
  * A hibernate event listener responsible for setting audit trail fields. Performing this
@@ -68,10 +68,10 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         cal.setTime( new Date() )
         cal.set( Calendar.MILLISECOND, 0 ) // truncate fractional seconds, so that we can compare dates to those retrieved from the database
         Date lastModified = new Date( cal.getTime().getTime() )
-
+        def  lastModifiedBy = getLastModifiedBy()
         (setPropertyValue( event, "dataOrigin" ) { CH.config?.dataOrigin ?: "Banner" }
-            && setPropertyValue( event, "lastModifiedBy" ) { getLastModifiedBy() }
-            && setPropertyValue( event, "lastModified" ) { lastModified })
+                && setPropertyValue( event, "lastModifiedBy" ) { lastModifiedBy }
+                && setPropertyValue( event, "lastModified" ) { lastModified })
     }
 
 
@@ -86,15 +86,24 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
             }
             true
         } catch (e) {
-            println "AuditTrailPropertySupportHibernateListener.setPropertyValue caught $e"
+            println "Error in setPropertyValueAuditTrailPropertySupportHibernateListener.setPropertyValue caught $e"
             false
         }
     }
 
     def getLastModifiedBy() {
-        String  lastModifiedBy = SCH.context?.authentication?.principal?.username
-        if (lastModifiedBy.length() > 30) {
-            return  lastModifiedBy.substring(0,30)
+        String  lastModifiedBy
+        try {
+            if  (SCH.context?.authentication?.principal instanceof BannerUser )
+                lastModifiedBy = SCH.context?.authentication?.principal?.username
+            else
+                lastModifiedBy = SCH.context?.authentication?.principal
+
+            if (lastModifiedBy.length() > 30) {
+                return  lastModifiedBy.substring(0,30)
+            }
+        } catch (e) {
+            println "Error : Could not retrieve last modified by lastModifiedBy:$lastModifiedBy $e"
         }
         return lastModifiedBy
     }
