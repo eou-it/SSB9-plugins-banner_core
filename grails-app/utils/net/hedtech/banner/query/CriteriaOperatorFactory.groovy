@@ -20,7 +20,8 @@ import net.hedtech.banner.query.operators.LessThanOrIsNullOperator
 import net.hedtech.banner.query.operators.LessThanEqualsOperator
 import net.hedtech.banner.query.operators.LessEqualsOrIsNullOperator;
 import net.hedtech.banner.query.operators.Operators;
-import net.hedtech.banner.query.operators.CriteriaOperator;
+import net.hedtech.banner.query.operators.CriteriaOperator
+import net.hedtech.banner.query.operators.SoundsLikeOperator;
 
 class CriteriaOperatorFactory {
 
@@ -87,6 +88,9 @@ class CriteriaOperatorFactory {
                 break;
             case Operators.LESS_THAN_EQUALS_OR_IS_NULL:
                 return new LessEqualsOrIsNullOperator()
+                break;
+            case Operators.SOUNDS_LIKE:
+                return new SoundsLikeOperator()
                 break;
         }
     }

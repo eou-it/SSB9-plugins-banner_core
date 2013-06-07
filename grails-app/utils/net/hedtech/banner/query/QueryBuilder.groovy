@@ -27,20 +27,27 @@ class QueryBuilder {
     }
 
     public static getCriteriaParams(criteria, params, operator) {
-        /*if(params instanceof List<CriteriaParam>) {
-            return params
-        }
-        else {*/
-            List<CriteriaParam> criteriaParams = new ArrayList<CriteriaParam>();
-            def data = params.get(criteria.key)
-            criteriaParams.add(data)
+        List<CriteriaParam> criteriaParams = new ArrayList<CriteriaParam>();
+        def data = params.get(criteria.key)
+        criteriaParams.add(getCriteriaParam(criteria.key, data))
 
-            if(operator == Operators.BETWEEN) {
-                data = params.get(criteria.key + "_and")
-                criteriaParams.add(data)
-            }
-            return criteriaParams
-        //}
+        if(operator == Operators.BETWEEN) {
+            data = params.get(criteria.key + "_and")
+            criteriaParams.add(getCriteriaParam(criteria.key, data))
+        }
+        return criteriaParams
+    }
+
+    private static getCriteriaParam(String paramKey, Object data) {
+        if(data instanceof CriteriaParam) {
+            return data
+        }
+        else {
+            CriteriaParam param = new CriteriaParam();
+            param.paramKey = paramKey;
+            param.data = data
+            return param;
+        }
     }
 
     public static def buildQuery = { query, tableIdentifier, filterData, pagingAndSortParams ->
@@ -60,37 +67,22 @@ class QueryBuilder {
         criteria.each {
 
             def operator = it.operator
-           /* if(data instanceof Date) {
-                def newOperator
-                if(isTimeSet(data)) {
-                    newOperator = "datetime" + operator
-                }
-                else {
-                    newOperator = "date" + operator
-
-                }
-                if(CriteriaOperatorFactory.operators.containsKey(newOperator)) {
-                    operator = newOperator
-                }
-            }*/
-
             //Changed
             //returnQuery += CriteriaOperatorFactory.operators."${operator}"?.dynamicQuery(tableIdentifier,it)
 
-                //CriteriaParam param = new CriteriaParam();
-                //param.data = data
-                //param.addAttribute("containsTime", true)
+            //CriteriaParam param = new CriteriaParam();
+            //param.data = data
+            //param.addAttribute("containsTime", true)
 
-                CriteriaData criteriaData = new CriteriaData()
-                criteriaData.tableAlias = tableIdentifier;
-                criteriaData.tableBindingAttribute = it.binding
-                criteriaData.paramKey = it.key
-                //criteriaData.addParam(param)
-                criteriaData.addParams(getCriteriaParams(it, params, operator))
+            CriteriaData criteriaData = new CriteriaData()
+            criteriaData.tableAlias = tableIdentifier;
+            criteriaData.tableBindingAttribute = it.binding
+            criteriaData.paramKey = it.key
+            //criteriaData.addParam(param)
+            criteriaData.addParams(getCriteriaParams(it, params, operator))
 
-                CriteriaOperator criteriaOperator = CriteriaOperatorFactory.getCriteriaOperator("${operator}")
-                newQuery = Query.and(newQuery, criteriaOperator.getQuery(criteriaData));
-
+            CriteriaOperator criteriaOperator = CriteriaOperatorFactory.getCriteriaOperator("${operator}")
+            newQuery = Query.and(newQuery, criteriaOperator.getQuery(criteriaData));
         }
 
         //New
@@ -134,9 +126,6 @@ class QueryBuilder {
          Query newQuery = Query.createQuery(returnQuery);
 
          criteria.each {
-             //Changed
-             //returnQuery += CriteriaOperatorFactory.operators."${it.operator}"?.dynamicQuery(tableIdentifier,it)
-
              def operator = it.operator
 
              CriteriaData criteriaData = new CriteriaData()
