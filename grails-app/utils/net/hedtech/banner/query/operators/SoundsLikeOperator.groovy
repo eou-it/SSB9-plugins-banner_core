@@ -13,7 +13,7 @@ class SoundsLikeOperator extends CriteriaOperator {
     public String getQueryString(CriteriaData data) {
         if(data.params && data.params.size() > 0) {
             CriteriaParam param = data.params.get(0);
-            return "((soundex(${data.tableAlias}.${data.tableBindingAttribute} = soundex(:${data.paramKey})) or :${data.paramKey} is null)"
+            return "((soundex(${data.tableAlias}.${data.tableBindingAttribute}) = soundex(:${data.paramKey})) or :${data.paramKey} is null)"
         }
         return ""
     }
