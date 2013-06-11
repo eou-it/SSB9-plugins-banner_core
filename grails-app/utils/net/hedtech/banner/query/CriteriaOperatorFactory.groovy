@@ -122,7 +122,6 @@ class CriteriaOperatorFactory {
             date:[
                     [operator:Operators.EQUALS, default:"true"],
                     [operator:Operators.BETWEEN],
-                    [operator:Operators.IN],
                     [operator:Operators.GREATER_THAN],
                     [operator:Operators.GREATER_THAN_EQUALS],
                     [operator:Operators.LESS_THAN],
