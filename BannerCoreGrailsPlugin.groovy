@@ -158,6 +158,10 @@ class BannerCoreGrailsPlugin {
             bean.initMethod = 'init'
         }
 
+        userAuthorityService( BannerGrantedAuthorityService ) { bean ->
+        }
+
+
         multiEntityProcessingService(MultiEntityProcessingService) { bean ->
             dataSource = ref(dataSource)
             sessionFactory = ref(sessionFactory)

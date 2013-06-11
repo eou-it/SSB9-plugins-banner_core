@@ -1,167 +1,141 @@
-/*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
 package net.hedtech.banner.query
+
+import net.hedtech.banner.query.operators.EqualsOperator
+import net.hedtech.banner.query.operators.BetweenOperator
+import net.hedtech.banner.query.operators.ContainsOperator
+import net.hedtech.banner.query.operators.InOperator
+import net.hedtech.banner.query.operators.EqualsIgnoreCaseOperator
+import net.hedtech.banner.query.operators.EqualsOrIsNullOperator
+import net.hedtech.banner.query.operators.StartsWithOperator
+import net.hedtech.banner.query.operators.EndsWithOperator
+import net.hedtech.banner.query.operators.NotEqualsIgnoreCaseOperator
+import net.hedtech.banner.query.operators.NotEqualsOrIsNullOperator
+import net.hedtech.banner.query.operators.IsNullOperator
+import net.hedtech.banner.query.operators.IsNotNullOperator
+import net.hedtech.banner.query.operators.NotEqualsOperator
+import net.hedtech.banner.query.operators.GreaterThanOperator
+import net.hedtech.banner.query.operators.GreaterThanEqualsOperator
+import net.hedtech.banner.query.operators.LessThanOperator
+import net.hedtech.banner.query.operators.LessThanOrIsNullOperator
+import net.hedtech.banner.query.operators.LessThanEqualsOperator
+import net.hedtech.banner.query.operators.LessEqualsOrIsNullOperator;
+import net.hedtech.banner.query.operators.Operators;
+import net.hedtech.banner.query.operators.CriteriaOperator;
 
 class CriteriaOperatorFactory {
 
-    static final operators = [equals:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.equals",
-                                            operator:"=",
-                                            key:"equals",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} = :${parammap.key} "},
-                                            formatvalue : {value -> value } ],
-                                equalsignorecase:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.equals",
-                                            operator:"=",
-                                            key:"equalsignorecase",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and lower($tableIdentifier.${parammap.binding}) = lower(:${parammap.key}) "},
-                                            formatvalue : {value -> value } ],
-                                equalsorisnull:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.equalsorisnull",
-                                            operator:"=",
-                                            key:"equalsorisnull",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and ($tableIdentifier.${parammap.binding} = :${parammap.key} OR $tableIdentifier.${parammap.binding} IS NULL) "},
-                                            formatvalue : {value -> value } ],
-                                contains:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.contains",
-                                            operator:"like",
-                                            key:"contains",
-                                            dynamicQuery: {tableIdentifier, parammap -> " and lower($tableIdentifier.${parammap.binding}) like lower(:${parammap.key}) " },
-                                            formatvalue : {value -> "%${value}%" } ],
-                                startswith:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.startswith",
-                                            operator:"like",
-                                            key:"startswith",
-                                            dynamicQuery: {tableIdentifier, parammap -> " and lower($tableIdentifier.${parammap.binding}) like lower(:${parammap.key}) " },
-                                            formatvalue : {value -> "${value}%" }],
-                                endswith:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.endswith",
-                                            operator:"like",
-                                            key:"endswith",
-                                            dynamicQuery: {tableIdentifier, parammap -> " and lower($tableIdentifier.${parammap.binding}) like lower(:${parammap.key}) " },
-                                            formatvalue : {value -> "%${value}" }],
-                                between:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.between",
-                                            operator:"like",
-                                            key:"between",
-                                            dynamicQuery: {tableIdentifier, parammap -> " and ($tableIdentifier.${parammap.binding} between :${parammap.key} and :${parammap.key}_and) " },
-                                            formatvalue : {value -> value }],
-                                numericbetween:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.between",
-                                            operator:"like",
-                                            key:"numericbetween",
-                                            dynamicQuery: {tableIdentifier, parammap -> " and ($tableIdentifier.${parammap.binding} >= :${parammap.key} and $tableIdentifier.${parammap.binding} <= :${parammap.key}_and) " },
-                                            formatvalue : {value -> value }],
-                                notequals:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.notequals",
-                                            operator:"!=",
-                                            key:"notequals",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} != :${parammap.key} "},
-                                            formatvalue : {value -> value }],
-                                notequalsignorecase:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.notequals",
-                                            operator:"!=",
-                                            key:"notequalsignorecase",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and lower($tableIdentifier.${parammap.binding}) != lower(:${parammap.key}) "},
-                                            formatvalue : {value -> value }],
-                                notequalsorisnull:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.notequalsorisnull",
-                                            operator:"!=",
-                                            key:"notequalsorisnull",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and ($tableIdentifier.${parammap.binding} != :${parammap.key} OR $tableIdentifier.${parammap.binding} IS NULL) "},
-                                            formatvalue : {value -> value }],
-                                greaterthan:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.greaterthan",
-                                            operator:">",
-                                            key:"greaterthan",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} > :${parammap.key}  "},
-                                            formatvalue : {value -> value }],
-                                greaterthanorisnull:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.greaterthanorisnull",
-                                            operator:">",
-                                            key:"greaterthanorisnull",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and ($tableIdentifier.${parammap.binding} > :${parammap.key} or $tableIdentifier.${parammap.binding} IS NULL) "},
-                                            formatvalue : {value -> value }],
-                                lessthan:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.lessthan",
-                                            operator:"<",
-                                            key:"lessthan",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} < :${parammap.key} "},
-                                            formatvalue : {value -> value }],
-                                lessthanorisnull:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.lessthanorisnull",
-                                            operator:"<",
-                                            key:"lessthanorisnull",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and ($tableIdentifier.${parammap.binding} < :${parammap.key} or $tableIdentifier.${parammap.binding} IS NULL) "},
-                                            formatvalue : {value -> value }],
-                                greaterthanequals:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.greaterthanequals",
-                                            operator:">=",
-                                            key:"greaterthanequals",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} >= :${parammap.key} "},
-                                            formatvalue : {value -> value }],
-                                greaterthanequalsorisnull:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.greaterthanequalsorisnull",
-                                            operator:">=",
-                                            key:"greaterthanequalsorisnull",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and ($tableIdentifier.${parammap.binding} >= :${parammap.key} or $tableIdentifier.${parammap.binding} IS NULL) "},
-                                            formatvalue : {value -> value }],
-                                lessthanequals:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.lessthanequals",
-                                            operator:"<=",
-                                            key:"lessthanequals",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} <= :${parammap.key}  "},
-                                            formatvalue : {value -> value }],
-                                lessthanequalsorisnull:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.lessthanequalsorisnull",
-                                            operator:"<=",
-                                            key:"lessthanequalsorisnull",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and ($tableIdentifier.${parammap.binding} <= :${parammap.key} or $tableIdentifier.${parammap.binding} IS NULL) "},
-                                            formatvalue : {value -> value }],
-                                isnull:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.isnull",
-                                            operator:"is null",
-                                            key:"isnull",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} IS NULL "},
-                                            formatvalue : {value -> value }],
-                                isnotnull:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.isnotnull",
-                                            operator:"is not null",
-                                            key:"isnotnull",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and $tableIdentifier.${parammap.binding} IS NOT NULL "},
-                                            formatvalue : {value -> value }],
-                                soundslike:[label:"net.hedtech.banner.ui.zk.search.advancedSearch.operator.soundslike",
-                                            operator:"sounds like",
-                                            key:"soundslike",
-                                            dynamicQuery: {tableIdentifier, parammap-> " and ((soundex($tableIdentifier.${parammap.binding}) = soundex(:${parammap.key})) or :${parammap.key} is null)"},
-                                            formatvalue : {value -> value }]
-                              ]
+    private CriteriaOperatorFactory() {
 
-        static final operatorGroups = [alphanumeric:[
-                                            [operator:operators.contains, default:"true"],
-                                            [operator:operators.startswith],
-                                            [operator:operators.endswith],
-                                            [operator:operators.equalsignorecase],
-                                            [operator:operators.notequalsignorecase],
-                                            [operator:operators.notequalsorisnull],
-                                            [operator:operators.isnull],
-                                            [operator:operators.isnotnull]
-                                        ],
-                                        numeric:[
-                                            [operator:operators.equals, default:"true" ],
-                                            [operator:operators.notequals],
-                                            [operator:operators.notequalsorisnull],
-                                            [operator:operators.numericbetween],
-                                            [operator:operators.greaterthan],
-                                            [operator:operators.greaterthanequals],
-                                            [operator:operators.lessthan],
-                                            [operator:operators.lessthanorisnull],
-                                            [operator:operators.lessthanequals],
-                                            [operator:operators.lessthanequalsorisnull],
-                                            [operator:operators.isnull],
-                                            [operator:operators.isnotnull]
-                                        ],
-                                        date:[
-                                            [operator:operators.equals, default:"true" ],
-                                            [operator:operators.between],
-                                            [operator:operators.greaterthan],
-                                            [operator:operators.greaterthanequals],
-                                            [operator:operators.lessthan],
-                                            [operator:operators.lessthanorisnull],
-                                            [operator:operators.lessthanequals],
-                                            [operator:operators.lessthanequalsorisnull],
-                                            [operator:operators.isnull],
-                                            [operator:operators.isnotnull]
-                                        ],
-                                        boolean:[
-                                            [operator:operators.equals, default:"true"]
-                                        ],
-                                        checkbox:[
-                                            [operator:operators.equalsorisnull, default:"true"]
-                                        ],
-                                        radio:[
-                                            [operator:operators.equalsorisnull, default:"true"]
-                                        ]
+    }
 
-        ]
+    public static CriteriaOperator getCriteriaOperator(String key) {
+        switch (key) {
+            case Operators.EQUALS:
+                return new EqualsOperator();
+                break;
+            case Operators.BETWEEN:
+            case "numericbetween": //TODO need to remove this when numeric between is removed from all zuls
+                return new BetweenOperator();
+                break;
+            case Operators.CONTAINS:
+                return new ContainsOperator();
+                break;
+            case Operators.IN:
+                return new InOperator();
+                break;
+            case Operators.EQUALS_IGNORE_CASE:
+                return new EqualsIgnoreCaseOperator();
+                break;
+            case Operators.EQUALS_OR_IS_NULL:
+                return new EqualsOrIsNullOperator()
+                break;
+            case Operators.STARTS_WITH:
+                return new StartsWithOperator()
+                break;
+            case Operators.ENDS_WITH:
+                return new EndsWithOperator()
+                break;
+            case Operators.NOT_EQUALS_IGNORE_CASE:
+                return new NotEqualsIgnoreCaseOperator()
+                break;
+            case Operators.NOT_EQUALS_OR_IS_NULL:
+                return new NotEqualsOrIsNullOperator()
+                break;
+            case Operators.IS_NULL:
+                return new IsNullOperator()
+                break;
+            case Operators.IS_NOT_NULL:
+                return new IsNotNullOperator()
+                break;
+            case Operators.NOT_EQUALS:
+                return new NotEqualsOperator()
+                break;
+            case Operators.GREATER_THAN:
+                return new GreaterThanOperator()
+                break;
+            case Operators.GREATER_THAN_EQUALS:
+                return new GreaterThanEqualsOperator()
+                break;
+            case Operators.LESS_THAN:
+                return new LessThanOperator()
+                break;
+            case Operators.LESS_THAN_OR_IS_NULL:
+                return new LessThanOrIsNullOperator()
+                break;
+            case Operators.LESS_THAN_EQUALS:
+                return new LessThanEqualsOperator()
+                break;
+            case Operators.LESS_THAN_EQUALS_OR_IS_NULL:
+                return new LessEqualsOrIsNullOperator()
+                break;
+        }
+    }
+
+    static final operatorGroups = [alphanumeric:[
+            [operator:Operators.CONTAINS, default:"true"],
+            [operator:Operators.STARTS_WITH],
+            [operator:Operators.ENDS_WITH],
+            [operator:Operators.EQUALS_IGNORE_CASE],
+            [operator:Operators.NOT_EQUALS_IGNORE_CASE],
+            [operator:Operators.NOT_EQUALS_OR_IS_NULL],
+            [operator:Operators.IS_NULL],
+            [operator:Operators.IS_NOT_NULL]
+    ],
+            numeric:[
+                    [operator:Operators.EQUALS, default:"true"],
+                    [operator:Operators.NOT_EQUALS],
+                    [operator:Operators.NOT_EQUALS_OR_IS_NULL],
+                    [operator:Operators.BETWEEN],
+                    [operator:Operators.GREATER_THAN],
+                    [operator:Operators.GREATER_THAN_EQUALS],
+                    [operator:Operators.LESS_THAN],
+                    [operator:Operators.LESS_THAN_OR_IS_NULL],
+                    [operator:Operators.LESS_THAN_EQUALS],
+                    [operator:Operators.LESS_THAN_EQUALS_OR_IS_NULL],
+                    [operator:Operators.IS_NULL],
+                    [operator:Operators.IS_NOT_NULL]
+            ],
+            date:[
+                    [operator:Operators.EQUALS, default:"true"],
+                    [operator:Operators.BETWEEN],
+                    [operator:Operators.IN],
+                    [operator:Operators.GREATER_THAN],
+                    [operator:Operators.GREATER_THAN_EQUALS],
+                    [operator:Operators.LESS_THAN],
+                    [operator:Operators.LESS_THAN_OR_IS_NULL],
+                    [operator:Operators.LESS_THAN_EQUALS],
+                    [operator:Operators.LESS_THAN_EQUALS_OR_IS_NULL],
+                    [operator:Operators.IS_NULL],
+                    [operator:Operators.IS_NOT_NULL]
+            ],
+            boolean:[
+                    [operator:Operators.EQUALS, default:"true"]
+            ],
+            checkbox:[
+                    [operator:Operators.EQUALS_OR_IS_NULL, default:"true"]
+            ],
+            radio:[
+                    [operator:Operators.EQUALS_OR_IS_NULL, default:"true"]
+            ]
+    ]
 }
