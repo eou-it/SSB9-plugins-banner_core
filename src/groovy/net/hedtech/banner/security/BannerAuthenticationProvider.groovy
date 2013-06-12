@@ -3,18 +3,39 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import net.hedtech.banner.db.BannerDS
+import net.hedtech.banner.service.LoginAuditService
+
+import java.sql.SQLException
+
+import javax.sql.DataSource
 
 import grails.util.GrailsNameUtils
+
 import groovy.sql.Sql
-import java.sql.SQLException
-import javax.sql.DataSource
+
+import oracle.jdbc.pool.OracleDataSource
+
 import org.apache.log4j.Logger
+
+import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
+
 import org.springframework.context.ApplicationContext
+import org.springframework.security.authentication.AccountExpiredException
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.CredentialsExpiredException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.LockedException
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.authentication.*
+import org.springframework.security.core.authority.GrantedAuthorityImpl
+import org.springframework.web.context.request.RequestContextHolder
+
 
 /**
  * An authentication provider which authenticates a user by logging into the Banner database.
@@ -28,6 +49,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     def dataSource               // injected by Spring
     def authenticationDataSource // injected by Spring
+
 
     public boolean supports( Class clazz ) {
         log.trace "BannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isAdministrativeBannerEnabled() == true}"
@@ -55,8 +77,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             getApplicationContext().publishEvent( new BannerAuthenticationEvent( authenticationResults['oracleUserName'], true, '', '', new Date(), '' ) )
 
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, dataSource )
-
-            authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
+            authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String  
 
             newAuthenticationToken( this, authenticationResults )
         }
@@ -148,7 +169,18 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
      * Returns the authorities granted for the identified user.
      **/
     public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, DataSource dataSource ) {
-        return BannerGrantedAuthorityService.determineAuthorities (authenticationResults, dataSource)
+
+        def conn
+        def db
+        try {
+            // We query the database for all role assignments for the user, using an unproxied connection.
+            // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
+            conn = dataSource.unproxiedConnection
+            db = new Sql( conn )
+            return determineAuthorities( authenticationResults, db )
+        } finally {
+            conn?.close()
+        }
     }
 
 
@@ -156,7 +188,37 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
      * Returns the authorities granted for the identified user.
      **/
     public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, Sql db ) {
-        return BannerGrantedAuthorityService.determineAuthorities (authenticationResults, db)
+
+        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
+        if (!authenticationResults.oracleUserName) return authorities // empty list
+
+        try {
+            // We query the database for all role assignments for the user, using an unproxied connection.
+            // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
+            /**
+             * Performance Tuning - Removed Select * since fetching role password is very expensive.
+             * Password would be fetch on demand while applying the roles for the connection in BannerDS.
+             */
+
+	            db.eachRow( "select GOVUROL_OBJECT, GOVUROL_ROLE from govurol,gubobjs  where govurol_userid = ? and (govurol_object = gubobjs_name     and  (gubobjs_ui_version in ('A','C') OR gubobjs_name in ('GUAGMNU')) )", [authenticationResults.oracleUserName.toUpperCase()] ) { row ->
+	         //   db.eachRow( "select GOVUROL_OBJECT, GOVUROL_ROLE from govurol  where govurol_userid = ? ", [authenticationResults.oracleUserName.toUpperCase()] ) { row ->
+
+
+                /**
+                 * Performance Tuning - Set the role password as null initially as we are no longer fetching it during login.
+                 */
+                def authority = BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, null )
+                //def authority = BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, row.GOVUROL_ROLE_PSWD )
+
+                // log.trace "BannerAuthenticationProvider.determineAuthorities is adding authority $authority"
+                authorities << authority
+            }
+        } catch (SQLException e) {
+            log.error "BannerAuthenticationProvider not able to determine Authorities for user ${authenticationResults.oracleUserName} due to exception $e.message"
+            return new ArrayList<GrantedAuthority>()
+        }
+        log.trace "BannerAuthenticationProvider.determineAuthorities is returning ${authorities?.size()} authorities. "
+        authorities
     }
 
 
@@ -248,9 +310,5 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     private void loadDefault( ApplicationContext appContext, def userName ) {
         appContext.getBean("defaultLoaderService").loadDefault( userName )
     }
-
-}
-
-class UserAuthorityMediator {
 
 }

@@ -5,11 +5,13 @@ package net.hedtech.banner.db
 
 
 import net.hedtech.banner.security.FormContext
+import net.hedtech.banner.security.BannerGrantedAuthority
 
 import groovy.sql.Sql
 
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.CallableStatement
 
 import javax.sql.DataSource
 
@@ -29,8 +31,6 @@ import org.springframework.context.ApplicationContext
 import grails.util.Environment
 import org.springframework.web.context.request.RequestContextHolder
 import net.hedtech.banner.security.BannerUser
-import net.hedtech.banner.security.BannerGrantedAuthorityService
-import net.hedtech.banner.security.BannerGrantedAuthority
 
 /**
  * A dataSource that wraps an 'underlying' datasource.  When this datasource is asked for a
@@ -73,11 +73,12 @@ public class BannerDS implements DataSource {
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (((user instanceof BannerUser && !user?.oracleUserName) || (user instanceof String && user == 'anonymousUser')) && isSelfServiceRequest()) {
             conn = underlyingSsbDataSource.getConnection()
+            // setRoleSSB(conn)
             // SSB Mep setup
             setMepSsb(conn)
 
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
-			bannerConnection = new BannerConnection(conn, null, this)
+            bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
         else if ((user instanceof BannerUser && user?.oracleUserName) && shouldProxy()) {
@@ -95,10 +96,9 @@ public class BannerDS implements DataSource {
                 setFGAC(conn)
                 bannerConnection = new BannerConnection(conn, user?.username, this)
                 if (Environment.current != Environment.TEST && isWebRequest()) {
-                    def session = RequestContextHolder.currentRequestAttributes().request.session
-                    session.setAttribute("bannerRoles", roles)
-                    session.setAttribute("cachedConnection", bannerConnection)
-                    session.setAttribute("formContext", FormContext.get())
+                    RequestContextHolder.currentRequestAttributes().request.session.setAttribute("bannerRoles", roles)
+                    RequestContextHolder.currentRequestAttributes().request.session.setAttribute("cachedConnection", bannerConnection)
+                    RequestContextHolder.currentRequestAttributes().request.session.setAttribute("formContext", FormContext.get())
                 }
             }
         }
@@ -147,10 +147,9 @@ public class BannerDS implements DataSource {
         def formContext = null
 
         if (Environment.current != Environment.TEST && isWebRequest()) {
-            def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
-            bannerConnection = session.getAttribute("cachedConnection")
-            if (session.getAttribute("formContext"))
-                formContext = new ArrayList(session?.getAttribute("formContext"))
+            bannerConnection = RequestContextHolder?.currentRequestAttributes()?.request?.session.getAttribute("cachedConnection")
+            if (RequestContextHolder.currentRequestAttributes().request.session.getAttribute("formContext"))
+                formContext = new ArrayList(RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("formContext"))
         }
         String[] userRoles
 
@@ -173,8 +172,8 @@ public class BannerDS implements DataSource {
                 List applicableAuthorities = extractApplicableAuthorities(user)
 
                 userRoles = getUserRoles(user, applicableAuthorities)?.keySet() as String[]
-                def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
-                roles = session.getAttribute("BANNER_ROLES")
+
+                    roles = RequestContextHolder.currentRequestAttributes().request.session.getAttribute("BANNER_ROLES")
                 if (roles as Set == userRoles as Set) {
                     setFGAC(conn)
                     log.debug "BannerDS.getConnection()  has same roles ${conn} from session cache"
@@ -412,11 +411,33 @@ public class BannerDS implements DataSource {
 
 
     private List extractApplicableAuthorities(grantedAuthorities) {
-        return BannerGrantedAuthorityService.filterAuthorities(grantedAuthorities.asList())
+
+        if (!grantedAuthorities) return []
+
+        List formContext = new ArrayList(FormContext.get())
+        log.debug "BannerDS has retrieved the FormContext value: $formContext"
+        // log.debug "The user's granted authorities are $grantedAuthorities*.authority" // re-enable in development to see all the user's privileges
+
+        List applicableAuthorities = []
+        formContext.each { form ->
+            def authoritiesForForm = grantedAuthorities.findAll { it.authority ==~ /\w+_${form}_\w+/ }
+            authoritiesForForm.each { applicableAuthorities << it }
+        }
+        log.debug "Given FormContext of ${formContext?.join(',')}, the user's applicable authorities are $applicableAuthorities"
+        applicableAuthorities
     }
 
     private List<GrantedAuthority> extractApplicableAuthorities(BannerUser user) {
-        return BannerGrantedAuthorityService.filterAuthorities(user)
+        List<GrantedAuthority> applicableAuthorities = []
+        List<GrantedAuthority> authoritiesForForm
+        def forms
+        if (FormContext.get())
+            forms = new ArrayList(FormContext.get())
+        forms?.each { form ->
+            authoritiesForForm = user.getAuthoritiesFor(form)
+            authoritiesForForm.each { applicableAuthorities << it }
+        }
+        applicableAuthorities
     }
 
     private setRoleSSB(Connection conn) {
@@ -567,23 +588,22 @@ public class BannerDS implements DataSource {
         multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
 
         if (multiEntityProcessingService?.isMEP(conn)) {
-            def session = RequestContextHolder.currentRequestAttributes()?.request?.session
-            if (!session?.getAttribute("mep")) {
+            if (!RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")) {
                 log.error "The Mep Code must be provided when running in multi institution context"
                 conn?.close()
                 throw new RuntimeException("The Mep Code must be provided when running in multi institution context")
             }
 
-            def desc = multiEntityProcessingService?.getMepDescription(session?.getAttribute("mep"), conn)
+            def desc = multiEntityProcessingService?.getMepDescription(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
 
             if (!desc) {
                 log.error "Mep Code is invalid"
                 conn?.close()
                 throw new RuntimeException("Mep Code is invalid")
             } else {
-                session.setAttribute("ssbMepDesc", desc)
-                multiEntityProcessingService?.setHomeContext(session?.getAttribute("mep"), conn)
-                multiEntityProcessingService?.setProcessContext(session?.getAttribute("mep"), conn)
+                RequestContextHolder.currentRequestAttributes()?.request?.session.setAttribute("ssbMepDesc", desc)
+                multiEntityProcessingService?.setHomeContext(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
+                multiEntityProcessingService?.setProcessContext(RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep"), conn)
             }
         }
     }
