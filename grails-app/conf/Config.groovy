@@ -29,12 +29,6 @@ grails.doc.alias.rest       = "2.4 REST"
 grails.doc.alias.dev        = "3. Developer Guide"
 
 
-// CodeNarc rulesets
-codenarc.ruleSetFiles="rulesets/banner.groovy"
-codenarc.reportName="target/CodeNarcReport.html"
-codenarc.propertiesFile="grails-app/conf/codenarc.properties"
-
-
 // Code Coverage configuration
 coverage {
 	enabledByDefault = false

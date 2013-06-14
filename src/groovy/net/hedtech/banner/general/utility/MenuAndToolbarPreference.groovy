@@ -1,19 +1,18 @@
 
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.general.utility
 
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.Table
-import javax.persistence.Version
+import javax.persistence.*
+
 import org.hibernate.annotations.GenericGenerator
-import org.hibernate.annotations.Type
+
 import javax.persistence.NamedQuery
 import javax.persistence.NamedQueries
+import javax.persistence.SequenceGenerator
+import javax.persistence.GenerationType
+import org.hibernate.annotations.Type
 
 /**
  * PREFERENCE TABLE THAT STORES TOOLBAR AND MENU INFOG
@@ -32,14 +31,14 @@ query = """FROM   MenuAndToolbarPreference a
 	      """)
 ])
 class MenuAndToolbarPreference implements Serializable {
-	
+
 	/**
 	 * Surrogate ID for GURTPRF
 	 */
 	@Id
 	@Column(name="GURTPRF_SURROGATE_ID")
-	@GeneratedValue(generator ="triggerAssigned")
-	@GenericGenerator(name = "triggerAssigned", strategy = "net.hedtech.banner.framework.persistence.util.TriggerAssignedIdentityGenerator")
+    @SequenceGenerator(name = "GURTPRF_SEQ_GEN", allocationSize = 1, sequenceName = "GURTPRF_SURROGATE_ID_SEQUENCE")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GURTPRF_SEQ_GEN")
 	Long id
 
 	/**
@@ -138,29 +137,29 @@ class MenuAndToolbarPreference implements Serializable {
 	 */
 	@Column(name="GURTPRF_ACTIVITY_DATE")
 	Date lastModified
-	
+
 	public String toString() {
 		"""PreferenceThatStoresToolbarAndMenuInfog[
-					id=$id, 
-					lastModifiedBy=$lastModifiedBy, 
-					tlbBtn=$tlbBtn, 
-					displayHtCb=$displayHtCb, 
-					displayVtCb=$displayVtCb, 
-					displayHint=$displayHint, 
-					formnameCb=$formnameCb, 
-					releaseCb=$releaseCb, 
-					dbaseInstitutionCb=$dbaseInstitutionCb, 
-					dateTimeCb=$dateTimeCb, 
-					requiredItemCb=$requiredItemCb, 
-					linescrnXPosition=$linescrnXPosition, 
-					linebtnXPosition=$linebtnXPosition, 
-					formnameDisplayIndicator=$formnameDisplayIndicator, 
-					version=$version, 
+					id=$id,
+					lastModifiedBy=$lastModifiedBy,
+					tlbBtn=$tlbBtn,
+					displayHtCb=$displayHtCb,
+					displayVtCb=$displayVtCb,
+					displayHint=$displayHint,
+					formnameCb=$formnameCb,
+					releaseCb=$releaseCb,
+					dbaseInstitutionCb=$dbaseInstitutionCb,
+					dateTimeCb=$dateTimeCb,
+					requiredItemCb=$requiredItemCb,
+					linescrnXPosition=$linescrnXPosition,
+					linebtnXPosition=$linebtnXPosition,
+					formnameDisplayIndicator=$formnameDisplayIndicator,
+					version=$version,
 					dataOrigin=$dataOrigin,
 					lastModified=$lastModified]"""
 	}
 
-	
+
 	boolean equals(o) {
 	    if (this.is(o)) return true;
 	    if (!(o instanceof MenuAndToolbarPreference)) return false;
@@ -185,7 +184,7 @@ class MenuAndToolbarPreference implements Serializable {
         return true;
     }
 
-	
+
 	int hashCode() {
 		int result;
 	    result = (id != null ? id.hashCode() : 0);
@@ -232,10 +231,10 @@ class MenuAndToolbarPreference implements Serializable {
 	     * from being overwritten on re-generation
 	     */
 	    /*PROTECTED REGION ID(preferencethatstorestoolbarandmenuinfog_custom_constraints) ENABLED START*/
-	    
+
 	    /*PROTECTED REGION END*/
     }
-    
+
     /**
      * Please put all the custom methods/code in this protected section to protect the code
      * from being overwritten on re-generation
@@ -243,7 +242,7 @@ class MenuAndToolbarPreference implements Serializable {
     /*PROTECTED REGION ID(preferencethatstorestoolbarandmenuinfog_custom_methods) ENABLED START*/
       public static List fetchMenuAndToolbarPreferenceByUser( String user) {
         def menuAndToolbarPreferences
-        menuAndToolbarPreferences = PersonalPreference.withSession {session ->
+        menuAndToolbarPreferences = MenuAndToolbarPreference.withSession {session ->
             menuAndToolbarPreferences = session.getNamedQuery('MenuAndToolbarPreference.fetchByUser').setString('lastModifiedBy',user).list()}
         return menuAndToolbarPreferences
     }

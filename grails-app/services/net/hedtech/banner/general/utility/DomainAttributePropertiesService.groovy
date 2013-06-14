@@ -77,7 +77,7 @@ class DomainAttributePropertiesService {
 
         entityMap.attributes = mapAttributes
 
-        def grailsDomainClass = new DefaultGrailsDomainClass(grailsApplication.getClassForName(domainClass?.getClazz().name))
+        def grailsDomainClass = new DefaultGrailsDomainClass(domainClass?.getClazz())
 
         grailsDomainClass.properties.each {
 

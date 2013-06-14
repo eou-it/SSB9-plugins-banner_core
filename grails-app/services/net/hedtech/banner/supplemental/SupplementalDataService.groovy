@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.annotation.Propagation
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.service.ServiceBase
+import javax.annotation.PostConstruct
 
 /**
  * A service used to support persistence of supplemental data.
@@ -32,7 +33,7 @@ class SupplementalDataService {
 
     def dataSource                         // injected by Spring
     def sessionFactory                     // injected by Spring
-    def supplementalDataPersistenceManager // injected by Spring
+    SupplementalDataPersistenceManager supplementalDataPersistenceManager // injected by Spring
     def grailsApplication                  // injected by Spring
 
     def supplementalDataConfiguration = [:]
@@ -67,7 +68,10 @@ class SupplementalDataService {
         log.info "SupplementalDataService initialization complete."
     }
     */
-    def init() {
+    @PostConstruct
+    void init() {
+
+        supplementalDataPersistenceManager.supplementalDataService = this
 
         def sdeDataView = []
 

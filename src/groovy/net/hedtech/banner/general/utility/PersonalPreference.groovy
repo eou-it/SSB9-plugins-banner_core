@@ -1,19 +1,11 @@
 
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.general.utility
 
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.Table
-import javax.persistence.Version
-import org.hibernate.annotations.GenericGenerator
-import org.hibernate.annotations.Type
-import javax.persistence.NamedQueries
-import javax.persistence.NamedQuery;
+import javax.persistence.*
+import org.hibernate.annotations.Type;
 
 /**
  * Personal Preference Table
@@ -35,19 +27,19 @@ and guruprf_key = :current_os
 query = """FROM   PersonalPreference a
 		   WHERE  a.group = :group
 		   AND    a.key = :key
-		   AND    a.string = :string		   
+		   AND    a.string = :string
 	       AND    a.lastModifiedBy = :lastModifiedBy
 	      """)
 ])
 class PersonalPreference implements Serializable {
-	
+
 	/**
 	 * Surrogate ID for GURUPRF
 	 */
 	@Id
 	@Column(name="GURUPRF_SURROGATE_ID")
-	@GeneratedValue(generator ="triggerAssigned")
-	@GenericGenerator(name = "triggerAssigned", strategy = "net.hedtech.banner.framework.persistence.util.TriggerAssignedIdentityGenerator")
+    @SequenceGenerator(name = "GURUPRF_SEQ_GEN", allocationSize = 1, sequenceName = "GURUPRF_SURROGATE_ID_SEQUENCE")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GURUPRF_SEQ_GEN")
 	Long id
 
 	/**
@@ -106,23 +98,23 @@ class PersonalPreference implements Serializable {
 	@Column(name="GURUPRF_DATA_ORIGIN", length=30)
 	String dataOrigin
 
-	
-	
+
+
 	public String toString() {
 		"""PersonalPreference[
-					id=$id, 
-					lastModifiedBy=$lastModifiedBy, 
-					group=$group, 
-					key=$key, 
-					string=$string, 
-					value=$value, 
-					systemRequiredIndicator=$systemRequiredIndicator, 
-					lastModified=$lastModified, 
-					version=$version, 
+					id=$id,
+					lastModifiedBy=$lastModifiedBy,
+					group=$group,
+					key=$key,
+					string=$string,
+					value=$value,
+					systemRequiredIndicator=$systemRequiredIndicator,
+					lastModified=$lastModified,
+					version=$version,
 					dataOrigin=$dataOrigin, ]"""
 	}
 
-	
+
 	boolean equals(o) {
 	    if (this.is(o)) return true;
 	    if (!(o instanceof PersonalPreference)) return false;
@@ -140,7 +132,7 @@ class PersonalPreference implements Serializable {
         return true;
     }
 
-	
+
 	int hashCode() {
 		int result;
 	    result = (id != null ? id.hashCode() : 0);
@@ -173,10 +165,10 @@ class PersonalPreference implements Serializable {
 	     * from being overwritten on re-generation
 	     */
 	    /*PROTECTED REGION ID(personalpreference_custom_constraints) ENABLED START*/
-	    
+
 	    /*PROTECTED REGION END*/
     }
-    
+
     /**
      * Please put all the custom methods/code in this protected section to protect the code
      * from being overwritten on re-generation
@@ -188,6 +180,6 @@ class PersonalPreference implements Serializable {
             personalPreferences = session.getNamedQuery('PersonalPreference.fetchByKey').setString('group',group).setString('key',key).setString('string',string).setString('lastModifiedBy',user).list()}
         return personalPreferences
     }
-    
+
     /*PROTECTED REGION END*/
 }
