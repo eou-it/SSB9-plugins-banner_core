@@ -71,7 +71,11 @@ class SupplementalDataService {
     @PostConstruct
     void init() {
 
-        supplementalDataPersistenceManager.supplementalDataService = this
+        if (supplementalDataPersistenceManager) {
+            //TODO: This causes a NullPointerException if sdeEnabled==false.
+            // have not verified it is correct if sdeEnabled==true
+            supplementalDataPersistenceManager.supplementalDataService = this
+        }
 
         def sdeDataView = []
 
