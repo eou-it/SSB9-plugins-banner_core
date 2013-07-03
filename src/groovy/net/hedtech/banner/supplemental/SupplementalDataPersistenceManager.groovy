@@ -12,6 +12,7 @@ import java.text.ParseException
 import net.hedtech.banner.configuration.SupplementalDataUtils
 import net.hedtech.banner.exceptions.ApplicationException
 import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * DAO for supplemental data. This strategy works against the
@@ -21,7 +22,8 @@ class SupplementalDataPersistenceManager {
 
     def dataSource               // injected by Spring
     def sessionFactory           // injected by Spring
-    def supplementalDataService  // injected by Spring
+    @Autowired
+    SupplementalDataService supplementalDataService  // injected by Spring
     Sql sql
 
     private final Logger log = Logger.getLogger(getClass())

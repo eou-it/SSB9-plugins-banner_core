@@ -22,6 +22,13 @@ import groovy.sql.Sql
 import org.apache.log4j.Logger
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
+
+// import org.jasig.cas.client.util.AbstractCasFilter
+
+import org.springframework.context.ApplicationContext
+
 
 /**
  * An authentication provider which authenticates a self service user.  Self service users

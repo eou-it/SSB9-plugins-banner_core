@@ -119,7 +119,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
     }
 
 
-    private int vote( Authentication authentication, String url, Collection<ConfigAttribute> configAttributes ) {
+    int vote( Authentication authentication, String url, Collection<ConfigAttribute> configAttributes ) {
 
         def useDynamicAuthorization = configAttributes.any { it.attribute == ROLE_DETERMINED_DYNAMICALLY }
 

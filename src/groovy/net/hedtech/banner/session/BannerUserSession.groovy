@@ -110,15 +110,15 @@ class BannerUserSession implements Serializable {
     }
 
     int hashCode() {
-        int result;
-        result = id.hashCode();
-        result = 31 * result + version.hashCode();
-        result = 31 * result + lastModifiedBy.hashCode();
-        result = 31 * result + lastModified.hashCode();
-        result = 31 * result + dataOrigin.hashCode();
-        result = 31 * result + sessionToken.hashCode();
-        result = 31 * result + infoType.hashCode();
-        result = 31 * result + getInfo().hashCode();
+        int result = 0
+        if (id) result = id.hashCode();
+        if (version) result = 31 * result + version.hashCode();
+        if (lastModifiedBy) result = 31 * result + lastModifiedBy.hashCode();
+        if (lastModified) result = 31 * result + lastModified.hashCode();
+        if (dataOrigin) result = 31 * result + dataOrigin.hashCode();
+        if (sessionToken) result = 31 * result + sessionToken.hashCode();
+        if (infoType) result = 31 * result + infoType.hashCode();
+        if (infoPersisted) result = 31 * result + getInfo().hashCode();
         return result;
     }
 

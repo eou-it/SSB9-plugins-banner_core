@@ -119,7 +119,8 @@ class SelfServiceMenuService {
 
         };
 
-        if (log.isDebugEnabled()) log.debug("ProcessMenu executed for Menu name:" + menuName)
+
+        log.debug("ProcessMenu executed for Menu name:" + menuName)
         sql.connection.close()
         return dataMap
 

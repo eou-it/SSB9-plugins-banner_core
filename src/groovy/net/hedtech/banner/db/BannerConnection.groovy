@@ -1,7 +1,14 @@
 /*******************************************************************************
  Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
+
 package net.hedtech.banner.db
+
+import net.hedtech.banner.security.FormContext
+import net.hedtech.banner.security.BannerGrantedAuthority
+
+import groovy.sql.Sql
+import org.springframework.web.context.request.RequestContextHolder
 
 import javax.sql.DataSource
 import java.sql.Connection
@@ -31,7 +38,6 @@ class BannerConnection {
     def oracleConnection // the native connection
 
     private final Logger log = Logger.getLogger(getClass())
-
 
     BannerConnection(Connection conn, DataSource bannerDataSource) {
         assert conn
@@ -92,7 +98,7 @@ class BannerConnection {
                 bannerDataSource.clearIdentifer( this )
             }
 
-        } finally {            
+        } finally {
             log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
             if (!proxyUserName || (proxyUserName == "anonymousUser") || (Environment.current == Environment.TEST || !isWebRequest())) {
                 log.trace "${super.toString()} closing $underlyingConnection}"
@@ -148,6 +154,4 @@ class BannerConnection {
     public String toString() {
         "${super.toString()}[user='${proxyUserName}', oracle connection='${extractOracleConnection()}']"
     }
-
-
 }

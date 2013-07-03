@@ -43,7 +43,4 @@ class LogoutController {
             render view: "timeout", model: [uri: uri]
         }
     }
-
-
-
 }

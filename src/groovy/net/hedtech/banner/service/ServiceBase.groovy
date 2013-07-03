@@ -66,7 +66,7 @@ class ServiceBase {
 
     // since this class may be mixed-into a service versus being extended, we won't rely on injection of the
     // supplemental data service, but will fetch it if required.
-    SupplementalDataService supplementalDataService
+    SupplementalDataService _supplementalDataService
 
     def sessionFactory // injected by Spring
     def dataSource     // injected by Spring
@@ -811,12 +811,12 @@ class ServiceBase {
      * Returns the SupplementalDataService.
      **/
     protected def getSupplementalDataService() {
-        if (!supplementalDataService) {
+        if (!_supplementalDataService) {
             // fyi - it's ok if another thread also sneaks in...
             ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
-            supplementalDataService = (SupplementalDataService) ctx.getBean( GrailsNameUtils.getPropertyNameRepresentation( SupplementalDataService.class ) )
+            _supplementalDataService = (SupplementalDataService) ctx.getBean( GrailsNameUtils.getPropertyNameRepresentation( SupplementalDataService.class ) )
         }
-        supplementalDataService
+        _supplementalDataService
     }
 
 

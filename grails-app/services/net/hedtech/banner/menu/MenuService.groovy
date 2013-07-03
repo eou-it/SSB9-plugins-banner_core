@@ -187,7 +187,7 @@ class MenuService {
         log.debug("Goto Menu started")
         sql = new Sql(sessionFactory.getCurrentSession().connection())
         log.debug(sql.useConnection.toString())
-        // sql.execute( "Begin gukmenu.p_bld_prod_menu('BAN9'); End;" )
+        sql.execute( "Begin gukmenu.p_bld_prod_menu('BAN9'); End;" )
         def searchValWild = "%" + searchVal + "%"
         sql.eachRow("select distinct gutmenu_value,gutmenu_desc,gubpage_name, gubmodu_url  from gutmenu,gubmodu, gubpage,gubobjs where gutmenu_value  = gubpage_code (+) AND  gubobjs_name = gutmenu_value AND gubobjs_ui_version IN ('A','C')  and gubpage_gubmodu_code  = gubmodu_code (+) AND  (upper(gutmenu_value) like ? OR upper(gutmenu_desc) like ? OR upper(gubpage_name) like ?)", [searchValWild, searchValWild, searchValWild]) {
             def mnu = new Menu()

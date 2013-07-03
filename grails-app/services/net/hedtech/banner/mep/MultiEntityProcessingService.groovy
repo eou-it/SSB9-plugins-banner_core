@@ -17,7 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder as SCH
  */
 class MultiEntityProcessingService {
 
-    static transactional = true
+    static transactional = false
     private final Logger log = Logger.getLogger(getClass())
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
