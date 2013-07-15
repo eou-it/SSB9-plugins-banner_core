@@ -384,7 +384,7 @@ class ApplicationException extends RuntimeException {
                             [ message: translate( localize: localize,
                                                   code: "not.found.message",
                                                   args: [ localize( code: "${entityClassName}.label",
-                                                                    default: getUserFriendlyName() ) ] ) as String,
+                                                                    default: getUserFriendlyName() ), (wrappedException?.hasProperty('id') ? wrappedException?.id : null) ] ) as String,
                               errors: null
                             ]
                         }
