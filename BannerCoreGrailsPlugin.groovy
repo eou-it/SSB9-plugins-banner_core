@@ -10,9 +10,7 @@ import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtracto
 import grails.util.GrailsUtil
 import java.util.concurrent.Executors
 import javax.servlet.Filter
-import net.hedtech.banner.controllers.RestfulControllerMixin
 import net.hedtech.banner.mep.MultiEntityProcessingService
-import net.hedtech.banner.representations.ResourceRepresentationRegistry
 import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
 import net.hedtech.banner.service.DefaultLoaderService
 import net.hedtech.banner.service.HttpSessionService
@@ -85,42 +83,23 @@ class BannerCoreGrailsPlugin {
                     maxActive = 5
                     maxIdle = 2
                     defaultAutoCommit = "false"
-                    if (CH.config.elvyx.url instanceof String || CH.config.elvyx.url instanceof GStringImpl) {
-                        log.info "Will use the 'elvyx' database driver to allow capture of SQL -- url: ${CH.config.elvyx.url}"
-                        log.info "Please launch the Elvyx UI to monitor SQL traffic... (see http://www.elvyx.com/ to download)"
-                        driverClassName = "${CH.config.elvyx.driver}"
-                        url = "${CH.config.elvyx.url}"
-                    }
-                    else {
-                        driverClassName = "${CH.config.bannerDataSource.driver}"
-                        url = "${CH.config.bannerDataSource.url}"
-                        password = "${CH.config.bannerDataSource.password}"
-                        username = "${CH.config.bannerDataSource.username}"
-                    }
+                    driverClassName = "${CH.config.bannerDataSource.driver}"
+                    url = "${CH.config.bannerDataSource.url}"
+                    password = "${CH.config.bannerDataSource.password}"
+                    username = "${CH.config.bannerDataSource.username}"
                 }
                 if (isSsbEnabled()) {
-                    if (CH.config.elvyx.bannerSsbDataSource.url instanceof String || CH.config.elvyx.bannerSsbDataSource.url instanceof GStringImpl) {
-                        log.info "Will use the 'elvyx' database driver to allow capture of SQL -- url: ${CH.config.elvyx.bannerSsbDataSource.url}"
-                        log.info "Please launch the Elvyx UI to monitor SQL traffic... (see http://www.elvyx.com/ to download)"
-                        underlyingSsbDataSource(BasicDataSource) {
-                            maxActive = 5
-                            maxIdle = 2
-                            defaultAutoCommit = "false"
-                            driverClassName = "${CH.config.elvyx.bannerSsbDataSource.driver}"
-                            url = "${CH.config.elvyx.bannerSsbDataSource.url}"
-                        }
-                    } else {
-                        underlyingSsbDataSource(BasicDataSource) {
-                            maxActive = 5
-                            maxIdle = 2
-                            defaultAutoCommit = "false"
-                            driverClassName = "${CH.config.bannerSsbDataSource.driver}"
-                            url = "${CH.config.bannerSsbDataSource.url}"
-                            password = "${CH.config.bannerSsbDataSource.password}"
-                            username = "${CH.config.bannerSsbDataSource.username}"
-                        }
+                    underlyingSsbDataSource(BasicDataSource) {
+                        maxActive = 5
+                        maxIdle = 2
+                        defaultAutoCommit = "false"
+                        driverClassName = "${CH.config.bannerSsbDataSource.driver}"
+                        url = "${CH.config.bannerSsbDataSource.url}"
+                        password = "${CH.config.bannerSsbDataSource.password}"
+                        username = "${CH.config.bannerSsbDataSource.username}"
                     }
-                }
+
+                 }
                 break
         }
 
@@ -138,9 +117,6 @@ class BannerCoreGrailsPlugin {
             dataSource = ref(dataSource)
         }
 
-        resourceRepresentationRegistry(ResourceRepresentationRegistry) { bean ->
-            bean.initMethod = 'init'
-        }
 
         userAuthorityService( BannerGrantedAuthorityService ) { bean ->
         }
@@ -263,19 +239,6 @@ class BannerCoreGrailsPlugin {
             }
         }
 
-        // mix-in and register RESTful actions for any controller having this line:
-        //     static List mixInRestActions = [ 'show', 'list', 'create', 'update', 'destroy' ]
-        // Note that if any actions are omitted from this line, they will not be accessible (as they won't be registered)
-        // even though they will still be mixed-in.
-        application.controllerClasses.each { controllerArtefact ->
-            def neededRestActions = GCU.getStaticPropertyValue(controllerArtefact.clazz, "mixInRestActions")
-            if (neededRestActions?.size() > 0) {
-                for (it in neededRestActions) {
-                    controllerArtefact.registerMapping it
-                }
-                controllerArtefact.clazz.mixin RestfulControllerMixin
-            }
-        }
 
 
         String.metaClass.flattenString = {
