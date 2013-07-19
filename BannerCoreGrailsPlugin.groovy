@@ -1,4 +1,4 @@
-/* ******************************************************************************
+/* *****************************************************************************
  Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 
@@ -118,7 +118,6 @@ class BannerCoreGrailsPlugin {
         sqlExceptionTranslator(org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator, 'Oracle') {
             dataSource = ref(dataSource)
         }
-
 
         userAuthorityService( BannerGrantedAuthorityService ) { bean ->
         }
@@ -252,8 +251,6 @@ class BannerCoreGrailsPlugin {
             }
         }
 
-
-
         String.metaClass.flattenString = {
             return delegate.replace("\n", "").replaceAll(/  */, " ")
         }
@@ -261,15 +258,8 @@ class BannerCoreGrailsPlugin {
         GString.metaClass.flattenString = {
             return delegate.replace("\n", "").replaceAll(/  */, " ")
         }
-
-        // inject the logger into every class (Grails only injects this into some artifacts)
-//        application.allClasses.each {
-//            //For some reason weblogic throws an error if we try to inject the method if it is already present
-//            if (!it.metaClass.methods.find { m -> m.name.matches( "getLog" ) }) {
-//                it.metaClass.getLog = { LogFactory.getLog it }
-//            }
-//        }
     }
+
 
     // Register Hibernate event listeners.
     def doWithApplicationContext = { applicationContext ->
