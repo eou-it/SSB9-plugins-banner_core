@@ -94,7 +94,7 @@ public class BannerDS implements DataSource {
                 setMep(conn, user)
                 setFGAC(conn)
                 bannerConnection = new BannerConnection(conn, user?.username, this)
-                if (Environment.current != Environment.TEST && isWebRequest()) {
+                if (Environment.current != Environment.TEST && shouldCacheConnection()) {
                     def session = RequestContextHolder.currentRequestAttributes().request.session
                     session.setAttribute("bannerRoles", roles)
                     session.setAttribute("cachedConnection", bannerConnection)
@@ -146,7 +146,7 @@ public class BannerDS implements DataSource {
         BannerConnection bannerConnection = null
         def formContext = null
 
-        if (Environment.current != Environment.TEST && isWebRequest()) {
+        if (Environment.current != Environment.TEST && shouldCacheConnection()) {
             def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
             bannerConnection = session.getAttribute("cachedConnection")
             if (session.getAttribute("formContext"))
@@ -189,8 +189,17 @@ public class BannerDS implements DataSource {
         bannerConnection
     }
 
-    private boolean isWebRequest() {
-        RequestContextHolder.getRequestAttributes() != null
+    private boolean shouldCacheConnection() {
+        boolean isWebRequest = RequestContextHolder.getRequestAttributes() != null
+        boolean isApiRequest = RequestContextHolder.getRequestAttributes().getRequest().forwardURI =~ /api/
+        boolean apiSessions  = CH.config.restfulApi.apiSessions instanceof Boolean ? CH.config.restfulApi.apiSessions : false
+
+        if (isApiRequest && !apiSessions) {
+            log.trace "shouldCacheConnection() returning 'false' (API requests are configured to not use sessions)"
+            return false
+        }
+        log.trace "shouldCacheConnection() returning $isWebRequest"
+        return isWebRequest
     }
 
     private getUserRoles(user, applicableAuthorities) {

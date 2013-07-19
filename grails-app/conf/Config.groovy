@@ -4,7 +4,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 
 grails.doc.authors = '''Prepared by: Ellucian
                         |4 Country View Road Malvern, Pennsylvania 19355 United States of America (800) 522 - 4827'''.stripMargin()
-                        
+
 grails.doc.footer = '''Contains confidential and proprietary information of Ellucian and its subsidiaries.'''
 
 grails.doc.license = '''Use of these materials is limited to Ellucian licensees, and is subject to the terms and conditions of one or more written license agreements between Ellucian and the licensee in question.
@@ -25,7 +25,6 @@ grails.doc.alias.user       = "2. User Guide"
 grails.doc.alias.overview   = "2.1 Architecture Overview"
 grails.doc.alias.security   = "2.2 Application Security"
 grails.doc.alias.services   = "2.3 Services"
-grails.doc.alias.rest       = "2.4 REST"
 grails.doc.alias.dev        = "3. Developer Guide"
 
 
