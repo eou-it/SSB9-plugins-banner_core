@@ -94,6 +94,8 @@ class BannerConnection {
         try {
             log.trace "BannerConnection ${super.toString()}.close() invoked"
             if (Environment.current == Environment.TEST || !isWebRequest()) {
+                log.debug Thread.currentThread().getName()
+                log.debug "Closing proxy session for env ${Environment.current} and user ${proxyUserName} and web request ${isWebRequest()}"
                 bannerDataSource.closeProxySession( this, proxyUserName )
                 bannerDataSource.clearIdentifer( this )
             }
@@ -102,13 +104,16 @@ class BannerConnection {
             log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
             if (!proxyUserName || (proxyUserName == "anonymousUser") || (Environment.current == Environment.TEST || !isWebRequest())) {
                 log.trace "${super.toString()} closing $underlyingConnection}"
+                log.debug Thread.currentThread().getName()
+                log.debug "Closing underlyign connection for env ${Environment.current} and user ${proxyUserName}  and web request ${isWebRequest()}"
                 underlyingConnection?.close()
             }
         }
     }
 
     private boolean isWebRequest() {
-        RequestContextHolder.getRequestAttributes() != null
+        //RequestContextHolder.getRequestAttributes() != null
+        return true
     }
 
     public void connectionAdminClose() throws SQLException {

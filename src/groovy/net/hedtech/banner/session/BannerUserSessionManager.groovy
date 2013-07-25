@@ -22,6 +22,7 @@ abstract class BannerUserSessionManager {
     public static final String SESSION_BANNER_USER_SESSION_CONTRIBUTORS = "session.banner.user.session.contributors"
     public static final String REQ_SESSION_TOKEN = "sessionToken"
 
+    protected List sessionContributorsList = []
     /**
      * Retrieves the context from context URI.
      * eg:- param = /StudentCourseCatalog/zkau, return = /StudentCourseCatalog/
@@ -73,8 +74,13 @@ abstract class BannerUserSessionManager {
      *
      */
     public void registerBannerUserSessionContributors() {
-        new ConfigSlurper().parse(getClass().getClassLoader().loadClass("BannerUserSessionContributorsConfiguration"))?.each { sharedInfoKey, sharedInfoConfig ->
-            registerBannerUserSessionContributor (SpringContextUtils.getGrailsApplicationClassLoader().loadClass(sharedInfoConfig.handler).newInstance())
+        if(sessionContributorsList.isEmpty()) {
+            new ConfigSlurper().parse(getClass().getClassLoader().loadClass("BannerUserSessionContributorsConfiguration"))?.each { sharedInfoKey, sharedInfoConfig ->
+                sessionContributorsList << sharedInfoConfig.handler
+            }
+        }
+        sessionContributorsList.each {
+            registerBannerUserSessionContributor (SpringContextUtils.getGrailsApplicationClassLoader().loadClass(it).newInstance())
         }
     }
     /**

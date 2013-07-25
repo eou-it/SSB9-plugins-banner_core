@@ -185,10 +185,12 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
           List applicableAuthorities = []
           formNames?.each { form ->
-              def authoritiesForForm = authentication.principal.authorities.findAll { it.authority ==~ /\w+_${form}_\w+/ }
-              authoritiesForForm.each { applicableAuthorities << it }
+              def authoritiesForForm = authentication.user.getAuthoritiesFor(form)
+              authoritiesForForm.each {
+                  if(it !=~ /.*_CONNECT.*/)
+                    applicableAuthorities << it
+              }
           }
-          applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
           if( ! (applicableAuthorities.size() > 0) ) {
               String message = "User ${authentication.name} is not authorized to access ${pageName}(${formNames[0]})"
               publishViolation( authentication, message, formNames )

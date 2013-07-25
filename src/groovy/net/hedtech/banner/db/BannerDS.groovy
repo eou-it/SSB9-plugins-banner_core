@@ -158,12 +158,13 @@ public class BannerDS implements DataSource {
             //Validate Connection
             Connection conn = bannerConnection.underlyingConnection
             def roles
-            Sql sql = new Sql(conn)
+            Sql sql = new Sql(bannerConnection)
             try {
                 String stmt = "select 1 from dual" as String
                 sql.execute(stmt)
             }
             catch (e) {
+                e.printStackTrace()
                 log.info("BannerDS.validateConnection connection $conn could not be validated from session $e")
                 return null
             }
