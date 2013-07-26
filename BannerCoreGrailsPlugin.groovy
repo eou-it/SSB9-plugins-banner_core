@@ -146,18 +146,22 @@ class BannerCoreGrailsPlugin {
             bean.initMethod = 'init'
         }
         if (CH.config.sdeEnabled) {
+
+
             supplementalDataPersistenceManager(SupplementalDataPersistenceManager) {
                 dataSource = ref(dataSource)
                 sessionFactory = ref(sessionFactory)
-               // supplementalDataService = ref(supplementalDataService)
+//                supplementalDataService = ref(supplementalDataService)
             }
 
             supplementalDataService(SupplementalDataService) { bean ->
                 dataSource = ref(dataSource)
                 sessionFactory = ref(sessionFactory)
-              //  supplementalDataPersistenceManager = ref(supplementalDataPersistenceManager)
+                supplementalDataPersistenceManager = ref(supplementalDataPersistenceManager)
                 bean.initMethod = 'init'
             }
+
+
         }
 
 //        tabLevelSecurityService( TabLevelSecurityService ) { bean ->
