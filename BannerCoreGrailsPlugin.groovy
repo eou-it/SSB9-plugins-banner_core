@@ -3,6 +3,7 @@
  ****************************************************************************** */
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
@@ -265,6 +266,12 @@ class BannerCoreGrailsPlugin {
                 }
                 break
         }
+
+        // Switch to grails.util.Holders in Grails 2.x
+        if( !grails?.util?.Holders?.config?.privacy?.codes ) {
+            // Populate with default privacy policy codes
+            grails?.util?.Holders?.config.privacy.codes = "INT NAV UNI"
+        }
     }
 
 
@@ -379,6 +386,21 @@ class BannerCoreGrailsPlugin {
             'listener' {
                 'display-name'("Banner Core Session Cleaner")
                 'listener-class'("net.hedtech.banner.db.DbConnectionCacheSessionListener")
+            }
+        }
+
+        def contextParam = xml.'context-param'
+        contextParam[contextParam.size() - 1] + {
+            'filter' {
+                'filter-name'('privacyfilter')
+                'filter-class'(PrivacyPolicyFilter.name)
+            }
+        }
+
+        contextParam[contextParam.size() - 1] + {
+            'filter-mapping'{
+                'filter-name'('privacyfilter')
+                'url-pattern'('/*')
             }
         }
 
