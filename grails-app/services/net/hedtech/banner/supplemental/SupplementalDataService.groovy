@@ -33,7 +33,7 @@ class SupplementalDataService {
 
     def dataSource                         // injected by Spring
     def sessionFactory                     // injected by Spring
-    SupplementalDataPersistenceManager supplementalDataPersistenceManager // injected by Spring
+    def supplementalDataPersistenceManager // injected by Spring
     def grailsApplication                  // injected by Spring
 
     def supplementalDataConfiguration = [:]
