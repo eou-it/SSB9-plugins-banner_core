@@ -4,6 +4,7 @@
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.loginworkflow.UserAgreementFlow
+import net.hedtech.banner.privacy.PrivacyPolicyFilter
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
