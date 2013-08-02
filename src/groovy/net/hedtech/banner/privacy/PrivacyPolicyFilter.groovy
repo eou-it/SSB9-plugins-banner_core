@@ -18,7 +18,7 @@ class PrivacyPolicyFilter extends GenericFilterBean {
 		HttpServletResponse response = (HttpServletResponse) res
 
 		// Switch to grails.util.Holders in Grails 2.x
-        response.addHeader("P3P", "CP=\"" + grails?.util?.Holders?.config?.privacy?.codes + "\"")
+        response.addHeader("P3P", "CP=\"" + ConfigurationHolder?.config?.privacy?.codes + "\"")
         
         chain.doFilter(request, response)
      }

@@ -277,7 +277,7 @@ class BannerCoreGrailsPlugin {
         // Switch to grails.util.Holders in Grails 2.x
         if( !grails?.util?.Holders?.config?.privacy?.codes ) {
             // Populate with default privacy policy codes
-            grails?.util?.Holders?.config.privacy.codes = "INT NAV UNI"
+            ConfigurationHolder?.config?.privacy.codes = "INT NAV UNI"
         }
     }
 
