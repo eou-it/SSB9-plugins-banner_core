@@ -1,0 +1,98 @@
+#bodyContainer {
+	margin: 30px;
+}
+
+
+#pagetitle {
+color: #646464;
+float: left;
+font-size: 1.61em;
+font-weight: normal;
+letter-spacing: 0.08em;
+margin: 5px 0 10px;
+padding: 0;
+width: 85%;
+}
+
+#pagebody {
+	padding: 0 0 25px 0px;
+	top: -5px;
+	background: #fff url(../images/content-bg-tc.png) repeat-x left top;
+	border: 1px #e5ebee solid;
+	border-top-width: 0px;
+	float: left;
+	min-width: 911px;
+	width: 100%;
+	margin: 29px 0 0;
+}
+
+#pagebody.loginterms {
+	margin: 40px 0 0;
+	padding: 20px 0px;
+}
+
+#pagebody.level4 {
+	min-width: 100%;
+	width: auto;
+	margin: 0;
+}
+
+#contentHolder {
+	background: transparent;
+	position: relative;
+	top: 0px;
+	padding: 25px; /* safari fix */
+	float: left;
+	overflow: hidden;
+	width: 95%;
+	/*
+	width: auto;*/
+}
+
+.pagebodydiv {
+    text-align: left;
+    display: block;
+}
+
+.infotextdiv {
+	border: 1px #ccc solid;
+	background-color: #fff;
+}
+
+.infotexttable {
+	font-size: 0.98em;
+	line-height: 13pt;
+}
+
+.infotexttable .infotext {
+	color: #445;
+}
+
+.infotexttable td {
+	padding: 3px 0px 4px 4px;
+}
+
+.infotexttable td {
+    padding: 3px 0 4px 4px;
+}
+
+TABLE TD.indefault {
+    color: black;
+    font-family: Verdana,arial,helvetica,sans-serif;
+    font-size: 90%;
+    font-style: normal;
+    font-weight: normal;
+    text-align: left;
+    vertical-align: top;
+}
+
+.infotexttable .infotext {
+    color: #444455;
+}
+
+#pageheader {
+    margin: 25px 0;
+    padding: 0;
+    width: 100%;
+}
+
