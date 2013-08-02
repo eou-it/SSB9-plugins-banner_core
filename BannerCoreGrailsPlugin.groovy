@@ -3,6 +3,7 @@
  ****************************************************************************** */
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
+import net.hedtech.banner.loginworkflow.UserAgreementFlow
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
@@ -244,6 +245,11 @@ class BannerCoreGrailsPlugin {
         resetPasswordService(ResetPasswordService) {
             dataSource = ref(dataSource)
             authenticationDataSource = ref(authenticationDataSource)
+            sessionFactory = ref(sessionFactory)
+        }
+
+        userAgreementFlow(UserAgreementFlow){
+            dataSource = ref(dataSource)
             sessionFactory = ref(sessionFactory)
         }
 
