@@ -374,6 +374,9 @@ class ServiceBase {
 
     /**
      * Returns a list of the model instances, passing the supplied args to the GORM list() method.
+     * It is important to set the 'max' parameter used for paging, particularly if the
+     * totalCount is needed (as including 'max' will result in a PageResultList being return,
+     * which includes the totalCount).
      **/
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
     public def list( args ) {
@@ -395,10 +398,20 @@ class ServiceBase {
 
 
     /**
-     * Returns a count of the domain class.  Note: The 'args' are ignored and will be removed.
+     * Returns a count of the domain class.
+     * Note: Depending on the transaction demarcation, this may execute
+     * in a separate transaction from a preceeding 'list' invocation.
+     *
+     * When a PagedResultList is returned from 'list' (which occurs when a
+     * named parameter of 'max' is included), the totalCount should
+     * be retrieved from that versus calling this separate service method.
+     *
+     * This method should be overriden if the list is filtered and cannot
+     * return a PagedResultList, as the default implementation is based on
+     * GORM's 'count' method which does not support filtering.
      **/
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS )
-    public def count( args = null ) {  // args are ignored -- TODO: Remove from signature
+    public def count( args = null ) {
 
         log.trace "${this.class.simpleName}.count, transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
         setDbmsApplicationInfo "${this.class.simpleName}.count()"
