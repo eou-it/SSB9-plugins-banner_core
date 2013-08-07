@@ -25,7 +25,7 @@ class BannerCoreBootStrap {
         servletContext.setAttribute("dbInstanceName", dbInstanceName)
 
         def bannerInbUrl = personalPreferenceService.fetchPersonalPreference("MAGELLAN","SERVER_DESIGNATION","INB")[0]
-        servletContext.setAttribute("bannerInbUrl", bannerInbUrl)
+        servletContext.setAttribute("bannerInbUrl", bannerInbUrl.value)
     }
 
     def destroy = {
