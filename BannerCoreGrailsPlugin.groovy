@@ -3,6 +3,9 @@
  ****************************************************************************** */
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
+import net.hedtech.banner.loginworkflow.UserAgreementFlow
+import net.hedtech.banner.privacy.PrivacyPolicyFilter
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
@@ -246,6 +249,11 @@ class BannerCoreGrailsPlugin {
             sessionFactory = ref(sessionFactory)
         }
 
+        userAgreementFlow(UserAgreementFlow){
+            dataSource = ref(dataSource)
+            sessionFactory = ref(sessionFactory)
+        }
+
         // ---------------- JMX Mbeans (incl. Logging) ----------------
 
         log4jBean(HierarchyDynamicMBean)
@@ -264,6 +272,12 @@ class BannerCoreGrailsPlugin {
                     beans = [("$log4jBeanName" as String): log4jBean]
                 }
                 break
+        }
+
+        // Switch to grails.util.Holders in Grails 2.x
+        if( !CH.config.privacy?.codes ) {
+            // Populate with default privacy policy codes
+            CH.config.privacy.codes = "INT NAV UNI"
         }
     }
 
@@ -379,6 +393,21 @@ class BannerCoreGrailsPlugin {
             'listener' {
                 'display-name'("Banner Core Session Cleaner")
                 'listener-class'("net.hedtech.banner.db.DbConnectionCacheSessionListener")
+            }
+        }
+
+        def contextParam = xml.'context-param'
+        contextParam[contextParam.size() - 1] + {
+            'filter' {
+                'filter-name'('privacyfilter')
+                'filter-class'(PrivacyPolicyFilter.name)
+            }
+        }
+
+        contextParam[contextParam.size() - 1] + {
+            'filter-mapping'{
+                'filter-name'('privacyfilter')
+                'url-pattern'('/*')
             }
         }
 

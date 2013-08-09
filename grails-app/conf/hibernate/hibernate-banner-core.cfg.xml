@@ -24,6 +24,7 @@
    <hibernate-configuration>
        <session-factory>
        <property name="dialect">org.hibernate.dialect.Oracle10gDialect</property>
+        <mapping class="net.hedtech.banner.general.system.Institution"/>
         <mapping class="net.hedtech.banner.general.utility.MenuAndToolbarPreference"/>
         <mapping class="net.hedtech.banner.general.utility.PersonalPreference"/>
         <mapping class="net.hedtech.banner.session.BannerUserSession"/>

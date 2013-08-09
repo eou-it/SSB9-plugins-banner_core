@@ -1,6 +1,6 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.menu
 
 /**
@@ -10,17 +10,17 @@ public class SelfServiceMenu implements Serializable {
 
     def seq
     def menu
-    def pageName
-    def formName
+    def page
     def url
     def caption
-    def level
-    def module
     def parent
-    def type
-    def path
-    def captionProperty
-    def pageCaption
     def name
+    def type
+    def items
+    def formName
+    def pageName
+    def pageCaption
+    def captionProperty
+    def uiVersion
 }
 
