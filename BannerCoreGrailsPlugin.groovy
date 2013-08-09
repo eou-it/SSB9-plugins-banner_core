@@ -4,6 +4,7 @@
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.loginworkflow.UserAgreementFlow
+import net.hedtech.banner.loginworkflow.SurveyFlow
 import net.hedtech.banner.privacy.PrivacyPolicyFilter
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
@@ -251,6 +252,10 @@ class BannerCoreGrailsPlugin {
 
         userAgreementFlow(UserAgreementFlow){
             dataSource = ref(dataSource)
+            sessionFactory = ref(sessionFactory)
+        }
+
+        surveyFlow(SurveyFlow) {
             sessionFactory = ref(sessionFactory)
         }
 
