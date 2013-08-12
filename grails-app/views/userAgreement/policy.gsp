@@ -46,10 +46,10 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                         <tr>
                             <td>
                                 <button id="policy-continue" class="primary-button"
-                                        onclick="moveToController()"/>
+                                        onclick="moveToController()">
                                         <g:message code="net.hedtech.banner.termsofuse.button.continue"/>
                                 </button>
-                                <button id="policy-exit" class="secondary-button" data-endpoint="${createLink(controller: "logout")}"/>
+                                <button id="policy-exit" class="secondary-button"  onclick="exit()">
                                     <g:message code="net.hedtech.banner.termsofuse.button.exit"/>
                                </button>
                             </td>
