@@ -13,10 +13,10 @@ class UserAgreementController {
     }
 
     def agreement() {
-        request.getSession().setAttribute("useraggrementdone", "true")
         String pidm = getPidm()
         //WebTailorUtility.updateUsageIndicator(pidm,"Y")
         userAgreementService.updateUsageIndicator(pidm,"Y");
+        request.getSession().setAttribute("useraggrementdone", "true")
         done();
     }
 
