@@ -22,8 +22,7 @@ class SupplementalDataPersistenceManager {
 
     def dataSource               // injected by Spring
     def sessionFactory           // injected by Spring
-    @Autowired
-    SupplementalDataService supplementalDataService  // injected by Spring
+    def supplementalDataService  // injected by Spring
     Sql sql
 
     private final Logger log = Logger.getLogger(getClass())
