@@ -35,36 +35,17 @@ class UserAgreementService {
             sql = new Sql(connection)
             sql.call ("{call gb_third_party_access.p_update(p_pidm=>${pidm}, p_usage_accept_ind=>${usageIndicator})}")
             sql.commit()
-            connection.close()
         }catch (SQLException ae) {
-            sql.close()
             log.debug ae.stackTrace
             throw ae
         }
         catch (Exception ae) {
             log.debug ae.stackTrace
             throw ae
-        }
+        }finally{
+            connection.close()
+       }
 
-
-       /* def connection
-        try {
-            CallableStatement minMaxCalcStatement
-            connection = sessionFactory.currentSession.connection()
-            String minMaxCalc = "{ call gb_third_party_access.p_update(?,null,?,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null) }"
-            minMaxCalcStatement = connection.prepareCall(minMaxCalc)
-            minMaxCalcStatement.setInt(1, Integer.parseInt(pidm))
-            minMaxCalcStatement.setString(3,usageIndicator)
-            minMaxCalcStatement.executeUpdate()
-        }
-        catch (SQLException ae) {
-            log.debug ae.stackTrace
-            throw ae
-        }
-        catch (Exception ae) {
-            log.debug ae.stackTrace
-            throw ae
-        }*/
     }
 
     public String getUsageIndicator(String pidm){
@@ -83,6 +64,8 @@ class UserAgreementService {
         catch (Exception ae) {
             log.debug ae.stackTrace
             throw ae
+        }finally{
+             connection.close()
         }
     }
 
@@ -102,6 +85,8 @@ class UserAgreementService {
         catch (Exception ae) {
             log.debug ae.stackTrace
             throw ae
+        }finally{
+             connection.close()
         }
     }
 
@@ -126,17 +111,14 @@ class UserAgreementService {
     		if(infoText == "null\n") {
                 infoText = ""
             }
-            connection.close()
             return infoText
         }catch (SQLException ae) {
-            connection.close()
-            log.debug ae.stackTrace
-            throw ae
+                        throw ae
         }
-        catch (Exception ae) {connection.close()
-
-            log.debug ae.stackTrace
-            throw ae
+        catch (Exception ae) {
+           throw ae
+        }finally{
+            connection.close()
         }
 
     }

@@ -5,6 +5,7 @@
 
 #pagetitle {
 color: #646464;
+font-family: Verdana,arial,helvetica,sans-serif;
 float: left;
 font-size: 1.61em;
 font-weight: normal;
@@ -31,7 +32,7 @@ width: 85%;
 	padding: 20px 0px;
 }
 
-#pagebody.level4 {
+#pagebody.level {
 	min-width: 100%;
 	width: auto;
 	margin: 0;
@@ -54,25 +55,25 @@ width: 85%;
     display: block;
 }
 
-.infotextdiv {
+.termstextdiv {
 	border: 1px #ccc solid;
 	background-color: #fff;
 }
 
-.infotexttable {
+.termstexttable {
 	font-size: 0.98em;
 	line-height: 13pt;
 }
 
-.infotexttable .infotext {
+.termstexttable .termstext {
 	color: #445;
 }
 
-.infotexttable td {
+.termstexttable td {
 	padding: 3px 0px 4px 4px;
 }
 
-.infotexttable td {
+.termstexttable td {
     padding: 3px 0 4px 4px;
 }
 
@@ -86,7 +87,7 @@ TABLE TD.indefault {
     vertical-align: top;
 }
 
-.infotexttable .infotext {
+.termstexttable .termstext {
     color: #444455;
 }
 
