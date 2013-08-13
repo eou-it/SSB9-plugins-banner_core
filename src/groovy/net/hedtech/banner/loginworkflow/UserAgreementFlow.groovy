@@ -3,6 +3,7 @@ package net.hedtech.banner.loginworkflow
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import net.hedtech.banner.security.BannerUser
+import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
 
 import java.sql.SQLException
@@ -20,22 +21,28 @@ import java.sql.SQLException
 
 class UserAgreementFlow implements PostLoginWorkflow {
     def sessionFactory
+    private final log = Logger.getLogger(getClass())
     public boolean showPage(request) {
         def session = request.getSession();
         String isDone = session.getAttribute("useraggrementdone")
         boolean displayPage = false
+        log.info("displayPage for login terms :" + displayPage)
         if(isDone != "true"){
             String pidm = getPidm()
             String displayStatus = getTermsOfUsageDisplayStatus()
+            log.info("displayStatus for webrule :" + displayStatus)
             if(displayStatus?.equals("Y"))
             {
                 String usageIndicator = getUsageIndicator(pidm)
+                log.info("usageIndicator for user :" + usageIndicator)
                 if(usageIndicator?.equals("N")){
                     displayPage = true
+                    log.info("displayPage for login terms1 :" + displayPage)
                 }
 
             }
         }
+        log.info("displayPage for login terms3 :" + displayPage)
         return displayPage
     }
 
