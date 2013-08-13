@@ -25,12 +25,12 @@ class CommonMenuController {
 
 
     def data = {
-         if(request.parameterMap["q"]){
-             search()
+        if(request.parameterMap["q"]){
+            search()
         } else if(request.parameterMap["s"]){
-             getMenuStructure()
-         } else {
-             list()
+            getMenuStructure()
+        } else {
+            list()
         }
     }
 
@@ -47,14 +47,14 @@ class CommonMenuController {
         def root = nodes[0]
         nodes.each { a ->
 
-                if(a == BANNER_TITLE){
-                    subMenu = getSubMenuData(root, root, root)
+            if(a == BANNER_TITLE){
+                subMenu = getSubMenuData(root, root, root)
 
-                } else {
-                    subMenu = getSubMenuData(a, root, a)
-                }
+            } else {
+                subMenu = getSubMenuData(a, root, a)
+            }
 
-                finalList.add(subMenu)
+            finalList.add(subMenu)
         }
 
         subMenu = [ name:"root", caption:"root", items: finalList ]
@@ -88,59 +88,59 @@ class CommonMenuController {
         subMenu = getSubMenuData(mnuName, mnuType, caption)
         finalMenu = [ data: subMenu ]
 
-            // Support JSON-P callback
-            if( params.callback ) {
-                render text: "${params.callback} && ${params.callback}(${finalMenu as JSON});", contentType: "text/javascript"
-            } else {
-                render finalMenu as JSON
-            }
+        // Support JSON-P callback
+        if( params.callback ) {
+            render text: "${params.callback} && ${params.callback}(${finalMenu as JSON});", contentType: "text/javascript"
+        } else {
+            render finalMenu as JSON
+        }
 
 
     }
     private def getSubMenuData(def mnuName,def mnuType,def caption ){
 
-            def subMenu
-            def adminList
-            def personalList
-            def selfServiceList
+        def subMenu
+        def adminList
+        def personalList
+        def selfServiceList
 
-            def finalList = []
+        def finalList = []
 
-            if (mnuName){
+        if (mnuName){
 
-                if (mnuType == MENU_TYPE_BANNER){
+            if (mnuType == MENU_TYPE_BANNER){
 
-                    if (mnuName == BANNER_TITLE)
-                        adminList = getMenuData()
-                    else
-                        adminList = getMenuData(mnuName)
+                if (mnuName == BANNER_TITLE)
+                    adminList = getMenuData()
+                else
+                    adminList = getMenuData(mnuName)
 
-                    finalList = adminList
+                finalList = adminList
 
-                } else if (mnuType == MENU_TYPE_PERSONAL){
+            } else if (mnuType == MENU_TYPE_PERSONAL){
 
-                    if (mnuName == MY_BANNER_TITLE)
-                        personalList = getPersonalMenuData(null)
-                    else
-                        personalList = getPersonalMenuData(mnuName)
+                if (mnuName == MY_BANNER_TITLE)
+                    personalList = getPersonalMenuData(null)
+                else
+                    personalList = getPersonalMenuData(mnuName)
 
-                    finalList = personalList
-                } else {
-
-                    if (mnuName == BANNER_SELF_SERVICE_TITLE)
-                        selfServiceList = getSelfServiceMenuData(null)
-                    else
-                        selfServiceList = getSelfServiceMenuData(mnuName)
-
-                    finalList = selfServiceList
-                }
-
-                subMenu = [name:mnuName,caption:caption , items: finalList]
-
+                finalList = personalList
             } else {
-                finalList =  rootMenu()
-                subMenu = [ name:"root", caption:"root", items: finalList ]
+
+                if (mnuName == BANNER_SELF_SERVICE_TITLE)
+                    selfServiceList = getSelfServiceMenuData(null)
+                else
+                    selfServiceList = getSelfServiceMenuData(mnuName)
+
+                finalList = selfServiceList
             }
+
+            subMenu = [name:mnuName,caption:caption , items: finalList]
+
+        } else {
+            finalList =  rootMenu()
+            subMenu = [ name:"root", caption:"root", items: finalList ]
+        }
 
         return subMenu
     }
@@ -157,7 +157,8 @@ class CommonMenuController {
         def finalList = []
 
         adminList = getMenuData()
-        selfServiceList = getSelfServiceMenuData()
+        //selfServiceList = getSelfServiceMenuData()
+        selfServiceList = []
         personalList = getPersonalMenuData()
         adminMenu = [ name:BANNER_TITLE, caption:BANNER_TITLE, page:BANNER_TITLE ,url: getServerURL() +"/commonMenu?type="+MENU_TYPE_BANNER+"&menu="+BANNER_TITLE+"&caption="+BANNER_TITLE,type: "MENU",items: null,menu:BANNER_TITLE]
         personalMenu = [ name:MY_BANNER_TITLE, caption:MY_BANNER_TITLE, page:MY_BANNER_TITLE ,url: getServerURL() +"/commonMenu?type="+MENU_TYPE_PERSONAL+"&menu="+MY_BANNER_TITLE+"&caption="+MY_BANNER_TITLE,type: "MENU",items: null,menu:MY_BANNER_TITLE]
@@ -184,12 +185,12 @@ class CommonMenuController {
         def searchVal
 
         if(request.parameterMap["q"])
-          searchVal = request.parameterMap["q"][0]
+            searchVal = request.parameterMap["q"][0]
         if(searchVal){
             adminList = getAdminMenuSearchResults(searchVal)
-            selfServiceList = getSelfServiceMenuSearchResults(searchVal)
+            //selfServiceList = getSelfServiceMenuSearchResults(searchVal)
             finalList.addAll(adminList)
-            finalList.addAll(selfServiceList)
+            //finalList.addAll(selfServiceList)
         }
         subMenu = [ name:"root", caption:"root", items: finalList ]
 
@@ -220,7 +221,7 @@ class CommonMenuController {
                     if (a.uiVersion =="banner8admin")
                         finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
                     else
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"unifiedMenu/globals?page="+a.page+"&global_variables={{params}}",type: "PAGE",menu:a.menu)
+                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption +"&global_variables={{params}}",type: "PAGE",menu:a.menu)
 
                 }
             }
@@ -238,7 +239,7 @@ class CommonMenuController {
                     if (a.uiVersion =="banner8admin")
                         finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
                     else
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"unifiedMenu/globals?page="+a.page+"&global_variables={{params}}",type: "PAGE",menu:a.menu)
+                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page+"&global_variables={{params}}",type: "PAGE",menu:a.menu)
 
                 }
             }
@@ -399,7 +400,7 @@ class CommonMenuController {
                     if (a.uiVersion =="banner8admin")
                         finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
                     else
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"unifiedMenu/globals?page="+a.page+"&global_variables={{params}}",type: "PAGE",menu:a.menu)
+                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption + "&global_variables={{params}}",type: "PAGE",menu:a.menu)
 
                 }
             }
@@ -416,7 +417,7 @@ class CommonMenuController {
                     if (a.uiVersion =="banner8admin")
                         finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
                     else
-                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"unifiedMenu/globals?page="+a.page+"&global_variables={{params}}",type: "PAGE",menu:a.menu)
+                        finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption +"&global_variables={{params}}",type: "PAGE",menu:a.menu)
 
                 }
             }
@@ -490,7 +491,7 @@ class CommonMenuController {
                 if (a.uiVersion =="banner8admin")
                     finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getBannerInbUrl() + "?otherParams=launch_form="+a.page+"+ban_args={{params}}+ban_mode=xe",type: "PAGE",menu:a.menu)
                 else
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"unifiedMenu/globals?page="+a.page+"&global_variables={{params}}",type: "PAGE",menu:a.menu)
+                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: a.url +"banner.zul?page="+a.page + "&pageName="+ a.caption +"&global_variables={{params}}",type: "PAGE",menu:a.menu)
 
             }
         }
@@ -512,11 +513,11 @@ class CommonMenuController {
         }
         def list = selfServiceMenuService.gotoCombinedMenu(searchVal, pidm)
         list.each {a ->
-                if (a.type == "MENU"){
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() + "/commonMenu?type="+MENU_TYPE_SELF_SERVICE+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu)
-                }  else {
-                    finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url:a.url,type: "PAGE",menu:a.menu)
-                }
+            if (a.type == "MENU"){
+                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url: getServerURL() + "/commonMenu?type="+MENU_TYPE_SELF_SERVICE+"&menu="+a.name+"&caption="+a.caption,type: "MENU",menu:a.menu)
+            }  else {
+                finalList.add(name:a.name,page:a.page,caption:a.caption,parent:a.uiVersion,url:a.url,type: "PAGE",menu:a.menu)
+            }
         }
 
         return finalList
@@ -541,7 +542,7 @@ class CommonMenuController {
     }
 
     def getBannerInbUrl(){
-         return SCH.servletContext.getAttribute(BANNER_INB_URL)
+        return SCH.servletContext.getAttribute(BANNER_INB_URL)
     }
 
 
