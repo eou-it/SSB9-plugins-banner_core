@@ -48,50 +48,6 @@ class UserAgreementService {
 
     }
 
-    public String getUsageIndicator(String pidm){
-        def connection
-        Sql sql
-        try{
-            connection = sessionFactory.currentSession.connection()
-            sql = new Sql(connection)
-            GroovyRowResult row = sql.firstRow("""select GOBTPAC_USAGE_ACCEPT_IND from GOBTPAC where GOBTPAC_PIDM = ${pidm}""")
-            return row.GOBTPAC_USAGE_ACCEPT_IND
-        }catch (SQLException ae) {
-            sql.close()
-            log.debug ae.stackTrace
-            throw ae
-        }
-        catch (Exception ae) {
-            log.debug ae.stackTrace
-            throw ae
-        }finally{
-             connection.close()
-        }
-    }
-
-    public String getTermsOfUsageDisplayStatus(){
-        def connection
-        Sql sql
-        try{
-            connection = sessionFactory.currentSession.connection()
-            sql = new Sql(connection)
-            GroovyRowResult row = sql.firstRow("""select TWGBWRUL_DISP_USAGE_IND from TWGBWRUL""")
-            return row.TWGBWRUL_DISP_USAGE_IND
-        }catch (SQLException ae) {
-            sql.close()
-            log.debug ae.stackTrace
-            throw ae
-        }
-        catch (Exception ae) {
-            log.debug ae.stackTrace
-            throw ae
-        }finally{
-             connection.close()
-        }
-    }
-
-
-
     public String getTermsOfUseInfoText(){
         def connection
         Sql sql
@@ -113,7 +69,7 @@ class UserAgreementService {
             }
             return infoText
         }catch (SQLException ae) {
-                        throw ae
+            throw ae
         }
         catch (Exception ae) {
            throw ae

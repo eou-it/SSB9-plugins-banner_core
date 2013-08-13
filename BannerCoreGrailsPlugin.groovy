@@ -251,7 +251,6 @@ class BannerCoreGrailsPlugin {
         }
 
         userAgreementFlow(UserAgreementFlow){
-            dataSource = ref(dataSource)
             sessionFactory = ref(sessionFactory)
         }
 

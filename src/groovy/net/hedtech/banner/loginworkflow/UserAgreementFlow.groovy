@@ -19,23 +19,22 @@ import java.sql.SQLException
  ****************************************************************************** */
 
 class UserAgreementFlow implements PostLoginWorkflow {
-    def dataSource               // injected by Spring
     def sessionFactory
     public boolean showPage(request) {
         def session = request.getSession();
         String isDone = session.getAttribute("useraggrementdone")
-        String pidm = getPidm()
-        String displayStatus = getTermsOfUsageDisplayStatus()
         boolean displayPage = false
-        if(displayStatus?.equals("Y"))
-        {
-            String usageIndicator = getUsageIndicator(pidm)
-            if(usageIndicator?.equals("N")){
-                displayPage = true
-            }
+        if(isDone != "true"){
+            String pidm = getPidm()
+            String displayStatus = getTermsOfUsageDisplayStatus()
+            if(displayStatus?.equals("Y"))
+            {
+                String usageIndicator = getUsageIndicator(pidm)
+                if(usageIndicator?.equals("N")){
+                    displayPage = true
+                }
 
-        }else{
-            displayPage = false
+            }
         }
         return displayPage
     }
@@ -51,7 +50,8 @@ class UserAgreementFlow implements PostLoginWorkflow {
         }
         return null
     }
-    public String getTermsOfUsageDisplayStatus(){
+
+    private String getTermsOfUsageDisplayStatus(){
         def connection
         Sql sql
         try{
@@ -60,8 +60,6 @@ class UserAgreementFlow implements PostLoginWorkflow {
             GroovyRowResult row = sql.firstRow("""select TWGBWRUL_DISP_USAGE_IND from TWGBWRUL""")
             return row?.TWGBWRUL_DISP_USAGE_IND
         }catch (SQLException ae) {
-            sql.close()
-            log.debug ae.stackTrace
             throw ae
         }
         catch (Exception ae) {
@@ -71,7 +69,7 @@ class UserAgreementFlow implements PostLoginWorkflow {
         }
     }
 
-    public String getUsageIndicator(String pidm){
+    private String getUsageIndicator(String pidm){
         def connection
         Sql sql
         try{
