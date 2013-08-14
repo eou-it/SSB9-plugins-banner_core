@@ -26,23 +26,18 @@ class UserAgreementFlow implements PostLoginWorkflow {
         def session = request.getSession();
         String isDone = session.getAttribute("useraggrementdone")
         boolean displayPage = false
-        log.info("displayPage for login terms :" + displayPage)
         if(isDone != "true"){
             String pidm = getPidm()
             String displayStatus = getTermsOfUsageDisplayStatus()
-            log.info("displayStatus for webrule :" + displayStatus)
             if(displayStatus?.equals("Y"))
             {
                 String usageIndicator = getUsageIndicator(pidm)
-                log.info("usageIndicator for user :" + usageIndicator)
                 if(usageIndicator?.equals("N")){
                     displayPage = true
-                    log.info("displayPage for login terms1 :" + displayPage)
                 }
 
             }
         }
-        log.info("displayPage for login terms3 :" + displayPage)
         return displayPage
     }
 
@@ -67,9 +62,11 @@ class UserAgreementFlow implements PostLoginWorkflow {
             GroovyRowResult row = sql.firstRow("""select TWGBWRUL_DISP_USAGE_IND from TWGBWRUL""")
             return row?.TWGBWRUL_DISP_USAGE_IND
         }catch (SQLException ae) {
+            log.debug ae.stackTrace
             throw ae
         }
         catch (Exception ae) {
+            log.debug ae.stackTrace
             throw ae
         }finally{
             connection.close()
@@ -85,10 +82,11 @@ class UserAgreementFlow implements PostLoginWorkflow {
             GroovyRowResult row = sql.firstRow("""select GOBTPAC_USAGE_ACCEPT_IND from GOBTPAC where GOBTPAC_PIDM = ${pidm}""")
             return row?.GOBTPAC_USAGE_ACCEPT_IND
         }catch (SQLException ae) {
-            sql.close()
+            log.debug ae.stackTrace
             throw ae
         }
         catch (Exception ae) {
+            log.debug ae.stackTrace
             throw ae
         }finally{
             connection.close()

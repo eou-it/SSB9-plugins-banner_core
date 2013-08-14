@@ -3,6 +3,7 @@ package net.hedtech.banner.loginworkflow
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import net.hedtech.banner.security.BannerUser
+import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
 
 import java.sql.SQLException
@@ -20,7 +21,7 @@ import java.sql.SQLException
 class SurveyFlow implements PostLoginWorkflow {
 
     def sessionFactory
-
+    private final log = Logger.getLogger(getClass())
     public boolean showPage(request) {
         def pidm = getPidm()
         def session = request.getSession()

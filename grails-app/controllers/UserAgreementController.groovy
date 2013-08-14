@@ -7,7 +7,6 @@ class UserAgreementController {
 
     static defaultAction = "index"
     def index() {
-        log.info("reached controller")
         def infoText = userAgreementService.getTermsOfUseInfoText()
         def model = [infoText:infoText]
         log.info("rendering view")

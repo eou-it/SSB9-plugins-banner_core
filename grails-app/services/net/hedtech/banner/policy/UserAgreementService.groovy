@@ -10,10 +10,8 @@
  ****************************************************************************** */
 package net.hedtech.banner.policy
 
-import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
-
-import java.sql.CallableStatement
+import org.apache.log4j.Logger
 import java.sql.SQLException
 
 /**
@@ -25,7 +23,7 @@ import java.sql.SQLException
 class UserAgreementService {
     static transactional = true
     def sessionFactory
-
+    private final log = Logger.getLogger(getClass())
     public void updateUsageIndicator(String pidm,String usageIndicator)
     {
         def connection
@@ -69,9 +67,11 @@ class UserAgreementService {
             }
             return infoText
         }catch (SQLException ae) {
+            log.debug ae.stackTrace
             throw ae
         }
         catch (Exception ae) {
+            log.debug ae.stackTrace
            throw ae
         }finally{
             connection.close()
