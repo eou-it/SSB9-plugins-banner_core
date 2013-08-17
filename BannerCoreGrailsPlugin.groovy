@@ -1,4 +1,4 @@
-/* *****************************************************************************
+/* ******************************************************************************
  Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 
@@ -32,6 +32,8 @@ import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository
+import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import net.hedtech.banner.security.*
 
 /**
@@ -171,9 +173,19 @@ class BannerCoreGrailsPlugin {
             realmName = 'Banner REST API Realm'
         }
 
+        statelessSecurityContextRepository(HttpSessionSecurityContextRepository) { 
+            allowSessionCreation = false
+            disableUrlRewriting = false
+        }
+
+        statelessSecurityContextPersistenceFilter(SecurityContextPersistenceFilter) {
+            securityContextRepository = ref('statelessSecurityContextRepository')
+            forceEagerSessionCreation = false
+        }
+
         basicAuthenticationFilter(BasicAuthenticationFilter) {
-            authenticationManager = ref(authenticationManager)
-            authenticationEntryPoint = ref(basicAuthenticationEntryPoint)
+            authenticationManager = ref('authenticationManager')
+            authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
         }
 
         basicExceptionTranslationFilter(ExceptionTranslationFilter) {
@@ -195,6 +207,7 @@ class BannerCoreGrailsPlugin {
             authenticationDataSource = ref(authenticationDataSource)
             sessionFactory = ref(sessionFactory)
         }
+
 
         // ---------------- JMX Mbeans (incl. Logging) ----------------
 
@@ -265,15 +278,18 @@ class BannerCoreGrailsPlugin {
         LinkedHashMap<String, String> filterChain = new LinkedHashMap();
         switch (authenticationProvider) {
             case 'cas':
-                filterChain['/api/**'] = 'authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/api/**'] = 'statelessSecurityContextPersistenceFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/qapi/**'] = 'statelessSecurityContextPersistenceFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
                 filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,casAuthenticationFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
                 break
             case 'external':
-                filterChain['/api/**'] = 'authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
-                filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,bannerPreAuthenticatedFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/api/**'] = 'statelessSecurityContextPersistenceFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/qapi/**'] = 'statelessSecurityContextPersistenceFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,bannerPreAuthenticatedFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
                 break
             default:
-                filterChain['/api/**'] = 'authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/api/**'] = 'statelessSecurityContextPersistenceFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/qapi/**'] = 'statelessSecurityContextPersistenceFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
                 filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
                 break
         }
