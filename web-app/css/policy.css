@@ -42,12 +42,10 @@ width: 85%;
 	background: transparent;
 	position: relative;
 	top: 0px;
-	padding: 25px; /* safari fix */
+	padding: 25px; 
 	float: left;
 	overflow: hidden;
 	width: 95%;
-	/*
-	width: auto;*/
 }
 
 .pagebodydiv {
@@ -65,9 +63,11 @@ width: 85%;
 	line-height: 13pt;
 }
 
-.termstexttable .termstext {
-	color: #445;
+#policy.indefault {
+    background:url(../images/web_info.png) no-repeat;
+    width:2%
 }
+
 
 .termstexttable td {
 	padding: 3px 0px 4px 4px;
@@ -78,17 +78,13 @@ width: 85%;
 }
 
 TABLE TD.indefault {
-    color: black;
+    color: #444455;
     font-family: Verdana,arial,helvetica,sans-serif;
     font-size: 90%;
     font-style: normal;
     font-weight: normal;
     text-align: left;
     vertical-align: top;
-}
-
-.termstexttable .termstext {
-    color: #444455;
 }
 
 #pageheader {

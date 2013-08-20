@@ -33,13 +33,15 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
             <div class="pagebodydiv" style="display: block;">
                 <div class="termstextdiv">
                     <table class="termstexttable">
-                    <tbody>
-                    <tr><td class="indefault"></td>
-                        <td class="indefault">
-                            <span class="termstext"></p>${infoText}<p><br></span>
-                        </td>
-                     </tr>
-                     </tbody>
+                        <tbody>
+                            <tr>
+                                <td id="policy" class="indefault">
+                                </td>
+                                <td  class="indefault">
+                                    ${infoText}<br>
+                                </td>
+                             </tr>
+                        </tbody>
                     </table>
                 </div>
                     <table>
