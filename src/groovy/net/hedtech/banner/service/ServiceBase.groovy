@@ -3,8 +3,6 @@
  *******************************************************************************/
 package net.hedtech.banner.service
 
-
-import net.hedtech.banner.db.BannerConnection
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.NotFoundException
 import net.hedtech.banner.security.FormContext
@@ -27,7 +25,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 import org.springframework.context.ApplicationContext
 import org.codehaus.groovy.grails.commons.ApplicationHolder
-import net.hedtech.banner.supplemental.SupplementalDataService
+
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
 /**
@@ -63,10 +61,6 @@ class ServiceBase {
     def log = Logger.getLogger( this.getClass() )
 
     Class domainClass // if not explicitly set by a subclass, this will be determined when needed
-
-    // since this class may be mixed-into a service versus being extended, we won't rely on injection of the
-    // supplemental data service, but will fetch it if required.
-    SupplementalDataService supplementalDataService
 
     def sessionFactory // injected by Spring
     def dataSource     // injected by Spring
@@ -108,18 +102,10 @@ class ServiceBase {
 
             log.trace "${this.class.simpleName}.create will now save the ${getDomainClass()}"
             def createdModel = domainObject.save( failOnError: true, flush: flushImmediately )
-            if (CH.config.sdeEnabled)  {
-                createdModel = persistSupplementalDataFor( createdModel )
-            }
 
             refreshIfNeeded( createdModel )
 
-            //Populate the metadata information that is needed for supplemental data.
-            if (CH.config.sdeEnabled)  {
-                if (!databaseMayAlterPropertiesOf( createdModel )) {
-                    getSupplementalDataService().markDomainForSupplementalData( createdModel )
-                }
-            }
+
             log.trace "${this.class.simpleName}.create will now invoke the postCreate callback if it exists"
             if (this.respondsTo( 'postCreate' )) this.postCreate( [  before: domainModelOrMap, after: createdModel ] )
 
@@ -201,13 +187,7 @@ class ServiceBase {
                 updatedModel = domainObject
             }
 
-            // regardless of whether the model was dirty, we'll always persist supplemental properties (if they are dirty)
-            /*if (content.supplementalProperties) {
-                updatedModel.setSupplementalProperties( content.supplementalProperties )
-                updatedModel = persistSupplementalDataFor( updatedModel )
-            }*/
-
-            refreshIfNeeded( updatedModel ) // after we persist everything, including supplemental data...
+            refreshIfNeeded( updatedModel ) // after we persist everything
 
             log.trace "${this.class.simpleName}.update will now invoke the postUpdate callback if it exists"
             if (this.respondsTo( 'postUpdate' )) this.postUpdate( [ before: domainModelOrMap, after: updatedModel ] )
@@ -318,9 +298,6 @@ class ServiceBase {
 
             def id = extractId( getDomainClass(), domainModelOrMapOrId )
             domainObject = fetch( getDomainClass(), id, log )
-            if (CH.config.sdeEnabled)  {
-                removeSupplementalDataFor( domainObject )
-            }
             domainObject.delete( failOnError: true, flush: flushImmediately )
 
             log.trace "${this.class.simpleName}.delete will now invoke the postDelete callback if it exists"
@@ -804,44 +781,6 @@ class ServiceBase {
             domainClass = Class.forName( domainClassName, true, Thread.currentThread().getContextClassLoader() )
         }
         domainClass
-    }
-
-
-    /**
-     * Returns the SupplementalDataService.
-     **/
-    protected def getSupplementalDataService() {
-        if (!supplementalDataService) {
-            // fyi - it's ok if another thread also sneaks in...
-            ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
-            supplementalDataService = (SupplementalDataService) ctx.getBean( GrailsNameUtils.getPropertyNameRepresentation( SupplementalDataService.class ) )
-        }
-        supplementalDataService
-    }
-
-
-    /**
-     * Persists supplemental data for the supplied modelInstance, if needed.
-     * Note that we persist this explicitly within the insert and update methods, since supplemental data
-     * may be the only data changed in the object.  That is, since the object may not be 'dirty' we can
-     * not rely on hibernate listeners or events.
-     **/
-    protected def persistSupplementalDataFor( modelInstance ) {
-        if (getSupplementalDataService().supportsSupplementalProperties( modelInstance.class )) {
-            return getSupplementalDataService().persistSupplementalDataFor( modelInstance )
-        } else {
-            modelInstance
-        }
-    }
-
-
-    /**
-     * Removes supplemental data for the supplied modelInstance, if needed.
-     **/
-    protected def removeSupplementalDataFor( modelInstance ) {
-        if (getSupplementalDataService().supportsSupplementalProperties( modelInstance.class )) {
-            getSupplementalDataService().persistSupplementalDataFor( modelInstance )
-        }
     }
 
 

@@ -18,10 +18,7 @@ import net.hedtech.banner.service.DefaultLoaderService
 import net.hedtech.banner.service.HttpSessionService
 import net.hedtech.banner.service.LoginAuditService
 import net.hedtech.banner.service.ServiceBase
-import net.hedtech.banner.supplemental.SupplementalDataHibernateListener
-import net.hedtech.banner.supplemental.SupplementalDataPersistenceManager
-import net.hedtech.banner.supplemental.SupplementalDataService
-import net.hedtech.banner.supplemental.SupplementalDataSupportMixin
+
 import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.jmx.HierarchyDynamicMBean
@@ -145,22 +142,6 @@ class BannerCoreGrailsPlugin {
         resourceRepresentationRegistry(ResourceRepresentationRegistry) { bean ->
             bean.initMethod = 'init'
         }
-        if (CH.config.sdeEnabled) {
-            supplementalDataPersistenceManager(SupplementalDataPersistenceManager) {
-                dataSource = ref(dataSource)
-                sessionFactory = ref(sessionFactory)
-                supplementalDataService = ref(supplementalDataService)
-
-            }
-
-            supplementalDataService(SupplementalDataService) { bean ->
-                dataSource = ref(dataSource)
-                sessionFactory = ref(sessionFactory)
-                supplementalDataPersistenceManager = ref(supplementalDataPersistenceManager)
-                bean.initMethod = 'init'
-            }
-        }
-
 //        tabLevelSecurityService( TabLevelSecurityService ) { bean ->
 //            sessionFactory = ref( sessionFactory )
 //
@@ -294,18 +275,6 @@ class BannerCoreGrailsPlugin {
                 controllerArtefact.clazz.mixin RestfulControllerMixin
             }
         }
-        // mix-in supplemental data support into all models
-        if (CH.config.sdeEnabled) {
-            application.domainClasses.each { modelArtefact ->
-                try {
-                    modelArtefact.clazz.mixin SupplementalDataSupportMixin
-                } catch (e) {
-                    e.printStackTrace()
-                    throw e
-                }
-            }
-        }
-
 
         String.metaClass.flattenString = {
             return delegate.replace("\n", "").replaceAll(/  */, " ")
@@ -328,10 +297,6 @@ class BannerCoreGrailsPlugin {
     def doWithApplicationContext = { applicationContext ->
         def listeners = applicationContext.sessionFactory.eventListeners
 
-        // register hibernate listener to load supplemental data
-        if (CH.config.sdeEnabled) {
-            addEventTypeListener(listeners, new SupplementalDataHibernateListener(), 'postLoad')
-        }
         // register hibernate listener for populating audit trail properties before inserting and updating models
         def auditTrailSupportListener = new AuditTrailPropertySupportHibernateListener()
         ['preInsert', 'preUpdate'].each {
