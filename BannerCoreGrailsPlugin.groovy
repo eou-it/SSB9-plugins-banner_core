@@ -3,6 +3,7 @@
  ****************************************************************************** */
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
+import net.hedtech.banner.loginworkflow.SecurityQAFlow
 import net.hedtech.banner.loginworkflow.UserAgreementFlow
 import net.hedtech.banner.loginworkflow.SurveyFlow
 import net.hedtech.banner.privacy.PrivacyPolicyFilter
@@ -255,6 +256,10 @@ class BannerCoreGrailsPlugin {
         }
 
         surveyFlow(SurveyFlow) {
+            sessionFactory = ref(sessionFactory)
+        }
+
+        securityQAFlow(SecurityQAFlow) {
             sessionFactory = ref(sessionFactory)
         }
 
