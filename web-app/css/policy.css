@@ -7,7 +7,7 @@
 color: #646464;
 font-family: Verdana,arial,helvetica,sans-serif;
 float: left;
-font-size: 1.61em;
+font-size: 2em;
 font-weight: normal;
 letter-spacing: 0.08em;
 margin: 5px 0 10px;
@@ -42,7 +42,7 @@ width: 85%;
 	background: transparent;
 	position: relative;
 	top: 0px;
-	padding: 25px; 
+	padding: 25px;
 	float: left;
 	overflow: hidden;
 	width: 95%;
@@ -73,14 +73,10 @@ width: 85%;
 	padding: 3px 0px 4px 4px;
 }
 
-.termstexttable td {
-    padding: 3px 0 4px 4px;
-}
-
 TABLE TD.indefault {
     color: #444455;
     font-family: Verdana,arial,helvetica,sans-serif;
-    font-size: 90%;
+    font-size: 1.4em;
     font-style: normal;
     font-weight: normal;
     text-align: left;
