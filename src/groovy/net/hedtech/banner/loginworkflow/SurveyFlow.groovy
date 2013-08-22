@@ -32,7 +32,7 @@ class SurveyFlow implements PostLoginWorkflow {
             def surveyStartDateRow = getSurveyStartDate()
             def surveyEndDateRow = getSurveyEndDate()
             if(!surveyStartDateRow.isEmpty() &&!surveyEndDateRow.isEmpty()) {
-                def today = new Date()
+                def today = getTodayDate()
                 def surveyStartDate = surveyStartDateRow[0]?.gtvsdax_reporting_date
                 def surveyEndDate = surveyEndDateRow[0]?.gtvsdax_reporting_date ?: today
                 // Survey start date is not null & Today is between Survey start and end dates
@@ -70,6 +70,15 @@ class SurveyFlow implements PostLoginWorkflow {
         return (userAuthorities?.contains('SELFSERVICE-STUDENT') || userAuthorities?.contains('SELFSERVICE-EMPLOYEE'))
     }
 
+    private def getTodayDate() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
 
     private def getSurveyStartDate() {
         def connection
@@ -77,7 +86,7 @@ class SurveyFlow implements PostLoginWorkflow {
         try {
             connection = sessionFactory.currentSession.connection()
             sql = new Sql(connection)
-            def surveyStartDateRow = sql.rows("""SELECT GTVSDAX_REPORTING_DATE
+            def surveyStartDateRow = sql.rows("""SELECT TRUNC(GTVSDAX_REPORTING_DATE) as GTVSDAX_REPORTING_DATE
                                FROM GTVSDAX
                               WHERE GTVSDAX_INTERNAL_CODE       = 'RESTARTDAT'
                                 AND GTVSDAX_INTERNAL_CODE_SEQNO = 1
@@ -102,7 +111,7 @@ class SurveyFlow implements PostLoginWorkflow {
         try {
             connection = sessionFactory.currentSession.connection()
             sql = new Sql(connection)
-            def surveyEndDateRow = sql.rows("""SELECT GTVSDAX_REPORTING_DATE
+            def surveyEndDateRow = sql.rows("""SELECT TRUNC(GTVSDAX_REPORTING_DATE) as GTVSDAX_REPORTING_DATE
                                FROM GTVSDAX
                               WHERE GTVSDAX_INTERNAL_CODE       = 'REENDDATE'
                                 AND GTVSDAX_INTERNAL_CODE_SEQNO = 1
