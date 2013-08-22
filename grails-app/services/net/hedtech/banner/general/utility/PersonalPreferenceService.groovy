@@ -29,8 +29,13 @@ class PersonalPreferenceService {
    def List fetchPersonalPreference(String group, String key, String string)  {
      def user = SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase()
 
-     def prefs = PersonalPreference.fetchPersonalPreferencesByKey(group,key,string,user)
-     if (prefs.size() <= 0)
+     def prefs =[]
+
+       try {
+           prefs = PersonalPreference.fetchPersonalPreferencesByKey(group,key,string,user)
+       }catch(Exception ex){ }
+
+     if (prefs?.size() <= 0)
        prefs = PersonalPreference.fetchPersonalPreferencesByKey(group,key,string,"BASELINE")
      return prefs
   }

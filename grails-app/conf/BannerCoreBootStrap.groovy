@@ -24,18 +24,18 @@ class BannerCoreBootStrap {
         def dbInstanceName = institutionService.findByKey()?.instanceName
         servletContext.setAttribute("dbInstanceName", dbInstanceName)
 
-        if (!isSsbEnabled()){
-           def bannerInbUrl = personalPreferenceService.fetchPersonalPreference("MAGELLAN","SERVER_DESIGNATION","INB")[0]
-           servletContext.setAttribute("bannerInbUrl", bannerInbUrl.value)
-        }
+//        if (!isSsbEnabled()){
+//           def bannerInbUrl = personalPreferenceService.fetchPersonalPreference("MAGELLAN","SERVER_DESIGNATION","INB")[0]
+//           servletContext.setAttribute("bannerInbUrl", bannerInbUrl.value)
+//        }
     }
 
     def destroy = {
         // no-op
     }
 
-    private def isSsbEnabled() {
-        CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
-    }
+//    private def isSsbEnabled() {
+//        CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
+//    }
 
 }

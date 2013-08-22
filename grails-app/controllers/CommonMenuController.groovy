@@ -11,6 +11,7 @@ import org.apache.log4j.Logger
 class CommonMenuController {
     def menuService
     def selfServiceMenuService
+    def personalPreferenceService
     private final log = Logger.getLogger(getClass())
 
     static final String BANNER_INB_URL = "bannerInbUrl"
@@ -542,8 +543,23 @@ class CommonMenuController {
     }
 
     def getBannerInbUrl(){
-        return SCH.servletContext.getAttribute(BANNER_INB_URL)
+        def bannerInbUrl
+
+        if(!servletContext.getAttribute("bannerInbUrl")){
+
+            if (!isSsbEnabled()){
+                bannerInbUrl = personalPreferenceService.fetchPersonalPreference("MAGELLAN","SERVER_DESIGNATION","INB")[0]
+                servletContext.setAttribute("bannerInbUrl", bannerInbUrl.value)
+            }
+        }
+
+        bannerInbUrl = servletContext.getAttribute("bannerInbUrl")
+
+        return bannerInbUrl
     }
 
+    private def isSsbEnabled() {
+        ConfigurationHolder.config.ssbEnabled instanceof Boolean ? ConfigurationHolder.config.ssbEnabled : false
+    }
 
 }
