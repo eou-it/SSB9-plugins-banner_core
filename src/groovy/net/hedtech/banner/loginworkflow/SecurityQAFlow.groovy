@@ -3,6 +3,8 @@ package net.hedtech.banner.loginworkflow
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import org.apache.log4j.Logger
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.springframework.context.ApplicationContext
 
 import java.sql.SQLException
 
@@ -11,13 +13,15 @@ class SecurityQAFlow implements PostLoginWorkflow {
     def sessionFactory
     private final log = Logger.getLogger(getClass())
 
+    //def securityQAService
+
     public boolean showPage(request) {
         def session = request.getSession();
         String isDone = session.getAttribute("securityqadone")
         boolean displayPage = false
         if(isDone != "true"){
-            if(getDisableForgetPinIndicator().equals("N") && getNumberOfQuestions() > 0) {
-                // todo: need to check if user has already entered the answers before
+            def noOfQuestions = getNumberOfQuestions()
+            if(getDisableForgetPinIndicator().equals("N") && noOfQuestions > 0 && !isUserAlreadyAnsweredSecurityQA(noOfQuestions)) {
                 displayPage = true
             }
         }
@@ -67,5 +71,16 @@ class SecurityQAFlow implements PostLoginWorkflow {
         }finally{
             connection.close()
         }
+    }
+
+    private boolean isUserAlreadyAnsweredSecurityQA(noOfQuestions){
+        /*ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+        ctx.getBean("userAgreementFlow")*/
+       /* if(noOfQuestions > securityQAService.getNumberOfQuestionsAnswered()) {
+            return false
+        }*/
+
+        //return true
+        return false
     }
 }

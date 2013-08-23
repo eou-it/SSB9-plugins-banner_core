@@ -1,3 +1,5 @@
+import net.hedtech.banner.security.BannerUser
+import org.springframework.security.core.context.SecurityContextHolder
 
 class SecurityQAController {
 
@@ -12,9 +14,18 @@ class SecurityQAController {
 
     def save() {
         log.info("save")
-        //securityQAService.saveSecurityQAResponse()
+        String pidm = getPidm()
+        //securityQAService.saveSecurityQAResponse(pidm)
         completed()
     }
+    public static String getPidm() {
+        def user = SecurityContextHolder?.context?.authentication?.principal
+        if (user instanceof BannerUser) {
+            return user.pidm
+        }
+        return null
+    }
+
     def completed() {
         request.getSession().setAttribute("securityqadone", "true")
         done()
