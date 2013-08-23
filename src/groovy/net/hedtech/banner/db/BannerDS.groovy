@@ -95,6 +95,7 @@ public class BannerDS implements DataSource {
                 setFGAC(conn)
                 bannerConnection = new BannerConnection(conn, user?.username, this)
                 if (Environment.current != Environment.TEST && isWebRequest()) {
+                    bannerConnection.isCached = true
                     def session = RequestContextHolder.currentRequestAttributes().request.session
                     session.setAttribute("bannerRoles", roles)
                     session.setAttribute("cachedConnection", bannerConnection)
