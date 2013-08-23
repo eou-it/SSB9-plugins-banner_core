@@ -7,13 +7,10 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 <html>
 <head>
     <title><g:message code="net.hedtech.banner.termsofuse.title"/></title>
+    <meta name="layout" content="bannerSelfServicePage"/>
     <r:require modules="userAgreement"/>
-    <r:layoutResources/>
 </head>
 <body>
-<div class="header">
-    <div class="institutionalBranding"></div>
-</div>
 <div id="content">
     <div id="bodyContainer">
     <div id="pageheader">
@@ -39,18 +36,15 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                 </div>
                 <div class="button-area">
                  <input type='button' value='<g:message code="net.hedtech.banner.termsofuse.button.continue"/>' id="policy-continue" class="secondary-button"
-                        onclick='window.location = "${createLink(controller: "userAgreement", action: "agreement")}";'/>
+                        data-endpoint="${createLink(controller: "userAgreement", action: "agreement")}"/>
                  <input type='button' value='<g:message code="net.hedtech.banner.termsofuse.button.exit"/>' id="policy-exit" class="secondary-button"
-                           onclick='window.location = "${createLink(controller: "logout")}";'/>
+                        data-endpoint="${createLink(controller: "logout")}"/>
                 </div>
             </div>
             </div>
         </div>
     </div>
     </div>
-</div>
-<div class="footer">
-    <span class="logo"></span>
 </div>
 </body>
 </html>
