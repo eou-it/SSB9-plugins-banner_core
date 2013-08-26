@@ -1,23 +1,40 @@
 import net.hedtech.banner.security.BannerUser
 import org.springframework.security.core.context.SecurityContextHolder
+import net.hedtech.banner.general.overall.PinQuestion
+import net.hedtech.banner.securityQA.SecurityQAService
 
 class SecurityQAController {
 
     static defaultAction = "index"
-    //def securityQAService
+    def securityQAService
+    static def noOfquestions
+    static def questions = [:]
 
     def index() {
-        def model = [infoText:""]
+        def ques = PinQuestion.fetchQuestions()
+        def userDefinedQuesFlag = securityQAService.getUserDefinedQuestionFlag()
+        ques.each {
+            questions.put(it.pinQuestionId, it.description)
+        }
+        def questionList = questions.values()
+        noOfquestions = securityQAService.getNumberOfQuestions()
         log.info("rendering view")
-        render view: "securityQA", model: model
+        render view: "securityQA", model: [questions: questionList, userDefinedQuesFlag: userDefinedQuesFlag, noOfquestions: noOfquestions]
     }
 
     def save() {
         log.info("save")
         String pidm = getPidm()
-        //securityQAService.saveSecurityQAResponse(pidm)
+        List selectedQA = []
+        questions.eachWithIndex {it, index ->
+            def questionsAnswered = [question: params.question[index], questionNo: it.find {it.value == params.question[index]}.key, userDefinedQuestion: params.userDefinedQuestion[index], answer: params.answer[index]]
+            selectedQA.add(questionsAnswered)
+        }
+
+        //securityQAService.saveSecurityQAResponse(pidm,selectedQA,params.pin)
         completed()
     }
+
     public static String getPidm() {
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (user instanceof BannerUser) {
@@ -38,4 +55,6 @@ class SecurityQAController {
         }
         redirect uri: path
     }
+
+
 }
