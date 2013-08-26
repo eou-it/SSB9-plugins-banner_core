@@ -24,9 +24,9 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                     <table class="termstexttable">
                         <tbody>
                             <tr>
-                                <td id="policy" class="indefault">
+                                <td id="policy" class="terms-text-style">
                                 </td>
-                                <td  class="indefault">
+                                <td  class="terms-text-style">
                                     ${infoText}<br/>
                                     <br/>
                                 </td>

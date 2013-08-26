@@ -63,7 +63,7 @@ width: 85%;
 	line-height: 13pt;
 }
 
-#policy.indefault {
+#policy.terms-text-style {
     background:url(../images/web_info.png) no-repeat;
     width:2%
 }
@@ -73,7 +73,7 @@ width: 85%;
 	padding: 3px 0px 4px 4px;
 }
 
-TABLE TD.indefault {
+TABLE TD.terms-text-style {
     color: #444455;
     font-family: Verdana,arial,helvetica,sans-serif;
     font-size: 1.4em;
