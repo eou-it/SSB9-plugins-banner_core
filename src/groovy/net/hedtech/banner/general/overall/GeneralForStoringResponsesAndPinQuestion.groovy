@@ -25,6 +25,13 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "GV_GOBANSR")
+@NamedQueries(value = [
+@NamedQuery(name = "GeneralForStoringResponsesAndPinQuestion.fetchCountOfAnswersForPidm",
+        query = """select count(a.answerDescription)
+                   FROM GeneralForStoringResponsesAndPinQuestion a
+                   WHERE  pidm = :pidm
+                """)
+])
 class GeneralForStoringResponsesAndPinQuestion implements Serializable {
 
 	/**
@@ -168,4 +175,13 @@ class GeneralForStoringResponsesAndPinQuestion implements Serializable {
     }
     //Read Only fields that should be protected against update
     public static readonlyProperties = [ 'pidm', 'number' ]
+
+    static def fetchCountOfAnswersForPidm(Map map) {
+        GeneralForStoringResponsesAndPinQuestion.withSession { session ->
+            def generalForStoringResponsesAndPinQuestion = session.getNamedQuery('GeneralForStoringResponsesAndPinQuestion.fetchCountOfAnswersForPidm')
+                    .setInteger('pidm', map.pidm)
+                    .list()[0]
+            return generalForStoringResponsesAndPinQuestion
+        }
+    }
 }

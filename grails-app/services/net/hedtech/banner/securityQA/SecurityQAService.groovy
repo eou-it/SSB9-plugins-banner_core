@@ -2,6 +2,7 @@ package net.hedtech.banner.securityQA
 
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
+import net.hedtech.banner.general.overall.GeneralForStoringResponsesAndPinQuestion
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
 
@@ -14,8 +15,12 @@ class SecurityQAService extends ServiceBase {
 
     private final Logger log = Logger.getLogger(getClass())
 
-    def saveSecurityQAResponse(String pidm, String question1, String question2, String answer1, int question_num) {
+    def saveSecurityQAResponse(String pidm, ArrayList lst, String pin) {
 
+        String question1 = "What is pet name?"
+        String question2 = null
+        String answer1 = "golu"
+        String question_num = null
         // need to do following validations
         /**
          *   1. if question 1 and qs 2 is not null -> error  "Please enter only one question."
@@ -29,43 +34,43 @@ class SecurityQAService extends ServiceBase {
          *   9. if ans2 is not NULL and length of ans1 < GUBPPRF_ANSR_MIN_LENGTH and GUBPPRF_ANSR_MIN_LENGTH > 0 ->
          *       error  "Answer has to be %01% characters or more."  -> not applicable
          *   10. if q2 is not NULL and length of ans1 < GUBPPRF_QSTN_MIN_LENGTH and GUBPPRF_QSTN_MIN_LENGTH > 0 -> error  "Question has to be %01% characters or more."
-         * */
+         *   */
 
-        if ((question1 != null && !question1.equals("")) && (question2 != null && question2.equals(""))) {
-            log.error("Please enter only one question.")
-            throw new IllegalArgumentException("Please enter only one question.")
+        if((question1 != null && !question1.equals("")) && (question2 != null && question2.equals(""))) {
+             log.error("Please enter only one question.")
+             throw new RuntimeException("Please enter only one question.")
         }
 
-        if ((answer1 != null && !answer1.equals("")) && (question1 == null || question1.equals("")) && (question2 == null || question2.equals(""))) {
+        if((answer1 != null && !answer1.equals("")) && (question1 == null || question1.equals("")) && (question2 == null || question2.equals(""))) {
             log.error("Please enter Security Question and Answer.")
-            throw new IllegalArgumentException("Please enter Security Question and Answer.")
+            throw new RuntimeException("Please enter Security Question and Answer.")
         }
 
-        if ((answer1 == null || answer1.equals("")) && (question1 != null && !question1.equals("")) || (question2 != null && !question2.equals(""))) {
+        if((answer1 == null || answer1.equals("")) && (question1 != null && !question1.equals("")) || (question2 != null && !question2.equals(""))) {
             log.error("Please enter Security Question and Answer.")
-            throw new IllegalArgumentException("Please enter Security Question and Answer.")
+            throw new RuntimeException("Please enter Security Question and Answer.")
         }
 
-        if (question2.contains("<") || question2.contains(">")) {
+        if(question2?.contains("<") || question2?.contains(">")) {
             log.error("Question may not contain the < or > characters.")
-            throw new IllegalArgumentException("Question may not contain the < or > characters.")
+            throw new RuntimeException("Question may not contain the < or > characters.")
         }
 
-        if (answer1.contains("<") || answer1.contains(">")) {
+        if(answer1.contains("<") || answer1.contains(">")) {
             log.error("Answer may not contain the < or > characters.")
             throw new IllegalArgumentException("Answer may not contain the < or > characters.")
         }
 
         def GUBPPRF_ANSR_MIN_LENGTH = getAnswerMinimumLength()
-        if ((answer1 != null || !answer1.equals("")) && answer1.length() < GUBPPRF_ANSR_MIN_LENGTH && GUBPPRF_ANSR_MIN_LENGTH > 0) {
+        if((answer1 != null && !answer1.equals("")) && answer1.length() < GUBPPRF_ANSR_MIN_LENGTH && GUBPPRF_ANSR_MIN_LENGTH > 0) {
             log.error("Answer has to be %01% characters or more.")
-            throw new IllegalArgumentException("Answer has to be %01% characters or more.")
+            throw new RuntimeException("Answer has to be %01% characters or more.")
         }
 
         def GUBPPRF_QSTN_MIN_LENGTH = getQuestionMinimumLength()
-        if ((question2 != null || !question2.equals("")) && question2.length() < GUBPPRF_QSTN_MIN_LENGTH && GUBPPRF_QSTN_MIN_LENGTH > 0) {
+        if((question2 != null && !question2.equals("")) && question2.length() < GUBPPRF_QSTN_MIN_LENGTH && GUBPPRF_QSTN_MIN_LENGTH > 0) {
             log.error("Answer has to be %01% characters or more.")
-            throw new IllegalArgumentException("Answer has to be %01% characters or more.")
+            throw new RuntimeException("Answer has to be %01% characters or more.")
         }
 
         /**
@@ -81,15 +86,18 @@ class SecurityQAService extends ServiceBase {
          *    else update with q2 and ans1
          */
 
-        if (question_num == null) {
-            if ((question1 != null && !question1.equals("")) && (answer1 != null && !answer1.equals(""))) {
-                // update
+        if(question_num == null) {
+            if((question1 != null && !question1.equals("")) && (answer1 != null && !answer1.equals(""))) {
+                  // update
             } else {
-                // update
+                 // update
             }
         } else {
-            if ((question1 != null && !question1.equals("")) && (answer1 != null && !answer1.equals(""))) {
-                //create
+            if((question1 != null && !question1.equals("")) && (answer1 != null && !answer1.equals(""))) {
+                 //create
+                //GeneralForStoringResponsesAndPinQuestion generalForStoringResponsesAndPinQuestion = new GeneralForStoringResponsesAndPinQuestion()
+                //generalForStoringResponsesAndPinQuestion.
+                //this.create(GeneralForStoringResponsesAndPinQuestion)
             } else {
                 //create
             }
@@ -97,48 +105,48 @@ class SecurityQAService extends ServiceBase {
 
     }
 
-    private def getQuestionMinimumLength() {
+    private def getQuestionMinimumLength(){
         def connection
         Sql sql
-        try {
+        try{
             connection = sessionFactory.currentSession.connection()
             sql = new Sql(connection)
             GroovyRowResult row = sql.firstRow("""select GUBPPRF_QSTN_MIN_LENGTH from GUBPPRF""")
             return row?.GUBPPRF_QSTN_MIN_LENGTH
-        } catch (SQLException ae) {
+        }catch (SQLException ae) {
             log.debug ae.stackTrace
             throw ae
         }
         catch (Exception ae) {
             log.debug ae.stackTrace
             throw ae
-        } finally {
+        }finally{
             connection.close()
         }
     }
 
-    private def getAnswerMinimumLength() {
+    private def getAnswerMinimumLength(){
         def connection
-        Sql sql
-        try {
-            connection = sessionFactory.currentSession.connection()
-            sql = new Sql(connection)
-            GroovyRowResult row = sql.firstRow("""select GUBPPRF_ANSR_MIN_LENGTH from GUBPPRF""")
-            return row?.GUBPPRF_ANSR_MIN_LENGTH
-        } catch (SQLException ae) {
-            log.debug ae.stackTrace
-            throw ae
+            Sql sql
+            try{
+                connection = sessionFactory.currentSession.connection()
+                sql = new Sql(connection)
+                GroovyRowResult row = sql.firstRow("""select GUBPPRF_ANSR_MIN_LENGTH from GUBPPRF""")
+                return row?.GUBPPRF_ANSR_MIN_LENGTH
+            }catch (SQLException ae) {
+                log.debug ae.stackTrace
+                throw ae
+            }
+            catch (Exception ae) {
+                log.debug ae.stackTrace
+                throw ae
+            }finally{
+                connection.close()
+            }
         }
-        catch (Exception ae) {
-            log.debug ae.stackTrace
-            throw ae
-        } finally {
-            connection.close()
-        }
-    }
 
-    public def getNumberOfQuestionsAnswered() {
-        return 0
+    public def getNumberOfQuestionsAnswered(String pidm) {
+        return GeneralForStoringResponsesAndPinQuestion.fetchCountOfAnswersForPidm([pidm:Integer.valueOf(pidm)])
     }
 
     public def getUserDefinedQuestionFlag() {
@@ -165,7 +173,6 @@ class SecurityQAService extends ServiceBase {
     public def getNumberOfQuestions() {
         def connection
         Sql sql
-        def questions = [:]
         try {
             connection = sessionFactory.currentSession.connection()
             sql = new Sql(connection)
