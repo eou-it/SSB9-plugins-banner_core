@@ -29,20 +29,12 @@ class SecurityQAController {
 
 
         for (int index = 0; index < noOfquestions; index++) {
-            def questionsAnswered = [question: params.question[index], questionNo: questions.find{it.value==params.question[index]}.key, userDefinedQuestion: params.userDefinedQuestion[index], answer: params.answer[index]]
+            def questionsAnswered = [question: params.question[index], questionNo: questions.find{it.value==params.question[index]}?.key, userDefinedQuestion: params.userDefinedQuestion[index], answer: params.answer[index]]
             selectedQA.add(questionsAnswered)
         }
 
-        //securityQAService.saveSecurityQAResponse(pidm,selectedQA,params.pin)
+        securityQAService.saveSecurityQAResponse(pidm, selectedQA, params.pin)
         completed()
-    }
-
-    private def getQuestionNo(question) {
-        def quesNo
-        questions.each {
-            quesNo=it.find{it.value ==question}.key
-        }
-        quesNo
     }
 
     public static String getPidm() {
