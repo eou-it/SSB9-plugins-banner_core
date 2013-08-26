@@ -19,13 +19,13 @@ class HttpSessionService {
 
     def sessionDestroyed(HttpSession session) {
         log.trace("Session destroyed: " + session.id)
-        closeDBConnection()
+        closeDBConnection(session)
     }
 
-    def closeDBConnection() {
+    def closeDBConnection(HttpSession session) {
         log.trace("HttpSessionService.closeDBConnection invoked")
         try {
-            Connection conn  = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("cachedConnection")
+            Connection conn  = session?.getAttribute("cachedConnection")
             log.trace("HttpSessionService.closeDBConnection invoked $conn cleaned up")
             if (conn)
                 dataSource.removeConnection(conn)
