@@ -13,6 +13,12 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 
 <body>
 <script>
+    var questions = new Array();
+    questions.push("Not Selected");
+    <g:each var="ques" in="${questions}">
+        questions.push("${ques}");
+    </g:each>
+
     var prev = ""
     function updateSelection(elm) {
         var selectElements = $('select#question');
@@ -37,6 +43,10 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
         prev = $(elm).find(":selected").val();
     }
 
+
+
+
+
 </script>
 
 <div id="content">
@@ -59,12 +69,14 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                     </div>
                     <br/>
                     <br/>
+
                     <form action='${createLink(controller: "securityQA", action: "save")}' id='securityForm'
                           method='POST'>
                         <div id="wrapper">
                             <div id="confirmpinlabel">
                                 <label><g:message code="securityQA.confirmpin.label"/></label>
                             </div>
+
                             <div id="textLabel">
                                 <g:field name="pin" type="password"></g:field>
                             </div>
@@ -74,10 +86,14 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                             <div id="wrapper">
                                 <div id="questionLabel"><label><g:message code="securityQA.question.label"
                                                                           args="[i + 1]"/></label></div>
+
                                 <div>
-                                    <g:select name="question" from="${questions}"
-                                              noSelection="${['null': 'Not Selected']}"
-                                              onchange="updateSelection(this)" onclick="handleClick(this)"/>
+                                    <select id="question" name="question">
+                                        <option value="question0">Not Selected</option>
+                                        <g:each in="${questions}" status="j" var="innerQues">
+                                            <option value="question${j+1}">${innerQues}</option>
+                                        </g:each>
+                                    </select>
                                 </div>
                                 <g:if test="${userDefinedQuesFlag == 'Y'}">
                                     <div id="label"><label><g:message code="securityQA.or.label"/></label></div>
