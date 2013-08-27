@@ -24,11 +24,15 @@ $(document).ready(function () {
 
     function validateForm() {
         var notificationMsgs = new Array();
+        $('select#question').each(function(j, selectElm){
+            $(selectElm).removeClass("notification-error");
+        });
 
         $('select#question').find('option:selected').each(function(j, ielm) {
             var index = parseInt($(ielm).val().substring("question".length));
             if(index == 0) {
                 notificationMsgs.push({message: "Fill Form", type: "error"});
+                $(ielm).parent().addClass("notification-error");
             }
         });
 
@@ -50,6 +54,11 @@ $(document).ready(function () {
             function (j, elem) {
                 var $selected = $(elem).find("option:selected");
                 var $opts = $("<div>");
+
+                var index = parseInt($($selected).val().substring("question".length));
+                if(index != 0) {
+                    $($selected).parent().removeClass("notification-error");
+                }
 
                 var newArray = new Array();
                 for (var i = 0; i < questions.length; i++) {
