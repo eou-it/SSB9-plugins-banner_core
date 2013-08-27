@@ -1,12 +1,43 @@
 $(document).ready(function () {
     $("#security-save-btn").click(function () {
-        var form = document.getElementById('securityForm')
-        form.submit()
+        var validForm = true;
+        var notificationMsgs = new Array();
+
+        notificationMsgs = validateForm();
+
+        if(notificationMsgs && notificationMsgs.length > 0) {
+            _.each(notificationMsgs, function(message) {
+                var n = new Notification({message: message.message, type:message.type, flash: true});
+
+               /* n.addPromptAction($.i18n.prop("js.notification.ok"), function() {
+                    notifications.remove(n);
+                });*/
+
+                notifications.addNotification(n);
+            });
+        }
+        else {
+            var form = document.getElementById('securityForm');
+            form.submit();
+        }
     });
+
+    function validateForm() {
+        var notificationMsgs = new Array();
+
+        $('select#question').find('option:selected').each(function(j, ielm) {
+            var index = parseInt($(ielm).val().substring("question".length));
+            if(index == 0) {
+                notificationMsgs.push({message: "Fill Form", type: "error"});
+            }
+        });
+
+        return notificationMsgs;
+    }
 
     $("#security-cancel-btn").click(function () {
         var href = $(this).attr("data-endpoint")
-        window.location = href
+        window.location = href;
     });
 
 
@@ -18,11 +49,11 @@ $(document).ready(function () {
         $('select#question').each(
             function (j, elem) {
                 var $selected = $(elem).find("option:selected");
-                var $opts = $("<div>")
+                var $opts = $("<div>");
 
                 var newArray = new Array();
                 for (var i = 0; i < questions.length; i++) {
-                    newArray.push(questions[i])
+                    newArray.push(questions[i]);
                 }
 
                 $('select#question').find('option:selected').each(function(j, ielm) {
@@ -46,6 +77,4 @@ $(document).ready(function () {
                 }
             });
     }
-
-
 })
