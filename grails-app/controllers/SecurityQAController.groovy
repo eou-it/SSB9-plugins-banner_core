@@ -1,7 +1,6 @@
 import net.hedtech.banner.security.BannerUser
 import org.springframework.security.core.context.SecurityContextHolder
 import net.hedtech.banner.general.overall.PinQuestion
-import net.hedtech.banner.securityQA.SecurityQAService
 
 class SecurityQAController {
 

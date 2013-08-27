@@ -29,7 +29,10 @@ import javax.persistence.*
 @NamedQueries(value = [
 @NamedQuery(name = "PinQuestion.fetchQuestions",
 query = """FROM PinQuestion a
-           WHERE a.displayIndicator = 'Y' """)
+           WHERE a.displayIndicator = 'Y' """),
+@NamedQuery(name = "PinQuestion.fetchQuestionOnId",
+query = """FROM PinQuestion a
+           WHERE a.pinQuestionId = :pinQuestionId """)
 ])
 class PinQuestion implements Serializable {
 
@@ -151,4 +154,13 @@ class PinQuestion implements Serializable {
         return questions
     }
 
+    public static def fetchQuestionOnId(map) {
+
+        PinQuestion.withSession { session ->
+            def question = session.getNamedQuery('PinQuestion.fetchQuestionOnId')
+                    .setString('pinQuestionId', map.pinQuestionId)
+                    .list()[0]
+            return question
+        }
+    }
 }

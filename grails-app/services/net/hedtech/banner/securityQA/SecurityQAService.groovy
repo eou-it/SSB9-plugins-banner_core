@@ -2,104 +2,128 @@ package net.hedtech.banner.securityQA
 
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
+import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.general.overall.GeneralForStoringResponsesAndPinQuestion
+import net.hedtech.banner.general.overall.PinQuestion
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
 
 import java.sql.SQLException
 
 
-class SecurityQAService extends ServiceBase {
+class SecurityQAService {
     static transactional = true
     def sessionFactory
+
+    def generalForStoringResponsesAndPinQuestionService
 
     private final Logger log = Logger.getLogger(getClass())
 
     def saveSecurityQAResponse(String pidm, ArrayList lst, String pin) {
 
-        String question1 = "What is pet name?"
-        String question2 = null
-        String answer1 = "golu"
-        String question_num = null
-        // need to do following validations
-        /**
-         *   1. if question 1 and qs 2 is not null -> error  "Please enter only one question."
-         *   2. if ans 1 and ans2 is not null -> error  "Please enter only one answer."   -> not applicable
-         *   3. if ans1 is not null and ( q1 is null and q2 is null) -> error "Please enter Security Question and Answer."
-         *   4. if ans1 is null and ( q1 is not null or q2 is not null) -> error "Please enter Security Question and Answer."
-         *   5. if ans1 is null and ans2 is null -> error "Please enter Security Question and Answer." -> not applicable
-         *   6. q's should not have "<" / ">"  -> error   "Question may not contain the < or > characters."
-         *   7. ans should not have "<" / ">" -> error    "Answer may not contain the < or > characters."
-         *   8. if ans1 is not NULL and length of ans1 < GUBPPRF_ANSR_MIN_LENGTH and GUBPPRF_ANSR_MIN_LENGTH > 0 -> error  "Answer has to be %01% characters or more."
-         *   9. if ans2 is not NULL and length of ans1 < GUBPPRF_ANSR_MIN_LENGTH and GUBPPRF_ANSR_MIN_LENGTH > 0 ->
-         *       error  "Answer has to be %01% characters or more."  -> not applicable
-         *   10. if q2 is not NULL and length of ans1 < GUBPPRF_QSTN_MIN_LENGTH and GUBPPRF_QSTN_MIN_LENGTH > 0 -> error  "Question has to be %01% characters or more."
-         *   */
+        String answer_salt_dummy = "ML3MTB80"
+        int cnt = 1
+        lst.each {
+            String question1 = it["question"]
+            String question2 = it["userDefinedQuestion"]
+            String answer1 =  it["answer"]
+            String question1Id = it["questionNo"]
+            String question_num = null
 
-        if((question1 != null && !question1.equals("")) && (question2 != null && question2.equals(""))) {
-             log.error("Please enter only one question.")
-             throw new RuntimeException("Please enter only one question.")
-        }
 
-        if((answer1 != null && !answer1.equals("")) && (question1 == null || question1.equals("")) && (question2 == null || question2.equals(""))) {
-            log.error("Please enter Security Question and Answer.")
-            throw new RuntimeException("Please enter Security Question and Answer.")
-        }
 
-        if((answer1 == null || answer1.equals("")) && (question1 != null && !question1.equals("")) || (question2 != null && !question2.equals(""))) {
-            log.error("Please enter Security Question and Answer.")
-            throw new RuntimeException("Please enter Security Question and Answer.")
-        }
+            /**   need to do following validations
+             *   1. if question 1 and qs 2 is not null -> error  "Please enter only one question."
+             *   2. if ans 1 and ans2 is not null -> error  "Please enter only one answer."   -> not applicable
+             *   3. if ans1 is not null and ( q1 is null and q2 is null) -> error "Please enter Security Question and Answer."
+             *   4. if ans1 is null and ( q1 is not null or q2 is not null) -> error "Please enter Security Question and Answer."
+             *   5. if ans1 is null and ans2 is null -> error "Please enter Security Question and Answer." -> not applicable
+             *   6. q's should not have "<" / ">"  -> error   "Question may not contain the < or > characters."
+             *   7. ans should not have "<" / ">" -> error    "Answer may not contain the < or > characters."
+             *   8. if ans1 is not NULL and length of ans1 < GUBPPRF_ANSR_MIN_LENGTH and GUBPPRF_ANSR_MIN_LENGTH > 0 -> error  "Answer has to be %01% characters or more."
+             *   9. if ans2 is not NULL and length of ans1 < GUBPPRF_ANSR_MIN_LENGTH and GUBPPRF_ANSR_MIN_LENGTH > 0 ->
+             *       error  "Answer has to be %01% characters or more."  -> not applicable
+             *   10. if q2 is not NULL and length of ans1 < GUBPPRF_QSTN_MIN_LENGTH and GUBPPRF_QSTN_MIN_LENGTH > 0 -> error  "Question has to be %01% characters or more."
+             *   */
 
-        if(question2?.contains("<") || question2?.contains(">")) {
-            log.error("Question may not contain the < or > characters.")
-            throw new RuntimeException("Question may not contain the < or > characters.")
-        }
-
-        if(answer1.contains("<") || answer1.contains(">")) {
-            log.error("Answer may not contain the < or > characters.")
-            throw new IllegalArgumentException("Answer may not contain the < or > characters.")
-        }
-
-        def GUBPPRF_ANSR_MIN_LENGTH = getAnswerMinimumLength()
-        if((answer1 != null && !answer1.equals("")) && answer1.length() < GUBPPRF_ANSR_MIN_LENGTH && GUBPPRF_ANSR_MIN_LENGTH > 0) {
-            log.error("Answer has to be %01% characters or more.")
-            throw new RuntimeException("Answer has to be %01% characters or more.")
-        }
-
-        def GUBPPRF_QSTN_MIN_LENGTH = getQuestionMinimumLength()
-        if((question2 != null && !question2.equals("")) && question2.length() < GUBPPRF_QSTN_MIN_LENGTH && GUBPPRF_QSTN_MIN_LENGTH > 0) {
-            log.error("Answer has to be %01% characters or more.")
-            throw new RuntimeException("Answer has to be %01% characters or more.")
-        }
-
-        /**
-         * if question_num is NULL then
-         *    11. if for that pidm , q1 & q2 & question_num != record_q_num, chk the gobansrc if it has a record with it ->
-         *       error   "Please select a unique question."   -> not applicable
-         *    if q1 and ans1 is not NULL then update with q1 and ans1
-         *    else update with q2 and ans1
-         * else
-         *    12. if for that pidm , q1 & q2, chk the gobansrc if it has a record with it ->
-         *        error  "Please select a unique question." -> not applicable
-         *    if q1 and ans1 is not NULL then update with q1 and ans1
-         *    else update with q2 and ans1
-         */
-
-        if(question_num == null) {
-            if((question1 != null && !question1.equals("")) && (answer1 != null && !answer1.equals(""))) {
-                  // update
-            } else {
-                 // update
+            if((question1 != null && !question1.equals("")) && (question2 != null && !question2.equals(""))) {
+                log.error("Please enter only one question.")
+                throw new ApplicationException("", "Please enter only one question.")
             }
-        } else {
-            if((question1 != null && !question1.equals("")) && (answer1 != null && !answer1.equals(""))) {
-                 //create
-                //GeneralForStoringResponsesAndPinQuestion generalForStoringResponsesAndPinQuestion = new GeneralForStoringResponsesAndPinQuestion()
-                //generalForStoringResponsesAndPinQuestion.
-                //this.create(GeneralForStoringResponsesAndPinQuestion)
-            } else {
-                //create
+
+            if((answer1 != null && !answer1.equals("")) && ((question1 == null || question1.equals("")) && (question2 == null || question2.equals("")))) {
+                log.error("Please enter Security Question and Answer.")
+                throw new ApplicationException("","Please enter Security Question and Answer.")
+            }
+
+            if((answer1 == null || answer1.equals("")) && ((question1 != null && !question1.equals("")) || (question2 != null && !question2.equals("")))) {
+                log.error("Please enter Security Question and Answer.")
+                throw new ApplicationException("","Please enter Security Question and Answer.")
+            }
+
+            if(question2?.contains("<") || question2?.contains(">")) {
+                log.error("Question may not contain the < or > characters.")
+                throw new ApplicationException("","Question may not contain the < or > characters.")
+            }
+
+            if(answer1.contains("<") || answer1.contains(">")) {
+                log.error("Answer may not contain the < or > characters.")
+                throw new ApplicationException("","Answer may not contain the < or > characters.")
+            }
+
+            def gubprfAnsrMinLength = getAnswerMinimumLength()
+            if((answer1 != null && !answer1.equals("")) && answer1.length() < gubprfAnsrMinLength && gubprfAnsrMinLength > 0) {
+                log.error("Answer has to be %01% characters or more.")
+                throw new ApplicationException("","Answer has to be %01% characters or more.")
+            }
+
+            def gubprfQstnMinLength = getQuestionMinimumLength()
+            if((question2 != null && !question2.equals("")) && question2.length() < gubprfQstnMinLength && gubprfQstnMinLength > 0) {
+                log.error("Answer has to be %01% characters or more.")
+                throw new ApplicationException("","Answer has to be %01% characters or more.")
+            }
+
+            /**
+             * if question_num is NULL then
+             *    11. if for that pidm , q1 & q2 & question_num != record_q_num, chk the gobansrc if it has a record with it ->
+             *       error   "Please select a unique question."   -> not applicable
+             *    if q1 and ans1 is not NULL then update with q1 and ans1
+             *    else update with q2 and ans1
+             * else
+             *    12. if for that pidm , q1 & q2, chk the gobansrc if it has a record with it ->
+             *        error  "Please select a unique question." -> not applicable
+             *    if q1 and ans1 is not NULL then update with q1 and ans1
+             *    else update with q2 and ans1
+             */
+
+            if(question_num == null) {
+                GeneralForStoringResponsesAndPinQuestion generalForStoringResponsesAndPinQuestion
+                question_num = cnt++
+                if((question1 != null && !question1.equals("")) && (answer1 != null && !answer1.equals(""))) {
+                    //create
+                    def pinQuestion = PinQuestion.fetchQuestionOnId([pinQuestionId: question1Id])
+                    generalForStoringResponsesAndPinQuestion = new GeneralForStoringResponsesAndPinQuestion(
+                            pidm: pidm,
+                            number: question_num,
+                            questionDescription: null,
+                            answerDescription: answer1,
+                            answerSalt: answer_salt_dummy,
+                            pinQuestion: pinQuestion
+                    )
+
+
+                } else {
+                    //create
+                    generalForStoringResponsesAndPinQuestion = new GeneralForStoringResponsesAndPinQuestion(
+                            pidm: pidm,
+                            number: question_num,
+                            questionDescription: question2,
+                            answerDescription: answer1,
+                            answerSalt: answer_salt_dummy,
+                            pinQuestion: null
+                    )
+                }
+                generalForStoringResponsesAndPinQuestionService.create(generalForStoringResponsesAndPinQuestion)
             }
         }
 
