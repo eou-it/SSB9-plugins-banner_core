@@ -6,6 +6,7 @@ import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.loginworkflow.UserAgreementFlow
 import net.hedtech.banner.loginworkflow.SurveyFlow
 import net.hedtech.banner.privacy.PrivacyPolicyFilter
+import net.hedtech.banner.security.cas.SingleSignOutFilter
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
@@ -363,6 +364,10 @@ class BannerCoreGrailsPlugin {
             'filter' {
                 'filter-name'('privacyfilter')
                 'filter-class'(PrivacyPolicyFilter.name)
+            }
+            'filter' {
+                'filter-name'('CAS Single Sign Out Filter')
+                'filter-class'(SingleSignOutFilter.name)
             }
         }
 
