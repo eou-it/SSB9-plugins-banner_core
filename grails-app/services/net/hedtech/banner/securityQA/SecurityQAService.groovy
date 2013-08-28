@@ -8,6 +8,7 @@ import net.hedtech.banner.general.overall.PinQuestion
 import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
 
+import java.sql.CallableStatement
 import java.sql.SQLException
 
 
@@ -23,6 +24,10 @@ class SecurityQAService {
 
         String answer_salt_dummy = "ML3MTB80"
         int cnt = 1
+        boolean isValidPin = validatePin(pin,pidm)
+        if(!isValidPin){
+            throw new ApplicationException("","Invalid PIN. Please re-enter PIN.")
+        }
         lst.each {
             String question1 = it["question"]
             String question2 = it["userDefinedQuestion"]
@@ -209,4 +214,41 @@ class SecurityQAService {
             connection.close()
         }
     }
+
+    private boolean validatePin(String pin,String pidm){
+        def connection
+        Sql sql
+        boolean isValidPin = false
+        int funcRetValue
+        try {
+            connection = sessionFactory.currentSession.connection()
+            sql = new Sql(connection)
+            String queryString = "BEGIN " +
+             "  ? := CASE gb_third_party_access.f_validate_pin(?,?,?,?) " +
+            "         WHEN TRUE THEN 1 " +
+            "         ELSE 0 " +
+            "         END; " +
+            "END; "
+            CallableStatement cs = connection.prepareCall( queryString )
+            cs.registerOutParameter( 1, java.sql.Types.INTEGER )
+            cs.setString( 2, pidm )
+            cs.setString( 3, pin )
+            cs.registerOutParameter( 4, java.sql.Types.VARCHAR )
+            cs.registerOutParameter( 5, java.sql.Types.VARCHAR )
+            cs.executeQuery()
+            funcRetValue = cs.getInt(1);
+            if (funcRetValue == 1) {
+                isValidPin = true;
+                } else {
+                isValidPin = false;
+            }
+        } catch (Exception ae) {
+            log.debug ae.stackTrace
+            throw ae
+        } finally {
+            connection.close()
+        }
+        return isValidPin
+    }
+
 }
