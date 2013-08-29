@@ -545,15 +545,15 @@ class CommonMenuController {
     def getBannerInbUrl(){
         def bannerInbUrl
 
-        if(!servletContext.getAttribute("bannerInbUrl")){
+        if(!session.getAttribute("bannerInbUrl")){
 
             if (!isSsbEnabled()){
                 bannerInbUrl = personalPreferenceService.fetchPersonalPreference("MAGELLAN","SERVER_DESIGNATION","INB")[0]
-                servletContext.setAttribute("bannerInbUrl", bannerInbUrl.value)
+                session.setAttribute("bannerInbUrl", bannerInbUrl.value)
             }
         }
 
-        bannerInbUrl = servletContext.getAttribute("bannerInbUrl")
+        bannerInbUrl = session.getAttribute("bannerInbUrl")
 
         return bannerInbUrl
     }

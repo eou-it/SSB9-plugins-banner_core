@@ -7,6 +7,7 @@ import net.hedtech.banner.loginworkflow.SecurityQAFlow
 import net.hedtech.banner.loginworkflow.UserAgreementFlow
 import net.hedtech.banner.loginworkflow.SurveyFlow
 import net.hedtech.banner.privacy.PrivacyPolicyFilter
+import net.hedtech.banner.security.cas.SingleSignOutFilter
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
@@ -23,10 +24,6 @@ import net.hedtech.banner.service.DefaultLoaderService
 import net.hedtech.banner.service.HttpSessionService
 import net.hedtech.banner.service.LoginAuditService
 import net.hedtech.banner.service.ServiceBase
-import net.hedtech.banner.supplemental.SupplementalDataHibernateListener
-import net.hedtech.banner.supplemental.SupplementalDataPersistenceManager
-import net.hedtech.banner.supplemental.SupplementalDataService
-import net.hedtech.banner.supplemental.SupplementalDataSupportMixin
 import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.jmx.HierarchyDynamicMBean
@@ -150,29 +147,6 @@ class BannerCoreGrailsPlugin {
         resourceRepresentationRegistry(ResourceRepresentationRegistry) { bean ->
             bean.initMethod = 'init'
         }
-        if (CH.config.sdeEnabled) {
-
-
-            supplementalDataPersistenceManager(SupplementalDataPersistenceManager) {
-                dataSource = ref(dataSource)
-                sessionFactory = ref(sessionFactory)
-//                supplementalDataService = ref(supplementalDataService)
-            }
-
-            supplementalDataService(SupplementalDataService) { bean ->
-                dataSource = ref(dataSource)
-                sessionFactory = ref(sessionFactory)
-                supplementalDataPersistenceManager = ref(supplementalDataPersistenceManager)
-                bean.initMethod = 'init'
-            }
-
-
-        }
-
-//        tabLevelSecurityService( TabLevelSecurityService ) { bean ->
-//            sessionFactory = ref( sessionFactory )
-//
-//        }
 
         userAuthorityService( BannerGrantedAuthorityService ) { bean ->
         }
@@ -320,17 +294,6 @@ class BannerCoreGrailsPlugin {
                 controllerArtefact.clazz.mixin RestfulControllerMixin
             }
         }
-        // mix-in supplemental data support into all models
-        if (CH.config.sdeEnabled) {
-            application.domainClasses.each { modelArtefact ->
-                try {
-                    modelArtefact.clazz.mixin SupplementalDataSupportMixin
-                } catch (e) {
-                    e.printStackTrace()
-                    throw e
-                }
-            }
-        }
 
 
         String.metaClass.flattenString = {
@@ -354,10 +317,6 @@ class BannerCoreGrailsPlugin {
     def doWithApplicationContext = { applicationContext ->
         def listeners = applicationContext.sessionFactory.eventListeners
 
-        // register hibernate listener to load supplemental data
-        if (CH.config.sdeEnabled) {
-            addEventTypeListener(listeners, new SupplementalDataHibernateListener(), 'postLoad')
-        }
         // register hibernate listener for populating audit trail properties before inserting and updating models
         def auditTrailSupportListener = new AuditTrailPropertySupportHibernateListener()
         ['preInsert', 'preUpdate'].each {
@@ -410,6 +369,10 @@ class BannerCoreGrailsPlugin {
             'filter' {
                 'filter-name'('privacyfilter')
                 'filter-class'(PrivacyPolicyFilter.name)
+            }
+            'filter' {
+                'filter-name'('CAS Single Sign Out Filter')
+                'filter-class'(SingleSignOutFilter.name)
             }
         }
 

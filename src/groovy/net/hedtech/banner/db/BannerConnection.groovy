@@ -36,6 +36,7 @@ class BannerConnection {
     def proxyUserName
     def bannerDataSource
     def oracleConnection // the native connection
+    boolean isCached
 
     private final Logger log = Logger.getLogger(getClass())
 
@@ -93,27 +94,22 @@ class BannerConnection {
     public void close() throws SQLException {
         try {
             log.trace "BannerConnection ${super.toString()}.close() invoked"
-            if (Environment.current == Environment.TEST || !isWebRequest()) {
+            if (!isCached) {
                 log.debug Thread.currentThread().getName()
-                log.debug "Closing proxy session for env ${Environment.current} and user ${proxyUserName} and web request ${isWebRequest()}"
+                log.debug "Closing proxy session for env ${Environment.current} and user ${proxyUserName}}"
                 bannerDataSource.closeProxySession( this, proxyUserName )
                 bannerDataSource.clearIdentifer( this )
             }
 
         } finally {
             log.trace "${super.toString()} will close it's underlying connection: $underlyingConnection, that wraps ${extractOracleConnection()}"
-            if (!proxyUserName || (proxyUserName == "anonymousUser") || (Environment.current == Environment.TEST || !isWebRequest())) {
+            if (!proxyUserName || (proxyUserName == "anonymousUser") || !isCached) {
                 log.trace "${super.toString()} closing $underlyingConnection}"
                 log.debug Thread.currentThread().getName()
-                log.debug "Closing underlyign connection for env ${Environment.current} and user ${proxyUserName}  and web request ${isWebRequest()}"
+                log.debug "Closing underlyign connection for env ${Environment.current} and user ${proxyUserName}}"
                 underlyingConnection?.close()
             }
         }
-    }
-
-    private boolean isWebRequest() {
-        //RequestContextHolder.getRequestAttributes() != null
-        return true
     }
 
     public void connectionAdminClose() throws SQLException {
