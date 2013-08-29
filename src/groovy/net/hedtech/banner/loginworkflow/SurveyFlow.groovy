@@ -3,6 +3,7 @@ package net.hedtech.banner.loginworkflow
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import net.hedtech.banner.security.BannerUser
+import net.hedtech.banner.utility.DateUtility
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
 
@@ -32,7 +33,7 @@ class SurveyFlow implements PostLoginWorkflow {
             def surveyStartDateRow = getSurveyStartDate()
             def surveyEndDateRow = getSurveyEndDate()
             if(!surveyStartDateRow.isEmpty() &&!surveyEndDateRow.isEmpty()) {
-                def today = getTodayDate()
+                def today = DateUtility.getTodayDate()
                 def surveyStartDate = surveyStartDateRow[0]?.gtvsdax_reporting_date
                 def surveyEndDate = surveyEndDateRow[0]?.gtvsdax_reporting_date ?: today
                 // Survey start date is not null & Today is between Survey start and end dates
@@ -69,16 +70,6 @@ class SurveyFlow implements PostLoginWorkflow {
         def userAuthorities = authorities?.collect { it.objectName }
         return (userAuthorities?.contains('SELFSERVICE-STUDENT') || userAuthorities?.contains('SELFSERVICE-EMPLOYEE'))
     }
-
-    private def getTodayDate() {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
-    }
-
 
     private def getSurveyStartDate() {
         def connection
