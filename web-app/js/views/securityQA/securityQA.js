@@ -20,10 +20,6 @@ $(document).ready(function () {
             _.each(notificationMessages, function (message) {
                 var n = new Notification({message:message, type:"error"});
 
-                /* n.addPromptAction($.i18n.prop("js.notification.ok"), function() {
-                 notifications.remove(n);
-                 });*/
-
                 notifications.addNotification(n);
             });
         }
@@ -37,33 +33,45 @@ $(document).ready(function () {
         notifications.clearNotifications()
         validatePin();
 
-        $('input#userDefinedQuestion').each(function (j, selectElm) {
-            var enteredText = $(selectElm).val();
-            var invalidcharacter = $.i18n.prop("securityQA.invalid.question");
-            var invalidqusetionlength = $.i18n.prop("securityQA.invalid.length.question", [questionMinimumLength]);
-            if ((enteredText.length > 0) && (enteredText.match('<') || enteredText.match('>'))) {
-                $(selectElm).parent().addClass("notification-error");
-                notificationMessages.push(invalidcharacter);
-            }
-            if (enteredText.length > 0 && enteredText.length < questionMinimumLength) {
-                $(selectElm).parent().addClass("notification-error");
-                notificationMessages.push(invalidqusetionlength);
-            }
-        });
+        if(userDefinedQuesFlag == 'Y') {
+
+            $('input#userDefinedQuestion').each(function (j, selectElm) {
+                var enteredText = $(selectElm).val();
+                var invalidcharacter = $.i18n.prop("securityQA.invalid.question");
+                var invalidqusetionlength = $.i18n.prop("securityQA.invalid.length.question", [questionMinimumLength]);
+                if ((enteredText.length > 0) && (enteredText.match('<') || enteredText.match('>'))) {
+                    $(selectElm).parent().addClass("notification-error");
+                    notificationMessages.push(invalidcharacter);
+                }
+                if (enteredText.length > 0 && enteredText.length < questionMinimumLength) {
+                    $(selectElm).parent().addClass("notification-error");
+                    notificationMessages.push(invalidqusetionlength);
+                }
+            });
+        }
 
         $('select#question').find('option:selected').each(function (j, ielm) {
             $(ielm).closest("div .section-wrapper").removeClass("notification-error");
             var index = parseInt($(ielm).val().substring("question".length));
-            var userDefinedQuestion = $('input#userDefinedQuestion')[j].value;
-            if (index != 0 && userDefinedQuestion.length > 0) {
-                var error = $.i18n.prop("securityQA.invalid.number.question");
-                $(ielm).closest("div .section-wrapper").addClass("notification-error");
-                notificationMessages.push(error);
-            }
-            else if (index == 0 && userDefinedQuestion.length == 0) {
-                var error = $.i18n.prop("securityQA.error");
-                $(ielm).closest("div .section-wrapper").addClass("notification-error");
-                notificationMessages.push(error);
+
+            if(userDefinedQuesFlag == 'N') {
+                if (index == 0) {
+                    var error = $.i18n.prop("securityQA.error");
+                    $(ielm).closest("div .section-wrapper").addClass("notification-error");
+                    notificationMessages.push(error);
+                }
+            } else {
+                var userDefinedQuestion = $('input#userDefinedQuestion')[j].value;
+                if (index != 0 && userDefinedQuestion.length > 0) {
+                    var error = $.i18n.prop("securityQA.invalid.number.question");
+                    $(ielm).closest("div .section-wrapper").addClass("notification-error");
+                    notificationMessages.push(error);
+                }
+                else if (index == 0 && userDefinedQuestion.length == 0) {
+                    var error = $.i18n.prop("securityQA.error");
+                    $(ielm).closest("div .section-wrapper").addClass("notification-error");
+                    notificationMessages.push(error);
+                }
             }
         });
 

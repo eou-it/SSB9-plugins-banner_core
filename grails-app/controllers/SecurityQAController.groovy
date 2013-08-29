@@ -60,11 +60,16 @@ class SecurityQAController {
             }
             selectedQues.add(questionId)
             def userDefinedQstn
-            if(params.userDefinedQuestion instanceof String) {
-                userDefinedQstn = params.userDefinedQuestion
+            if(!userDefinedQuesFlag.equals("N")) {
+                if(params.userDefinedQuestion instanceof String) {
+                    userDefinedQstn = params.userDefinedQuestion
+                } else {
+                    userDefinedQstn = params.userDefinedQuestion[index]
+                }
             } else {
-                userDefinedQstn = params.userDefinedQuestion[index]
+                userDefinedQstn = null
             }
+
             def ansr
             if(params.answer instanceof String) {
                 ansr = params.answer

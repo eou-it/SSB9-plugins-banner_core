@@ -18,6 +18,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 
 <body>
 <script>
+    var userDefinedQuesFlag = "${userDefinedQuesFlag}";
     var questions = new Array();
     var selectedQues = new Array();
     questions.push("Not Selected");
@@ -29,7 +30,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
     <g:each var="selques" in="${selectedQues}">
     selectedQues.push("${selques}");
     </g:each>
-    </g:if>i
+    </g:if>
 
     var prev = "";
     var questionMinimumLength =${questionMinimumLength};
