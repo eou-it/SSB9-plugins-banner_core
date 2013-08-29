@@ -14,7 +14,7 @@ $(document).ready(function () {
     });
 
     $("#security-save-btn").click(function () {
-       notificationMessages =[];
+        notificationMessages = [];
         validateForm();
         if (notificationMessages && notificationMessages.length > 0) {
             _.each(notificationMessages, function (message) {
@@ -57,6 +57,11 @@ $(document).ready(function () {
             var userDefinedQuestion = $('input#userDefinedQuestion')[j].value;
             if (index != 0 && userDefinedQuestion.length > 0) {
                 var error = $.i18n.prop("securityQA.invalid.number.question");
+                $(ielm).closest("div .section-wrapper").addClass("notification-error");
+                notificationMessages.push(error);
+            }
+            else if (index == 0 && userDefinedQuestion.length == 0) {
+                var error = $.i18n.prop("securityQA.error");
                 $(ielm).closest("div .section-wrapper").addClass("notification-error");
                 notificationMessages.push(error);
             }
