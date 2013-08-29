@@ -9,6 +9,11 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
     <title>Security Question and Answer</title>
     <meta name="layout" content="bannerSelfServicePage"/>
     <r:require modules="securityQA"/>
+    <r:script disposition="head">
+           window.securityQAInitErrors = {
+               notification: "${notification}"
+           };
+   </r:script>
 </head>
 
 <body>

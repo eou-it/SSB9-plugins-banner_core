@@ -1,4 +1,12 @@
 $(document).ready(function () {
+    EventDispatcher.addEventListener(Application.events.initialized, function() {
+        if (window.securityQAInitErrors && window.securityQAInitErrors.notification && window.securityQAInitErrors.notification.length > 0) {
+
+                var n = new Notification({message: window.securityQAInitErrors.notification, type:"error"});
+                notifications.addNotification(n);
+        }
+    });
+
     $("#security-save-btn").click(function () {
         var validForm = true;
         var notificationMsgs = new Array();
@@ -8,10 +16,6 @@ $(document).ready(function () {
         if(notificationMsgs && notificationMsgs.length > 0) {
             _.each(notificationMsgs, function(message) {
                 var n = new Notification({message: message.message, type:message.type, flash: true});
-
-               /* n.addPromptAction($.i18n.prop("js.notification.ok"), function() {
-                    notifications.remove(n);
-                });*/
 
                 notifications.addNotification(n);
             });

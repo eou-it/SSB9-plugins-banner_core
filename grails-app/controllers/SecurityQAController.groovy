@@ -1,3 +1,5 @@
+import grails.converters.JSON
+import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.security.BannerUser
 import org.springframework.security.core.context.SecurityContextHolder
 import net.hedtech.banner.general.overall.PinQuestion
@@ -6,34 +8,83 @@ class SecurityQAController {
 
     static defaultAction = "index"
     def securityQAService
-    static def noOfquestions
+    static def noOfQuestions
     static def questions = [:]
+    static List dataToView = []
+    static def questionMinimumLength
+    static def answerMinimumLength
+    static def userDefinedQuesFlag
+    static def questionList = []
 
     def index() {
         def ques = PinQuestion.fetchQuestions()
-        def userDefinedQuesFlag = securityQAService.getUserDefinedQuestionFlag()
+        userDefinedQuesFlag = securityQAService.getUserDefinedQuestionFlag()
         ques.each {
             questions.put(it.pinQuestionId, it.description)
         }
-        def questionList = questions.values()
-        noOfquestions = securityQAService.getNumberOfQuestions()
-        log.info("rendering view")
-        render view: "securityQA", model: [questions: questionList, userDefinedQuesFlag: userDefinedQuesFlag, noOfquestions: noOfquestions]
+        questionList = questions.values().collect()
+        noOfQuestions = securityQAService.getNumberOfQuestions()
+        questionMinimumLength = securityQAService.getQuestionMinimumLength()
+        answerMinimumLength = securityQAService.getAnswerMinimumLength()
+        render view: "securityQA", model: [questions: questionList, userDefinedQuesFlag: userDefinedQuesFlag, noOfquestions: noOfQuestions, questionMinimumLength: questionMinimumLength, answerMinimumLength: answerMinimumLength]
     }
 
     def save() {
-        log.info("save")
+        def model = [:]
+        String messages = null
         String pidm = getPidm()
         List selectedQA = []
 
+        log.info("save")
 
-        for (int index = 0; index < noOfquestions; index++) {
-            def questionsAnswered = [question: params.question[index], questionNo: questions.find{it.value==params.question[index]}?.key, userDefinedQuestion: params.userDefinedQuestion[index], answer: params.answer[index]]
+        for (int index = 0; index < noOfQuestions; index++) {
+            def questionId = params.question[index].split("question")[1].toInteger()
+            def question
+            def questionNo
+            if (questionId != 0) {
+                question = questionList.get(questionId - 1)
+                questionNo = questions.find {it.value == question}?.key
+            }
+            else {
+                question = null
+                questionNo = null
+            }
+
+            def questionsAnswered = [question: question, questionNo: questionNo, userDefinedQuestion: params.userDefinedQuestion[index], answer: params.answer[index]]
             selectedQA.add(questionsAnswered)
         }
 
-        securityQAService.saveSecurityQAResponse(pidm, selectedQA, params.pin)
-        completed()
+        dataToView = selectedQA
+
+        try {
+            securityQAService.saveSecurityQAResponse(pidm, selectedQA, params.pin)
+        } catch(ApplicationException ae) {
+
+            messages = message(code:ae.wrappedException.message)
+
+
+            if(messages.contains("{0}")) {
+                if(ae.wrappedException.message.equals("securityQA.invalid.length.question")) {
+                    messages.replace("{0}", questionMinimumLength)
+                } else if(ae.wrappedException.message.equals("securityQA.invalid.length.answer")) {
+                    messages.replace("{0}", answerMinimumLength)
+                }
+            }
+
+            model.put("questions", questionList)
+            model.put("userDefinedQuesFlag", userDefinedQuesFlag)
+            model.put("noOfquestions", noOfQuestions)
+            model.put("questionMinimumLength", questionMinimumLength)
+            model.put("answerMinimumLength", answerMinimumLength)
+            model.put("dataToView", dataToView)
+            model.put("notification", messages)
+
+            render view: "securityQA", model: model
+        }
+        if(messages == null) {
+            completed()
+        }
+
     }
 
     public static String getPidm() {

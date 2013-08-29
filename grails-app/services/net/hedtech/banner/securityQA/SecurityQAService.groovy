@@ -5,7 +5,6 @@ import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.general.overall.GeneralForStoringResponsesAndPinQuestion
 import net.hedtech.banner.general.overall.PinQuestion
-import net.hedtech.banner.service.ServiceBase
 import org.apache.log4j.Logger
 
 import java.sql.CallableStatement
@@ -53,39 +52,39 @@ class SecurityQAService {
 
             if((question1 != null && !question1.equals("")) && (question2 != null && !question2.equals(""))) {
                 log.error("Please enter only one question.")
-                throw new ApplicationException("", "Please enter only one question.")
+                throw new ApplicationException("", "securityQA.invalid.number.question")
             }
 
             if((answer1 != null && !answer1.equals("")) && ((question1 == null || question1.equals("")) && (question2 == null || question2.equals("")))) {
                 log.error("Please enter Security Question and Answer.")
-                throw new ApplicationException("","Please enter Security Question and Answer.")
+                throw new ApplicationException("","securityQA.error")
             }
 
             if((answer1 == null || answer1.equals("")) && ((question1 != null && !question1.equals("")) || (question2 != null && !question2.equals("")))) {
                 log.error("Please enter Security Question and Answer.")
-                throw new ApplicationException("","Please enter Security Question and Answer.")
+                throw new ApplicationException("","securityQA.error")
             }
 
             if(question2?.contains("<") || question2?.contains(">")) {
                 log.error("Question may not contain the < or > characters.")
-                throw new ApplicationException("","Question may not contain the < or > characters.")
+                throw new ApplicationException("","securityQA.invalid.question")
             }
 
             if(answer1.contains("<") || answer1.contains(">")) {
                 log.error("Answer may not contain the < or > characters.")
-                throw new ApplicationException("","Answer may not contain the < or > characters.")
+                throw new ApplicationException("","securityQA.invalid.answer")
             }
 
             def gubprfAnsrMinLength = getAnswerMinimumLength()
             if((answer1 != null && !answer1.equals("")) && answer1.length() < gubprfAnsrMinLength && gubprfAnsrMinLength > 0) {
-                log.error("Answer has to be %01% characters or more.")
-                throw new ApplicationException("","Answer has to be %01% characters or more.")
+                log.error("Answer has to be " + gubprfAnsrMinLength + " characters or more.")
+                throw new ApplicationException("","securityQA.invalid.length.answer")
             }
 
             def gubprfQstnMinLength = getQuestionMinimumLength()
             if((question2 != null && !question2.equals("")) && question2.length() < gubprfQstnMinLength && gubprfQstnMinLength > 0) {
-                log.error("Answer has to be %01% characters or more.")
-                throw new ApplicationException("","Answer has to be %01% characters or more.")
+                log.error("Question has to be " + gubprfQstnMinLength + " characters or more.")
+                throw new ApplicationException("","securityQA.invalid.length.question")
             }
 
             /**
