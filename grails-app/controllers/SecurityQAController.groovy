@@ -65,9 +65,9 @@ class SecurityQAController {
 
             if(messages.contains("{0}")) {
                 if(ae.wrappedException.message.equals("securityQA.invalid.length.question")) {
-                    messages.replace("{0}", questionMinimumLength)
+                    messages = messages.replace("{0}", questionMinimumLength.toString())
                 } else if(ae.wrappedException.message.equals("securityQA.invalid.length.answer")) {
-                    messages.replace("{0}", answerMinimumLength)
+                    messages = messages.replace("{0}", answerMinimumLength.toString())
                 }
             }
 
