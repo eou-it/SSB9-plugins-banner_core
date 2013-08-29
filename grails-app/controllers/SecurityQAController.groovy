@@ -41,7 +41,13 @@ class SecurityQAController {
         log.info("save")
 
         for (int index = 0; index < noOfQuestions; index++) {
-            def questionId = params.question[index].split("question")[1].toInteger()
+            def questionId
+            if(params.question instanceof String) {
+                questionId = params.question.split("question")[1].toInteger()
+            } else {
+                questionId = params.question[index].split("question")[1].toInteger()
+            }
+
             def question
             def questionNo
             if (questionId != 0) {
@@ -53,7 +59,19 @@ class SecurityQAController {
                 questionNo = null
             }
             selectedQues.add(questionId)
-            def questionsAnswered = [question: question, questionNo: questionNo, userDefinedQuestion: params.userDefinedQuestion[index], answer: params.answer[index]]
+            def userDefinedQstn
+            if(params.userDefinedQuestion instanceof String) {
+                userDefinedQstn = params.userDefinedQuestion
+            } else {
+                userDefinedQstn = params.userDefinedQuestion[index]
+            }
+            def ansr
+            if(params.answer instanceof String) {
+                ansr = params.answer
+            } else {
+                ansr = params.answer[index]
+            }
+            def questionsAnswered = [question: question, questionNo: questionNo, userDefinedQuestion: userDefinedQstn, answer: ansr]
             selectedQA.add(questionsAnswered)
         }
 
