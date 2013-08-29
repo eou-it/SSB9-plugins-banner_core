@@ -30,6 +30,12 @@ import javax.persistence.*
         query = """select count(a.answerDescription)
                    FROM GeneralForStoringResponsesAndPinQuestion a
                    WHERE  pidm = :pidm
+                """),
+@NamedQuery(name = "GeneralForStoringResponsesAndPinQuestion.fetchCountOfSameQuestionForPidm",
+        query = """select count(a.questionDescription)
+                   FROM GeneralForStoringResponsesAndPinQuestion a
+                   WHERE  pidm = :pidm
+                   AND questionDescription = :questionDescription
                 """)
 ])
 class GeneralForStoringResponsesAndPinQuestion implements Serializable {
@@ -180,6 +186,16 @@ class GeneralForStoringResponsesAndPinQuestion implements Serializable {
         GeneralForStoringResponsesAndPinQuestion.withSession { session ->
             def generalForStoringResponsesAndPinQuestion = session.getNamedQuery('GeneralForStoringResponsesAndPinQuestion.fetchCountOfAnswersForPidm')
                     .setInteger('pidm', map.pidm)
+                    .list()[0]
+            return generalForStoringResponsesAndPinQuestion
+        }
+    }
+
+    static def fetchCountOfSameQuestionForPidm(Map map) {
+        GeneralForStoringResponsesAndPinQuestion.withSession { session ->
+            def generalForStoringResponsesAndPinQuestion = session.getNamedQuery('GeneralForStoringResponsesAndPinQuestion.fetchCountOfSameQuestionForPidm')
+                    .setInteger('pidm', map.pidm)
+                    .setString('questionDescription', map.questionDescription)
                     .list()[0]
             return generalForStoringResponsesAndPinQuestion
         }

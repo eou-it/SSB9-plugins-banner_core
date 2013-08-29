@@ -117,7 +117,12 @@ class SecurityQAService {
 
 
                 } else {
+
                     //create
+                    if(GeneralForStoringResponsesAndPinQuestion.fetchCountOfSameQuestionForPidm([pidm: Integer.valueOf(pidm), questionDescription: question2]) > 0) {
+                        log.error("Question has to be Unique")
+                        throw new ApplicationException("","securityQA.unique.question")
+                    }
                     generalForStoringResponsesAndPinQuestion = new GeneralForStoringResponsesAndPinQuestion(
                             pidm: pidm,
                             number: question_num,
