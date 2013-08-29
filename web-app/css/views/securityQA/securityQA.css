@@ -73,12 +73,12 @@
     color: #444455;
 }
 
-#wrapper {
-    display: flex;
 
+.section-wrapper div {
+    display: inline-table;
 }
 
-#questionLabel {
+.question-label {
     margin-left: 5px;
     margin-right: 15px;
     padding: 2px;
@@ -86,39 +86,24 @@
     width: 150px;
 }
 
-#userquestionLabel {
+.label {
     margin-left: 10px;
-    margin-right: 10px;
 }
 
-#confirmpinlabel {
-    margin-left: 5px;
-    margin-right: 15px;
-    padding: 2px;
-    text-align: right;
-    width: 150px;
-}
-
-#label {
-    margin-left: 10px;
-    margin-right: 15px;
-}
-
-#information {
-    font-size: 13px;
-    font-weight: normal;
-}
-
-#question {
+.select {
     width: 400px;
 }
 
-#answer ,#pin,#userDefinedQuestion{
-    width:395px;
+.section-text {
+    width: 395px;
 }
 
 .button-area {
     float: right;
+}
+
+.select-wrapper{
+padding-right: 20px;
 }
 
 #save-btn, #ask-me-later-btn {
@@ -131,6 +116,21 @@
     padding: 4px;
     /*color: red;*/
 }
+
+.section-message {
+    padding-left: 20px;
+}
+
+.informationImage {
+    background-image: url("../../../images/information.png");
+    background-repeat: no-repeat;
+    background-size: auto auto;
+    height: 15px;
+    overflow: hidden;
+    position: absolute;
+    width: 23px;
+}
+
 
 .notification-error {
     border: 1px solid #FF3F3F;

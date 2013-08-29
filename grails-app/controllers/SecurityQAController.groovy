@@ -15,8 +15,11 @@ class SecurityQAController {
     static def answerMinimumLength
     static def userDefinedQuesFlag
     static def questionList = []
+    static def selectedQues = []
 
     def index() {
+        List selectedAns = ["", "", ""]
+        List selectedUserDefinedQues = ["", "", ""]
         def ques = PinQuestion.fetchQuestions()
         userDefinedQuesFlag = securityQAService.getUserDefinedQuestionFlag()
         ques.each {
@@ -26,7 +29,7 @@ class SecurityQAController {
         noOfQuestions = securityQAService.getNumberOfQuestions()
         questionMinimumLength = securityQAService.getQuestionMinimumLength()
         answerMinimumLength = securityQAService.getAnswerMinimumLength()
-        render view: "securityQA", model: [questions: questionList, userDefinedQuesFlag: userDefinedQuesFlag, noOfquestions: noOfQuestions, questionMinimumLength: questionMinimumLength, answerMinimumLength: answerMinimumLength]
+        render view: "securityQA", model: [questions: questionList, userDefinedQuesFlag: userDefinedQuesFlag, noOfquestions: noOfQuestions, questionMinimumLength: questionMinimumLength, answerMinimumLength: answerMinimumLength,selectedQues: "", selectedAns: selectedAns, selectedUserDefinedQues: selectedUserDefinedQues]
     }
 
     def save() {
@@ -49,7 +52,7 @@ class SecurityQAController {
                 question = null
                 questionNo = null
             }
-
+            selectedQues.add(questionId)
             def questionsAnswered = [question: question, questionNo: questionNo, userDefinedQuestion: params.userDefinedQuestion[index], answer: params.answer[index]]
             selectedQA.add(questionsAnswered)
         }
@@ -58,19 +61,27 @@ class SecurityQAController {
 
         try {
             securityQAService.saveSecurityQAResponse(pidm, selectedQA, params.pin)
-        } catch(ApplicationException ae) {
+        } catch (ApplicationException ae) {
 
-            messages = message(code:ae.wrappedException.message)
+            messages = message(code: ae.wrappedException.message)
 
 
-            if(messages.contains("{0}")) {
-                if(ae.wrappedException.message.equals("securityQA.invalid.length.question")) {
+            if (messages.contains("{0}")) {
+                if (ae.wrappedException.message.equals("securityQA.invalid.length.question")) {
                     messages = messages.replace("{0}", questionMinimumLength.toString())
-                } else if(ae.wrappedException.message.equals("securityQA.invalid.length.answer")) {
+                } else if (ae.wrappedException.message.equals("securityQA.invalid.length.answer")) {
                     messages = messages.replace("{0}", answerMinimumLength.toString())
                 }
             }
 
+            def selectedDropdown = []
+            def selectedAns = []
+            def selectedUserDefinedQues = []
+            dataToView.each {
+                selectedDropdown.add("question" + (questionList.indexOf(it.question) + 1))
+            }
+            selectedAns = dataToView.answer
+            selectedUserDefinedQues = dataToView.userDefinedQuestion
             model.put("questions", questionList)
             model.put("userDefinedQuesFlag", userDefinedQuesFlag)
             model.put("noOfquestions", noOfQuestions)
@@ -78,10 +89,14 @@ class SecurityQAController {
             model.put("answerMinimumLength", answerMinimumLength)
             model.put("dataToView", dataToView)
             model.put("notification", messages)
+            model.put("selectedQues", selectedDropdown)
+            model.put("selectedAns", selectedAns)
+            model.put("selectedUserDefinedQues", selectedUserDefinedQues)
+
 
             render view: "securityQA", model: model
         }
-        if(messages == null) {
+        if (messages == null) {
             completed()
         }
 
