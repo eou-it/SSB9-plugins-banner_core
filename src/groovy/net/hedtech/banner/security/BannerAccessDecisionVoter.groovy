@@ -100,7 +100,9 @@ class BannerAccessDecisionVoter extends RoleVoter {
             if (!pageName) pageName="mainpage"
 
             log.debug "BannerAccessDecisionVoter.getCorrespondingFormNamesFor() has pageName : $pageName"
-            return new ArrayList( CH.config.formControllerMap[pageName])
+            log.debug "BannerAccessDecisionVoter.getCorrespondingFormNamesFor() data from formControllerMap  for $pageName"
+            def forms =  new ArrayList( CH.config.formControllerMap[pageName])
+            return forms
         }
 
         log.debug "BannerAccessDecisionVoter.vote() has parsed url into: $urlParts"
