@@ -3,6 +3,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
+import org.apache.log4j.Logger
 import org.springframework.security.core.GrantedAuthority
 
 import org.codehaus.groovy.grails.plugins.springsecurity.GrailsUser
@@ -21,6 +22,8 @@ public class BannerUser extends GrailsUser {
     public String mepHomeContext
     public String mepProcessContext
     public String mepHomeContextDescription
+
+    private final Logger log = Logger.getLogger( getClass() )
 
     Map rolePass = [:]      // Storing role password map as part of user to improve performance
     Map<String,GrantedAuthority> formToRoleMap = [:].withDefault { [] } // Storing roles keyed by Form context, to improve performance
@@ -82,6 +85,7 @@ public class BannerUser extends GrailsUser {
             if (matcher.matches()) {
                 formName = matcher[0][1]
                 formToRoleMap[formName] << (GrantedAuthority) authority
+                log.debug "BannerUser.addAuthoritiesIntoFormToRoleMap() mapping formName $formName with authority $authority"
             }
         }
     }

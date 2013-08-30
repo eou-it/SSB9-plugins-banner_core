@@ -98,6 +98,8 @@ class BannerAccessDecisionVoter extends RoleVoter {
         if (splitIndex && !(urlParts[1] in base)) {
             def pageName = RequestContextHolder.currentRequestAttributes().request.getParameter("page")?.toLowerCase()
             if (!pageName) pageName="mainpage"
+
+            log.debug "BannerAccessDecisionVoter.getCorrespondingFormNamesFor() has pageName : $pageName"
             return new ArrayList( CH.config.formControllerMap[pageName])
         }
 
@@ -132,6 +134,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
     	        log.debug "BannerAccessDecisionVoter.vote() found form(s) (${forms}) mapped for URL $url"
 
     	        List applicableAuthorities = getApplicableAuthorities( forms, authentication )
+                log.debug "BannerAccessDecisionVoter.vote() found applicableAuthorities $applicableAuthorities"
 
     	        // Now we'll exclude the special '_CONNECT' roles, as we don't want to give access for those...
     	        applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
