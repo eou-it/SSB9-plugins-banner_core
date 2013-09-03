@@ -200,12 +200,29 @@ public class BannerDS implements DataSource {
         bannerConnection
     }
 
+
     private boolean shouldCacheConnection() {
         boolean isWebRequest = RequestContextHolder.getRequestAttributes() != null
-        boolean isApiRequest = RequestContextHolder.getRequestAttributes().getRequest().forwardURI =~ /api/
-        boolean apiSessions  = CH.config.restfulApi.apiSessions instanceof Boolean ? CH.config.restfulApi.apiSessions : false
 
-        if (isApiRequest && !apiSessions) {
+        // We'll only cache connections for web requests
+        if (!isWebRequest) return false 
+
+        // and then only if the web request is not one configured to avoid sessions
+        def forwardUri = RequestContextHolder.getRequestAttributes().getRequest().forwardURI
+
+        // First, we'll cache the configured url parts that identify requests 
+        // that should not use HTTP sessions.
+        if (avoidSessionsFor == null) {
+            avoidSessionsFor = CH.config.avoidSessionsFor instanceof List ? CH.config.avoidSessionsFor : []
+            if (avoidSessionsFor.size() > 0) {
+                log.info "Configured so DB connections will not be cached in the HTTP session for URLs containing: ${avoidSessionsFor.join(',')}"
+            }
+        }
+       
+        // so we can check to see if our current request matches one of them 
+        boolean avoidCaching = avoidSessionsFor.any { forwardUri =~ it }
+
+        if (avoidCaching) {
             log.trace "shouldCacheConnection() returning 'false' (API requests are configured to not use sessions)"
             return false
         }
