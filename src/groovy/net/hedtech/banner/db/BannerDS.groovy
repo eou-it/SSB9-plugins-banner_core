@@ -1,5 +1,5 @@
-/*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+/* *****************************************************************************
+ Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db
 
@@ -33,8 +33,8 @@ import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.security.BannerGrantedAuthority
 
 /**
- * A dataSource that wraps an 'underlying' datasource.  When this datasource is asked for a
- * connection, it will first:
+ * A dataSource that wraps an 'underlying' datasource.  
+ *  When this datasource is asked for a connection, it will first:
  * 1) proxy the connection for the authenticated user,
  * 2) set Banner roles that are applicable to the current request, based on the authenticated user's privileges
  * and the 'FormContext'
@@ -55,6 +55,12 @@ public class BannerDS implements DataSource {
 
     MultiEntityProcessingService multiEntityProcessingService
 
+    // Identifies URL parts for requests where no session should be used.
+    // This list will be used to identify connections that should not be cached
+    // within the HTTP session. Note: To avoid creating an HTTP session, the spring 
+    // security filter chain must configured. 
+    private List avoidSessionsFor = null
+
     private final Logger log = Logger.getLogger(getClass())
 
     /**
@@ -65,7 +71,6 @@ public class BannerDS implements DataSource {
     public Connection getConnection() throws SQLException {
 
         log.trace "BannerDS.getConnection() invoked and will delegate to an underlying dataSource"
-
 
         Connection conn
         BannerConnection bannerConnection
@@ -120,6 +125,7 @@ public class BannerDS implements DataSource {
             return new BannerConnection(conn, user, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
     }
 
+
     public void setFGAC(conn) {
 
         String form = (FormContext.get() ? FormContext.get()[0] : null) // FormContext returns a list, but we'll just use the first entry
@@ -130,8 +136,8 @@ public class BannerDS implements DataSource {
         // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
     }
 
-    // Note: This method is used for Integration Tests.
 
+    // Note: This method is used for Integration Tests.
     public Connection proxyAndSetRolesFor(BannerConnection bconn, userName, password) {
 
         def user
@@ -144,7 +150,6 @@ public class BannerDS implements DataSource {
             }
         }
     }
-
 
 
     private Connection getCachedConnection(BannerUser user) {
@@ -195,18 +200,36 @@ public class BannerDS implements DataSource {
         bannerConnection
     }
 
+
     private boolean shouldCacheConnection() {
         boolean isWebRequest = RequestContextHolder.getRequestAttributes() != null
-        boolean isApiRequest = RequestContextHolder.getRequestAttributes().getRequest().forwardURI =~ /api/
-        boolean apiSessions  = CH.config.restfulApi.apiSessions instanceof Boolean ? CH.config.restfulApi.apiSessions : false
 
-        if (isApiRequest && !apiSessions) {
+        // We'll only cache connections for web requests
+        if (!isWebRequest) return false 
+
+        // and then only if the web request is not one configured to avoid sessions
+        def forwardUri = RequestContextHolder.getRequestAttributes().getRequest().forwardURI
+
+        // First, we'll cache the configured url parts that identify requests 
+        // that should not use HTTP sessions.
+        if (avoidSessionsFor == null) {
+            avoidSessionsFor = CH.config.avoidSessionsFor instanceof List ? CH.config.avoidSessionsFor : []
+            if (avoidSessionsFor.size() > 0) {
+                log.info "Configured so DB connections will not be cached in the HTTP session for URLs containing: ${avoidSessionsFor.join(',')}"
+            }
+        }
+       
+        // so we can check to see if our current request matches one of them 
+        boolean avoidCaching = avoidSessionsFor.any { forwardUri =~ it }
+
+        if (avoidCaching) {
             log.trace "shouldCacheConnection() returning 'false' (API requests are configured to not use sessions)"
             return false
         }
         log.trace "shouldCacheConnection() returning $isWebRequest"
         return isWebRequest
     }
+
 
     private getUserRoles(user, applicableAuthorities) {
         Map unlockedRoles = [:]
@@ -217,6 +240,7 @@ public class BannerDS implements DataSource {
         }
         unlockedRoles
     }
+
 
     public void removeConnection(BannerConnection connection) {
         log.trace "${super.toString()}.removeConnection() invoked"
