@@ -224,10 +224,6 @@ class BannerCoreGrailsPlugin {
             sessionFactory = ref(sessionFactory)
         }
 
-        surveyFlow(SurveyFlow) {
-            sessionFactory = ref(sessionFactory)
-        }
-
         securityQAFlow(SecurityQAFlow) {
             sessionFactory = ref(sessionFactory)
         }
