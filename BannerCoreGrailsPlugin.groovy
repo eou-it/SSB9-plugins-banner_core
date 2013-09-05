@@ -3,11 +3,8 @@
  ****************************************************************************** */
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
-import net.hedtech.banner.loginworkflow.SecurityQAFlow
-import net.hedtech.banner.loginworkflow.SurveyFlow
 import net.hedtech.banner.privacy.PrivacyPolicyFilter
 import net.hedtech.banner.security.cas.SingleSignOutFilter
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
@@ -221,10 +218,6 @@ class BannerCoreGrailsPlugin {
         resetPasswordService(ResetPasswordService) {
             dataSource = ref(dataSource)
             authenticationDataSource = ref(authenticationDataSource)
-            sessionFactory = ref(sessionFactory)
-        }
-
-        securityQAFlow(SecurityQAFlow) {
             sessionFactory = ref(sessionFactory)
         }
 
