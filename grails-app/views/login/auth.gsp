@@ -28,30 +28,34 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
        </div>
     </div>
 	<div class="appName">Banner<span> &reg;</span></div>
-    <g:if test='${flash.message}'>
-        <div class='loginMsg'><span class="icon-error"></span>${flash.message}</div>
-    </g:if>
-    <g:elseif test="${flash.reloginMessage}">
-      <div class="loginMsg">${flash.reloginMessage}</div>
-    </g:elseif>
-    <g:else>
-	  <div class="loginMsg"><g:message code="net.hedtech.banner.login.prompt"/></div>
-    </g:else>
+    <div class="loginMsg" id="loginMsg" >
+        <g:if test='${flash.message}'>
+            <span class="icon-error"></span>${flash.message}
+        </g:if>
+        <g:elseif test="${flash.reloginMessage}">
+            ${flash.reloginMessage}
+        </g:elseif>
+        <g:else>
+            <g:message code="net.hedtech.banner.login.prompt"/>
+        </g:else>
+    </div>
+    <div id="userNameTxt" style="display: none;">User Name</div>
+    <div id="passwordTxt" style="display: none;">Password</div>
 
-	<div class="logIn">
+    <div class="logIn">
       <form action='${postUrl}' method='POST' id='loginForm'>
 		<div class="textfield-wrapper">
             <g:if test='${userNameRequired}'>
-				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username'/></span></div>
-				<div class="password"><span><input type='password' name='j_password' id='j_password' autocomplete="off"/></span></div>
+				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' aria-labelledby='userNameTxt' aria-describedby='loginMsg'/></span></div>
+				<div class="password"><span><input type='password' name='j_password' id='j_password' autocomplete="off" aria-labelledby='passwordTxt'/></span></div>
 			</g:if>
 			<g:elseif test='${flash.message}'>
-				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username'/></span></div>
-				<div class="password-error-state"><span><input type='password' name='j_password' id='j_password' autocomplete="off" /></span></div>
+				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' aria-labelledby='userNameTxt' aria-describedby='loginMsg'/></span></div>
+				<div class="password-error-state"><span><input type='password' name='j_password' id='j_password' autocomplete="off" aria-labelledby='passwordTxt'/></span></div>
 			</g:elseif>
 			<g:else>
-				<div class="userName"><span><input type='text'  name='j_username' id='j_username'/></span></div>
-				<div class="password"><span><input type='password' name='j_password' id='j_password' autocomplete="off"/></span></div>
+				<div class="userName"><span><input type='text' id="userName" name='j_username' id='j_username' aria-labelledby='userNameTxt' aria-describedby='loginMsg'/></span></div>
+				<div class="password"><span><input type='password' name='j_password' id='j_password' autocomplete="off" aria-labelledby='passwordTxt'/></span></div>
 			</g:else>
 			<div class="signin-button-wrapper"><input type='submit' value="${message(code: 'net.hedtech.banner.login.signin', default: 'Sign In')}" id="sign-in-btn" height="32px"  onclick="submitForm()" class="signin-button"/></div>
             <g:if test="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.reset.enabled == true || org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.guest.reset.enabled == true}">
