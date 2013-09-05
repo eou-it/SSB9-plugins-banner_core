@@ -4,7 +4,6 @@
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.loginworkflow.SecurityQAFlow
-import net.hedtech.banner.loginworkflow.UserAgreementFlow
 import net.hedtech.banner.loginworkflow.SurveyFlow
 import net.hedtech.banner.privacy.PrivacyPolicyFilter
 import net.hedtech.banner.security.cas.SingleSignOutFilter
@@ -222,10 +221,6 @@ class BannerCoreGrailsPlugin {
         resetPasswordService(ResetPasswordService) {
             dataSource = ref(dataSource)
             authenticationDataSource = ref(authenticationDataSource)
-            sessionFactory = ref(sessionFactory)
-        }
-
-        userAgreementFlow(UserAgreementFlow){
             sessionFactory = ref(sessionFactory)
         }
 
