@@ -270,7 +270,7 @@ abstract class BannerUserSessionManager {
      * share.
      *
      */
-    private  void persistBannerUserSession(sessionToken) {
+    public void persistBannerUserSession(sessionToken) {
 
         List<IBannerUserSessionContributor> bannerUserSessionContributors = getBannerUserSessionContributors ()
         if (bannerUserSessionContributors) {
@@ -281,6 +281,7 @@ abstract class BannerUserSessionManager {
             //TODO is this necessary ?
             setSharedAppInfoFormContext()
 
+            if (!sessionToken) sessionToken = generateBannerUserSessionToken();
             bannerUserSessionService.publish(sessionToken, infoToShare)
         }
 
