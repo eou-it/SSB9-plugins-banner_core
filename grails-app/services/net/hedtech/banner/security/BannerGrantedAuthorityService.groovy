@@ -8,6 +8,7 @@ import java.sql.SQLException
 import javax.sql.DataSource
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import org.springframework.security.core.context.SecurityContextHolder
 
 /**
  * Class for manipulating the Spring Security User Authorities.
@@ -40,6 +41,22 @@ class BannerGrantedAuthorityService {
         }
     }
 
+    public  static List getUserRoles() {
+        def user = SecurityContextHolder?.context?.authentication?.principal
+        List roles = null
+        if (user instanceof BannerUser) {
+            roles = new ArrayList();
+            Set authorities = user?.authorities
+
+            authorities.each {
+                String authority = it.authority
+                String role = authority.substring("ROLE_SELFSERVICE".length() + 1 )
+                role = role.split("_")[0]
+                roles << role
+            }
+        }
+        roles
+    }
 
     /**
      * This is to pull the authorities from DB for the signed-in user.
