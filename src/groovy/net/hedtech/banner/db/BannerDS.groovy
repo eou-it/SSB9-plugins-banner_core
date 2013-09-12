@@ -73,9 +73,7 @@ public class BannerDS implements DataSource {
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (((user instanceof BannerUser && !user?.oracleUserName) || (user instanceof String && user == 'anonymousUser')) && isSelfServiceRequest()) {
             conn = underlyingSsbDataSource.getConnection()
-            // SSB Mep setup
             setMepSsb(conn)
-
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
 			bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
@@ -86,7 +84,7 @@ public class BannerDS implements DataSource {
                 List applicableAuthorities = extractApplicableAuthorities(user)
                 conn = underlyingDataSource.getConnection()
                 OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
-                log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
+                log.debug "BannerDS.getConnection() instance of BannerUser has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
                 proxy(oconn, user?.oracleUserName)
                 roles = setRoles(oconn, user, applicableAuthorities)?.keySet() as String[]
 
@@ -102,6 +100,13 @@ public class BannerDS implements DataSource {
                     session.setAttribute("formContext", FormContext.get())
                 }
             }
+        }
+        else if (isSelfServiceRequest())  {
+            conn = underlyingSsbDataSource.getConnection()
+            setMepSsb(conn)
+            OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
+			bannerConnection = new BannerConnection(conn, null, this)
+            log.debug "BannerDS.getConnection() isSelfServiceRequest has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
         else {
             conn = underlyingDataSource.getConnection()
