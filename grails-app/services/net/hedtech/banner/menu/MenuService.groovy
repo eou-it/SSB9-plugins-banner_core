@@ -366,37 +366,4 @@ class MenuService {
         sql.connection.close()
         return dataMap
     }
-    /**
-     * This  returns page caption for a given page name
-     * @param pageName
-     * @return Form name
-     */
-    def getPageCaptionForPage(String pageName) {
-        String pageCaption = ""
-        boolean mnuPrf = getMnuPref()
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        sql.eachRow("select * from gubpage, gubobjs where gubpage_code = gubobjs_name and gubpage_name = ?", [pageName]) {
-            if (it.gubobjs_desc != null)  {
-                String caption = it.gubobjs_desc.replaceAll(/\&/, "&amp;")
-                pageCaption = caption
-                if (mnuPrf)
-                    pageCaption = caption + " (" + it.gubpage_code + ")"
-            }
-        }
-        return pageCaption
-    }
-
-    /**
-     * This  returns page caption for a given page name
-     * @param pageName
-     * @return Form name
-     */
-    def getAppNameForPage(String pageName) {
-        String appName = ""
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        sql.eachRow("select * from gubpage, gubmodu where gubpage_gubmodu_code = gubmodu_code and gubpage_name = ?", [pageName]) {
-            appName = it.gubmodu_name
-        }
-        return appName
-    }
 }
