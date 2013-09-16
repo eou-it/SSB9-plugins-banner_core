@@ -84,7 +84,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
     // The FormContext is not yet set (we haven't even reached the Dispatcher yet!), so we'll have to do our own work..
     private List getCorrespondingFormNamesFor( String url ) {
 
-        def base = [ "api", "resource" ]
+        def base = [ "api", "qapi", "resource" ]
 
         String lcUrl = url.toLowerCase()
 
