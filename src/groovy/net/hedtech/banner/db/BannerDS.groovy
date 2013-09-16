@@ -301,14 +301,21 @@ public class BannerDS implements DataSource {
     }
 
 
-    public void closeProxySession(BannerConnection conn, String proxiedUserName) {
+    public void closeProxySession(OracleConnection conn, String proxiedUserName) {
 
-        log.trace "${super.toString()}.closeProxySession() will close proxy session for $conn"
-
-        if (conn.extractOracleConnection().isProxySession()) {
-            conn.extractOracleConnection().close(OracleConnection.PROXY_SESSION)
+        log.trace "${super.toString()}.closeProxySession(OracleConnection) will close proxy session for $conn"
+        if (conn.isProxySession()) {
+            conn.close(OracleConnection.PROXY_SESSION)
         }
     }
+
+
+    public void closeProxySession(BannerConnection conn, String proxiedUserName) {
+
+        log.trace "${super.toString()}.closeProxySession(BannerConnection) will close proxy session for $conn"
+        closeProxySession(conn.extractOracleConnection(), proxiedUserName)
+    }
+
 
     // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session
     /**
