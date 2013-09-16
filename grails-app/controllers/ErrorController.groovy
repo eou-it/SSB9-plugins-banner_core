@@ -19,6 +19,16 @@ class ErrorController {
         render view: "error", model: model
     }
 
+    def pageNotFoundError = {
+        def model = [
+                exception: request.exception,
+                request:   request
+        ]
+
+        render view: "pageNotFound", model: model
+    }
+
+
     def accessForbidden = {
         def uri = ControllerUtils.buildLogoutRedirectURI()
 
