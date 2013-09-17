@@ -15,14 +15,8 @@ class BannerCoreBootStrap {
 
     def log = Logger.getLogger(this.getClass())
 
-    def grailsApplication
-    def institutionService
-    def personalPreferenceService
 
     def init = { servletContext ->
-
-        def dbInstanceName = institutionService.findByKey()?.instanceName
-        servletContext.setAttribute("dbInstanceName", dbInstanceName)
 
 //        if (!isSsbEnabled()){
 //           def bannerInbUrl = personalPreferenceService.fetchPersonalPreference("MAGELLAN","SERVER_DESIGNATION","INB")[0]
