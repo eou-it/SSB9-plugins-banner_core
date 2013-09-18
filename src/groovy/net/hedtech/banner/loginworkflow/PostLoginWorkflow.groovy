@@ -17,6 +17,7 @@ abstract class PostLoginWorkflow {
 
     public abstract boolean showPage(request);
     public abstract String getControllerUri();
+    public abstract String getControllerName();
 
     public setRegisterFlowClass(Map entryMap) {
         Set <Object>keySet = entryMap.keySet();
