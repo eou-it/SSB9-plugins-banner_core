@@ -1,33 +1,34 @@
-/*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+/* *****************************************************************************
+ Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.service
 
-
-import net.hedtech.banner.db.BannerConnection
-import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.exceptions.NotFoundException
-import net.hedtech.banner.security.FormContext
 
 import grails.validation.ValidationException
 import grails.util.GrailsNameUtils
 
 import groovy.sql.Sql
 
+import net.hedtech.banner.db.BannerConnection
+import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.exceptions.NotFoundException
+import net.hedtech.banner.security.FormContext
+
 import org.apache.log4j.Logger
+
+import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 import org.hibernate.StaleObjectStateException
 
+import org.springframework.context.ApplicationContext
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
-
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.interceptor.TransactionAspectSupport
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.springframework.transaction.support.DefaultTransactionStatus
 
-import org.springframework.context.ApplicationContext
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
 /**
  * Base class for services that provides generic support for CRUD.
@@ -66,6 +67,7 @@ class ServiceBase {
     def sessionFactory // injected by Spring
     def dataSource     // injected by Spring
 
+ 
     /**
      * Creates model instances provided within the supplied domainModelsOrMaps list.
      **/
@@ -453,7 +455,15 @@ class ServiceBase {
 
 
     // ------------------------------------ Public Helper Methods --------------------------------------
-
+    static public String currentTransactionIdentifier() {
+        def attr = TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()
+        DefaultTransactionStatus dts = TransactionAspectSupport?.currentTransactionStatus()
+        [ "Transaction<id=${dts?.transaction.connectionHolder.hashCode()}",
+          "Attributes=${attr}",
+          "isNew?=${dts?.isNewTransaction()}>"
+        ].join(", ")
+    }
+   
 
     /**
      * Sets a context variable for use by Banner database APIs.
