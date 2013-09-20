@@ -12,8 +12,8 @@ package net.hedtech.banner.loginworkflow
 abstract class PostLoginWorkflow {
     static Map flowEntries = new TreeMap();
 
-    public static String URI_ACCESSED = "SS_POST_lOGIN_WORKFLOW_URI_ACCESSED";
-    public static String ALL_DONE = "SS_POST_lOGIN_WORKFLOW_ALL_DONE";
+    public static final String URI_ACCESSED = "SS_POST_lOGIN_WORKFLOW_URI_ACCESSED";
+    public static final String ALL_DONE = "SS_POST_lOGIN_WORKFLOW_ALL_DONE";
 
     public abstract boolean showPage(request);
     public abstract String getControllerUri();
