@@ -1,6 +1,6 @@
 /*******************************************************************************
  Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
- *******************************************************************************/
+ ****************************************************************************** */
 package net.hedtech.banner.security
 
 import groovy.sql.Sql
@@ -26,7 +26,7 @@ class BannerGrantedAuthorityService {
      * @param dataSource
      * @return
      */
-    public static Collection<BannerGrantedAuthority> determineAuthorities( Map authenticationResults, DataSource dataSource ) {
+    public static Collection<BannerGrantedAuthority> determineAuthorities(Map authenticationResults, DataSource dataSource) {
 
         def connection
         Sql sqlObject
@@ -34,15 +34,15 @@ class BannerGrantedAuthorityService {
             // We query the database for all role assignments for the user, using an unproxied connection.
             // The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
             connection = dataSource.unproxiedConnection
-            sqlObject = new Sql( connection )
-            return determineAuthorities( authenticationResults, sqlObject )
+            sqlObject = new Sql(connection)
+            return determineAuthorities(authenticationResults, sqlObject)
         } finally {
             connection?.close()
         }
     }
 
-    public  static List getUserRoles() {
-        def user = SecurityContextHolder?.context?.authentication?.principal
+    public static List getUserRoles() {
+        def user = getUser()
         List roles = null
         if (user instanceof BannerUser) {
             roles = new ArrayList();
@@ -50,7 +50,7 @@ class BannerGrantedAuthorityService {
 
             authorities.each {
                 String authority = it.authority
-                String role = authority.substring("ROLE_SELFSERVICE".length() + 1 )
+                String role = authority.substring("ROLE_SELFSERVICE".length() + 1)
                 role = role.split("_")[0]
                 roles << role
             }
@@ -62,13 +62,12 @@ class BannerGrantedAuthorityService {
      * This is to pull the authorities from DB for the signed-in user.
      *
      * We query the database for all role assignments for the user, using an unproxied connection.
-     * The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}
-     *
+     * The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}*
      * @param authenticationResults - a map prepared out from the Authentication object
      * @param sqlObject
      * @return
      */
-    public static Collection<BannerGrantedAuthority> determineAuthorities (Map authenticationResults, Sql sqlObject) {
+    public static Collection<BannerGrantedAuthority> determineAuthorities(Map authenticationResults, Sql sqlObject) {
 
         Collection<BannerGrantedAuthority> authorities = []
 
@@ -84,13 +83,13 @@ class BannerGrantedAuthorityService {
 	                select GOVUROL_OBJECT, GOVUROL_ROLE from govurol,gubobjs
 	                    where govurol_userid = ? and
 	                        (govurol_object = gubobjs_name and (gubobjs_ui_version in ('A','C') OR gubobjs_name in ('GUAGMNU')) )"""
-            sqlObject.eachRow( query, [oracleUserName.toUpperCase()] ) { row ->
+            sqlObject.eachRow(query, [oracleUserName.toUpperCase()]) { row ->
                 /**
                  * Performance Tuning - Removed Select * since fetching role password is very expensive.
                  * Password would be fetch on demand while applying the roles for the connection in BannerDS.
                  * Set the role password as null initially as we are no longer fetching it during login.
                  */
-                authorities << BannerGrantedAuthority.create( row.GOVUROL_OBJECT, row.GOVUROL_ROLE, null )
+                authorities << BannerGrantedAuthority.create(row.GOVUROL_OBJECT, row.GOVUROL_ROLE, null)
             }
         } catch (SQLException e) {
             staticLogger.warn "UserAuthorityService not able to determine Authorities for user ${oracleUserName} due to exception $e.message"
@@ -102,7 +101,7 @@ class BannerGrantedAuthorityService {
     /**
      * Entry Condition:- FormContext must be set already.
      */
-    public static List<BannerGrantedAuthority> filterAuthorities (List<BannerGrantedAuthority> grantedAuthorities) {
+    public static List<BannerGrantedAuthority> filterAuthorities(List<BannerGrantedAuthority> grantedAuthorities) {
         if (!grantedAuthorities) {
             staticLogger.debug("Input list of Authorities were EMPTY !!!")
             return []
@@ -112,7 +111,7 @@ class BannerGrantedAuthorityService {
         return filterAuthoritiesForFormNames(grantedAuthorities, formContext)
     }
 
-    public static List<BannerGrantedAuthority> filterAuthorities (List<String> formNames, authentication) {
+    public static List<BannerGrantedAuthority> filterAuthorities(List<String> formNames, authentication) {
         if (authentication.principal instanceof String) {
             staticLogger.debug("Authentication Principal is just a String")
             return []
@@ -160,8 +159,8 @@ class BannerGrantedAuthorityService {
         return getAuthority(formName, [(AccessPrivilege.READONLY), (AccessPrivilege.READWRITE)])
     }
 
-    public static BannerGrantedAuthority getAuthority (String formName, AccessPrivilege accessPrivilegeType) {
-        getAuthority (formName, [(accessPrivilegeType)])
+    public static BannerGrantedAuthority getAuthority(String formName, AccessPrivilege accessPrivilegeType) {
+        getAuthority(formName, [(accessPrivilegeType)])
     }
 
     /**
@@ -174,20 +173,36 @@ class BannerGrantedAuthorityService {
         }
         authorities.find { BannerGrantedAuthority authority ->
             if (authority) {
-                authority?.hasAccessToForm (formName, accessPrivilegeTypeList)
+                authority?.hasAccessToForm(formName, accessPrivilegeTypeList)
             }
         }
     }
 
     public static boolean isFormEditable(String formName) {
-        BannerGrantedAuthority authority = getAuthorityForAnyAccessPrivilegeType (formName)
+        BannerGrantedAuthority authority = getAuthorityForAnyAccessPrivilegeType(formName)
         authority?.isReadWrite()
 
     }
 
     public static boolean isFormReadonly(String formName) {
-        BannerGrantedAuthority authority = getAuthorityForAnyAccessPrivilegeType (formName)
+        BannerGrantedAuthority authority = getAuthorityForAnyAccessPrivilegeType(formName)
         authority?.isReadOnly()
+    }
+
+    public static def getPidm() {
+        def user = getUser()
+        if (user instanceof BannerUser) {
+            return user.pidm
+        }
+        return null
+    }
+
+    public static def getUser() {
+        SecurityContextHolder?.context?.authentication?.principal
+    }
+
+    public static def getAuthorities() {
+        getUser()?.authorities
     }
 
 }
