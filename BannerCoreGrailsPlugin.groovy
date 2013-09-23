@@ -3,7 +3,6 @@
  ****************************************************************************** */
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
-import net.hedtech.banner.privacy.PrivacyPolicyFilter
 import net.hedtech.banner.security.cas.SingleSignOutFilter
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
@@ -351,19 +350,8 @@ class BannerCoreGrailsPlugin {
         def contextParam = xml.'context-param'
         contextParam[contextParam.size() - 1] + {
             'filter' {
-                'filter-name'('privacyfilter')
-                'filter-class'(PrivacyPolicyFilter.name)
-            }
-            'filter' {
                 'filter-name'('CAS Single Sign Out Filter')
                 'filter-class'(SingleSignOutFilter.name)
-            }
-        }
-
-        contextParam[contextParam.size() - 1] + {
-            'filter-mapping'{
-                'filter-name'('privacyfilter')
-                'url-pattern'('/*')
             }
         }
 
