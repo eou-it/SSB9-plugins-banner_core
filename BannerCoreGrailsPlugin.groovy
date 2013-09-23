@@ -1,27 +1,36 @@
 /* ******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 
-import net.hedtech.banner.db.BannerDS as BannerDataSource
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
-
 import grails.util.GrailsUtil
+
 import java.util.concurrent.Executors
+
 import javax.servlet.Filter
+
+import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.mep.MultiEntityProcessingService
+import net.hedtech.banner.privacy.PrivacyPolicyFilter
+import net.hedtech.banner.security.*
+import net.hedtech.banner.security.cas.SingleSignOutFilter
 import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
 import net.hedtech.banner.service.DefaultLoaderService
 import net.hedtech.banner.service.HttpSessionService
 import net.hedtech.banner.service.LoginAuditService
 import net.hedtech.banner.service.ServiceBase
+
 import oracle.jdbc.pool.OracleDataSource
+
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.jmx.HierarchyDynamicMBean
+
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.runtime.GStringImpl
+
 import org.springframework.context.event.SimpleApplicationEventMulticaster
+import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jmx.export.MBeanExporter
 import org.springframework.jmx.support.MBeanServerFactoryBean
 import org.springframework.jndi.JndiObjectFactoryBean
@@ -32,11 +41,11 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
-import net.hedtech.banner.security.*
+
 
 /**
- * A Grails Plugin supporting cross cutting concerns such as security and database access for Banner web applications.
- * */
+ * A Grails Plugin supporting cross cutting concerns.
+ **/
 class BannerCoreGrailsPlugin {
 
     String version = "2.5.1"
@@ -46,7 +55,6 @@ class BannerCoreGrailsPlugin {
 
     // the other plugins this plugin depends on
     def dependsOn = [ 'springSecurityCore': '1.2.7.3',
-//                      'resources': '1.1.6',
                     ]
 
     // resources that are excluded from plugin packaging
@@ -181,14 +189,28 @@ class BannerCoreGrailsPlugin {
             forceEagerSessionCreation = false
         }
 
-        basicAuthenticationFilter(BasicAuthenticationFilter) {
-            authenticationManager = ref('authenticationManager')
-            authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
-        }
+        if (CH.config.restfulApi.useRestApiAuthenticationEntryPoint) {
 
-        basicExceptionTranslationFilter(ExceptionTranslationFilter) {
-            authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
-            accessDeniedHandler = ref('accessDeniedHandler')
+            basicAuthenticationFilter(BasicAuthenticationFilter) {
+                authenticationManager = ref('authenticationManager')
+                authenticationEntryPoint = ref('restApiAuthenticationEntryPoint')
+            }
+
+            basicExceptionTranslationFilter(ExceptionTranslationFilter) {
+                authenticationEntryPoint = ref('restApiAuthenticationEntryPoint')
+                accessDeniedHandler = ref('accessDeniedHandler')
+            }
+        }
+        else {
+            basicAuthenticationFilter(BasicAuthenticationFilter) {
+                authenticationManager = ref('authenticationManager')
+                authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
+            }
+
+            basicExceptionTranslationFilter(ExceptionTranslationFilter) {
+                authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
+                accessDeniedHandler = ref('accessDeniedHandler')
+            }
         }
 
         anonymousProcessingFilter(AnonymousAuthenticationFilter) {
@@ -355,3 +377,8 @@ class BannerCoreGrailsPlugin {
     }
 
 }
+
+
+
+
+
