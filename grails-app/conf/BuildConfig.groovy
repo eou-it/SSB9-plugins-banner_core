@@ -23,6 +23,7 @@ grails.project.dependency.resolution = {
         compile ":spring-security-core:1.2.7.3"
         compile ':functional-test:1.2.7'
         compile ':resources:1.1.6'
+        compile ':markdown:1.0.0.RC1'
     }
 
     distribution = {
