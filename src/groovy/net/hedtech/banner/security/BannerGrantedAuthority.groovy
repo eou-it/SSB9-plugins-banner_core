@@ -1,23 +1,23 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.security
 
 import org.springframework.security.core.authority.GrantedAuthorityImpl
 
 // NOTE: This implementation holds the Banner password that must be used
-// to unlock the role associated to this authority.  This appraoch was 
-// taken since the view used to query for a users authorities includes the 
+// to unlock the role associated to this authority.  This appraoch was
+// taken since the view used to query for a users authorities includes the
 // passwords for those roles.  This appraoch stores role password data redundantly
-// for each user, but also has benefits of needing to hold only those passwords 
-// actively used by a logged in user. It also doesn't require special cache 
-// handling if this data were centralized and cached for the entire application. 
-// Regardless, this note is here as an indicator that we may want to revist this appraoch. 
+// for each user, but also has benefits of needing to hold only those passwords
+// actively used by a logged in user. It also doesn't require special cache
+// handling if this data were centralized and cached for the entire application.
+// Regardless, this note is here as an indicator that we may want to revist this appraoch.
 /**
  * An implementation of the Spring Security GrantedAuthority for Banner.
  */
 public class BannerGrantedAuthority extends GrantedAuthorityImpl {
-	
+
 	String objectName
 	String roleName
 	String bannerPassword
@@ -29,7 +29,7 @@ public class BannerGrantedAuthority extends GrantedAuthorityImpl {
 
 	private BannerGrantedAuthority( String authority, String objectName, String roleName, String bannerPassword ) {
 		super( authority )
-		
+
 		this.objectName = objectName?.toUpperCase()
 		this.roleName = roleName?.toUpperCase()
 		this.bannerPassword = bannerPassword
@@ -66,6 +66,12 @@ public class BannerGrantedAuthority extends GrantedAuthorityImpl {
     public boolean hasAccessToForm(String formName, List<AccessPrivilege> accessPrivilegeTypeList) {
         this.objectName == formName && accessPrivilegeTypeList.any { it == this.getAccessPrivilege()}
     }
+    public String getAssignedSelfServiceRole() {
+           String role = this.authority.substring("ROLE_SELFSERVICE".length() + 1)
+           return role.split("_")[0]
+       }
+
+
 
 }
 
