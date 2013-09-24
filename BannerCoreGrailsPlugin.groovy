@@ -3,7 +3,6 @@
  ****************************************************************************** */
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
-import net.hedtech.banner.security.cas.SingleSignOutFilter
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
@@ -344,14 +343,6 @@ class BannerCoreGrailsPlugin {
             'listener' {
                 'display-name'("Banner Core Session Cleaner")
                 'listener-class'("net.hedtech.banner.db.DbConnectionCacheSessionListener")
-            }
-        }
-
-        def contextParam = xml.'context-param'
-        contextParam[contextParam.size() - 1] + {
-            'filter' {
-                'filter-name'('CAS Single Sign Out Filter')
-                'filter-class'(SingleSignOutFilter.name)
             }
         }
 
