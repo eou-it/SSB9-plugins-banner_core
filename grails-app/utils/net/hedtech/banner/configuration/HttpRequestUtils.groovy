@@ -15,9 +15,20 @@ import org.springframework.web.context.request.RequestContextHolder
  * To change this template use File | Settings | File Templates.
  */
 class HttpRequestUtils {
-
+    private static final String SSB_BASE_URL = "ssb"
+    private static final String SLASH = "/"
     public static URL getRequestUrlInfo () {
         new URL(request?.requestURL?.toString())
+    }
+
+    public static String getControllerNameFromPath(String url){
+        if (url!=null && url.contains(SSB_BASE_URL)){
+            url = url.substring(url.indexOf(SSB_BASE_URL)+SSB_BASE_URL.length()+1);
+            if (url.contains(SLASH)){
+                url = url.substring(0,url.indexOf(SLASH))
+            }
+        }
+        return url
     }
 
     public static def getRequest () {
