@@ -13,7 +13,7 @@ class LessEqualsOrIsNullOperator extends CriteriaOperator {
     public String getQueryString(CriteriaData data) {
        if(data.params && data.params.size() > 0) {
            CriteriaParam param = data.params.get(0);
-           return "${data.tableAlias}.${data.tableBindingAttribute} <= :${data.paramKey} OR ${data.tableAlias}.${data.tableBindingAttribute} IS NULL)"
+           return "( ${data.tableAlias}.${data.tableBindingAttribute} <= :${data.paramKey} OR ${data.tableAlias}.${data.tableBindingAttribute} IS NULL)"
        }
        return ""
     }

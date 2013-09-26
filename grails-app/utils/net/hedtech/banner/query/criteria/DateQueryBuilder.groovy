@@ -4,6 +4,7 @@ class DateQueryBuilder {
     StringBuilder stringBuilder
     public DateQueryBuilder() {
         stringBuilder = new StringBuilder()
+        stringBuilder.append(" ( ")
     }
     public void append(String str) {
         stringBuilder.append(str);
@@ -27,6 +28,6 @@ class DateQueryBuilder {
     }
 
     public String toString() {
-        return stringBuilder.toString();
+        return stringBuilder.append(" ) ").toString()
     }
 }

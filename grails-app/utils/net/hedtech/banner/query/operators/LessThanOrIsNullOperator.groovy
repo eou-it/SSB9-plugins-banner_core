@@ -17,7 +17,7 @@ class LessThanOrIsNullOperator extends CriteriaOperator {
            if(param.data instanceof Date) {
               return new DateLessThanOrIsNullOperator().getQueryString(data)
            }
-           return "${data.tableAlias}.${data.tableBindingAttribute} < :${data.paramKey} OR ${data.tableAlias}.${data.tableBindingAttribute} IS NULL"
+           return "( ${data.tableAlias}.${data.tableBindingAttribute} < :${data.paramKey} OR ${data.tableAlias}.${data.tableBindingAttribute} IS NULL)"
        }
        return ""
     }
