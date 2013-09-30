@@ -10,9 +10,9 @@ class DateQueryBuilder {
     }
 
     public void appendDateSupport(String str) {
-        stringBuilder.append("(TO_DATE(trunc(")
+        stringBuilder.append("(trunc(")
         stringBuilder.append(str)
-        stringBuilder.append(")))")
+        stringBuilder.append("))")
 
         /*stringBuilder.append("(trunc(")
         stringBuilder.append(str)
