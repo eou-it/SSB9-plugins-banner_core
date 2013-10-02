@@ -189,6 +189,16 @@ class BannerCoreGrailsPlugin {
             forceEagerSessionCreation = false
         }
 
+        basicAuthenticationFilter(BasicAuthenticationFilter) {
+            authenticationManager = ref('authenticationManager')
+            authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
+        }
+
+        basicExceptionTranslationFilter(ExceptionTranslationFilter) {
+            authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
+            accessDeniedHandler = ref('accessDeniedHandler')
+        }
+
         anonymousProcessingFilter(AnonymousAuthenticationFilter) {
             key = 'horizon-anon'
             userAttribute = 'anonymousUser,ROLE_ANONYMOUS'
