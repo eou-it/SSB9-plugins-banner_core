@@ -179,7 +179,7 @@ class BannerCoreGrailsPlugin {
             realmName = 'Banner REST API Realm'
         }
 
-        statelessSecurityContextRepository(HttpSessionSecurityContextRepository) { 
+        statelessSecurityContextRepository(HttpSessionSecurityContextRepository) {
             allowSessionCreation = false
             disableUrlRewriting = false
         }
@@ -187,30 +187,6 @@ class BannerCoreGrailsPlugin {
         statelessSecurityContextPersistenceFilter(SecurityContextPersistenceFilter) {
             securityContextRepository = ref('statelessSecurityContextRepository')
             forceEagerSessionCreation = false
-        }
-
-        if (CH.config.restfulApi.useRestApiAuthenticationEntryPoint) {
-
-            basicAuthenticationFilter(BasicAuthenticationFilter) {
-                authenticationManager = ref('authenticationManager')
-                authenticationEntryPoint = ref('restApiAuthenticationEntryPoint')
-            }
-
-            basicExceptionTranslationFilter(ExceptionTranslationFilter) {
-                authenticationEntryPoint = ref('restApiAuthenticationEntryPoint')
-                accessDeniedHandler = ref('accessDeniedHandler')
-            }
-        }
-        else {
-            basicAuthenticationFilter(BasicAuthenticationFilter) {
-                authenticationManager = ref('authenticationManager')
-                authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
-            }
-
-            basicExceptionTranslationFilter(ExceptionTranslationFilter) {
-                authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
-                accessDeniedHandler = ref('accessDeniedHandler')
-            }
         }
 
         anonymousProcessingFilter(AnonymousAuthenticationFilter) {

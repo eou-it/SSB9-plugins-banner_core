@@ -7,7 +7,6 @@ grails.project.class.dir        = "target/classes"
 grails.project.test.class.dir   = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 
-grails.plugin.location.'restful-api'         = "../restful-api.git"
 grails.plugin.location.'spring-security-cas' = "../spring_security_cas.git"
 grails.plugin.location.'banner-codenarc'     = "../banner_codenarc.git"
 grails.plugin.location.'i18n-core'           = "../i18n_core.git"
