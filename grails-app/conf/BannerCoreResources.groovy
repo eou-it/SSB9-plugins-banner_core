@@ -2,7 +2,7 @@
 
 modules = {
    'jqueryForManageBrowserInstance' {
-       defaultBundle environment == "development" ? false : "jquery-banner-core"
+       defaultBundle environment == "development" ? false : "jqueryForManageBrowserInstance"
        resource url:[plugin: 'banner-core', file: 'js/jquery/jquery-1.4.2.js'], disposition: 'head'
    }
 }
