@@ -7,7 +7,11 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <script type="text/javascript" src="../js/jquery/jquery-1.4.1.min.js"></script>
+       %{-- <script type="text/javascript" src="../js/jquery/jquery-1.4.1.min.js"></script>--}%
+
+
+       <r:require module="jqueryForManageBrowserInstance"/>
+       <r:layoutResources/>
     </head>
     <body>
         <script  language="javascript" type="text/javascript" charset="UTF-8">
