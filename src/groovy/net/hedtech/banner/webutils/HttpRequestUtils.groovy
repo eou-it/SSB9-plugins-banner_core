@@ -2,7 +2,7 @@
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
-package net.hedtech.banner.configuration
+package net.hedtech.banner.webutils
 
 import javax.servlet.http.Cookie
 import org.springframework.web.context.request.RequestContextHolder
@@ -17,8 +17,9 @@ import org.springframework.web.context.request.RequestContextHolder
 class HttpRequestUtils {
     private static final String SSB_BASE_URL = "ssb"
     private static final String SLASH = "/"
+
     public static URL getRequestUrlInfo () {
-        new URL(request?.requestURL?.toString())
+        HttpServletRequestUtils.getRequestUrlInfo(request)
     }
 
     public static String getControllerNameFromPath(String url){
@@ -39,11 +40,6 @@ class HttpRequestUtils {
         request.contextPath
     }
 
-    def static getBrowserInstanceCookieName () {
-        def requestUrl = requestUrlInfo
-        requestUrl.host + "_" + requestUrl.port + "_" + request.contextPath[1..(request.contextPath.size()-1)]
-    }
-
     def static serverName () {
         requestUrlInfo.host
     }
@@ -53,19 +49,7 @@ class HttpRequestUtils {
     }
 
     def static Cookie getCookie (String cookieName) {
-        return getAllCookies()?.find { it.getName() == cookieName }
-    }
-
-    static def isCookieEmpty (String cookieName) {
-        getCookie(cookieName)?.value == ""
-    }
-
-    static def getAllCookies() {
-        request.getCookies()
-    }
-
-    def static getBrowserInstanceCookie () {
-        getCookie(browserInstanceCookieName)
+        return HttpServletRequestUtils.getCookie(cookieName, request)
     }
 
     def static deleteCookie (String cookieName, response) {
