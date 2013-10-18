@@ -10,9 +10,7 @@ import javax.servlet.Filter
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.mep.MultiEntityProcessingService
-import net.hedtech.banner.privacy.PrivacyPolicyFilter
 import net.hedtech.banner.security.*
-import net.hedtech.banner.security.cas.SingleSignOutFilter
 import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
 import net.hedtech.banner.service.DefaultLoaderService
 import net.hedtech.banner.service.HttpSessionService
