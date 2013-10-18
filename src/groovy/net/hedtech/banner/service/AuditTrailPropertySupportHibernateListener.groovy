@@ -99,16 +99,8 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         try {
             if  (SCH.context?.authentication?.principal instanceof BannerUser )
                 lastModifiedBy = SCH.context?.authentication?.principal?.username
-            else {
+            else
                 lastModifiedBy = SCH.context?.authentication?.principal
-                if(!lastModifiedBy) {
-                    return null
-                }
-            }
-
-            if (lastModifiedBy == null) {
-                lastModifiedBy == 'anonymous'
-            }
 
             if (lastModifiedBy == null) {
                 lastModifiedBy == 'anonymous'
