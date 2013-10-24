@@ -102,6 +102,13 @@ public class BannerDS implements DataSource {
                 }
             }
         }
+        else if (isSelfServiceRequest())  {
+            conn = underlyingSsbDataSource.getConnection()
+            setMepSsb(conn)
+            OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
+            bannerConnection = new BannerConnection(conn, null, this)
+            log.debug "BannerDS.getConnection() isSelfServiceRequest has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
+        }
         else {
             conn = underlyingDataSource.getConnection()
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
