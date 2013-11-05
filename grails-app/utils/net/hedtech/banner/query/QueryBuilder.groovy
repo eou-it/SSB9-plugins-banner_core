@@ -163,11 +163,24 @@ class QueryBuilder {
         def pagingAndSortParams = [:]
         def filtered = createFilters(map)
         // restful operators confined to eq, contains, equals
-        def operatorConversions = ["gt": Operators.GREATER_THAN, "equals": Operators.EQUALS,
-                "eq": Operators.EQUALS, "lt": Operators.LESS_THAN, "contains": Operators.CONTAINS]
+        def operatorConversions = ["gt": Operators.GREATER_THAN,
+                "equals": Operators.EQUALS,
+                "eq": Operators.EQUALS,
+                "lt": Operators.LESS_THAN,
+                "contains": Operators.CONTAINS,
+                "startswith": Operators.STARTS_WITH]
 
         // Prepare each restfulApi filter (putting it into maps for DynamicFinder)
         filtered.each {
+            if (it.containsKey("type") && it["type"] == "num" || it["type"] == "number") {
+                it["value"] = it["value"].toLong()
+            } else if (it.containsKey("type") && it["type"] == "date") {
+                it["value"] = parseDate(map, it)
+            }
+
+            if (it["operator"] == "contains" && !(it["value"].contains("%"))) it["value"] = "%${it["value"]}%"
+            else if (it["operator"] == "startswith" && !(it["value"].contains("%"))) it["value"] = "${it["value"]}%"
+
             paramsMap.put(it["field"], it["value"])
             criteriaMap.add([key: it["field"], binding: it["field"], operator: operatorConversions[it["operator"]]])
         }
@@ -190,6 +203,7 @@ class QueryBuilder {
         def filterRE = /filter\[([0-9]+)\]\[(field|operator|value|type)\]=(.*)/
         def filters = [:]
         def matcher
+        // find if the operator is contains or startswith
 
         map.each {
             if (it.key.startsWith('filter')) {
@@ -207,5 +221,26 @@ class QueryBuilder {
         }
 
         return filters.values()
+    }
+
+
+    private static Date parseDate(def params, filter) {
+        if (filter.value == null) return null
+        //see if its numeric, if so, treat as millis since Epoch
+        try {
+            Long l = Long.valueOf(filter.value)
+            return new Date(l)
+        } catch (Exception e) {
+            //can't parse as a long
+        }
+        //try to parse as ISO 8601
+        try {
+            def cal = javax.xml.datatype.DatatypeFactory.newInstance().newXMLGregorianCalendar(filter.value)
+            return cal.toGregorianCalendar().getTime()
+        } catch (Exception e) {
+            //can't parse as ISO 8601
+        }
+        //wasn't able to parse as a date
+        throw new Exception(params.pluralizedResourceName + filter + "exception")//BadDateFilterException(params.pluralizedResourceName,filter)
     }
 }
