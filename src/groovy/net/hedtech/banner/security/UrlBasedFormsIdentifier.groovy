@@ -52,7 +52,12 @@ class UrlBasedFormsIdentifier {
         }
 
         log.debug "getFormsFor will identify forms for a URL that is neither a ZK nor an API request"
-        def forms = new ArrayList( formControllerMap[ pageName ] )
+
+        def dotIndex = urlParts[0].indexOf('.')
+        def pageInUrl = (dotIndex > -1) ? urlParts[0].substring(0, dotIndex) : urlParts[0]
+        def foundForms = formControllerMap[ pageInUrl ]
+        if (!foundForms) foundForms = formControllerMap[ pageName ]
+        def forms = new ArrayList( foundForms ?: [] )
         log.debug "getFormsFor will return forms: ${forms.join(", ")}"
         return forms
     }

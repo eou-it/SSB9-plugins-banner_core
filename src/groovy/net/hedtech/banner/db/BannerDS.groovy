@@ -3,8 +3,7 @@
  ****************************************************************************** */
 package net.hedtech.banner.db
 
-
-import net.hedtech.banner.security.FormContext
+import grails.util.Environment
 
 import groovy.sql.Sql
 
@@ -13,24 +12,25 @@ import java.sql.SQLException
 
 import javax.sql.DataSource
 
+import net.hedtech.banner.apisupport.ApiUtils
+import net.hedtech.banner.exceptions.*
+import net.hedtech.banner.mep.MultiEntityProcessingService
+import net.hedtech.banner.security.BannerUser
+import net.hedtech.banner.security.BannerGrantedAuthorityService
+import net.hedtech.banner.security.BannerGrantedAuthority
+import net.hedtech.banner.security.FormContext
+
 import oracle.jdbc.OracleConnection
 
 import org.apache.log4j.Logger
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
+import org.springframework.context.ApplicationContext
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
-
-import net.hedtech.banner.mep.MultiEntityProcessingService
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.springframework.context.ApplicationContext
-
-import grails.util.Environment
 import org.springframework.web.context.request.RequestContextHolder
-import net.hedtech.banner.security.BannerUser
-import net.hedtech.banner.security.BannerGrantedAuthorityService
-import net.hedtech.banner.security.BannerGrantedAuthority
 
 /**
  * A dataSource that wraps an 'underlying' datasource.
@@ -55,19 +55,6 @@ public class BannerDS implements DataSource {
     def dataSourceUrl
 
     MultiEntityProcessingService multiEntityProcessingService
-
-    // Identifies URL parts for requests that represent API requests.
-    //
-    private List apiUrlPrefixes = null
-
-    // Identifies URL parts for requests where no session should be used.
-    // This list will be used to identify connections that should not be cached
-    // within the HTTP session. Note: To avoid creating an HTTP session, the spring
-    // security filter chain must configured. This list should contain a subset of
-    // the 'apiUrlPrefixes' list, for those API endpoints that are intended for
-    // external consumption (versus used via Ajax on behalf of authenticated users).
-    //
-    private List avoidSessionsFor = null
 
     private final Logger log = Logger.getLogger(getClass())
 
@@ -103,12 +90,12 @@ public class BannerDS implements DataSource {
 
                 setRoles(oconn, user, applicableAuthorities)
 
-                if (isApiRequest()) setMepSsb(conn) // APIs handle MEP like SSB
-                else                setMep(conn, user)
+                if (ApiUtils.isApiRequest()) setMepSsb(conn) // APIs handle MEP like SSB
+                else                         setMep(conn, user)
 
                 setFGAC(conn)
                 bannerConnection = new BannerConnection(conn, user?.username, this)
-                if (Environment.current != Environment.TEST && shouldCacheConnection()) {
+                if (Environment.current != Environment.TEST && ApiUtils.shouldCacheConnection()) {
                     bannerConnection.isCached = true
                     def session = RequestContextHolder.currentRequestAttributes().request.session
                     session.setAttribute("bannerRoles", roles)
@@ -168,7 +155,7 @@ public class BannerDS implements DataSource {
         BannerConnection bannerConnection = null
         def formContext = null
 
-        if (Environment.current != Environment.TEST && shouldCacheConnection()) {
+        if (Environment.current != Environment.TEST && ApiUtils.shouldCacheConnection()) {
             def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
             bannerConnection = session.getAttribute("cachedConnection")
             if (session.getAttribute("formContext"))
@@ -212,50 +199,6 @@ public class BannerDS implements DataSource {
     }
 
 
-    private boolean isApiRequest() {
-
-        if (apiUrlPrefixes == null) {
-            apiUrlPrefixes = CH.config?.apiUrlPrefixes instanceof List ? CH.config.apiUrlPrefixes  : []
-            if (apiUrlPrefixes.size() > 0) {
-                log.info "Configured to recognize API requests as URLs containing: ${apiUrlPrefixes.join(',')}"
-            }
-        }
-        def forwardUri = RequestContextHolder.getRequestAttributes()?.getRequest()?.forwardURI
-        boolean requestIsApi = apiUrlPrefixes.any { forwardUri =~ it }
-        requestIsApi
-    }
-
-
-    private boolean shouldCacheConnection() {
-        boolean isWebRequest = RequestContextHolder.getRequestAttributes() != null
-
-        // We'll only cache connections for web requests
-        if (!isWebRequest) return false
-
-        // and then only if the web request is not one configured to avoid sessions
-        def forwardUri = RequestContextHolder.getRequestAttributes().getRequest().forwardURI
-
-        // First, we'll cache the configured url parts that identify requests
-        // that should not use HTTP sessions.
-        if (avoidSessionsFor == null) {
-            avoidSessionsFor = CH.config.avoidSessionsFor instanceof List ? CH.config.avoidSessionsFor : []
-            if (avoidSessionsFor.size() > 0) {
-                log.info "Configured so DB connections will not be cached in the HTTP session for URLs containing: ${avoidSessionsFor.join(',')}"
-            }
-        }
-
-        // so we can check to see if our current request matches one of them
-        boolean avoidCaching = avoidSessionsFor.any { forwardUri =~ it }
-
-        if (avoidCaching) {
-            log.trace "shouldCacheConnection() returning 'false' (API requests are configured to not use sessions)"
-            return false
-        }
-        log.trace "shouldCacheConnection() returning $isWebRequest"
-        return isWebRequest
-    }
-
-
     private getUserRoles(user, applicableAuthorities) {
         Map unlockedRoles = [:]
         applicableAuthorities?.each { auth ->
@@ -280,6 +223,8 @@ public class BannerDS implements DataSource {
             connection?.underlyingConnection.close()
         }
     }
+
+
     // Note: This method should be used only for initial authentication, and for testing purposes.
     /**
      * This method serves the banner authentication provider, by returning an unproxied connection that may be used
@@ -616,50 +561,67 @@ public class BannerDS implements DataSource {
         !FormContext.isSelfService()
     }
 
-    private setMep(conn, user) {
-        ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
-        multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
 
-        if (multiEntityProcessingService.isMEP(conn)) {
+    private MultiEntityProcessingService getMultiEntityProcessingService() {
+        if (!multiEntityProcessingService) {
+            ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+            multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
+        }
+        multiEntityProcessingService
+    }
+
+
+    private setMep(conn, user) {
+
+        if (getMultiEntityProcessingService().isMEP(conn)) {
             if (!user?.mepHomeContext) {
-                multiEntityProcessingService.setMepOnAccess(user?.oracleUserName.toString().toUpperCase(), conn)
-                user?.mepHomeContext = multiEntityProcessingService.getHomeContext(conn)
+                getMultiEntityProcessingService().setMepOnAccess(user?.oracleUserName.toString().toUpperCase(), conn)
+                user?.mepHomeContext = getMultiEntityProcessingService().getHomeContext(conn)
                 user?.mepProcessContext = user?.mepHomeContext
-                user?.mepHomeContextDescription = multiEntityProcessingService.getMepDescription(user?.mepHomeContext, conn)
-            } else {
-                multiEntityProcessingService.setHomeContext(user?.mepHomeContext, conn)
-                multiEntityProcessingService.setProcessContext(user?.mepProcessContext, conn)
-                user?.mepHomeContextDescription = multiEntityProcessingService.getMepDescription(user?.mepHomeContext, conn)
+                user?.mepHomeContextDescription = getMultiEntityProcessingService().getMepDescription(user?.mepHomeContext, conn)
+            }
+            else {
+                getMultiEntityProcessingService().setHomeContext(user?.mepHomeContext, conn)
+                getMultiEntityProcessingService().setProcessContext(user?.mepProcessContext, conn)
+                user?.mepHomeContextDescription = getMultiEntityProcessingService().getMepDescription(user?.mepHomeContext, conn)
             }
         }
     }
 
     private setMepSsb(conn) {
-        ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
-        multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
 
-        if (multiEntityProcessingService?.isMEP(conn)) {
-            def session = RequestContextHolder.currentRequestAttributes()?.request?.session
-            if (!session?.getAttribute("mep")) {
+        def session = RequestContextHolder.currentRequestAttributes()?.request?.session
+        def mepCode = session?.getAttribute("mep")
+
+        if (mepCode == "FORCE_MEPCODENOTFOUND" && Environment.current == Environment.TEST) {
+            log.warn "**** FORCING a MepCodeNotFoundException"
+            throw new MepCodeNotFoundException(mepCode: mepCode)
+        }
+
+        if (getMultiEntityProcessingService().isMEP(conn)) {
+
+            if (!mepCode) {
                 log.error "The Mep Code must be provided when running in multi institution context"
                 conn?.close()
-                throw new RuntimeException("The Mep Code must be provided when running in multi institution context")
+                throw new MepCodeNotFoundException(mepCode: "NO_MEP_CODE_PROVIDED")
             }
 
-            def desc = multiEntityProcessingService?.getMepDescription(session?.getAttribute("mep"), conn)
+            def desc = getMultiEntityProcessingService().getMepDescription(mepCode, conn)
 
             if (!desc) {
-                log.error "Mep Code is invalid"
                 conn?.close()
-                throw new RuntimeException("Mep Code is invalid")
-            } else {
+                // We'll throw a MepCodeNotFoundException so that a '404' error code will be
+                // specified when this is wrapped in an ApplicationException
+                log.error "Mep Code is invalid, will throw MepCodeNotFoundException"
+                throw new MepCodeNotFoundException(mepCode: mepCode)
+            }
+            else {
                 session.setAttribute("ssbMepDesc", desc)
-                multiEntityProcessingService?.setHomeContext(session?.getAttribute("mep"), conn)
-                multiEntityProcessingService?.setProcessContext(session?.getAttribute("mep"), conn)
+                getMultiEntityProcessingService().setHomeContext(mepCode, conn)
+                getMultiEntityProcessingService().setProcessContext(mepCode, conn)
             }
         }
     }
-
 
 }
 

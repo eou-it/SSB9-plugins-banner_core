@@ -1,8 +1,0 @@
-
-The banner-core plugin provides a foundation for building Grails web applications for Banner, and is used within every Banner 9 Module. 
-
-Access to this plugin is restricted to clients who have licensed a solution that uses this plugin.  
-
-Authorized clients may use this source code to develop custom web applications that front-end the Banner database, as well as to incorporate customizations for Banner 9 Modules.
- 
- 

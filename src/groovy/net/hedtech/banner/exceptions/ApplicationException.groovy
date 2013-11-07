@@ -1,6 +1,6 @@
-/*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+/* ****************************************************************************
+Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.exceptions
 
 import java.sql.SQLException
@@ -385,6 +385,18 @@ class ApplicationException extends RuntimeException {
                                                   code: "not.found.message",
                                                   args: [ localize( code: "${entityClassName}.label",
                                                                     default: getUserFriendlyName() ), (wrappedException?.hasProperty('id') ? wrappedException?.id : null) ] ) as String,
+                              errors: null
+                            ]
+                        }
+        ],
+
+        // An exception we throw explicitly if the MEP code is not found
+        'MepCodeNotFoundException': [
+            httpStatusCode: 404,
+            returnMap:  { localize ->
+                            [ message: translate( localize: localize,
+                                  code: "mepcode.not.found.message",
+                                  args: [ wrappedException?.hasProperty('mepCode') ? wrappedException?.mepCode : null ] ) as String,
                               errors: null
                             ]
                         }

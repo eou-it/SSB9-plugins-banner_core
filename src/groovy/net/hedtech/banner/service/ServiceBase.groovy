@@ -12,6 +12,7 @@ import groovy.sql.Sql
 import net.hedtech.banner.db.BannerConnection
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.NotFoundException
+import net.hedtech.banner.exceptions.MepCodeNotFoundException
 import net.hedtech.banner.security.FormContext
 
 import org.apache.log4j.Logger
@@ -67,7 +68,7 @@ class ServiceBase {
     def sessionFactory // injected by Spring
     def dataSource     // injected by Spring
 
- 
+
     /**
      * Creates model instances provided within the supplied domainModelsOrMaps list.
      **/
@@ -117,6 +118,8 @@ class ServiceBase {
             throw ae
         }
         catch (e) {
+            def notFound = extractNestedNotFoundException(e)
+            e = notFound ?: e
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Could not save a new ${this.class.simpleName} due to exception: $ae", e
             throw ae
@@ -206,6 +209,8 @@ class ServiceBase {
         }
         catch (e) {
             log.debug "Could not update an existing ${this.class.simpleName} with id = ${domainModelOrMap?.id} due to exception: ${e.message}", e
+            def notFound = extractNestedNotFoundException(e)
+            e = notFound ?: e
             throw new ApplicationException( getDomainClass(), e )
         } finally {
             clearDbmsApplicationInfo()
@@ -310,6 +315,8 @@ class ServiceBase {
             throw ae
         }
         catch (e) {
+            def notFound = extractNestedNotFoundException(e)
+            e = notFound ?: e
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Could not delete ${getDomainClass().simpleName} with id = ${domainObject?.id} due to exception: $ae", e
             throw ae
@@ -337,6 +344,8 @@ class ServiceBase {
             throw ae
         }
         catch (e) {
+            def notFound = extractNestedNotFoundException(e)
+            e = notFound ?: e
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Exception executing ${this.class.simpleName}.read() with id = $id, due to exception: $ae", e
             throw ae
@@ -364,6 +373,8 @@ class ServiceBase {
             throw ae
         }
         catch (e) {
+            def notFound = extractNestedNotFoundException(e)
+            e = notFound ?: e
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Exception executing ${this.class.simpleName}.get() with id = $id, due to exception: $ae", e
             throw ae
@@ -390,6 +401,8 @@ class ServiceBase {
             getDomainClass().list( args )
         }
         catch (e) {
+            def notFound = extractNestedNotFoundException(e)
+            e = notFound ?: e
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Exception executing ${this.class.simpleName}.list() with args = $args, due to exception: $ae", e
             throw ae
@@ -422,6 +435,8 @@ class ServiceBase {
             getDomainClass().count()
         }
         catch (e) {
+            def notFound = extractNestedNotFoundException(e)
+            e = notFound ?: e
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Exception executing ${this.class.simpleName}.count() due to exception: $ae", e
             throw ae
@@ -447,6 +462,8 @@ class ServiceBase {
             throw ae
         }
         catch (e) {
+            def notFound = extractNestedNotFoundException(e)
+            e = notFound ?: e
             def ae = new ApplicationException( getDomainClass(), e )
             log.debug "Could not save a new ${this.getDomainClass().simpleName} due to exception: $ae", e
             throw ae
@@ -455,6 +472,8 @@ class ServiceBase {
 
 
     // ------------------------------------ Public Helper Methods --------------------------------------
+
+
     static public String currentTransactionIdentifier() {
         def attr = TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()
         DefaultTransactionStatus dts = TransactionAspectSupport?.currentTransactionStatus()
@@ -463,7 +482,7 @@ class ServiceBase {
           "isNew?=${dts?.isNewTransaction()}>"
         ].join(", ")
     }
-   
+
 
     /**
      * Sets a context variable for use by Banner database APIs.
@@ -558,7 +577,6 @@ class ServiceBase {
         if (databaseMayAlterPropertiesOf( model )) {
             log.debug "Model ${model.class} is identified as a model that may be modified within the database, and will therefore be refreshed"
             model.refresh()
-
         }
     }
 
@@ -796,7 +814,7 @@ class ServiceBase {
      * Sets the 'domainClass' property if not already populated, using naming conventions.
      * Specifically, this will derive the model class name from this service's class name.
      **/
-    protected Class getDomainClass() {
+    public Class getDomainClass() {
         if (!domainClass) {
             String serviceClassName = this.class.name
             String domainClassName = serviceClassName.substring( 0, serviceClassName.indexOf( "Service" ) )
@@ -868,6 +886,22 @@ class ServiceBase {
         new ApplicationException( domainObject?.class, new OptimisticLockException( new StaleObjectStateException( domainObject.class.simpleName, domainObject.id ) ) )
     }
 
+
+    /*
+     * Extracts a NotFoundException if one is nested, otherwise returns null.
+     **/
+    public static Throwable extractNestedNotFoundException( Throwable e ) {
+
+        if (e instanceof NotFoundException || e instanceof MepCodeNotFoundException) {
+            return e
+        }
+        else if (e.getCause() != null) {
+            return extractNestedNotFoundException( e.getCause() )
+        }
+        else {
+            return null
+        }
+    }
 
     private void setDbmsApplicationInfo( action ) {
         if (log.debugEnabled) {
