@@ -215,12 +215,12 @@ public class BannerDS implements DataSource {
     private boolean isApiRequest() {
 
         if (apiUrlPrefixes == null) {
-            apiUrlPrefixes = CH.config?.apiUrlPrefixes instanceof List ? CH.config.apiUrlPrefixes  : []
+            apiUrlPrefixes = CH.config.apiUrlPrefixes instanceof List ? CH.config.apiUrlPrefixes  : []
             if (apiUrlPrefixes.size() > 0) {
                 log.info "Configured to recognize API requests as URLs containing: ${apiUrlPrefixes.join(',')}"
             }
         }
-        def forwardUri = RequestContextHolder.getRequestAttributes()?.getRequest()?.forwardURI
+        def forwardUri = RequestContextHolder.getRequestAttributes().getRequest().forwardURI
         boolean requestIsApi = apiUrlPrefixes.any { forwardUri =~ it }
         requestIsApi
     }
