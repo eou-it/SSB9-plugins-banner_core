@@ -22,7 +22,6 @@ class UrlBasedFormsIdentifier {
 
     public static int indexOfApiPrefix( List<String> urlParts, List<String> apiPrefixes ) {
         def index = urlParts.findIndexOf() { it in  apiPrefixes }
-        if (index > -1) log.debug "XXXXXXXXXXXX found an API prefix at index $index of urlParts ${urlParts.join(', ')}"
         index
     }
 
@@ -47,7 +46,7 @@ class UrlBasedFormsIdentifier {
         if (index > -1) { // we found an API prefix if the index is > -1
             log.debug "getFormsFor will identify form(s) for 'API' request: $url"
             log.debug "getFormsFor found forms ${formControllerMap[ urlParts[index + 1] ]}"
-            def forms = new ArrayList( formControllerMap[ urlParts[index + 1] ] )
+            def forms = new ArrayList( formControllerMap[ urlParts[index + 1] ] ?: [] )
             log.debug "getFormsFor will return forms: ${forms.join(", ")}"
             return forms
         }
