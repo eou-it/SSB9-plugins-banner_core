@@ -33,7 +33,7 @@ import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.security.BannerGrantedAuthority
 
 /**
- * A dataSource that wraps an 'underlying' datasource.  
+ * A dataSource that wraps an 'underlying' datasource.
  *  When this datasource is asked for a connection, it will first:
  * 1) proxy the connection for the authenticated user,
  * 2) set Banner roles that are applicable to the current request, based on the authenticated user's privileges
@@ -47,6 +47,7 @@ import net.hedtech.banner.security.BannerGrantedAuthority
 public class BannerDS implements DataSource {
 
     // Delegates all methods not implemented here, to the underlying dataSource injected via Spring.
+
     DataSource underlyingDataSource
     DataSource underlyingSsbDataSource
 
@@ -55,10 +56,17 @@ public class BannerDS implements DataSource {
 
     MultiEntityProcessingService multiEntityProcessingService
 
+    // Identifies URL parts for requests that represent API requests.
+    //
+    private List apiUrlPrefixes = null
+
     // Identifies URL parts for requests where no session should be used.
     // This list will be used to identify connections that should not be cached
-    // within the HTTP session. Note: To avoid creating an HTTP session, the spring 
-    // security filter chain must configured. 
+    // within the HTTP session. Note: To avoid creating an HTTP session, the spring
+    // security filter chain must configured. This list should contain a subset of
+    // the 'apiUrlPrefixes' list, for those API endpoints that are intended for
+    // external consumption (versus used via Ajax on behalf of authenticated users).
+    //
     private List avoidSessionsFor = null
 
     private final Logger log = Logger.getLogger(getClass())
@@ -80,7 +88,7 @@ public class BannerDS implements DataSource {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
-			bannerConnection = new BannerConnection(conn, null, this)
+            bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
         else if ((user instanceof BannerUser && user?.oracleUserName) && shouldProxy()) {
@@ -94,7 +102,10 @@ public class BannerDS implements DataSource {
                 roles = setRoles(oconn, user, applicableAuthorities)?.keySet() as String[]
 
                 setRoles(oconn, user, applicableAuthorities)
-                setMep(conn, user)
+
+                if (isApiRequest()) setMepSsb(conn) // APIs handle MEP like SSB
+                else                setMep(conn, user)
+
                 setFGAC(conn)
                 bannerConnection = new BannerConnection(conn, user?.username, this)
                 if (Environment.current != Environment.TEST && shouldCacheConnection()) {
@@ -110,7 +121,7 @@ public class BannerDS implements DataSource {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
-			bannerConnection = new BannerConnection(conn, null, this)
+            bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() isSelfServiceRequest has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
         else {
@@ -201,16 +212,30 @@ public class BannerDS implements DataSource {
     }
 
 
+    private boolean isApiRequest() {
+
+        if (apiUrlPrefixes == null) {
+            apiUrlPrefixes = CH.config.apiUrlPrefixes instanceof List ? CH.config.apiUrlPrefixes  : []
+            if (apiUrlPrefixes.size() > 0) {
+                log.info "Configured to recognize API requests as URLs containing: ${apiUrlPrefixes.join(',')}"
+            }
+        }
+        def forwardUri = RequestContextHolder.getRequestAttributes().getRequest().forwardURI
+        boolean requestIsApi = apiUrlPrefixes.any { forwardUri =~ it }
+        requestIsApi
+    }
+
+
     private boolean shouldCacheConnection() {
         boolean isWebRequest = RequestContextHolder.getRequestAttributes() != null
 
         // We'll only cache connections for web requests
-        if (!isWebRequest) return false 
+        if (!isWebRequest) return false
 
         // and then only if the web request is not one configured to avoid sessions
         def forwardUri = RequestContextHolder.getRequestAttributes().getRequest().forwardURI
 
-        // First, we'll cache the configured url parts that identify requests 
+        // First, we'll cache the configured url parts that identify requests
         // that should not use HTTP sessions.
         if (avoidSessionsFor == null) {
             avoidSessionsFor = CH.config.avoidSessionsFor instanceof List ? CH.config.avoidSessionsFor : []
@@ -218,8 +243,8 @@ public class BannerDS implements DataSource {
                 log.info "Configured so DB connections will not be cached in the HTTP session for URLs containing: ${avoidSessionsFor.join(',')}"
             }
         }
-       
-        // so we can check to see if our current request matches one of them 
+
+        // so we can check to see if our current request matches one of them
         boolean avoidCaching = avoidSessionsFor.any { forwardUri =~ it }
 
         if (avoidCaching) {

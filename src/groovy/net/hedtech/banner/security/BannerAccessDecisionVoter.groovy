@@ -1,4 +1,4 @@
-/*******************************************************************************
+/* ****************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
@@ -19,7 +19,8 @@ import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.context.ApplicationContext
 
 /**
- * A Spring Security RoleVoter that authorizes a user by determining if any of
+ * A Spring Security RoleVoter that defers to Banner security.
+ * That is, this role voter authorizes a user by determining if any of
  * the user's authorities pertain to the current request (i.e., pertain to the
  * 'FORM' associated to the request). This approach precludes the need to map
  * roles to each URL.
@@ -82,39 +83,21 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
 
     // The FormContext is not yet set (we haven't even reached the Dispatcher yet!), so we'll have to do our own work..
-    private List getCorrespondingFormNamesFor( String url ) {
+    List getCorrespondingFormNamesFor( String url ) {
 
-        def base = [ "api", "qapi", "resource" ]
-
-        String lcUrl = url.toLowerCase()
-
-        def splitIndex
-        if (url.contains("banner.zul")){
-          splitIndex = 3
+        log.debug "getCorrespondingFormNamesFor() will determine form name(s) for url $url"
+        List prefixes = CH.config.apiUrlPrefixes instanceof List ? CH.config.apiUrlPrefixes : []
+        def formControllerMap = CH.config.formControllerMap
+        def pageName = null
+        if (url.contains("banner.zul")) {
+            pageName = RequestContextHolder.currentRequestAttributes().request.getParameter("page")?.toLowerCase()
         }
 
-        def urlParts = lcUrl.split( /\/|\?|\./ ).toList() // note, first element will be empty string (i.e., representing before the first '/')
-
-        if (splitIndex && !(urlParts[1] in base)) {
-            def pageName = RequestContextHolder.currentRequestAttributes().request.getParameter("page")?.toLowerCase()
-            if (!pageName) pageName="mainpage"
-
-            log.debug "BannerAccessDecisionVoter.getCorrespondingFormNamesFor() has pageName : $pageName"
-            def forms =  new ArrayList( CH.config.formControllerMap[pageName])
-            log.debug "BannerAccessDecisionVoter.getCorrespondingFormNamesFor() data from formControllerMap  for $forms"
-            return forms
-        }
-
-        log.debug "BannerAccessDecisionVoter.vote() has parsed url into: $urlParts"
-        def result = CH.config.formControllerMap?.find { k, v ->
-            if (splitIndex) {
-                k == (urlParts[1] in base ? urlParts[2] : urlParts[urlParts.size() - splitIndex]) // we may have to ignore '/api/' if found within the uri
-            }
-            else {
-                k == (urlParts[1] in base ? urlParts[2] : urlParts[1]) // we may have to ignore '/api/' if found within the uri
-            }
-        }
-        result?.value
+        List<String> determinedForms =
+            UrlBasedFormsIdentifier.getFormsFor( url, prefixes,
+                                                 formControllerMap, pageName )
+       log.debug "getCorrespondingFormNamesFor() will return form name(s): ${determinedForms?.join(', ')}"
+       determinedForms
     }
 
 
@@ -129,28 +112,28 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
         // dynamic form-based authorization due to special ROLE_DETERMINED_DYNAMICALLY role mapped to the url
         if (useDynamicAuthorization) {
-	        log.debug "BannerAccessDecisionVoter.vote() will perform dynamic form-based authorization"
+            log.debug "BannerAccessDecisionVoter.vote() will perform dynamic form-based authorization"
 
-	        def forms = getCorrespondingFormNamesFor( url )
-	        if (forms) {
-    	        log.debug "BannerAccessDecisionVoter.vote() found form(s) (${forms}) mapped for URL $url"
+            def forms = getCorrespondingFormNamesFor( url )
+            if (forms) {
+                log.debug "BannerAccessDecisionVoter.vote() found form(s) (${forms}) mapped for URL $url"
 
-    	        List applicableAuthorities = getApplicableAuthorities( forms, authentication )
+                List applicableAuthorities = getApplicableAuthorities( forms, authentication )
                 log.debug "BannerAccessDecisionVoter.vote() found applicableAuthorities $applicableAuthorities"
 
-    	        // Now we'll exclude the special '_CONNECT' roles, as we don't want to give access for those...
-    	        applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
+                // Now we'll exclude the special '_CONNECT' roles, as we don't want to give access for those...
+                applicableAuthorities.removeAll { it ==~ /.*_CONNECT.*/ }
 
-    	        if (applicableAuthorities.size() > 0) {
-    	            log.debug "BannerAccessDecisionVoter.vote() has found an applicable authority and will grant access"
-    	            return AccessDecisionVoter.ACCESS_GRANTED
-    	        }
+                if (applicableAuthorities.size() > 0) {
+                    log.debug "BannerAccessDecisionVoter.vote() has found an applicable authority and will grant access"
+                    return AccessDecisionVoter.ACCESS_GRANTED
+                }
 
                 //Since user doesn't have access to url now log it in violation table.
                 logViolation( authentication, forms, url )
             }
-    	    log.debug "BannerAccessDecisionVoter.vote() did NOT find any applicable authorities, and will DENY access"
-    	    return AccessDecisionVoter.ACCESS_DENIED
+            log.debug "BannerAccessDecisionVoter.vote() did NOT find any applicable authorities, and will DENY access"
+            return AccessDecisionVoter.ACCESS_DENIED
         }
 
         // explicit uri-role map based authorization
@@ -159,11 +142,11 @@ class BannerAccessDecisionVoter extends RoleVoter {
         def hasRole = configAttributes?.any { it.attribute in authorityNames }
 
         if (hasRole) {
-	        log.debug "BannerAccessDecisionVoter.vote() found user has a role that was explicitly specified for the url, and will grant access"
-	        return AccessDecisionVoter.ACCESS_GRANTED
+            log.debug "BannerAccessDecisionVoter.vote() found user has a role that was explicitly specified for the url, and will grant access"
+            return AccessDecisionVoter.ACCESS_GRANTED
         } else {
-	        log.debug "BannerAccessDecisionVoter.vote() found user does not have a role that was explicitly specified for the url, and will ABSTAIN"
-	        return AccessDecisionVoter.ACCESS_ABSTAIN
+            log.debug "BannerAccessDecisionVoter.vote() found user does not have a role that was explicitly specified for the url, and will ABSTAIN"
+            return AccessDecisionVoter.ACCESS_ABSTAIN
         }
 
         // To allow based upon IP address...
