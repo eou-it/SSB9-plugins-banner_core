@@ -161,38 +161,51 @@ class QueryBuilder {
         def paramsMap = [:]
         def criteriaMap = []
         def pagingAndSortParams = [:]
+
         def filtered = createFilters(map)
-        // restful operators confined to eq, contains, equals
-        def operatorConversions = ["gt": Operators.GREATER_THAN,
-                "equals": Operators.EQUALS,
-                "eq": Operators.EQUALS,
-                "lt": Operators.LESS_THAN,
-                "contains": Operators.CONTAINS,
-                "startswith": Operators.STARTS_WITH]
+
+        def hqlBuilderOperators = ["eq": Operators.EQUALS, "lt": Operators.LESS_THAN, "gt": Operators.GREATER_THAN]
 
         // Prepare each restfulApi filter (putting it into maps for DynamicFinder)
         filtered.each {
-            if (it.containsKey("type") && it["type"] == "num" || it["type"] == "number") {
-                it["value"] = it["value"].toLong()
-            } else if (it.containsKey("type") && it["type"] == "date") {
-                it["value"] = parseDate(map, it)
+            if (hqlBuilderOperators.containsKey(it["operator"])) {
+                // For backward compatibility convert old HQLBuilder operator to DynamicFinder operator
+                it["operator"] = hqlBuilderOperators[it["operator"]]
+            } else {
+                // filter[index][operator] value is from net.hedtech.banner.query.operators.Operators
+                // No validation done here.  Will be passed to DynamicFinder directly.
+            }
+
+            if (it.containsKey("type")) {
+                // URL parameter "filter[index][type]" exists.  Either "numeric" or "date".
+                if (it["type"] == "num" || it["type"] == "number") {
+                    it["value"] = it["value"].toLong()
+                } else if (it["type"] == "date") {
+                    it["value"] = parseDate(map, it)
+                }
             }
 
             if (it["operator"] == "contains" && !(it["value"].contains("%"))) it["value"] = "%${it["value"]}%"
             else if (it["operator"] == "startswith" && !(it["value"].contains("%"))) it["value"] = "${it["value"]}%"
 
             paramsMap.put(it["field"], it["value"])
-            criteriaMap.add([key: it["field"], binding: it["field"], operator: operatorConversions[it["operator"]]])
+            criteriaMap.add([key: it["field"], binding: it["field"], operator: it["operator"]])
         }
 
         // If criteria are passed in with the correct format already, just copy them.
         if (map?.containsKey("params")) paramsMap.putAll(map.params)
         if (map?.containsKey("criteria")) criteriaMap.addAll(map.criteria)
-        // pull out the pagination criteria
 
+        // pull out the pagination criteria
         if (map?.containsKey("max")) pagingAndSortParams.put("max", map["max"].toInteger())
         if (map?.containsKey("offset")) pagingAndSortParams.put("offset", map["offset"].toInteger())
-        if (map?.containsKey("sort")) pagingAndSortParams.put("sort", map["sort"])
+        // sort
+        if (map?.containsKey("sort")) {
+            pagingAndSortParams.put("sortColumn", map["sort"])
+            if (map?.containsKey("order")) pagingAndSortParams.put("sortDirection", map["order"])
+        } else if (map?.containsKey("sortCriteria") && map["sortCriteria"] instanceof Collection) {
+            pagingAndSortParams.put("sortCriteria", map["sortCriteria"])
+        }
         if (map?.containsKey("pagingAndSortParams")) pagingAndSortParams.putAll(map.pagingAndSortParams)
 
         return [params: paramsMap, criteria: criteriaMap, pagingAndSortParams: pagingAndSortParams]
