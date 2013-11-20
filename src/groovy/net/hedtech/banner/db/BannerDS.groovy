@@ -1,10 +1,9 @@
-/*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+/* *****************************************************************************
+ Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db
 
-
-import net.hedtech.banner.security.FormContext
+import grails.util.Environment
 
 import groovy.sql.Sql
 
@@ -13,28 +12,29 @@ import java.sql.SQLException
 
 import javax.sql.DataSource
 
+import net.hedtech.banner.apisupport.ApiUtils
+import net.hedtech.banner.exceptions.*
+import net.hedtech.banner.mep.MultiEntityProcessingService
+import net.hedtech.banner.security.BannerUser
+import net.hedtech.banner.security.BannerGrantedAuthorityService
+import net.hedtech.banner.security.BannerGrantedAuthority
+import net.hedtech.banner.security.FormContext
+
 import oracle.jdbc.OracleConnection
 
 import org.apache.log4j.Logger
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
+import org.springframework.context.ApplicationContext
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
-
-import net.hedtech.banner.mep.MultiEntityProcessingService
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.springframework.context.ApplicationContext
-
-import grails.util.Environment
 import org.springframework.web.context.request.RequestContextHolder
-import net.hedtech.banner.security.BannerUser
-import net.hedtech.banner.security.BannerGrantedAuthorityService
-import net.hedtech.banner.security.BannerGrantedAuthority
 
 /**
- * A dataSource that wraps an 'underlying' datasource.  When this datasource is asked for a
- * connection, it will first:
+ * A dataSource that wraps an 'underlying' datasource.
+ *  When this datasource is asked for a connection, it will first:
  * 1) proxy the connection for the authenticated user,
  * 2) set Banner roles that are applicable to the current request, based on the authenticated user's privileges
  * and the 'FormContext'
@@ -47,6 +47,7 @@ import net.hedtech.banner.security.BannerGrantedAuthority
 public class BannerDS implements DataSource {
 
     // Delegates all methods not implemented here, to the underlying dataSource injected via Spring.
+
     DataSource underlyingDataSource
     DataSource underlyingSsbDataSource
 
@@ -66,7 +67,6 @@ public class BannerDS implements DataSource {
 
         log.trace "BannerDS.getConnection() invoked and will delegate to an underlying dataSource"
 
-
         Connection conn
         BannerConnection bannerConnection
         String[] roles
@@ -75,7 +75,7 @@ public class BannerDS implements DataSource {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
-			bannerConnection = new BannerConnection(conn, null, this)
+            bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
         else if ((user instanceof BannerUser && user?.oracleUserName) && shouldProxy()) {
@@ -89,10 +89,13 @@ public class BannerDS implements DataSource {
                 roles = setRoles(oconn, user, applicableAuthorities)?.keySet() as String[]
 
                 setRoles(oconn, user, applicableAuthorities)
-                setMep(conn, user)
+
+                if (ApiUtils.isApiRequest()) setMepSsb(conn) // APIs handle MEP like SSB
+                else                         setMep(conn, user)
+
                 setFGAC(conn)
                 bannerConnection = new BannerConnection(conn, user?.username, this)
-                if (Environment.current != Environment.TEST && isWebRequest()) {
+                if (Environment.current != Environment.TEST && ApiUtils.shouldCacheConnection()) {
                     bannerConnection.isCached = true
                     def session = RequestContextHolder.currentRequestAttributes().request.session
                     session.setAttribute("bannerRoles", roles)
@@ -105,7 +108,7 @@ public class BannerDS implements DataSource {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
-			bannerConnection = new BannerConnection(conn, null, this)
+            bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() isSelfServiceRequest has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
         else {
@@ -120,6 +123,7 @@ public class BannerDS implements DataSource {
             return new BannerConnection(conn, user, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
     }
 
+
     public void setFGAC(conn) {
 
         String form = (FormContext.get() ? FormContext.get()[0] : null) // FormContext returns a list, but we'll just use the first entry
@@ -130,8 +134,8 @@ public class BannerDS implements DataSource {
         // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
     }
 
-    // Note: This method is used for Integration Tests.
 
+    // Note: This method is used for Integration Tests.
     public Connection proxyAndSetRolesFor(BannerConnection bconn, userName, password) {
 
         def user
@@ -146,13 +150,12 @@ public class BannerDS implements DataSource {
     }
 
 
-
     private Connection getCachedConnection(BannerUser user) {
 
         BannerConnection bannerConnection = null
         def formContext = null
 
-        if (Environment.current != Environment.TEST && isWebRequest()) {
+        if (Environment.current != Environment.TEST && ApiUtils.shouldCacheConnection()) {
             def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
             bannerConnection = session.getAttribute("cachedConnection")
             if (session.getAttribute("formContext"))
@@ -195,9 +198,6 @@ public class BannerDS implements DataSource {
         bannerConnection
     }
 
-    private boolean isWebRequest() {
-        RequestContextHolder.getRequestAttributes() != null
-    }
 
     private getUserRoles(user, applicableAuthorities) {
         Map unlockedRoles = [:]
@@ -208,6 +208,7 @@ public class BannerDS implements DataSource {
         }
         unlockedRoles
     }
+
 
     public void removeConnection(BannerConnection connection) {
         log.trace "${super.toString()}.removeConnection() invoked"
@@ -222,6 +223,8 @@ public class BannerDS implements DataSource {
             connection?.underlyingConnection.close()
         }
     }
+
+
     // Note: This method should be used only for initial authentication, and for testing purposes.
     /**
      * This method serves the banner authentication provider, by returning an unproxied connection that may be used
@@ -268,14 +271,21 @@ public class BannerDS implements DataSource {
     }
 
 
-    public void closeProxySession(BannerConnection conn, String proxiedUserName) {
+    public void closeProxySession(OracleConnection conn, String proxiedUserName) {
 
-        log.trace "${super.toString()}.closeProxySession() will close proxy session for $conn"
-
-        if (conn.extractOracleConnection().isProxySession()) {
-            conn.extractOracleConnection().close(OracleConnection.PROXY_SESSION)
+        log.trace "${super.toString()}.closeProxySession(OracleConnection) will close proxy session for $conn"
+        if (conn.isProxySession()) {
+            conn.close(OracleConnection.PROXY_SESSION)
         }
     }
+
+
+    public void closeProxySession(BannerConnection conn, String proxiedUserName) {
+
+        log.trace "${super.toString()}.closeProxySession(BannerConnection) will close proxy session for $conn"
+        closeProxySession(conn.extractOracleConnection(), proxiedUserName)
+    }
+
 
     // note: This method would be implemented within BannerConnection, however that is proxied when it is retrieved from the hibernate session
     /**
@@ -551,50 +561,67 @@ public class BannerDS implements DataSource {
         !FormContext.isSelfService()
     }
 
-    private setMep(conn, user) {
-        ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
-        multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
 
-        if (multiEntityProcessingService.isMEP(conn)) {
+    private MultiEntityProcessingService getMultiEntityProcessingService() {
+        if (!multiEntityProcessingService) {
+            ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+            multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
+        }
+        multiEntityProcessingService
+    }
+
+
+    private setMep(conn, user) {
+
+        if (getMultiEntityProcessingService().isMEP(conn)) {
             if (!user?.mepHomeContext) {
-                multiEntityProcessingService.setMepOnAccess(user?.oracleUserName.toString().toUpperCase(), conn)
-                user?.mepHomeContext = multiEntityProcessingService.getHomeContext(conn)
+                getMultiEntityProcessingService().setMepOnAccess(user?.oracleUserName.toString().toUpperCase(), conn)
+                user?.mepHomeContext = getMultiEntityProcessingService().getHomeContext(conn)
                 user?.mepProcessContext = user?.mepHomeContext
-                user?.mepHomeContextDescription = multiEntityProcessingService.getMepDescription(user?.mepHomeContext, conn)
-            } else {
-                multiEntityProcessingService.setHomeContext(user?.mepHomeContext, conn)
-                multiEntityProcessingService.setProcessContext(user?.mepProcessContext, conn)
-                user?.mepHomeContextDescription = multiEntityProcessingService.getMepDescription(user?.mepHomeContext, conn)
+                user?.mepHomeContextDescription = getMultiEntityProcessingService().getMepDescription(user?.mepHomeContext, conn)
+            }
+            else {
+                getMultiEntityProcessingService().setHomeContext(user?.mepHomeContext, conn)
+                getMultiEntityProcessingService().setProcessContext(user?.mepProcessContext, conn)
+                user?.mepHomeContextDescription = getMultiEntityProcessingService().getMepDescription(user?.mepHomeContext, conn)
             }
         }
     }
 
     private setMepSsb(conn) {
-        ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
-        multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
 
-        if (multiEntityProcessingService?.isMEP(conn)) {
-            def session = RequestContextHolder.currentRequestAttributes()?.request?.session
-            if (!session?.getAttribute("mep")) {
+        def session = RequestContextHolder.currentRequestAttributes()?.request?.session
+        def mepCode = session?.getAttribute("mep")
+
+        if (mepCode == "FORCE_MEPCODENOTFOUND" && Environment.current == Environment.TEST) {
+            log.warn "**** FORCING a MepCodeNotFoundException"
+            throw new MepCodeNotFoundException(mepCode: mepCode)
+        }
+
+        if (getMultiEntityProcessingService().isMEP(conn)) {
+
+            if (!mepCode) {
                 log.error "The Mep Code must be provided when running in multi institution context"
                 conn?.close()
-                throw new RuntimeException("The Mep Code must be provided when running in multi institution context")
+                throw new MepCodeNotFoundException(mepCode: "NO_MEP_CODE_PROVIDED")
             }
 
-            def desc = multiEntityProcessingService?.getMepDescription(session?.getAttribute("mep"), conn)
+            def desc = getMultiEntityProcessingService().getMepDescription(mepCode, conn)
 
             if (!desc) {
-                log.error "Mep Code is invalid"
                 conn?.close()
-                throw new RuntimeException("Mep Code is invalid")
-            } else {
+                // We'll throw a MepCodeNotFoundException so that a '404' error code will be
+                // specified when this is wrapped in an ApplicationException
+                log.error "Mep Code is invalid, will throw MepCodeNotFoundException"
+                throw new MepCodeNotFoundException(mepCode: mepCode)
+            }
+            else {
                 session.setAttribute("ssbMepDesc", desc)
-                multiEntityProcessingService?.setHomeContext(session?.getAttribute("mep"), conn)
-                multiEntityProcessingService?.setProcessContext(session?.getAttribute("mep"), conn)
+                getMultiEntityProcessingService().setHomeContext(mepCode, conn)
+                getMultiEntityProcessingService().setProcessContext(mepCode, conn)
             }
         }
     }
-
 
 }
 

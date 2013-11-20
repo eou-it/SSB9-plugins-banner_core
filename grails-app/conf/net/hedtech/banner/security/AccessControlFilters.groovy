@@ -1,6 +1,6 @@
-/*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+/* ****************************************************************************
+Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.security
 
 import org.apache.commons.logging.LogFactory
@@ -10,13 +10,13 @@ import org.springframework.web.context.request.RequestContextHolder
 
 
 /**
- * A grails filter used to establish a 'Form Context'.  
- * A FormContext is used to represent the Banner classic Oracle Form for which 
- * a request corresponds. By establishing a relationship between pages and 
- * Banner classic Oracle Forms, we can continue to leverage existing 
- * Banner security configuration.  Note this is only effective for URLs mapped to 
- * Controllers -- not Composers.  The FormContext for the ZK user interface 
- * is set by the sghe zk plugin. 
+ * A grails filter used to establish a 'Form Context'.
+ * A FormContext is used to represent the Banner classic Oracle Form for which
+ * a request corresponds. By establishing a relationship between pages and
+ * Banner classic Oracle Forms, we can continue to leverage existing
+ * Banner security configuration.  Note this is only effective for URLs mapped to
+ * Controllers -- not Composers.  The FormContext for the ZK user interface
+ * is set by the sghe zk plugin.
  **/
 class AccessControlFilters {
 
@@ -32,24 +32,25 @@ class AccessControlFilters {
         setFormContext( controller:'*', action:'*' ) {
 
             def theUrl
-                        
+
             before = {
 
                 if (params?.mepCode){
-                 RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep",params?.mepCode)
+                 RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep",params?.mepCode?.toUpperCase())
                 }
-                
+
                 Map formControllerMap = grailsApplication.config.formControllerMap
                 def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
-                
+
                 if (!associatedFormsList?.contains( "SELFSERVICE" )) {
-                    theUrl = RCH.currentRequestAttributes().request.forwardURI  // This shows the 'real' URL versus request.getRequestURI(), which shows the '.dispatch'
+                    // Get the 'real' URL (versus request.getRequestURI() which shows the '.dispatch')
+                    theUrl = RCH.currentRequestAttributes().request.forwardURI
                     if ("$theUrl" =~ /ssb/) {
                         associatedFormsList?.add( 0, "SELFSERVICE" )
                     }
                 }
-                
-                dlog.debug "AccessControlFilters.setFormContext 'before filter' for URL $theUrl will set a FormContext with ${associatedFormsList?.size()} forms. (controller=$controllerName and action=$actionName). "              
+
+                dlog.debug "AccessControlFilters.setFormContext 'before filter' for URL $theUrl will set a FormContext with ${associatedFormsList?.size()} forms. (controller=$controllerName and action=$actionName). "
                 FormContext.set( associatedFormsList )
             }
 

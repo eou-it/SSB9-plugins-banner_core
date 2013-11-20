@@ -220,7 +220,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
                                       credentials:    authentication.credentials, 
                                       oracleUserName: authentication.name,
                                       valid:          true ].withDefault { k -> false }
-            log.trace "BannerAuthenticationProvider.defaultAuthentication successfully authenticated user ${authentication.name} and will return $authenticationResults"
+            log.trace "BannerAuthenticationProvider.defaultAuthentication successfully authenticated user ${authentication.name} and will return authenticationResults[name:${authentication.name},credentials:{PROTECTED},oracleUserName:${authentication.name},valid:true]"
             authenticationResults
         }
         catch (SQLException e) {

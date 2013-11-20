@@ -2,7 +2,7 @@
 
 modules = {
    'jqueryForBannerCore' {
-       defaultBundle environment == "development" ? false : "jquery-banner-core"
+       defaultBundle environment == "development" ? false : "jqueryForBannerCore"
        resource url:[plugin: 'banner-core', file: 'js/jquery/jquery-1.4.2.js'], disposition: 'head'
    }
 }
