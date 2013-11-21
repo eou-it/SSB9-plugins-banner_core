@@ -170,6 +170,8 @@ LOG IN
 }
 
 .forgotPasswordDiv {
-    left: -244px;
-    top: 22px;
+    top:240px !important;
+    left:161px !important;
+    position:absolute !important;
+
 }

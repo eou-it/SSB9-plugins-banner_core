@@ -42,8 +42,9 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
     <div id="userNameTxt" style="display: none;">User Name</div>
     <div id="passwordTxt" style="display: none;">Password</div>
 
-    <div class="logIn">
+
       <form action='${postUrl}' method='POST' id='loginForm'>
+          <div class="logIn">
 		<div class="textfield-wrapper">
             <g:if test='${userNameRequired}'>
 				<div class="userName-error-state"><span><input type='text'  name='j_username' id='j_username' aria-labelledby='userNameTxt' aria-describedby='loginMsg'/></span></div>
@@ -58,12 +59,14 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 				<div class="password"><span><input type='password' name='j_password' id='j_password' autocomplete="off" aria-labelledby='passwordTxt'/></span></div>
 			</g:else>
 			<div class="signin-button-wrapper"><input type='submit' value="${message(code: 'net.hedtech.banner.login.signin', default: 'Sign In')}" id="sign-in-btn" height="32px"  onclick="submitForm()" class="signin-button"/></div>
-            <g:if test="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.reset.enabled == true || org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.guest.reset.enabled == true}">
-                <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" class="forgotpassword"> ${message(code: 'net.hedtech.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')} </a></div>
-            </g:if>
+
 		</div>
+          </div>
+          <g:if test="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.reset.enabled == true || org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.guest.reset.enabled == true}">
+              <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" class="forgotpassword"> ${message(code: 'net.hedtech.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')} </a></div>
+          </g:if>
       </form>
-	</div>
+
 	<div class="copyright">
 		<p>&copy; <g:message code="net.hedtech.banner.login.copyright1"/></p>
 		<p><g:message code="net.hedtech.banner.login.copyright2"/></p>
