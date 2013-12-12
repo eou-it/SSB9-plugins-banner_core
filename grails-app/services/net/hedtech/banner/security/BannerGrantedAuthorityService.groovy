@@ -20,6 +20,8 @@ class BannerGrantedAuthorityService {
 
     private final Logger log = Logger.getLogger(getClass())
     private static final Logger staticLogger = Logger.getLogger(BannerGrantedAuthorityService.class)
+    private static final String WEB_USER = "WEBUSER"
+    private static final String ANONYMOUS_USER = "anonymousUser"
 
     /**
      *
@@ -44,23 +46,24 @@ class BannerGrantedAuthorityService {
 
     public static List getSelfServiceUserRole() {
         def user = getUser()
-        List roles = null
+        List roles = new ArrayList();
         if (user instanceof BannerUser) {
-            roles = new ArrayList();
             Set authorities = user?.authorities
             if(authorities){
-            authorities.each { BannerGrantedAuthority bannerGrantedAuthority ->
-                String role = bannerGrantedAuthority.getAssignedSelfServiceRole()
-                roles << role
+                authorities.each { BannerGrantedAuthority bannerGrantedAuthority ->
+                    String role = bannerGrantedAuthority.getAssignedSelfServiceRole()
+                    roles << role
+                }
             }
-            }
+        } else if(user instanceof String && user == ANONYMOUS_USER) {
+            roles << WEB_USER
         }
         roles
     }
 
     /**
      * This is to pull the authorities from DB for the signed-in user.
-     *
+     *                                                                                  a
      * We query the database for all role assignments for the user, using an unproxied connection.
      * The Banner roles are converted to an 'acegi friendly' format: e.g., ROLE_{FORM-OBJECT}_{BANNER_ROLE}*
      * @param authenticationResults - a map prepared out from the Authentication object
