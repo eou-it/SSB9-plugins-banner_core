@@ -164,7 +164,7 @@ class QueryBuilder {
 
         def filtered = createFilters(map)
 
-        def hqlBuilderOperators = ["eq": Operators.EQUALS, "lt": Operators.LESS_THAN, "gt": Operators.GREATER_THAN]
+        def hqlBuilderOperators = ["eq": Operators.EQUALS, "lt": Operators.LESS_THAN, "gt": Operators.GREATER_THAN, "le": Operators.LESS_THAN_EQUALS, "ge": Operators.GREATER_THAN_EQUALS]
 
         // Prepare each restfulApi filter (putting it into maps for DynamicFinder)
         filtered.each {
