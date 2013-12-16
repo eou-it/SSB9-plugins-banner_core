@@ -39,11 +39,11 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
-
+import net.hedtech.banner.web.SsbURLRequest
 
 /**
  * A Grails Plugin supporting cross cutting concerns.
- **/
+ * */
 class BannerCoreGrailsPlugin {
 
     String version = "2.5.1"
@@ -52,8 +52,8 @@ class BannerCoreGrailsPlugin {
     def grailsVersion = "2.2.1 > *"
 
     // the other plugins this plugin depends on
-    def dependsOn = [ 'springSecurityCore': '1.2.7.3',
-                    ]
+    def dependsOn = ['springSecurityCore': '1.2.7.3',
+    ]
 
     // resources that are excluded from plugin packaging
     def pluginExcludes = ["grails-app/views/error.gsp"]
@@ -107,7 +107,7 @@ class BannerCoreGrailsPlugin {
                         username = "${CH.config.bannerSsbDataSource.username}"
                     }
 
-                 }
+                }
                 break
         }
 
@@ -125,7 +125,7 @@ class BannerCoreGrailsPlugin {
             dataSource = ref(dataSource)
         }
 
-        userAuthorityService( BannerGrantedAuthorityService ) { bean ->
+        userAuthorityService(BannerGrantedAuthorityService) { bean ->
         }
 
         multiEntityProcessingService(MultiEntityProcessingService) { bean ->
@@ -212,6 +212,9 @@ class BannerCoreGrailsPlugin {
             sessionFactory = ref(sessionFactory)
         }
 
+        ssbURLRequest(SsbURLRequest) {
+
+        }
 
         // ---------------- JMX Mbeans (incl. Logging) ----------------
 
@@ -234,7 +237,7 @@ class BannerCoreGrailsPlugin {
         }
 
         // Switch to grails.util.Holders in Grails 2.x
-        if( !CH.config.privacy?.codes ) {
+        if (!CH.config.privacy?.codes) {
             // Populate with default privacy policy codes
             CH.config.privacy.codes = "INT NAV UNI"
         }
@@ -265,7 +268,6 @@ class BannerCoreGrailsPlugin {
             return delegate.replace("\n", "").replaceAll(/  */, " ")
         }
     }
-
 
     // Register Hibernate event listeners.
     def doWithApplicationContext = { applicationContext ->

@@ -11,11 +11,16 @@ class SsbURLRequest {
 
     public String getControllerNameFromPath(String url) {
         if (url != null && url.contains(SSB_BASE_URL)) {
-            url = url.substring(url.indexOf(SSB_BASE_URL) + SSB_BASE_URL.length() + RELATIVE_SLASH_INDEX);
-            if (url.contains(SLASH)) {
-                url = url.substring(0, url.indexOf(SLASH))
+            int ssbBaseUrlIndex = url.indexOf(SSB_BASE_URL)
+            int ssbBaseUrlLength = SSB_BASE_URL.length()
+            String controllerName = url.substring(ssbBaseUrlIndex + ssbBaseUrlLength + RELATIVE_SLASH_INDEX);
+            if (controllerName.contains(SLASH)) {
+                controllerName = controllerName.substring(0, controllerName.indexOf(SLASH))
             }
+            return controllerName
         }
-        return url
+        else {
+            return url
+        }
     }
 }
