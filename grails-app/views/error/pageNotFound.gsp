@@ -23,7 +23,9 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
         </div>
     </div>
     <div class="errorBackButton">
-        <input type="button" value="${g.message(code:'net.hedtech.banner.errors.serverError.backToHomeButton.label')}" class="secondary-button" onclick="javascript:window.location='./banner.zul?page=mainPage';"/>
+    <g:link uri="{returnHomeLinkAddress}">
+        <input type="button" value="${g.message(code:'net.hedtech.banner.errors.serverError.backToHomeButton.label')}" class="secondary-button" />
+    </g:link>
     </div>
 </div>
 </body>
