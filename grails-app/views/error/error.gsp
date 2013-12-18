@@ -3,7 +3,7 @@
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
-<%@ page import="org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils" contentType="text/html;charset=UTF-8" defaultCodec="none" %>
+<%@ page contentType="text/html;charset=UTF-8" defaultCodec="none" %>
 <% request.getSession().invalidate() %>
 
 <html>
