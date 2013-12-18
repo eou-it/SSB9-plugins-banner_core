@@ -31,7 +31,7 @@ class SsbURLRequestTests {
     void testControllerNameFromPathWithoutSsbUrl() {
         SsbURLRequest ssbURLRequest = new SsbURLRequest()
         String controllerName = ssbURLRequest.getControllerNameFromPath(PATH_WITHOUT_SSB_URL)
-        assertEquals(EMPTY_STRING, controllerName)
+        assertEquals(PATH_WITHOUT_SSB_URL, controllerName)
     }
 
     void testControllerNameWithEmptyPath() {

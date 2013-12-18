@@ -21,7 +21,7 @@ class SsbURLRequest {
             return controllerName
         }
         else {
-            return EMPTY_STRING
+            return url
         }
     }
 }
