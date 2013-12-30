@@ -291,7 +291,7 @@ INPUT[type="submit"]:hover
 }
 
 .forgotPasswordDiv{
-    left: 189px;
-    position: relative;
-    top: -9px;
+    left: 453px;
+    position: absolute;
+    top: 246px;
 }
