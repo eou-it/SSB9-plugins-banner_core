@@ -39,7 +39,6 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
-import net.hedtech.banner.web.SsbURLRequest
 
 /**
  * A Grails Plugin supporting cross cutting concerns.
@@ -210,10 +209,6 @@ class BannerCoreGrailsPlugin {
             dataSource = ref(dataSource)
             authenticationDataSource = ref(authenticationDataSource)
             sessionFactory = ref(sessionFactory)
-        }
-
-        ssbURLRequest(SsbURLRequest) {
-
         }
 
         // ---------------- JMX Mbeans (incl. Logging) ----------------
