@@ -63,7 +63,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 		</div>
           </div>
           <g:if test="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.reset.enabled == true || org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.guest.reset.enabled == true}">
-              <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" class="forgotpassword"> ${message(code: 'net.hedtech.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')} </a></div>
+              <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" id="forgotpasswordLink" class="forgotpassword"> ${message(code: 'net.hedtech.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')} </a></div>
           </g:if>
       </form>
 
@@ -80,6 +80,19 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 		if (isIe() && (getIEDocMode() < 8)) {
             document.getElementById("ieWarningMessage").style.visibility = "visible";
 		}
+
+        var anchorLink = document.getElementById("forgotpasswordLink");
+        if (anchorLink != undefined) {
+            anchorLink.onkeypress = function (evt) {
+                evt = evt || window.event;
+                if (evt.which == 32) {
+                    anchorLink.click();
+                }
+                if (evt.which == 13) {
+                    anchorLink.click();
+                }
+            }
+        }
 	})();
 
 	function isIe() {
