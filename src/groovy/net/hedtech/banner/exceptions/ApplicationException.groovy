@@ -179,6 +179,10 @@ class ApplicationException extends RuntimeException {
                 if (wrappedException.getMessage().contains( 'transaction timeout' )) {
                     name = 'TransactionTimeoutException'
                 }
+            }  else if (name == 'RuntimeException') {
+                if (wrappedException.getMessage().contains( 'BusinessLogicValidationException' )) {
+                    name = 'BusinessLogicValidationException'
+                }
             }
             friendlyName = name
         }
@@ -525,7 +529,18 @@ class ApplicationException extends RuntimeException {
                                 ]
                             }
                         }
-        ]
+        ] ,
+        'BusinessLogicValidationException': [
+             httpStatusCode: 400,
+             returnMap:  { localize ->
+                 def rcp = getResourceCodeAndParams( wrappedException.message )
+                  [
+                       headers: ['X-Status-Reason':'Validation Failed'],
+                       message: translate( localize: localize,  code: rcp.resourceCode,    args: rcp.bindingParams ) as String,
+                       errors: null
+                  ]
+             }
+        ],
     ]
 
 
