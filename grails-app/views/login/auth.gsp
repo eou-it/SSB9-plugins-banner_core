@@ -74,58 +74,63 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 </div>
 
 <script type='text/javascript'>
-	(function(){
-		document.forms['loginForm'].elements['j_username'].focus();
+    (function () {
+        var SPACE_KEY = 32;
+        var ENTER_KEY = 13;
+        document.forms['loginForm'].elements['j_username'].focus();
 
-		if (isIe() && (getIEDocMode() < 8)) {
+        if (isIe() && (getIEDocMode() < 8)) {
             document.getElementById("ieWarningMessage").style.visibility = "visible";
-		}
+        }
+        initializeHandlersForForgotPasswordLink();
+    })();
 
+    function isIe() {
+        return (navigator.appName == 'Microsoft Internet Explorer');
+    }
+
+    function getIEDocMode() {
+        // If we are in IE 8 (any mode) or previous versions of IE,
+        // we check for the documentMode or compatMode for pre 8 versions
+        return (document.documentMode)
+                ? document.documentMode
+                : (document.compatMode && document.compatMode == "CSS1Compat")
+                ? 7
+                : 5; // default to quirks mode IE5
+    }
+
+    function openWindow() {
+    <g:set var="onLineHelpUrl" value="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.onLineHelp.url}" />
+
+        window.open("${onLineHelpUrl}?productName=general&formName=login", '_blank');
+        return false;
+    }
+
+    function gotoForgotPassword() {
+        var form = document.getElementById('loginForm');
+        form.action = '${forgotPasswordUrl}';
+        form.submit();
+    }
+
+    function submitForm() {
+        var form = document.getElementById('loginForm');
+        form.action = '${postUrl}';
+        form.submit();
+    }
+
+    function initializeHandlersForForgotPasswordLink() {
         var anchorLink = document.getElementById("forgotpasswordLink");
         if (anchorLink != undefined) {
             anchorLink.onkeypress = function (evt) {
                 evt = evt || window.event;
-                if (evt.which == 32) {
-                    anchorLink.click();
+                if (evt.which == SPACE_KEY) {
+                    gotoForgotPassword();
                 }
-                if (evt.which == 13) {
-                    anchorLink.click();
+                if (evt.which == ENTER_KEY) {
+                    gotoForgotPassword();
                 }
             }
         }
-	})();
-
-	function isIe() {
-	    return (navigator.appName == 'Microsoft Internet Explorer');
-	}
-
-	function getIEDocMode() {
-	    // If we are in IE 8 (any mode) or previous versions of IE,
-	    // we check for the documentMode or compatMode for pre 8 versions
-	    return (document.documentMode)
-		? document.documentMode
-		: (document.compatMode && document.compatMode == "CSS1Compat")
-		    ? 7
-		    : 5; // default to quirks mode IE5
-	}
-
-    function openWindow() {
-	<g:set var="onLineHelpUrl" value="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.onLineHelp.url}" />
-
-        window.open("${onLineHelpUrl}?productName=general&formName=login" , '_blank');
-        return false;
-    }
-
-	function gotoForgotPassword(){
-         var form = document.getElementById('loginForm');
-         form.action = '${forgotPasswordUrl}';
-         form.submit();
-    }
-
-    function submitForm(){
-      var form = document.getElementById('loginForm');
-         form.action = '${postUrl}';
-         form.submit();
     }
 </script>
 </body>
