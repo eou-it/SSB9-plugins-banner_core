@@ -70,13 +70,11 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 	<div class="copyright">
 		<p>&copy; <g:message code="net.hedtech.banner.login.copyright1"/></p>
 		<p><g:message code="net.hedtech.banner.login.copyright2"/></p>
-	</div>
+    </div>
 </div>
 
 <script type='text/javascript'>
     (function () {
-        var SPACE_KEY = 32;
-        var ENTER_KEY = 13;
         document.forms['loginForm'].elements['j_username'].focus();
 
         if (isIe() && (getIEDocMode() < 8)) {
@@ -119,14 +117,13 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
     }
 
     function initializeHandlersForForgotPasswordLink() {
+        var SPACE_KEY = 32;
+        var ENTER_KEY = 13;
         var anchorLink = document.getElementById("forgotpasswordLink");
         if (anchorLink != undefined) {
             anchorLink.onkeypress = function (evt) {
                 evt = evt || window.event;
-                if (evt.which == SPACE_KEY) {
-                    gotoForgotPassword();
-                }
-                if (evt.which == ENTER_KEY) {
+                if (evt.which == SPACE_KEY || evt.which == ENTER_KEY) {
                     gotoForgotPassword();
                 }
             }
