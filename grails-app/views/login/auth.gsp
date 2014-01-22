@@ -17,7 +17,6 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
     <link href="fix-ie7.css" rel="stylesheet" type="text/css" />
 
 <![endif]-->
-    <link href="fix-ie7.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body class="pageBg">
