@@ -2,160 +2,141 @@
  Copyright 2014 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 body {
-	margin:0px;
-	padding:0px;
-	font:normal 100% Arial, Helvetica, sans-serif;
+    margin: 0px;
+    padding: 0px;
+    font: normal 100% Arial, Helvetica, sans-serif;
 }
 
-#test{}
+#test {
+}
 
 /*-----------------------------------------------------------
 LOG IN
 -----------------------------------------------------------*/
 .pageBg {
-	background:#4C8DB5 url(../images/page-bg.png) repeat-x 0 0;
+    background: #4C8DB5 url(../images/page-bg.png) repeat-x 0 0;
 }
 
 .splashBg {
-	background:url(../images/splash-bg-light-rtl.png) no-repeat 0 0;
-	height:438px;
-	width:735px;
-	margin:140px auto 0px;
+    background: url(../images/splash-bg-light-rtl.png) no-repeat 0 0;
+    height: 438px;
+    width: 735px;
+    margin: 140px auto 0px;
 }
 
 .splashBg .appName {
-	color:#FFF;
-	text-align:left;
-	margin:0px 0px 0px 50px;
-	padding-top:24px;
-	font-size:1.4em;
-	font-weight:bold;
+    color: #FFF;
+    text-align: left;
+    margin: 0px 0px 0px 50px;
+    padding-top: 24px;
+    font-size: 1.4em;
+    font-weight: bold;
     top: 65px;
     right: auto;
 }
 
 .splashBg .logIn {
-	margin: 53px 0px 0px 25px;
-	float:none;
+    margin: 53px 0px 0px 25px;
+    float: none;
 }
 
 .splashBg .logIn div {
-	float:right;
+    float: right;
     margin-left: 8px;
 }
 
 .splashBg div span input {
-	width:121px;
-	outline:none;
-	border-style:none;
-	border:0;
-	margin-left: -16px;
-	direction: rtl;
-	padding:0;
+    width: 121px;
+    outline: none;
+    border-style: none;
+    border: 0;
+    margin-left: -16px;
+    direction: rtl;
+    padding: 0;
     padding-right: 2px;
-	margin:3px 0 0 -17px;
+    margin: 3px 0 0 -17px;
 }
 
 .splashBg .userName {
-	background:url(../images/textbox-sprites-rtl.png) no-repeat left -27px;
-	padding:0px 0px 0px 20px;
-	margin-right:0px;
-	height:23px;
-	width:125px;
-	/*position: relative;*/
-	left: 290px;
+    background: url(../images/textbox-sprites-rtl.png) no-repeat left -27px;
+    padding: 0px 0px 0px 20px;
+    margin-right: 0px;
+    height: 23px;
+    width: 125px;
+    left: 290px;
 }
 
 .splashBg .userName span {
-	display:block;
-	background:url(../images/textbox-sprites-rtl.png) no-repeat right -27px;
-	padding-right:10px;
-	height:23px;
+    display: block;
+    background: url(../images/textbox-sprites-rtl.png) no-repeat right -27px;
+    padding-right: 10px;
+    height: 23px;
 }
 
 .splashBg .password {
-	background:url(../images/textbox-sprites-rtl.png) no-repeat left 0;
-	padding:0px 0px 0px 20px;
-	margin-right:0px;
-	height:23px;
-	width:125px;
-	/*position: relative;*/
-	left: -7px;
+    background: url(../images/textbox-sprites-rtl.png) no-repeat left 0;
+    padding: 0px 0px 0px 20px;
+    margin-right: 0px;
+    height: 23px;
+    width: 125px;
+    left: -7px;
 }
 
 .splashBg .password span {
-	display:block;
-	background:url(../images/textbox-sprites-rtl.png) no-repeat right 0;
-	padding-right:10px;
-	height:23px;
+    display: block;
+    background: url(../images/textbox-sprites-rtl.png) no-repeat right 0;
+    padding-right: 10px;
+    height: 23px;
 }
 
 .splashBg .userName-error-state {
-	background:url(../images/textbox-sprites-rtl.png) no-repeat left -81px;
-	padding:0px 0px 0px 20px;
-	margin-right:0px;
-	height:23px;
-	width:125px;
-	/*position: relative;*/
-	left: 290px;
+    background: url(../images/textbox-sprites-rtl.png) no-repeat left -81px;
+    padding: 0px 0px 0px 20px;
+    margin-right: 0px;
+    height: 23px;
+    width: 125px;
+    left: 290px;
 }
 
 .splashBg .userName-error-state span {
-	display:block;
-	background:url(../images/textbox-sprites-rtl.png) no-repeat right -81px;
-	padding-right:10px;
-	height:23px;
+    display: block;
+    background: url(../images/textbox-sprites-rtl.png) no-repeat right -81px;
+    padding-right: 10px;
+    height: 23px;
 }
 
 .splashBg .password-error-state {
-	background:url(../images/textbox-sprites-rtl.png) no-repeat left -54px;
-	padding:0px 0px 0px 20px;
-	margin-right:0px;
-	height:23px;
-	width:125px;
-	/*position: relative;*/
-	left: -7px;
+    background: url(../images/textbox-sprites-rtl.png) no-repeat left -54px;
+    padding: 0px 0px 0px 20px;
+    margin-right: 0px;
+    height: 23px;
+    width: 125px;
+    left: -7px;
 }
 
 .splashBg .password-error-state span {
-	display:block;
-	background:url(../images/textbox-sprites-rtl.png) no-repeat right -54px;
-	padding-right:10px;
-	height:23px;
+    display: block;
+    background: url(../images/textbox-sprites-rtl.png) no-repeat right -54px;
+    padding-right: 10px;
+    height: 23px;
 }
-/*
-.splashBg a:link, .splashBg a:visited, .splashBg .submit-button {
 
-	background:url(../images/login-button-bg.png) no-repeat 0 0;
-	display:block;
-	width:77px;
-	height:31px;
-	text-align:center;
-	color:#FFF;
-	text-decoration:none;
-	padding-top:8px;
-	font-size:0.75em;
-	font-weight:bold;
-	position:relative;
-	top:-4px;
-}
-*/
 .splashBg .copyright {
-	clear:both;
-	margin:0px 100px 0px 50px;
-	font-size:0.75em;
-	color:#FFF;
-	padding-top:33px;
-	text-align: right;
+    clear: both;
+    margin: 0px 100px 0px 50px;
+    font-size: 0.75em;
+    color: #FFF;
+    padding-top: 33px;
+    text-align: right;
     top: 250px;
 }
 
 .loginMsg {
-	text-align:left;
-	color:#FFF;
-	padding-top:20px;
-	margin-left:50px;
-	background-image:url(../images/icon-error-16x16.png) left top no-repeat;
+    text-align: left;
+    color: #FFF;
+    padding-top: 20px;
+    margin-left: 50px;
+    background-image: url(../images/icon-error-16x16.png) left top no-repeat;
     top: 114px;
     right: auto;
 }
@@ -164,14 +145,11 @@ LOG IN
     left: -269px;
     font-size: 1.1em;
     padding: 0.15em 0.5em;
-   /* position: relative;*/
 }
 
 .signin-button-wrapper {
     bottom: 0.25em;
-    /*position: relative;*/
 }
-
 
 .forgotPasswordDiv {
     top: 240px;
