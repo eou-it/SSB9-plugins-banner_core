@@ -4,19 +4,16 @@ class DateQueryBuilder {
     StringBuilder stringBuilder
     public DateQueryBuilder() {
         stringBuilder = new StringBuilder()
+        stringBuilder.append(" ( ")
     }
     public void append(String str) {
         stringBuilder.append(str);
     }
 
     public void appendDateSupport(String str) {
-        stringBuilder.append("(trunc(")
+        stringBuilder.append("(TO_DATE(trunc(")
         stringBuilder.append(str)
-        stringBuilder.append("))")
-
-        /*stringBuilder.append("(trunc(")
-        stringBuilder.append(str)
-        stringBuilder.append("))")*/
+        stringBuilder.append(")))")
     }
 
 
@@ -27,6 +24,6 @@ class DateQueryBuilder {
     }
 
     public String toString() {
-        return stringBuilder.toString();
+        return stringBuilder.append(" ) ").toString();
     }
 }
