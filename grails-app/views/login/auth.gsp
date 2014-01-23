@@ -13,10 +13,6 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login.css')}"/>
     </g:if>
-<!--[if IE 7]>
-    <link href="fix-ie7.css" rel="stylesheet" type="text/css" />
-
-<![endif]-->
 </head>
 
 <body class="pageBg">
