@@ -1,3 +1,6 @@
+/*******************************************************************************
+ Copyright 2013-2014 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.query.criteria
 
 class DateQueryBuilder {

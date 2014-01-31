@@ -1,3 +1,6 @@
+/*******************************************************************************
+ Copyright 2013-2014 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.query.operators
 
 import net.hedtech.banner.query.criteria.CriteriaData
@@ -11,14 +14,14 @@ class LessThanOrIsNullOperator extends CriteriaOperator {
     }
 
     public String getQueryString(CriteriaData data) {
-       if(data.params && data.params.size() > 0) {
-           CriteriaParam param = data.params.get(0);
+        if(data.params && data.params.size() > 0) {
+            CriteriaParam param = data.params.get(0);
 
-           if(param.data instanceof Date) {
-              return new DateLessThanOrIsNullOperator().getQueryString(data)
-           }
-           return "( ${data.tableAlias}.${data.tableBindingAttribute} < :${data.paramKey} OR ${data.tableAlias}.${data.tableBindingAttribute} IS NULL)"
-       }
-       return ""
+            if(param.data instanceof Date) {
+                return new DateLessThanOrIsNullOperator().getQueryString(data)
+            }
+            return "( ${data.tableAlias}.${data.tableBindingAttribute} < :${data.paramKey} OR ${data.tableAlias}.${data.tableBindingAttribute} IS NULL)"
+        }
+        return ""
     }
 }
