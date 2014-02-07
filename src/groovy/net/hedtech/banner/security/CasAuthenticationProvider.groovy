@@ -128,7 +128,9 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
         def oracleUserName
         def pidm
         def spridenId
-        def authenticationResults  
+        def authenticationResults
+        String accountStatus
+
         try {
             log.trace "CasAuthenticationProvider.casAuthentication mapping for $CH?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue"
             // Determine if they map to a Banner Admin user
@@ -139,7 +141,20 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
                 pidm = row.gobeacc_pidm
             }
             if ( oracleUserName ) {
-                authenticationResults = [ name: oracleUserName, pidm: pidm, oracleUserName: oracleUserName, valid: true ].withDefault { k -> false } 
+
+                // check if the oracle user account is locked
+
+                def sqlStatement1 = '''select account_status,lock_date from dba_users where username=?'''
+                db.eachRow( sqlStatement1, [oracleUserName.toUpperCase()] ) { row ->
+                    accountStatus = row.account_status
+                }
+                if ( accountStatus.contains("LOCKED")) {
+                    authenticationResults = [locked : true]
+                } else if ( accountStatus.contains("EXPIRED")) {
+                    authenticationResults = [expired : true]
+                } else {
+                    authenticationResults = [ name: oracleUserName, pidm: pidm, oracleUserName: oracleUserName, valid: true ].withDefault { k -> false }
+                }
             } else {
                 // Not an Admin user, must map to a self service user
                 def sqlStatement2 = '''SELECT spriden_id, gobumap_pidm FROM gobumap,spriden WHERE spriden_pidm = gobumap_pidm AND spriden_change_ind is null AND gobumap_udc_id = ?'''
@@ -147,7 +162,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
                     spridenId = row.spriden_id
                     pidm = row.gobumap_pidm
                 }
-                authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: null ].withDefault { k -> false } 
+                authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: null ].withDefault { k -> false }
             }
         } catch (SQLException e) {
             log.error "CasAuthenticationProvider not able to map $CH?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue to db user"

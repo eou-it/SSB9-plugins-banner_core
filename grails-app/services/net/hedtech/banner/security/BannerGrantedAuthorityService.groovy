@@ -85,7 +85,7 @@ class BannerGrantedAuthorityService {
             String query = """
 	                select GOVUROL_OBJECT, GOVUROL_ROLE from govurol,gubobjs
 	                    where govurol_userid = ? and
-	                        (govurol_object = gubobjs_name and (gubobjs_ui_version in ('A','C') OR gubobjs_name in ('GUAGMNU')) )"""
+	                        (govurol_object = gubobjs_name and ( gubobjs_ui_version in ('A','C','D','E') OR gubobjs_name in ('GUAGMNU')) )"""
             sqlObject.eachRow(query, [oracleUserName.toUpperCase()]) { row ->
                 /**
                  * Performance Tuning - Removed Select * since fetching role password is very expensive.

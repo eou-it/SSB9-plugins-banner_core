@@ -5,6 +5,7 @@ package net.hedtech.banner.session
 
 import net.hedtech.banner.SpringContextUtils
 import net.hedtech.banner.security.FormContext
+import net.hedtech.banner.utility.GeneralMenu
 import org.apache.log4j.Logger
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -225,7 +226,14 @@ abstract class BannerUserSessionManager {
     public String appendRequestParameters(parameters, String mainString) {
         def parameterString = mapToString(parameters, "&")
         if (parameterString) {
-            mainString += "?" + parameterString + "\";"
+            mainString += "?" + parameterString
+        }
+        if (GeneralMenu.isEnabled()){
+            if (mainString.contains("?")) {
+                mainString += "&GeneralMenu=true"
+            } else {
+                mainString += "?GeneralMenu=true"
+            }
         }
         return mainString
     }

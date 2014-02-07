@@ -446,3 +446,10 @@ Some domain models are modified within the database, which results in the persis
 @DatabaseModifiesState
 class MyModel implements Serializable {
 ```
+###5. Database changes
+
+Following permissions need to be granted to the banproxy user for checking if the logged in user account is locked or expired when the same user logs in through CAS.
+
+    GRANT SELECT ON DBA_USERS TO banproxy
+
+The above sql can be run by any dba user like sysdba.
