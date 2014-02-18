@@ -1,28 +1,28 @@
 <!-- ********************************************************************
-     Copyright 2013 Ellucian Company L.P. and its affiliates.
+     Copyright 2013-2014 Ellucian Company L.P. and its affiliates.
 ******************************************************************** -->
 
-#Banner Core plugin documentation
+#Banner Core Grails Plugin
 
-####Status
+##Status
 Production quality, although subsequent changes may not be backward compatible.  Remember to include this software in export compliance reviews when shipping a solution that uses this plugin.
 
-####Overview
-This plugin adds Spring Security (aka Acegi) and a custom DataSource implementation (BannerDataSource) that together provide for authentication and authorization based upon Banner Security configuration. This plugin also provides additional framework support (e.g., injecting CRUD methods into services, providing base test classes) to facilitate development of Banner web applications. Lastly, this plugin provides additional Banner 'general' support including Supplemental Data Engine (SDE) and Multi-Entity Processing (MEP).
+##TL;DR
+This plugin adds Spring Security (aka Acegi) and a custom DataSource implementation (BannerDS) that together provide for authentication and authorization based upon Banner Security configuration. This plugin also provides additional framework support (e.g., providing a base class (ServiceBase) for transactional services and providing base test classes) to facilitate development of Banner web applications. Lastly, this plugin provides additional Banner 'general' support including Supplemental Data Engine (SDE) and Multi-Entity Processing (MEP).
 
 Key features provided by the plugin include:
 
 * Configuring Spring Security for authentication (form-based, CAS, external) and authorization (based upon the existing Banner 8 security model)
-* A specialized 'Datasource' that proxies connections for the logged in user, so that Oracle FGAC remains effective. Administrative user connections are cached for the duration of the user's session.
-* A filter that sets a 'FormContext' corresponding to a legacy Banner Form, based upon the URI requested and a 'formControllerMap' witin Config.groovy.  This is used to so that only the applicable roles are unlocked on the connection.
-* A special 'ROLE_DETERMINED_DYNAMICALLY' role that grants access if the logged in user has any roles (other than those ending with '_Q' and '_CONNECT') that pertain to the FormContext associated to the URI
-* A base class for services that provides default CRUD implementations.
+* A specialized 'Datasource' that will proxy a database connection for an authenticated, administrative user.  This is done so Oracle FGAC remains effective even when connections are managed in a shared pool. Note that administrative user connections are cached for the duration of the user's HTTP session.
+* A filter that sets a 'FormContext' which identifies a corresponding Banner Oracle Form for the current request. This is based upon a 'formControllerMap' map within Config.groovy and is used to ensure only applicable roles are unlocked on the connection during the request.
+* A special 'ROLE_DETERMINED_DYNAMICALLY' Spring Security role that is used to grant access if the logged in user has any roles (other than those ending with '_Q' and '_CONNECT') that pertain to the FormContext associated to the URI.
+* A base class for transactional services, which provides default CRUD implementations and pre/post hook methods that may be overriden in subclasses to perform additional work (e.g., cross-domain validation).
 * Base classes for integration and functional tests that facilitate testing of exceptions, logging in and out, etc.
 
 #Installation and quickstart
 The recommended approach is to install the plugin as a git submodule.
 
-###Add Git submodule
+##Add Git submodule
 To add the plugin as a Git submodule under a 'plugins' directory:
 
         $ git submodule add ssh://git@devgit1/banner/plugins/banner_core.git plugins/banner_core.git
@@ -45,7 +45,7 @@ Note that adding the plugin this way will the latest commit on the master branch
 Don't forget to go back to your project root and commit the change, as this will establish your project's git submodule dependency to the desired commit of the plugin.
 
 
-###2. Configure plugin dependencies
+##2. Configure plugin dependencies
 The plugin depends on spring-security-cas, banner-codenarc, and i18n-core plugins.  These dependencies are configured in BuildConfig.groovy and are expected to be 'sibling' git submodule dependencies for your project.  That is, it is the containing project's responsibility to ensure these plugin dependencies are available on the file system.  If you adopt a different approach, you will need to modify the location of these dependencies by editing BuildConfig.groovy:
 
         grails.plugin.location.'spring-security-cas' = "../spring_security_cas.git"
@@ -182,7 +182,9 @@ The mappings below are usually added to support Banner XE administrative applica
     "/index.gsp"(view:"/index")
 
 #####For RESTful APIs:
-The mappings below are usually added alongside those supporting admin and or SSB, when exposing RESTful APIs using the 'restful-api' Grails plugin. Note that support for these mappings requires both the restful-api plugin and the banner-restful-api-support plugins to be added as Git submodules to your project. _(These mappings are not supported directly by banner-core, but are included here as incorporating RESTful APIs is common across Banner XE applications.)_
+The mappings below are usually added alongside those supporting admin and or SSB, when exposing RESTful APIs using the ['restful-api' Grails plugin](http://grails.org/plugin/restful-api) ([GitHub](https://github.com/restfulapi/restful-api)).
+
+Note that support for these mappings requires use of both the open source restful-api plugin and the Ellucian banner-restful-api-support plugin. _(These mappings are not supported directly by banner-core, but are included here as incorporating RESTful APIs is common across Banner XE applications. Please review the README.md files for each of these plugins.)_
 
     // ------------------- RESTful API end points --------------------
 
@@ -245,29 +247,111 @@ The mappings below are usually added alongside those supporting admin and or SSB
         parseRequest = false
     }
 
-###Configure Security
+----
 
-Grails projects using this plugin must also use Spring Security.  This plugin leverages existing Banner Security (e.g., groups and roles) to reduce the impact of adopting Banner XE solutions. This plugin supports form-based authentication (i.e., a login form), CAS SSO, and SAML 2 based SSO.
+#Security Features
 
-#####High level Overview of Security
+This plugin supports form-based authentication (i.e., a login form), CAS SSO, and SAML 2 based SSO.
+Spring Security is used as the basis for both authentication and authorization.  In addition to Spring Security, the existing Banner Security (e.g., groups and roles) database configuration is used in order to reduce the client impact of adopting Banner XE solutions.
 
-Following are the security-related steps that occur (when SSO is not being employed) during a request:
+###High level Overview of Spring Security
 
-1. A user attempts to reach a URL such as http://myschool.edu/banner/basicCourceInformation
-1. The user is redirected to a login page if not already authenticated.
-1. The user is authenticated by connecting to the database using the supplied credentials.  This is performed within the 'BannerAuthenticationProvider'. If the provider is able to establish a connection to the Banner database, the user is 'authenticated'.  Before returning, the provider will establish the user's authorities.
-1. The provider retrieves the effective Banner security roles for that user, using a database view. The Banner security role assignments for this user are then used to construct 'security roles' in a format usable by Spring Security. For instance, if a user has been given the BAN_DEFAULT_Q role for object 'FPARORD' and the BAN_DEFAULT_M role for object 'STVCOLL', that user will be granted two 'authorities' named "ROLE_FPARORD_BAN_DEFAULT_Q" and "ROLE_STVCOLL_BAN_DEFAULT_M".
-1. The user is redirected back to their desired URI once authentication completes, or is sent back to the login screen if authentication fails.
-1. A filter intercepts the request and verifies that the user is authenticated (which he/she is, as we just did that\!), and determines if the user is authorized to reach the composer or controller.  This authorization is based upon the 'interceptUrlMap' map (to be discussed below) within Config.groovy that relates each URL to authentication and authorization requirements. Please see below for details on how this map can be used.
-1. Once we have authenticated and authorized the user, a 'FormContext' threadlocal is set based upon a 'formControllerMap' (to be discussed below) contained in Config.groovy that maps controller and composer names to one or more 'Banner Classic Forms'.  When a controller is being accessed, this is performed by a 'before filter' (really an AOP Aspect) that intercepts the request.  When a composer is being accessed, this is handled by a custom ZK page filter (that is explicitly wired into the ZK plugin).  For instance, if the user is navigating to a "/college" URL, the filter will set a FormContext value of 'STVCOLL' (assuming the formControllerMap relates the College controller and or composer with 'STVCOLL').  Controllers may map to more than one legacy Oracle object.
-1. The controller or composer mapped to the URL is then allowed to service the request. To do this, the controller or composer interacts with transactional services and domain models.  Whenever a database connection is needed (either indirectly by the Hibernate ORM library or used explicitly), it is retrieved from the 'BannerDS' dataSource.  This dataSource proxies the connection on behalf of the logged-in user, calculates the 'applicable' authorities for that user (i.e., retrieves the authorities from the authentication object that pertain to the Banner object being accessed, as identified in the FormContext), and unlocks those roles.
-1. When the transaction is committed (declaratively), the connection proxy session is closed and the connection is returned to the pool.  The form context is also cleared using an 'after' filter.
+Spring Security uses Servlet filters to intercept requests. Rather than specifying all of the filters within the web.xml, a single 'DelegatingFilterProxy' is configured which delegates to a 'filterChain' bean specified within the Spring application context.  The spring-security-core plugin adds the 'DelegatingFilterProxy' (and currently, an Ellucian-modified 'spring_security_cas' plugin also adds filters to the web.xml however this is likely no longer needed and should be re-engineered).
 
-The Spring Security Core Grails plugin being used provides a number of convenience features, including tags that can be used within the view to identify the user, verify the user has certain roles, etc.  Details are available [here|http://burtbeckwith.github.com/grails-spring-security-core/docs/manual/index.html].
+```xml
+<filter>
+  <filter-name>springSecurityFilterChain</filter-name>
+  <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+</filter>
+<filter-mapping>
+  <filter-name> springSecurityFilterChain </filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
 
-**Configuration**
+As mentioned above, the Spring Security filters are configured within the Spring application context. Rather than using an 'applicationContext.xml' or 'resources.groovy' file to configure these beans, they are added to the application context via the BannerCoreGrailsPlugin.groovy file.
 
-Currently, there are two important maps that must reside within the Config.groovy of any project using this plugin. These maps must be updated when introducing new controllers or composers.
+Following are the filters, in order, that are enabled by this plugin (when CAS is enabled):
+
+```
+securityContextPersistenceFilter,
+logoutFilter,
+casAuthenticationFilter,
+authenticationProcessingFilter,
+securityContextHolderAwareRequestFilter,
+anonymousProcessingFilter,
+exceptionTranslationFilter,
+filterInvocationInterceptor
+```
+
+These filters are briefly described below. _(Please review Spring Security documentation for detailed inforamtion.)_
+
+**securityContextPersistenceFilter**
+
+This first filter loads the SecurityContext (if one already exists) from the SecurityContextRepository, or creates it if necessary. The SecurityContext is used to hold an Authentication object, which contains a UserDetails object that in turn contains the credentials and authorities for the user. The default repository is an HttpSessionSecurityContextRepository that stores the security context within the HTTP Session.
+
+**logoutFilter**
+
+This second filter is used to logout the user when needed.
+
+**casAuthenticationFilter**
+
+This filter is used to perform CAS-based authentication, and listens for requests to '/j_spring_cas_security_check'.  It is configured with a reference to the authentication manager that in turn is configured with a list of 'authentication providers'. The first provider configured is a CasAuthenticationProvider.
+
+When a request for '/j_spring_cas_security_check' is issued (by a CAS Server), the casAuthenticationFilter will construct an authentication token using the 'ticket' parameter provided in the request.  The authentication manager will then delegate to it's authentication providers, in order, until a provider is able to handle the request. When using CAS, the CasAuthenticationProvider is able to validate the service ticket using a configured ticket validator (which is a Saml11TicketValidator).
+
+The ticket validator calls the CAS Server to validate the service ticket, which will then respond with the username and any additional attributes configured within the CAS Server.  Banner XE requires an attribute named 'UDC_IDENTIFIER' to be returned.  The UDC_IDENTIFIER is an enterprise-wide identifier for the user.
+
+The standard CasAuthenticationProvider would next delegate to a configured userDetailsService.  Banner XE, however, currently (and now unnecessarily) implements a custom CasAuthenticationProvider which does not use a userDetailsService but instead performs the work of this service. (Actually, this provider delegates to the BannerAuthenticationProvider used in support of form-based authentication for this purpose.)
+
+The CasAuthenticationProvider (preferrably in the future, a BannerUserDetailsService) queries the Banner database using the UDC_IDENTIFIER to look up the user's oracle username and pidm, which it then populates into a BannerUser object that is included within an Authentication object.
+
+**authenticationProcessingFilter**
+
+The authenticationProcessingFilter is used to perform 'normal' form-based authentication when CAS is not enabled. The default implementation is the UsernamePasswordAuthenticationFilter, which like the CasAuthenticationFilter, is configured with the authentication manager that in turn delegates to a list of authenticated providers. Specifically, this filter is responsible for attaining the username and password from the request object and providing it to the authentication providers configured within the authentication manager.
+
+The BannerAuthenticationProvider is used to authenticate a user by establishing an Oracle database connection using the supplied user credentials. If successful, the provider (currently) determines the user's authorities by querying Banner for the user's roles.  (Note: As discussed above, this responsibility would be better placed within a userDetailsService.)
+
+Specifically, the provider retrieves the effective Banner security roles for the user using a database view. The Banner security role assignments for this user are then used to construct 'security roles' in a format usable by Spring Security. For instance, if a user has been given the BAN_DEFAULT_Q role for object 'FPARORD' and the BAN_DEFAULT_M role for object 'STVCOLL', that user will be granted two 'authorities' named "ROLE_FPARORD_BAN_DEFAULT_Q" and "ROLE_STVCOLL_BAN_DEFAULT_M".  Note: The encrypted passwords associated with these roles are not returned when initially creating the authorities, but are retrieved as needed by the BannerDS when preparing a connection. (The BannerDS adds the role password to the GrantedAuthority representing the role, so the password need only be retrieved once for a role.)
+
+**securityContextHolderAwareRequestFilter**
+
+This filter simply wraps and decorates the ServletRequest with additional methods needed to access the Authentication object.
+
+**anonymousProcessingFilter**
+
+If none of the preceding filters have populated a security context, this filter will do so by creating a context for an anonymous user. If there are URIs identified that allow for anonymous access, this security context will allow those users to access those URIs.
+
+**exceptionTranslationFilter**
+
+This filter is used to handle AuthenticationException and AccessDeniedException exceptions that are thrown by the preceeding filters when the Authentication object is either missing or does not reflect a successful authentication.
+
+This last filter will invoke the configured 'entry point', thus starting the 'security processing'.  For example, a LoginUrlAuthenticationEntryPoint would redirect the browser to the configured 'loginFormUrl'. (For Banner XE, note that the LoginController handles the redirect.)  If the entry point is instead a CasAuthenticationEntryPoint, the user's browser would be redirected to the configured CAS Server. The entry point would include a 'service' parameter that identifies a 'callback' URL the CAS Server should use.  (Note this subsequent 'callback' request will be handled by the casAuthenticationFilter discussed above.)
+
+**filterInvocationInterceptor**
+
+This filter performs 'authorization' based upon the required roles needed to access a URI. This filter delegates to an access decision manager, which in turn delegates to one or more decision voters. The banner-core plugin configures a BannerAccessDecisionVoter that determines whether a user is authorized by ensuring the authenticated user's authorities (GrantedBannerAuthority instances) include one needed to access the URI.
+
+While the roles required to access a given URI may be explicitly configured within the 'interceptUrlMap' (which is discussed below), most Banner URIs are configured with a special 'ROLE_DETERMINED_DYNAMICALLY' role. When the required role is 'ROLE_DETERMINED_DYNAMICALLY', the BannerAccessDecisionVoter determines the required role based upon the 'FormContext' that associates the URI with Banner Oracle Forms (as Banner security is configured in terms of Banner objects, including forms).
+
+After the request successfully proceeds through the Spring security filters, a 'FormContext' threadlocal is set based upon the configured 'formControllerMap'.  Specifically, when a controller is being accessed the FormContext is set using a 'before filter' and when a composer is being accessed it is set by a custom ZK page filter.
+
+The 'formControllerMap' configured within Config.groovy is used to associate controller and composer names to one or more 'Banner Oracle Forms'.  For instance, if the user is navigating to a "/college" URL, the filter will set a FormContext value of 'STVCOLL' assuming the formControllerMap associates the College controller and or composer with 'STVCOLL'.
+
+While handling the request, when a database connection is needed (either indirectly by the Hibernate ORM library or used explicitly) it is retrieved from the 'BannerDS' dataSource.
+
+The BannerDS dataSource ensures:
+
+* the connection is proxied on behalf of the authenticated user,
+* the authorities (roles) previously granted to the user (and which are applicable to this current request) are set on the connection. (If the encrypted password for a needed Banner role has not yet been retrieved, it is retrieved now.)
+* the MEP context is set if necessary
+
+When the transaction is committed (either programmatically or declaratively), the connection's proxy session is closed and the connection is returned to the pool.  (This is ensured because the BannerDS wraps each connection within a BannerConnection object before handing it out, and the BannerConnection close() method closes the proxy session before calling close() on the wrapped connection in order to return the connection to the pool.)
+
+Note the FormContext threadlocal is cleared using an 'after' filter.
+
+###Security Configuration
+As identified above, there are two important maps that must be configured within the Config.groovy of any project using this plugin. These maps must be updated when introducing new controllers or composers.
 
 Config.groovy must contain a 'formControllerMap' map, similar to the one depicted below.  This map relates controller and composer names to the Banner 8 objects (e.g., Forms) for which they correspond.  Note in most cases there will be a one-to-one mapping, but it is possible that one Grails controller or composer is being used to replace multiple Banner objects.  This map allows for grails applications to leverage existing Banner security configuration.
 
@@ -334,12 +418,12 @@ grails.plugins.springsecurity.interceptUrlMap = [
 
 As described in the code comments above, URLs may be protected with a special 'ROLE_DETERMINED_DYNAMICALLY' role.  A custom 'role voter' is configured by banner-core that will, when a URL is protected by this special role, determine authorization based upon the formControllerMap. Specifically, if a user has ANY roles corresponding to the Banner Classic Form identified in the formControllerMap for the current request, the user is granted access. (Note: Any roles ending with '_CONNECT' are excluded, and are not used to grant access.)
 
-####Configuring RESTful API Support
-RESTful API support requires the use of the open source '[restful-api](https://github.com/restfulapi/restful-api)' plugin developed by Ellucian.  Please see the restful-api plugin's [README](https://github.com/restfulapi/restful-api/blob/master/README.md) for general intallation and configuration instructions.
+###Configuring RESTful API Security
+RESTful API support should be added by using the open source '[restful-api](http://grails.org/plugin/restful-api)' ([GitHub](https://github.com/restfulapi/restful-api)) plugin developed by Ellucian.  Please see the restful-api plugin's [README](https://github.com/restfulapi/restful-api/blob/master/README.md) for general intallation and configuration instructions.
 
-In addition, when using the restful-api plugin along with banner-core, the 'banner-restful-api-support' plugin should also be installed as an in-place plugin (and Git submodule) of the application. Please see the banner-restful-api-support plugin's README.md for additional configuration instructions.
+In addition, when using the restful-api plugin along with banner-core, the 'banner-restful-api-support' plugin should be installed as an in-place plugin (and Git submodule) of the application. Please see the banner-restful-api-support plugin's README.md for additional configuration instructions.
 
-####Self Service Banner Security
+###Self Service Banner Security
 banner-core blurs the lines somewhat with respect to administrative and self service Banner.  An application using banner-core may be configured to support either administrative users or self service users, or both, within the same instance.
 
 To enable self service, you must set the following configuration.
@@ -386,9 +470,9 @@ bannerSsbDataSource.jndiName = "jdbc/horizonDataSource"
 
 // Local configuration for use in 'development' and 'test' environments
 //
-bannerSsbDataSource.url      = "jdbc:oracle:thin:@oracledb:1521:ban83"
-bannerSsbDataSource.username = "baninst1"
-bannerSsbDataSource.password = "baninst1_password"
+bannerSsbDataSource.url      = "jdbc:oracle:thin:{HOST}:{PORT}:{SID}"
+bannerSsbDataSource.username = "ban_ss_user"
+bannerSsbDataSource.password = "{PASSWORD}"
 bannerSsbDataSource.driver   = "oracle.jdbc.OracleDriver"
 ```
 
@@ -396,7 +480,9 @@ Note the above configuration is not needed for instances where self service is n
 
 If the SelfServiceAuthenticationProvider is able to authenticate the user, it will then query the Banner database for the user's web roles. These are converted into Spring Security roles much like the Banner administrative roles.  In addition, if the user has an Oracle database account, the user's Banner administrative roles will also be retrieved and converted to Spring Security roles. In addition,  a special role will be given to the user that will allow access to self service pages and that will unlock the BAN_DEFAULT_ROLE if database connections are proxied.
 
-##Services
+----
+
+#Services
 The banner-core plugin provides a 'ServiceBase' base class for transactional services that supports the standard CRUD methods.
 
 #####CRUD Method Input Arguments
