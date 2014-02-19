@@ -251,7 +251,7 @@ Note that support for these mappings requires use of both the open source restfu
 
 #Security Features
 
-This plugin supports form-based authentication (i.e., a login form), CAS SSO, and SAML 2 based SSO.
+This plugin supports form-based authentication (i.e., a login form), CAS SSO, and External authentication based SSO where an SSO product protects the web applications URL name space and asserts an identity attribute as a configurable HTTP header.  For both CAS assertions and External SSO product assertions, the value asserted is mapped in the Banner General GOBUMAP table where the identity assertion is stored in the column GOBUMAP\_UDC\_ID and the column GOBUMAP_PIDM references the Banner person record. For Banner Administrative users, the Oracle username is obtained by joining the GENERAL.GOBEACC table which is used to connect to the Banner database as the Admin username to support Banner MEP and FGAC.
 Spring Security is used as the basis for both authentication and authorization.  In addition to Spring Security, the existing Banner Security (e.g., groups and roles) database configuration is used in order to reduce the client impact of adopting Banner XE solutions.
 
 ###High level Overview of Spring Security
@@ -294,17 +294,27 @@ This first filter loads the SecurityContext (if one already exists) from the Sec
 
 This second filter is used to logout the user when needed.
 
+**bannerPreAuthenticatedFilter**
+
+This filter supports External authentication based SSO and is conditionally included if  the Config.groovy property 
+banner.sso.authenticationProvider = "external" is defined.
+banner.sso.authenticationAssertionAttribute property defines the HTTP Header name who's value must match the GOBUMAP\_UDC\_ID value stored in Banner.
+External authentication SSO products such as Shibboleth, Oracle Access Manager, Novel Access Manager, and CA Site Minder, can be configured to protect the application URL name space and assert a configurable HTTP header attribute as the authenticated user.
+
 **casAuthenticationFilter**
 
 This filter is used to perform CAS-based authentication, and listens for requests to '/j_spring_cas_security_check'.  It is configured with a reference to the authentication manager that in turn is configured with a list of 'authentication providers'. The first provider configured is a CasAuthenticationProvider.
 
 When a request for '/j_spring_cas_security_check' is issued (by a CAS Server), the casAuthenticationFilter will construct an authentication token using the 'ticket' parameter provided in the request.  The authentication manager will then delegate to it's authentication providers, in order, until a provider is able to handle the request. When using CAS, the CasAuthenticationProvider is able to validate the service ticket using a configured ticket validator (which is a Saml11TicketValidator).
 
-The ticket validator calls the CAS Server to validate the service ticket, which will then respond with the username and any additional attributes configured within the CAS Server.  Banner XE requires an attribute named 'UDC_IDENTIFIER' to be returned.  The UDC_IDENTIFIER is an enterprise-wide identifier for the user.
+The ticket validator calls the CAS Server to validate the service ticket, which will then respond with the username and any additional attributes configured within the CAS Server.  Banner XE is configured to retrieve a configurable identity attribute assertion name defined in Config.groovy as the property "banner.sso.authenticationAssertionAttribute" where the installed default value is 'UDC\_IDENTIFIER'.  This assertion name can be changed to any value that an institution wants to assert as long as the data mapping is defined correctly in the GOBUMAP table. The GOBUMAP\_UDC\_ID column value is an enterprise-wide identifier for the user.
 
 The standard CasAuthenticationProvider would next delegate to a configured userDetailsService.  Banner XE, however, currently (and now unnecessarily) implements a custom CasAuthenticationProvider which does not use a userDetailsService but instead performs the work of this service. (Actually, this provider delegates to the BannerAuthenticationProvider used in support of form-based authentication for this purpose.)
 
-The CasAuthenticationProvider (preferrably in the future, a BannerUserDetailsService) queries the Banner database using the UDC_IDENTIFIER to look up the user's oracle username and pidm, which it then populates into a BannerUser object that is included within an Authentication object.
+The CasAuthenticationProvider (preferrably in the future, a BannerUserDetailsService) queries the Banner database using the UDC\_IDENTIFIER to look up the user's oracle username and pidm, which it then populates into a BannerUser object that is included within an Authentication object.
+The Config.groovy property "banner.sso.authenticationProvider" defines the authentication method.
+banner.sso.authenticationProvider = "cas" configures CAS based authentication
+banner.sso.authenticationAssertionAttribute = "UDC\_IDENTITFIER" defines the configurable CAS assertion name.
 
 **authenticationProcessingFilter**
 
@@ -313,6 +323,9 @@ The authenticationProcessingFilter is used to perform 'normal' form-based authen
 The BannerAuthenticationProvider is used to authenticate a user by establishing an Oracle database connection using the supplied user credentials. If successful, the provider (currently) determines the user's authorities by querying Banner for the user's roles.  (Note: As discussed above, this responsibility would be better placed within a userDetailsService.)
 
 Specifically, the provider retrieves the effective Banner security roles for the user using a database view. The Banner security role assignments for this user are then used to construct 'security roles' in a format usable by Spring Security. For instance, if a user has been given the BAN_DEFAULT_Q role for object 'FPARORD' and the BAN_DEFAULT_M role for object 'STVCOLL', that user will be granted two 'authorities' named "ROLE_FPARORD_BAN_DEFAULT_Q" and "ROLE_STVCOLL_BAN_DEFAULT_M".  Note: The encrypted passwords associated with these roles are not returned when initially creating the authorities, but are retrieved as needed by the BannerDS when preparing a connection. (The BannerDS adds the role password to the GrantedAuthority representing the role, so the password need only be retrieved once for a role.)
+The Config.groovy property "banner.sso.authenticationProvider" defines the authentication method.
+banner.sso.authenticationProvider = "default" configures Forms based authentication where Banner Administrative users are authenticated using the Oracle username and password and Self Service users are authenticated via the SPRIDEN_ID and PIN or LDAP authentication based on Web Tailor authentication configuration.
+The property banner.sso.authenticationAssertionAttribute is ignored when "default" authentication is specified.
 
 **securityContextHolderAwareRequestFilter**
 
