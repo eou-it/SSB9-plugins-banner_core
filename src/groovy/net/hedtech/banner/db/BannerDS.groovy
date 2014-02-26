@@ -268,12 +268,18 @@ public class BannerDS implements DataSource {
     }
 
 
-    public void closeProxySession(BannerConnection conn, String proxiedUserName) {
+    public void closeProxySession(BannerConnection conn, proxiedUserName) {
 
         log.trace "${super.toString()}.closeProxySession() will close proxy session for $conn"
+        closeProxySession(conn.extractOracleConnection(), proxiedUserName)
 
-        if (conn.extractOracleConnection().isProxySession()) {
-            conn.extractOracleConnection().close(OracleConnection.PROXY_SESSION)
+    }
+
+    public void closeProxySession(OracleConnection conn, proxiedUserName) {
+
+        log.trace "${super.toString()}.closeProxySession(OracleConnection) will close proxy session for $conn"
+        if (conn.isProxySession()) {
+            conn.close(OracleConnection.PROXY_SESSION)
         }
     }
 
