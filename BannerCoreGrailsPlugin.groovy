@@ -3,6 +3,8 @@
  ****************************************************************************** */
 
 import grails.util.GrailsUtil
+import grails.util.Holders
+import org.apache.log4j.Logger
 
 import java.util.concurrent.Executors
 
@@ -46,6 +48,7 @@ import org.springframework.security.web.context.SecurityContextPersistenceFilter
 class BannerCoreGrailsPlugin {
 
     String version = "2.5.1"
+    private static final Logger staticLogger = Logger.getLogger(BannerCoreGrailsPlugin.class)
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2.1 > *"
@@ -71,6 +74,8 @@ class BannerCoreGrailsPlugin {
     def documentation = ""
 
     def doWithSpring = {
+
+        secureAdhocPatterns()
 
         switch (GrailsUtil.environment) {
             case GrailsApplication.ENV_PRODUCTION:
@@ -327,7 +332,7 @@ class BannerCoreGrailsPlugin {
 
 
     def onConfigChange = { event ->
-        // no-op
+        secureAdhocPatterns()
     }
 
 
@@ -355,6 +360,35 @@ class BannerCoreGrailsPlugin {
         } else {
             return name
         }
+    }
+
+    private static void secureAdhocPatterns (){
+
+        def DEFAULT_ADHOC_INCLUDES = [
+                '/images/**', '/css/**', '/js/**', '/plugins/**'
+        ]
+
+        def DEFAULT_ADHOC_EXCLUDES = [
+                '/WEB-INF/**'
+        ]
+
+        def resourcesConfig = Holders.grailsApplication.config.grails.resources
+
+        if (!resourcesConfig.adhoc.includes ) {
+            staticLogger.warn("No grails.resources.adhoc.includes specified... adding default includes: " + DEFAULT_ADHOC_INCLUDES)
+            resourcesConfig.adhoc.includes = DEFAULT_ADHOC_INCLUDES
+        }
+
+        if (!resourcesConfig.adhoc.excludes ) {
+            staticLogger.warn("No grails.resources.adhoc.excludes specified... adding default excludes: " + DEFAULT_ADHOC_EXCLUDES)
+            resourcesConfig.adhoc.excludes = DEFAULT_ADHOC_EXCLUDES
+        } else if (!resourcesConfig.adhoc.excludes.contains('/WEB-INF/**')) {
+            staticLogger.warn("Specified grails.resources.adhoc.excludes does not exclude WEB-INF ... appending default excludes: " + DEFAULT_ADHOC_EXCLUDES)
+            resourcesConfig.adhoc.excludes.addAll(DEFAULT_ADHOC_EXCLUDES)
+        }
+
+        staticLogger.info("Final grails.resources.adhoc.includes" + resourcesConfig.adhoc.includes)
+        staticLogger.info("Final grails.resources.adhoc.excludes" + resourcesConfig.adhoc.excludes)
     }
 
 }
