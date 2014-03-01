@@ -15,6 +15,7 @@ hibernate {
     cache.provider_class='net.sf.ehcache.hibernate.EhCacheProvider'
     config.location = [
             "classpath:hibernate-banner-core.cfg.xml"
+
     ]
 }
 // environment specific settings
