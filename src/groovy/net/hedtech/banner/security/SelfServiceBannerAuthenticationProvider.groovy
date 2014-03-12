@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.security
 
 import org.springframework.security.authentication.AuthenticationProvider
@@ -269,27 +269,27 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             rows = db.rows(
                 """select twgrrole_pidm,twgrrole_role from twgrrole
                            where twgrrole_pidm = :pidm
-                    union
+                    union all
                     select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_faculty_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FACULTY'
-                    union
+                           where govrole_faculty_ind = 'Y' and govrole_pidm = :pidm and twgrrole_pidm = :pidm and twtvrole_code = 'FACULTY'
+                    union all
                     select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_student_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'STUDENT'
-                    union
+                           where govrole_student_ind = 'Y' and govrole_pidm = :pidm and twgrrole_pidm = :pidm and twtvrole_code = 'STUDENT'
+                    union all
                     select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_employee_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'EMPLOYEE'
-                    union
+                           where govrole_employee_ind = 'Y' and govrole_pidm = :pidm and twgrrole_pidm = :pidm and twtvrole_code = 'EMPLOYEE'
+                    union all
                     select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_alumni_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'ALUMNI'
-                    union
+                           where govrole_alumni_ind = 'Y' and govrole_pidm = :pidm and twgrrole_pidm = :pidm and twtvrole_code = 'ALUMNI'
+                    union all
                     select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_friend_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FRIEND'
-                    union
+                           where govrole_friend_ind = 'Y' and govrole_pidm = :pidm and twgrrole_pidm = :pidm and twtvrole_code = 'FRIEND'
+                    union all
                     select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_finaid_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINAID'
-                    union
+                           where govrole_finaid_ind = 'Y' and govrole_pidm = :pidm and twgrrole_pidm = :pidm and twtvrole_code = 'FINAID'
+                    union all
                     select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_finance_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINANCE'
+                           where govrole_finance_ind = 'Y' and govrole_pidm = :pidm and twgrrole_pidm = :pidm and twtvrole_code = 'FINANCE'
                 """, [ pidm: authentictionResults.pidm ] )
 
             rows?.each { row ->
