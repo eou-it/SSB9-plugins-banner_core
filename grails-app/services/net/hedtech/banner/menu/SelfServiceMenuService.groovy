@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.menu
 
 import groovy.sql.Sql
@@ -59,7 +59,7 @@ class SelfServiceMenuService {
                 if (it.govrole_finaid_ind == "Y" )  govroles.add ("FINAID")
                 if (it.govrole_friend_ind == "Y" )  govroles.add ("FRIEND")
             }
-            if (govroles.size > 0) {
+            if (govroles.size() > 0) {
 
                 govroles.each {
                                 if (it == govroles.first())
@@ -75,7 +75,7 @@ class SelfServiceMenuService {
             pidmCondition = "twgrrole_pidm = " + pidm
         }
 
-        if (govroles.size > 0)
+        if (govroles.size() > 0)
             sqlQuery =  " select  TWGRMENU_NAME,TWGRMENU_SEQUENCE,TWGRMENU_URL_TEXT,TWGRMENU_URL	,TWGRMENU_URL_DESC,TWGRMENU_IMAGE,TWGRMENU_ENABLED, TWGRMENU_DB_LINK_IND, TWGRMENU_SUBMENU_IND,TWGRMENU_TARGET_FRAME, TWGRMENU_STATUS_TEXT,TWGRMENU_ACTIVITY_DATE ,TWGRMENU_URL_IMAGE,TWGRMENU_SOURCE_IND " +
                         " from twgrmenu   where  twgrmenu_name = ?  and " +
                         " twgrmenu_enabled = 'Y'  " +
@@ -98,7 +98,7 @@ class SelfServiceMenuService {
             sqlQuery = "select * from twgrmenu  where  twgrmenu_name = ? and ? = ? and   twgrmenu_enabled = 'Y'  and (twgrmenu_url in (select  twgrwmrl_name from twgrwmrl ,twgrrole where " + pidmCondition + " and twgrrole_role = twgrwmrl_role   and twgrmenu_source_ind =  (select nvl( max(twgrmenu_source_ind ),'B')   from twgrmenu where  twgrmenu_name = ? and twgrmenu_source_ind='L' and ? = ?) )  or twgrmenu_db_link_ind = 'N')  order by twgrmenu_sequence"
 
         def randomSequence = RandomUtils.nextInt(1000);
-		
+
         sql.eachRow(sqlQuery, [menuName, menuName, menuName, menuName, menuName, menuName]) {
 
             def mnu = new SelfServiceMenu()
