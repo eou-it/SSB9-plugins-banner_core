@@ -33,7 +33,7 @@ import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.security.BannerGrantedAuthority
 
 /**
- * A dataSource that wraps an 'underlying' datasource.  
+ * A dataSource that wraps an 'underlying' datasource.
  *  When this datasource is asked for a connection, it will first:
  * 1) proxy the connection for the authenticated user,
  * 2) set Banner roles that are applicable to the current request, based on the authenticated user's privileges
@@ -57,8 +57,8 @@ public class BannerDS implements DataSource {
 
     // Identifies URL parts for requests where no session should be used.
     // This list will be used to identify connections that should not be cached
-    // within the HTTP session. Note: To avoid creating an HTTP session, the spring 
-    // security filter chain must configured. 
+    // within the HTTP session. Note: To avoid creating an HTTP session, the spring
+    // security filter chain must configured.
     private List avoidSessionsFor = null
 
     private final Logger log = Logger.getLogger(getClass())
@@ -195,6 +195,7 @@ public class BannerDS implements DataSource {
                     setRoles(oconn, user, applicableAuthorities)
                     setFGAC(conn)
                 }
+                setMep(conn,user)
             }
         }
         bannerConnection
@@ -205,12 +206,12 @@ public class BannerDS implements DataSource {
         boolean isWebRequest = RequestContextHolder.getRequestAttributes() != null
 
         // We'll only cache connections for web requests
-        if (!isWebRequest) return false 
+        if (!isWebRequest) return false
 
         // and then only if the web request is not one configured to avoid sessions
         def forwardUri = RequestContextHolder.getRequestAttributes().getRequest().forwardURI
 
-        // First, we'll cache the configured url parts that identify requests 
+        // First, we'll cache the configured url parts that identify requests
         // that should not use HTTP sessions.
         if (avoidSessionsFor == null) {
             avoidSessionsFor = CH.config.avoidSessionsFor instanceof List ? CH.config.avoidSessionsFor : []
@@ -218,8 +219,8 @@ public class BannerDS implements DataSource {
                 log.info "Configured so DB connections will not be cached in the HTTP session for URLs containing: ${avoidSessionsFor.join(',')}"
             }
         }
-       
-        // so we can check to see if our current request matches one of them 
+
+        // so we can check to see if our current request matches one of them
         boolean avoidCaching = avoidSessionsFor.any { forwardUri =~ it }
 
         if (avoidCaching) {
