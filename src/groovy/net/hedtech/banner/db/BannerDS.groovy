@@ -195,12 +195,6 @@ public class BannerDS implements DataSource {
                     setRoles(oconn, user, applicableAuthorities)
                     setFGAC(conn)
                 }
-                if(isSelfServiceRequest()){
-                    setMepSsb(conn)
-                }else{
-                    setMep(conn,user)
-                }
-
             }
         }
         bannerConnection
