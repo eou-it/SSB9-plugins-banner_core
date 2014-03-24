@@ -191,4 +191,8 @@ class BannerAccessDecisionVoter extends RoleVoter {
         def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
         applicationContext.publishEvent( new BannerAuthenticationEvent(authentication.name, false, message, forms[0], new Date(), 1) )
     }
+    public static List getFormNamesForPageName(String pageName) {
+        return new ArrayList( CH.config.formControllerMap[ pageName.toLowerCase() ] )
+    }
+
 }
