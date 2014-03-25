@@ -193,6 +193,7 @@ public class BannerDS implements DataSource {
                     setRoles(oconn, user, applicableAuthorities)
                     setFGAC(conn)
                 }
+                session.setAttribute("formContext", FormContext.get())
             }
         }
         bannerConnection
