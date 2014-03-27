@@ -10,7 +10,8 @@ class ErrorController {
 
     static defaultAction = "internalServerError"
     public String returnHomeLinkAddress = SpringSecurityUtils.securityConfig.successHandler.defaultTargetUrl
-    public static final String VIEW_LOGOUT_PAGE = "/logout/logoutPage"
+    public String VIEW_LOGOUT_PAGE = SpringSecurityUtils.securityConfig.logout.mepErrorLogoutUrl
+
     public static final String VIEW_ERROR_PAGE = "error"
     public static final String VIEW_PAGE_NOT_FOUND = "pageNotFound"
     public static final String VIEW_FORBIDDEN = "forbidden"
