@@ -202,6 +202,9 @@ public class BannerDS implements DataSource {
                     setFGAC(conn)
                 }
                 session.setAttribute("formContext", FormContext.get())
+                if(isAdministrativeRequest()){
+                    setMep(conn,user)
+                }
             }
         }
         bannerConnection
