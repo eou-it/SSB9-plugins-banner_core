@@ -195,6 +195,9 @@ public class BannerDS implements DataSource {
                     setRoles(oconn, user, applicableAuthorities)
                     setFGAC(conn)
                 }
+                if(isAdministrativeRequest()){
+                    setMep(conn,user)
+                }
             }
         }
         bannerConnection
