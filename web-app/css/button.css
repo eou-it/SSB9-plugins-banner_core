@@ -34,6 +34,8 @@
 		linear, left top, left bottom,
 		from(#AAAAAA),
 		to(#676767));
+    background: -ms-linear-gradient(90deg, #AAAAAA, #676767);
+    background: -o-linear-gradient(90deg, #AAAAAA, #676767);
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#AAAAAA', endColorstr='#676767');
 	border-radius: .6em;
 	-moz-border-radius: .6em;
@@ -53,6 +55,8 @@
 	padding: .5em 2.0em;
 	background: -moz-linear-gradient(top,#575757 0%,#999999);
 	background: -webkit-gradient(linear, left top, left bottom,from(#575757),to(#999999));
+    background: -ms-linear-gradient(90deg, #575757, #999999);
+    background: -o-linear-gradient(90deg, #575757, #999999);
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#575757', endColorstr='#575757');
 	border-radius: .6em;
 	-moz-border-radius: .6em;
@@ -71,6 +75,8 @@
 	padding: .5em 2.0em;
 	background: -moz-linear-gradient(top,#999999 0%,#575757);
 	background: -webkit-gradient(linear, left top, left bottom, from(#999999),to(#575757));
+    background: -ms-linear-gradient(90deg, #999999, #575757);
+    background: -o-linear-gradient(90deg, #999999, #575757);
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#999999', endColorstr='#575757');
 	border-radius: .6em;
 	-moz-border-radius: .6em;
@@ -97,6 +103,8 @@
 		linear, left top, left bottom,
 		from(#AAAAAA),
 		to(#676767));
+    background: -ms-linear-gradient(90deg, #AAAAAA, #676767);
+    background: -o-linear-gradient(90deg, #AAAAAA, #676767);
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#AAAAAA', endColorstr='#676767');
 	border-radius: .6em;
 	-moz-border-radius: .6em;
@@ -117,6 +125,8 @@
 	padding: .5em 2.0em;
 	background: -moz-linear-gradient(top,#575757 0%,#999999);
 	background: -webkit-gradient(linear, left top, left bottom,from(#575757),to(#999999));
+    background: -ms-linear-gradient(90deg, #575757, #999999);
+    background: -o-linear-gradient(90deg, #575757, #999999);
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#575757', endColorstr='#575757');
 	border-radius: .6em;
 	-moz-border-radius: .6em;
