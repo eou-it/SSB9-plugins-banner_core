@@ -35,8 +35,9 @@ def writeToFile(fileName, generatedProps) {
 def shouldFormatKey(key) {
     def shouldFormat = true;
 
-    if (key.indexOf(".format") >= 0
-            || "default.language.direction".equals(key)) {
+    if (key.indexOf(".format") >= 0 || 
+	    key.indexOf(".dateFormat") >= 0 ||
+	    "default.language.direction".equals(key)) {
         shouldFormat = false
     }
     return shouldFormat
@@ -58,10 +59,10 @@ def generateNewProp( line, params ) {
         }
         else if (shouldFormatKey( key )) {
 
-            def calculateBufferSize = { word ->
+            def calculateBufferSize = { valueString ->
                 def factor = 0.0
 
-                switch (word.size()) {
+                switch (valueString.size()) {
                     case 1..5:
                         factor = 1
                         break
@@ -81,15 +82,10 @@ def generateNewProp( line, params ) {
                         factor = 0.1
                 }
 
-               return word.size() * factor
+               return valueString.size() * factor
             }
 
-            def numberOfCharactersToAdd = 0.0
-
-            def words = value.tokenize( " " )
-            words.each {
-                numberOfCharactersToAdd += calculateBufferSize( it )
-            }
+			def numberOfCharactersToAdd = calculateBufferSize(value)
 
             def buffer = { num, character ->
 
@@ -100,14 +96,14 @@ def generateNewProp( line, params ) {
                 def output = ""
 
                 rounded.times {
-                    output += "@"
+					output += "@"
                 }
 
                 return output
             }
 
             def bufferCharacter = buffer( (numberOfCharactersToAdd / 2), "@" )
-
+			
             return "$key=$bufferCharacter$value$bufferCharacter"
         }
         else {
@@ -128,16 +124,28 @@ def generateNewProp( line, params ) {
 def generatePropertiesFile( args = null ) {
 
     def params = getParamsMap( args )
-
+    def generatedProps
+	String filename
 
     def dir = BuildSettingsHolder.settings.baseDir
-    def generatedProps = []
-    dir.traverse(type: FileType.FILES, nameFilter: params.filter) { source ->
-        println "Generating props for " + source.canonicalFile
-        source.eachLine { line ->
-            generatedProps << generateNewProp(line, params)
-        }
 
+    dir.traverse(type: FileType.FILES, nameFilter: params.filter) { source ->
+		
+		filename = source.canonicalFile
+		if ( StringUtils.contains(filename,"i18n_core.git") ) {
+		    generatedProps = []
+            source.eachLine { line ->
+                generatedProps << line
+
+            }
+		} else {
+		
+	        generatedProps = []
+            source.eachLine { line ->
+                generatedProps << generateNewProp(line, params)
+            }
+        }
+		
         def newFile = getNewFileName(source, params.targetLocale)
 
         println "Writing to file '$newFile'"
@@ -149,9 +157,10 @@ def generatePropertiesFile( args = null ) {
         generatedProps.each { line ->
             destFile.append(line)
             destFile.append("\n")
-        }
+        }		
     }
 }
+
 
 def getParamsMap( argMap = [:] ) {
 
