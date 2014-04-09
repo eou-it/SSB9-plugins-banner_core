@@ -4,7 +4,6 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <%@ page contentType="text/html;charset=UTF-8" defaultCodec="none" %>
-<% request.getSession().invalidate() %>
 
 <html>
     <head>
@@ -20,7 +19,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
             <div class="errorBox">
               <div class="errorMessage"><b><g:message code="net.hedtech.banner.errors.serverError.message"/> </b><br>
                 <g:message code="net.hedtech.banner.errors.serverError.error"/>
-                ${exception?.message?.encodeAsHTML()}   <br /> <br />
+                ${exception?.encodeAsHTML()}   <br /> <br />
               </div>
             </div>
            <div class="errorBackButton">

@@ -22,12 +22,15 @@ class ErrorController {
         if (exception.cause instanceof MepCodeNotFoundException) {
             returnHomeLinkAddress = VIEW_LOGOUT_PAGE
         }
-        def model = [
-            exception: exception,
-            request:   request,
-            returnHomeLinkAddress : returnHomeLinkAddress
-        ]
+        LogoutController.invalidateSession( response, request, session )
+        forward(action:"viewErrorPage", params:[exception: exception,returnHomeLinkAddress : returnHomeLinkAddress])
+    }
 
+    def viewErrorPage = {
+        def model = [
+                exception: params.exception,
+                returnHomeLinkAddress: params.returnHomeLinkAddress
+        ]
         render view: VIEW_ERROR_PAGE, model: model
     }
 
