@@ -15,6 +15,8 @@ class ErrorController {
     public static final String VIEW_ERROR_PAGE = "error"
     public static final String VIEW_PAGE_NOT_FOUND = "pageNotFound"
     public static final String VIEW_FORBIDDEN = "forbidden"
+    def logoutHandlers
+    def springSecurityService
 
 
     def internalServerError = {
@@ -22,7 +24,9 @@ class ErrorController {
         if (exception.cause instanceof MepCodeNotFoundException) {
             returnHomeLinkAddress = VIEW_LOGOUT_PAGE
         }
-        LogoutController.invalidateSession( response, request, session )
+        logoutHandlers.each { handler ->
+            handler.logout(request, response, springSecurityService.authentication)
+        }
         forward(action:"viewErrorPage", params:[exception: exception,returnHomeLinkAddress : returnHomeLinkAddress])
     }
 

@@ -3,7 +3,6 @@
  *******************************************************************************/
 import net.hedtech.banner.controllers.ControllerUtils
 import javax.servlet.http.Cookie
-import org.springframework.security.core.context.SecurityContextHolder
 
 /**
  * Controller called to prepare logouts.
@@ -23,7 +22,7 @@ class LogoutController {
      * Index action. Redirects to the Spring security logout uri.
      */
     def index = {
-        invalidateSession( response, request, session )
+        invalidateSession( response )
         redirect uri: ControllerUtils.buildLogoutRedirectURI()
     }
 
@@ -32,7 +31,7 @@ class LogoutController {
             forward(controller:LOGIN_CONTROLLER)
         } else {
             def uri = createLink([ action:ACTION_TIMEOUT_PAGE, absolute:true ])
-            invalidateSession( response, request, session )
+            invalidateSession( response )
             redirect uri: uri
         }
     }
@@ -45,8 +44,7 @@ class LogoutController {
         render view: VIEW_LOGOUT_PAGE
     }
 
-    public static void invalidateSession( response, request, session ) {
-        SecurityContextHolder.clearContext();
+    private void invalidateSession( response ) {
         session.invalidate()
         Cookie cookie = new Cookie(JSESSIONID_COOKIE_NAME, null);
         cookie.setPath(request.getContextPath());
