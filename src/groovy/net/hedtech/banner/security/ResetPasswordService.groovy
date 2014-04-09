@@ -38,33 +38,114 @@ class ResetPasswordService {
      *
      */
 
-    def getQuestionInfoByLoginId(id) throws SQLException{
+    public Map getQuestionInfoByLoginId(id) throws SQLException{
         Map questionAnswerMap = new HashMap()
         List questions = new ArrayList()
         if(id == null)
             return false
 
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-        String query = "SELECT GOBANSR_NUM,GOBANSR_PIDM,GOBANSR_QSTN_DESC,GOBQSTN_DESC, GOBANSR_ANSR_SALT FROM gobansr, spriden, gobqstn WHERE SPRIDEN_ID = ? AND SPRIDEN_PIDM = GOBANSR_PIDM AND SPRIDEN_CHANGE_IND IS NULL AND GOBANSR_GOBQSTN_ID = GOBQSTN_ID"
-        String prefQuery = "SELECT GUBPPRF_NO_OF_QSTNS FROM gubpprf"
+        String query = "SELECT GOBANSR_PIDM FROM gobansr, spriden WHERE SPRIDEN_ID = ? AND SPRIDEN_PIDM = GOBANSR_PIDM AND SPRIDEN_CHANGE_IND IS NULL"
         try{
             sql.eachRow(query,[id]){
-                String[] question = [it.GOBANSR_NUM, it.GOBQSTN_DESC]
                 if(!questionAnswerMap.containsKey(id)){
                     questionAnswerMap.put(id+"pidm", it.GOBANSR_PIDM)
                 }
-                questions.add(question)
-
-            }
-            sql.eachRow(prefQuery) {
-                questionAnswerMap.put(id+"qstn_no", it.GUBPPRF_NO_OF_QSTNS)
             }
         }
         finally{
             sql.close()
         }
+        questionAnswerMap.put(id+"qstn_no", getNoOfQuestionsConfigured())
+        questions.addAll(getSystemDefinedQuestionsConfigForId(id))
+        questions.addAll(getUserDefinedQuestionsConfigForId(id))
         questionAnswerMap.put(id, questions)
-        questionAnswerMap
+        return questionAnswerMap
+    }
+
+    /**
+     *
+     * @param id
+     * @return questions list of Institution questions used by the user.
+     * @throws SQLException
+     *
+     * This method returns a list of questions configured by the given PIDM user id as security questions.
+     * throws exception for any db related issues
+     *
+     */
+    private List getSystemDefinedQuestionsConfigForId(id) throws SQLException{
+        List questions = new ArrayList()
+        if(id == null)
+            return false
+
+        Sql sql = new Sql(dataSource.getUnproxiedConnection())
+        String query = "SELECT GOBANSR_NUM,GOBANSR_PIDM,GOBANSR_QSTN_DESC,GOBQSTN_DESC, GOBANSR_ANSR_SALT FROM gobansr, spriden, gobqstn WHERE SPRIDEN_ID = ? AND SPRIDEN_PIDM = GOBANSR_PIDM AND SPRIDEN_CHANGE_IND IS NULL AND GOBANSR_GOBQSTN_ID = GOBQSTN_ID"
+        try{
+            sql.eachRow(query,[id]){
+                String[] question = [it.GOBANSR_NUM, it.GOBQSTN_DESC]
+                questions.add(question)
+
+            }
+        }
+        finally{
+            sql.close()
+        }
+        return questions
+    }
+
+    /**
+     *
+     * @param id
+     * @return questions list of User defined questions.
+     * @throws SQLException
+     *
+     * This method returns a list of user defined questions configured by the given PIDM user id as security questions.
+     * throws exception for any db related issues
+     *
+     */
+    private List getUserDefinedQuestionsConfigForId(id) throws SQLException{
+        List questions = new ArrayList()
+        if(id == null)
+            return false
+
+        Sql sql = new Sql(dataSource.getUnproxiedConnection())
+        String query = "SELECT ga.GOBANSR_NUM,ga.GOBANSR_PIDM,ga.GOBANSR_QSTN_DESC, ga.GOBANSR_ANSR_SALT FROM gobansr ga where ga.GOBANSR_GOBQSTN_ID is NULL and ga.GOBANSR_PIDM = (select DISTINCT sp.SPRIDEN_PIDM  from spriden sp where sp.SPRIDEN_ID = ? AND sp.SPRIDEN_CHANGE_IND IS NULL) order by ga.GOBANSR_NUM"
+        try{
+            sql.eachRow(query,[id]){
+                String[] question = [it.GOBANSR_NUM, it.GOBANSR_QSTN_DESC]
+                questions.add(question)
+
+            }
+        }
+        finally{
+            sql.close()
+        }
+        return questions
+    }
+
+
+    /**
+     *
+     * @return noOfQuestions
+     * @throws SQLException
+     *
+     * This method will return Number of security questions configured in the system
+     * Throws exception for any db related issues.
+     *
+     */
+    private int getNoOfQuestionsConfigured() throws SQLException{
+        int noOfQuestions
+        Sql sql = new Sql(dataSource.getUnproxiedConnection())
+        String prefQuery = "SELECT GUBPPRF_NO_OF_QSTNS FROM gubpprf"
+        try{
+            sql.eachRow(prefQuery) {
+                noOfQuestions = it.GUBPPRF_NO_OF_QSTNS
+            }
+        }
+        finally{
+            sql.close()
+        }
+        return noOfQuestions
     }
 
     /**
@@ -79,11 +160,11 @@ class ResetPasswordService {
      * Throws exception for any db related issues.
      *
      */
-    def isAnswerMatched(userAnswer, pidm, questionNumber) throws SQLException{
+    public boolean isAnswerMatched(userAnswer, pidm, questionNumber) throws SQLException{
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         def answerSalt =  getAnswerSaltByQyestionNumberAndPidm(questionNumber, pidm, sql)
         def answer = getAnswerByQuestionNumberAndPidm(questionNumber, pidm, sql)
-        def matchFlag = false
+        boolean matchFlag = false
         try{
             sql.call "{call gspcrpt.P_SALTEDHASH(?,?,?)}", [userAnswer, answerSalt, Sql.VARCHAR], { encryptedAnswer ->
                if(encryptedAnswer == answer)
@@ -108,13 +189,13 @@ class ResetPasswordService {
      * throws exception for any db related issues
      *
      */
-    def getAnswerByQuestionNumberAndPidm(questionNumber, pidm, sql) throws SQLException{
-        def answer
+    private String getAnswerByQuestionNumberAndPidm(questionNumber, pidm, sql) throws SQLException{
+        String answer
         String query = "select GOBANSR_ANSR_DESC from gobansr where GOBANSR_PIDM = ? AND GOBANSR_NUM=? "
         sql.eachRow(query,[pidm,questionNumber]){
               answer = it.GOBANSR_ANSR_DESC
         }
-        answer
+        return answer
     }
 
     /**
@@ -129,13 +210,13 @@ class ResetPasswordService {
      * throws exception for any db related issues
      *
      */
-    def getAnswerSaltByQyestionNumberAndPidm(questionNumber, pidm, sql) throws SQLException{
-        def answerSalt
+    private String getAnswerSaltByQyestionNumberAndPidm(questionNumber, pidm, sql) throws SQLException{
+        String answerSalt
         String query = "select GOBANSR_ANSR_SALT from gobansr where GOBANSR_PIDM =? AND GOBANSR_NUM=?"
         sql.eachRow(query,[pidm,questionNumber]){
               answerSalt = it.GOBANSR_ANSR_SALT
         }
-        answerSalt
+        return answerSalt
     }
 
     /**
@@ -149,7 +230,7 @@ class ResetPasswordService {
      * throws exception for any db related issues
      *
      */
-    def resetUserPassword(pidm, newPassword) throws SQLException{
+    public void resetUserPassword(pidm, newPassword) throws SQLException{
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         try{
             sql.call ("{call gb_third_party_access.p_update(p_pidm=>${pidm}, p_pin=>${newPassword})}")
@@ -171,17 +252,19 @@ class ResetPasswordService {
      * throws exception for any db related issues
      *
      */
-    def isPidmUser(pidm_id) throws SQLException{
+    public boolean isPidmUser(pidm_id) throws SQLException{
+        boolean isPidmUser = false
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String query = "SELECT SPRIDEN_ID FROM spriden WHERE SPRIDEN_ID=?"
-        if(sql.rows(query,[pidm_id]).size() > 0){
-            sql.close()
-            true
+        try{
+            if(sql.rows(query,[pidm_id]).size() > 0){
+            isPidmUser = true
+            }
         }
-        else{
+         finally{
             sql.close()
-            false
         }
+        return isPidmUser
     }
 
     /**
@@ -194,21 +277,18 @@ class ResetPasswordService {
      * throws exception for any db related issues.
      *
      */
-    def isNonPidmUser(userId) throws SQLException{
-
+    public boolean isNonPidmUser(userId) throws SQLException{
+        boolean  isNonPidmUser = false
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-
         String queryGpbprxy = "SELECT GPBPRXY_EMAIL_ADDRESS FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) = ?"
-
-        if(sql.rows(queryGpbprxy,[userId]).size() > 0){
+        try{
+            if(sql.rows(queryGpbprxy,[userId]).size() > 0){
+                isNonPidmUser = true
+            }
+        } finally {
             sql.close()
-            true
         }
-        else{
-            sql.close()
-            false
-        }
-
+        return isNonPidmUser
     }
 
     /**
@@ -220,7 +300,7 @@ class ResetPasswordService {
      * This method will generate reset password URL for the non-pidm user which is used later for resetting the password
      *
      */
-    def generateResetPasswordURL(nonPidmId, baseUrl){
+    public def generateResetPasswordURL(nonPidmId, baseUrl){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         def successFlag
         def replyFlag
@@ -254,15 +334,18 @@ class ResetPasswordService {
      * This method will return the non-pidm IDM for a given guest email address
      *
      */
-    def getNonPidmIdm(nonPidmId){
+    public String getNonPidmIdm(nonPidmId){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String query = "select gpbprxy_proxy_idm from gpbprxy where  gpbprxy_email_address = ?"
-        def id = null
-        sql.rows(query,[nonPidmId]).each {
-            id = it.gpbprxy_proxy_idm
+        String id = null
+        try {
+            sql.rows(query,[nonPidmId]).each {
+                id = it.gpbprxy_proxy_idm
+            }
+        } finally {
+            sql.close()
         }
-        sql.close()
-        id
+        return id
     }
 
     /**
@@ -273,14 +356,14 @@ class ResetPasswordService {
      * This method will validate the token in a given reset password url. Return non-pidm idm if token is valid else appropriate error message
      *
      */
-    def validateToken(recoveryCode){
+    public Map validateToken(recoveryCode){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String selectQuery = "SELECT GPBPRXY_EMAIL_ADDRESS, GPBELTR_CTYP_EXP_DATE, GPBPRXY_PIN_DISABLED_IND FROM gpbeltr, gpbprxy WHERE GPBPRXY_PROXY_IDM = GPBELTR_PROXY_IDM AND gpbeltr.ROWID =? "
         def nonPidmId = null;
         def expDate = null;
         def disabledInd = null;
         def errorMessage = null;
-        def result = [:]
+
         try{
             sql.rows(selectQuery,[recoveryCode]).each {
                 nonPidmId = it.GPBPRXY_EMAIL_ADDRESS
@@ -325,7 +408,7 @@ class ResetPasswordService {
      * This method will validate the recovery code entered by the user before resetting the password
      *
      */
-    def validateRecoveryCode(recoveryCode, nonPidmId){
+    public Map validateRecoveryCode(recoveryCode, nonPidmId){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String selectQuery = "SELECT * FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) =? AND GPBPRXY_SALT=? "
         def result = [:]
@@ -355,9 +438,8 @@ class ResetPasswordService {
      * This method will reset the password for non-pidm (guest) user with the given new password.
      *
      */
-    def resetNonPidmPassword (nonPidmId, passwd  ) {
+    public void resetNonPidmPassword (nonPidmId, passwd  ) {
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
-
         try {
             sql.call("{call gokauth.p_update_guest_passwd (${nonPidmId},${passwd})}")
             sql.commit()
@@ -377,7 +459,7 @@ class ResetPasswordService {
      *
      * This method will check whether the PIDM account is disabled or not. Returns true if account is disabled else false
      */
-    def isAccountDisabled(id){
+    public boolean isAccountDisabled(id){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String pidmQuery = "SELECT NVL(GOBTPAC_PIN_DISABLED_IND,'N') DISABLED_IND FROM gobtpac,spriden  WHERE GOBTPAC_PIDM = spriden_pidm and spriden_change_ind is null and spriden_id = ?"
         def disabledInd = "N"
@@ -401,7 +483,7 @@ class ResetPasswordService {
      *
      * This method will check whether the PIDM account is disabled or not. Returns true if account is disabled else false
      */
-    def isPidmAccountDisabled(id){
+    public boolean isPidmAccountDisabled(id){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         String pidmQuery = "SELECT NVL(GOBTPAC_PIN_DISABLED_IND,'N') DISABLED_IND FROM gobtpac   WHERE GOBTPAC_PIDM =  ?"
         def disabledInd = "N"
@@ -424,7 +506,7 @@ class ResetPasswordService {
      * This method will log an login attempt and throws error if no of attempts are exceeded.
      *
      */
-    def loginAttempt(pidm) {
+    public void loginAttempt(pidm) {
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         try {
             sql.call("{call gokauth.p_login_attempt(${pidm})}")
@@ -437,7 +519,7 @@ class ResetPasswordService {
         }
     }
 
-    def validatePassword(pidm, password){
+    public Map validatePassword(pidm, password){
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         def errorMessage = "";
         String prefQuery = "SELECT GUBPPRF_REUSE_DAYS FROM gubpprf"
