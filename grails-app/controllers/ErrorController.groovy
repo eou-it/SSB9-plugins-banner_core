@@ -27,13 +27,15 @@ class ErrorController {
         logoutHandlers.each { handler ->
             handler.logout(request, response, springSecurityService.authentication)
         }
-        forward(action:"viewErrorPage", params:[exception: exception,returnHomeLinkAddress : returnHomeLinkAddress])
+        flash.exception = exception
+        flash.returnHomeLinkAddress =returnHomeLinkAddress
+        redirect(action:"showError")
     }
 
-    def viewErrorPage = {
+    def showError = {
         def model = [
-                exception: params.exception,
-                returnHomeLinkAddress: params.returnHomeLinkAddress
+                exception: flash.exception,
+                returnHomeLinkAddress: flash.returnHomeLinkAddress
         ]
         render view: VIEW_ERROR_PAGE, model: model
     }
