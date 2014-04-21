@@ -1,5 +1,5 @@
 /* *****************************************************************************
- Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db
 
@@ -262,7 +262,7 @@ public class BannerDS implements DataSource {
 
         Connection conn = underlyingSsbDataSource.getConnection()
         new BannerConnection(conn, null, this)  // Note that while an IDE may not like this, the delegate supports this type coersion
-        //setRoleSSB(conn)
+        setMepSsb(conn)
         conn
     }
 
