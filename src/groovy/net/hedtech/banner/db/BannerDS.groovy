@@ -85,7 +85,14 @@ public class BannerDS implements DataSource {
                 conn = underlyingDataSource.getConnection()
                 OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
                 log.debug "BannerDS.getConnection() instance of BannerUser has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
-                proxy(oconn, user?.oracleUserName)
+                // Added this try catch block to close the underlying DB connection if the oracle user doesn't have banproxy access error
+                try {
+                    proxy(oconn, user?.oracleUserName)
+                }   catch(SQLException ex)  {
+                    conn.close()
+                    log.error(ex.stackTrace)
+                    throw ex
+                }
                 roles = setRoles(oconn, user, applicableAuthorities)?.keySet() as String[]
 
                 setRoles(oconn, user, applicableAuthorities)
