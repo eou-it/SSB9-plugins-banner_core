@@ -5,6 +5,7 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import org.springframework.security.core.context.SecurityContextHolder as SCH
 
 class ErrorController {
 
@@ -15,16 +16,19 @@ class ErrorController {
     public static final String VIEW_ERROR_PAGE = "error"
     public static final String VIEW_PAGE_NOT_FOUND = "pageNotFound"
     public static final String VIEW_FORBIDDEN = "forbidden"
-
+    def logoutHandlers
 
     def internalServerError = {
         def exception = request.exception
         if (exception.cause instanceof MepCodeNotFoundException) {
             returnHomeLinkAddress = VIEW_LOGOUT_PAGE
         }
+         //SCH.context?.authentication is passed and logout is fired on the logout handlers registered
+        logoutHandlers.each { handler ->
+            handler.logout(request, response, SCH.context?.authentication)
+        }
         def model = [
             exception: exception,
-            request:   request,
             returnHomeLinkAddress : returnHomeLinkAddress
         ]
 
