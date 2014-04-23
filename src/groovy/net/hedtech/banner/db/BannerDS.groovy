@@ -86,6 +86,7 @@ public class BannerDS implements DataSource {
                 OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
                 log.debug "BannerDS.getConnection() instance of BannerUser has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
                 // Added this try catch block to close the underlying DB connection if the oracle user doesn't have banproxy access error
+                // Fixed the DBLock Issue - Jira Number - HRU-5127
                 try {
                     proxy(oconn, user?.oracleUserName)
                 }   catch(SQLException ex)  {
