@@ -495,7 +495,7 @@ class ResetPasswordService {
         finally{
             sql.close()
         }
-        if(disabledInd.toUpperCase() == INDICATOR_N)    true
+        if(disabledInd.toUpperCase() == INDICATOR_Y)    true
         else    false
     }
     /**
