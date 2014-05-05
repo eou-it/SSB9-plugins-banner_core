@@ -19,11 +19,12 @@ grails.project.dependency.resolution = {
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
 
     plugins {
-        compile ":hibernate:$grailsVersion"
+        runtime  ":hibernate:3.6.10.10"
         compile ":spring-security-core:1.2.7.3"
         compile ':functional-test:1.2.7'
         compile ':resources:1.1.6'
         compile ':markdown:1.0.0.RC1'
+		runtime ":webxml:1.4.1"
     }
 
     distribution = {
