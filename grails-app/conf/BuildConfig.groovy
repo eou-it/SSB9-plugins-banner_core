@@ -44,7 +44,8 @@ grails.project.dependency.resolution = {
         }
     }
 
-    dependencies {
+     dependencies {
+		compile "commons-dbcp:commons-dbcp:1.4"
     }
 
 }
