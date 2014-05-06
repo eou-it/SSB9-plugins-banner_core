@@ -31,6 +31,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
+import java.sql.SQLFeatureNotSupportedException
 
 /**
  * A dataSource that wraps an 'underlying' datasource.
@@ -413,6 +414,19 @@ public class BannerDS implements DataSource {
     int getLoginTimeout() {
         log.trace 'getLoginTimeout'
         getUnderlyingDataSource().getLoginTimeout()
+    }
+	
+	/*
+     * Added for java7 support 
+     * don't use 	@Override annotation so as to  have backward compatibility (JDK 6)
+	 * This method returns java.util.logging.Logger used by Data Source,
+	 * Since this class uses different logger i.e. org.apache.log4j.Logger method will rethrow back 
+	 * SQLFeatureNotSupportedException
+	 * @return java.util.logging.Logger
+     **/
+    java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+        throw new SQLFeatureNotSupportedException("Operation getParentLogger not supported.");
+
     }
 
 // --------------------------- end of public methods ----------------------------
