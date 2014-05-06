@@ -145,6 +145,7 @@ public class BannerDS implements DataSource {
     public Connection getSsbConnection() {
 
         Connection conn = underlyingSsbDataSource.getConnection()
+        setMepSsb(conn)
         new BannerConnection(conn, null, this)  // Note that while an IDE may not like this, the delegate supports this type coersion
         setRoleSSB(conn)
         conn
