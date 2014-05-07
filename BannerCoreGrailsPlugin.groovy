@@ -134,7 +134,7 @@ class BannerCoreGrailsPlugin {
 
         multiEntityProcessingService(MultiEntityProcessingService) { bean ->
             dataSource = ref(dataSource)
-            sessionFactory = ref(sessionFactory)
+            sessionFactory = ref('sessionFactory')
             bean.initMethod = 'init'
         }
 
@@ -169,7 +169,7 @@ class BannerCoreGrailsPlugin {
 
         bannerPreAuthenticatedFilter(BannerPreAuthenticatedFilter) {
             dataSource = ref(dataSource)
-            authenticationManager = ref(authenticationManager)
+            authenticationManager = ref('authenticationManager')
         }
 
         authenticationManager(ProviderManager) {
@@ -213,7 +213,7 @@ class BannerCoreGrailsPlugin {
         resetPasswordService(ResetPasswordService) {
             dataSource = ref(dataSource)
             authenticationDataSource = ref(authenticationDataSource)
-            sessionFactory = ref(sessionFactory)
+            sessionFactory = ref('sessionFactory')
         }
 
         // ---------------- JMX Mbeans (incl. Logging) ----------------
