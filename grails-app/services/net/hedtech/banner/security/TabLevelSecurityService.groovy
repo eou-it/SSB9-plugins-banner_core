@@ -3,6 +3,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
+import net.hedtech.banner.SpringContextUtils
 import org.springframework.security.core.context.SecurityContextHolder
 
 import groovy.sql.Sql
@@ -14,7 +15,7 @@ import org.apache.log4j.Logger
  */
 class TabLevelSecurityService {
 
-    static transactional = true
+    static transactional = false
     public static final String FULL_ACCESS_TO_END_USER = "F"
     public static final String READONLY_ACCESS_TO_END_USER = "Q"
 
@@ -50,7 +51,7 @@ class TabLevelSecurityService {
             log.error("Error:- There must be a user signed-in")
             throw new IllegalArgumentException("Error:- There must be a user signed-in")
         }
-
+        BannerGrantedAuthorityService bannerGrantedAuthorityService = SpringContextUtils.applicationContext.getBean('bannerCoreBannerGrantedAuthorityService')
         AccessPrivilege accessPrivilegeType = bannerGrantedAuthorityService.getAccessPrivilegeType(formName)
 
         if (accessPrivilegeType != AccessPrivilege.UNDEFINED) {
