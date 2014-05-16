@@ -1,5 +1,5 @@
 /* ******************************************************************************
- Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 
 import grails.util.GrailsUtil
@@ -9,6 +9,7 @@ import java.util.concurrent.Executors
 import javax.servlet.Filter
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
+import net.hedtech.banner.security.BannerAuthenticationEntryPoint
 import net.hedtech.banner.mep.MultiEntityProcessingService
 import net.hedtech.banner.security.*
 import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
@@ -26,6 +27,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.runtime.GStringImpl
+import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 
 import org.springframework.context.event.SimpleApplicationEventMulticaster
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
@@ -72,6 +74,8 @@ class BannerCoreGrailsPlugin {
     def documentation = ""
 
     def doWithSpring = {
+	
+	    def conf = SpringSecurityUtils.securityConfig
 
         switch (GrailsUtil.environment) {
             case GrailsApplication.ENV_PRODUCTION:
@@ -149,6 +153,15 @@ class BannerCoreGrailsPlugin {
         defaultLoaderService(DefaultLoaderService) {
             dataSource = ref(dataSource)
         }
+		
+		authenticationEntryPoint(BannerAuthenticationEntryPoint) { // '/login/auth'
+            loginFormUrl = conf.auth.loginFormUrl
+            ajaxLoginFormUrl = conf.auth.ajaxLoginFormUrl // '/login/authAjax'
+            forceHttps = conf.auth.forceHttps // false
+            useForward = conf.auth.useForward // false
+            portMapper = ref('portMapper')
+            portResolver = ref('portResolver')
+		}
 
         bannerAuthenticationProvider(BannerAuthenticationProvider) {
             dataSource = ref(dataSource)

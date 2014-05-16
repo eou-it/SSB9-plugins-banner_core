@@ -65,7 +65,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                 log.trace "SelfServiceBannerAuthenticationProvider will not authenticate user since CAS is enabled"
                 return null
             }
-            conn = dataSource.unproxiedConnection
+            conn = dataSource.getSsbConnection()
             Sql db = new Sql( conn )
 
             def authenticationResults = selfServiceAuthentication( authentication, db ) // may throw exceptions, like SQLException
