@@ -300,8 +300,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
        // def selfServiceRolePassword
         if (authentictionResults.oracleUserName) {
                 authorities << BannerGrantedAuthority.create( "SELFSERVICE", "BAN_DEFAULT_M", null )
-                Collection<GrantedAuthority> adminAuthorities = BannerAuthenticationProvider.determineAuthorities( authentictionResults, db )
-                authorities.addAll( adminAuthorities )
         }
        log.trace "SelfServiceAuthenticationProvider.determineAuthorities will return $authorities"
        authorities
