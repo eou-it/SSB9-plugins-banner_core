@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <%@ page contentType="text/html;charset=UTF-8" defaultCodec="none" %>
@@ -26,7 +26,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
     <div class="dialog">
         <div class="title"><g:message code="net.hedtech.banner.logout.timeout.dialog.title"/></div>
         <div class="message"><g:message code="net.hedtech.banner.logout.timeout.dialog.message"/></div>
-        <div class="actionMessage">${g.message(code: "net.hedtech.banner.logout.timeout.dialog.actionMessage", args: ["<a href=\"$target\">$actionLabel</a>"])}</div>
+        <button onclick=location.href="${target}">${actionLabel}</button>
     </div>
     <div class="footer">
         <span class="logo"></span>
