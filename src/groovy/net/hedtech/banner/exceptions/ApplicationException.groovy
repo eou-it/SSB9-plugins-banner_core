@@ -179,10 +179,6 @@ class ApplicationException extends RuntimeException {
                 if (wrappedException.getMessage().contains( 'transaction timeout' )) {
                     name = 'TransactionTimeoutException'
                 }
-            }  else if (name == 'RuntimeException') {
-                if (wrappedException.getMessage().contains( 'BusinessLogicValidationException' )) {
-                    name = 'BusinessLogicValidationException'
-                }
             }
             friendlyName = name
         }
@@ -435,12 +431,22 @@ class ApplicationException extends RuntimeException {
         'ValidationException': [
             httpStatusCode: 400,
             returnMap:  { localize ->
-                            [ message: translate( localize: localize,
-                                                  code: "validation.errors.message",
-                                                  args: [ localize( code: "${entityClassName}.label",
-                                                                    default: getUserFriendlyName() ) ] ) as String,
-                              errors: localizeFieldValidationErrors( wrappedException.errors?.allErrors, localize )
-                            ]
+                            if (wrappedException.message?.startsWith( "@@r1")) {
+                                def rcp = getResourceCodeAndParams( wrappedException.message )
+                                [ message: translate( localize: localize,
+                                        code: rcp.resourceCode,
+                                        args: rcp.bindingParams ) as String,
+                                  errors: localizeFieldValidationErrors( wrappedException.errors?.allErrors, localize )
+                                ]
+                            } else {
+                                [ message: translate( localize: localize,
+                                        code: "validation.errors.message",
+                                        args: [ localize( code: "${entityClassName}.label",
+                                                default: getUserFriendlyName() ) ] ) as String,
+                                        errors: localizeFieldValidationErrors( wrappedException.errors?.allErrors, localize )
+                                ]
+                            }
+
                         }
         ],
 
@@ -516,7 +522,7 @@ class ApplicationException extends RuntimeException {
         'AnyOtherException':  [
             httpStatusCode: 400, // TODO: Refine processing (e.g., not.implemented should be 501)
             returnMap:  { localize ->
-                            if (wrappedException.message.startsWith( "@@r1")) {
+                            if (wrappedException.message.startsWith( "@@r1" )) {
                                 def rcp = getResourceCodeAndParams( wrappedException.message )
                                 return [
                                     message: translate( localize: localize, code: rcp.resourceCode, args: rcp.bindingParams ) as String,
@@ -524,23 +530,32 @@ class ApplicationException extends RuntimeException {
                                 ]
                             } else {
                                 log.warn "ApplicationException cannot localize or handle it's wrapped exception $wrappedException"
-                                [ message: "${wrappedException.message}", // If this is an unmapped message, we won't localize at all...
-                                  errors:  (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.collect { message( error: it ) } : null)
+                                [
+                                    message: "${wrappedException.message}", // If this is an unmapped message, we won't localize at all...
+                                    errors:  (wrappedException.hasProperty( 'errors' ) ? wrappedException.errors?.allErrors?.collect { message( error: it ) } : null)
                                 ]
                             }
-                        }
-        ] ,
-        'BusinessLogicValidationException': [
-             httpStatusCode: 400,
-             returnMap:  { localize ->
-                 def rcp = getResourceCodeAndParams( wrappedException.message )
-                  [
-                       headers: ['X-Status-Reason':'Validation Failed'],
-                       message: translate( localize: localize,  code: rcp.resourceCode,    args: rcp.bindingParams ) as String,
-                       errors: null
-                  ]
-             }
+            }
         ],
+
+        'BusinessLogicValidationException': [
+            httpStatusCode: 400,
+            returnMap:  { localize ->
+                                [
+                                    headers: ['X-Status-Reason':'Validation failed'],
+                                    message: translate( localize: localize,
+                                                        code: wrappedException.messageCode,
+                                                        args: wrappedException.messageArgs.collect {
+                                                                  localize( code: it ) } ) as String,
+                                    errors: [[type: "validation", 
+                                              messageCode: wrappedException.messageCode,
+                                              message: translate( localize: localize,
+                                                        code: wrappedException.messageCode,
+                                                        args: wrappedException.messageArgs.collect {
+                                                                  localize( code: it ) } )]]
+                                ]
+            }
+        ]
     ]
 
 
