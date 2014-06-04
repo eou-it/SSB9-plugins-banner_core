@@ -4,7 +4,7 @@
 
 def dummyArabicCharacters = ["\u0645", "\u0639", "\u0644", "\u062D", "\u062F", "\u0625", "\u0626", "\u0627", "\u0628", "\u0639"]
 def mainArabicProperties = new Properties()
-def ignoreList = ["default.name.format", "default.date.format", "default.dateEntry.format", "js.datepicker.dateFormat", "default.calendar", "default.language.direction"]
+def ignoreList = ["default.name.format", "default.date.format", "default.birthdate.format", "default.dateEntry.format", "js.datepicker.dateFormat", "default.calendar", "default.language.direction"]
 
 def generateFakeProperty(def fromThis, def arabicCharacterList) {
     String arabicString = ""
