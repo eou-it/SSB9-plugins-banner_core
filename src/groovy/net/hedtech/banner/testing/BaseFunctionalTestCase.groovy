@@ -13,7 +13,7 @@ import javax.xml.validation.SchemaFactory
 /**
  * Base class for functional tests.
  */
-class BaseFunctionalTestCase extends functionaltestplugin.FunctionalTestCase {
+class BaseFunctionalTestCase  {
 
     def sessionFactory      // injected by Spring
     def dataSource          // injected by Spring

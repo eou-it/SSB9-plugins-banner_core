@@ -13,9 +13,10 @@ import groovy.sql.Sql
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
+import org.junit.After
+import org.junit.Before
 
-import org.junit.Ignore // not used, but imported here for convenience of subclasses
-
+import static org.junit.Assert.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken as UPAT
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
@@ -32,7 +33,7 @@ import org.springframework.security.core.context.SecurityContextHolder
  * Lastly, this base class provides additional helper methods.  To ensure the login/logout is
  * effective, this class manipulates the hibernate session and database connecitons.
  */
-class BaseIntegrationTestCase extends GroovyTestCase {
+class BaseIntegrationTestCase  {
 
     def transactional = false         // this turns off 'Grails' test framework management of transactions
     def useTransactions = true        // and this enables our own management of transactions, which is what most tests will want
@@ -61,8 +62,8 @@ class BaseIntegrationTestCase extends GroovyTestCase {
      * then you must either NOT call super.setUp from your setUp method
      * or you must not extend from this class (but extend from GroovyTestCase directly).
      **/
-    protected void setUp() {
-        super.setUp()
+    @Before
+    public void setUp() {
         params = [:]
         renderMap = [:]
         redirectMap = [:]
@@ -106,8 +107,8 @@ class BaseIntegrationTestCase extends GroovyTestCase {
      * Clears the hibernate session, but does not logout the user. If your test
      * needs to logout the user, it should do so by explicitly calling logout().
      **/
-    protected void tearDown() {
-         super.tearDown()
+    @After
+    public void tearDown() {
          FormContext.clear()
 
          if (useTransactions) {

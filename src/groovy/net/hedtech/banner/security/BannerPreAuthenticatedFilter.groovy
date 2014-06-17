@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.security
 
@@ -34,16 +34,27 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
                 log.debug "BannerPreAuthenticatedFilter.doFilter found assertAttributeValue $assertAttributeValue"
                 def dbUser = BannerAuthenticationProvider.getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource )
                 log.debug "BannerPreAuthenticatedFilter.doFilter found Oracle database user $dbUser for assertAttributeValue $assertAttributeValue"
+
+                def fullName = BannerAuthenticationProvider.getFullName( dbUser['name'].toUpperCase(), dataSource ) as String
+                log.debug "BannerPreAuthenticatedFilter.doFilter found full name $fullName"
+
                 Collection<GrantedAuthority> authorities = BannerAuthenticationProvider.determineAuthorities( dbUser, dataSource )
-                def user = new BannerUser( dbUser,       // username
+                log.debug "BannerPreAuthenticatedFilter.doFilter found authorities $authorities"
+
+                def user = new BannerUser( dbUser['name'],       // username
                                            'none',       // password
-                                           dbUser,       // oracle username (note this may be null)
+                                           dbUser['oracleUserName'],       // oracle username (note this may be null)
                                            true,         // enabled (account)
                                            true,         // accountNonExpired
                                            true,         // credentialsNonExpired 
                                            true,         // accountNonLocked 
-                                           authorities)
+                                           authorities,
+                                           fullName )
+                log.debug "BannerPreAuthenticatedFilter.doFilter bannerUser created $user"
+
                 def token = new BannerAuthenticationToken( user )
+                log.debug "BannerPreAuthenticatedFilter.doFilter BannerAuthenticationToken created $token"
+
                 SecurityContextHolder.context.setAuthentication( token )
             }
         }

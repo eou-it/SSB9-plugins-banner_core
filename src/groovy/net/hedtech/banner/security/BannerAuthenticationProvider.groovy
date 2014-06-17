@@ -8,6 +8,8 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
+
+import javax.security.auth.login.CredentialNotFoundException
 import java.sql.SQLException
 import javax.sql.DataSource
 import org.apache.log4j.Logger
@@ -249,6 +251,72 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         appContext.getBean("defaultLoaderService").loadDefault( userName )
     }
 
+    public static def getMappedDatabaseUserForUdcId(assertAttributeValue, dataSource ) {
+        log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId doing external authentication"
+        def oracleUserName
+        def pidm
+        def spridenId
+        def authenticationResults
+        String accountStatus
+        def conn
+
+        try {
+
+            conn = dataSource.unproxiedConnection
+            Sql db = new Sql( conn )
+
+            log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId mapping for $CH?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue"
+            // Determine if they map to a Banner Admin user
+            def sqlStatement = '''SELECT gobeacc_username, gobeacc_pidm FROM gobumap, gobeacc
+                                  WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
+            db.eachRow( sqlStatement, [assertAttributeValue] ) { row ->
+                oracleUserName = row.gobeacc_username
+                pidm = row.gobeacc_pidm
+            }
+            if ( oracleUserName ) {
+                log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId oracleUsername $oracleUserName found"
+                // check if the oracle user account is locked
+
+                def sqlStatement1 = '''select account_status,lock_date from dba_users where username=?'''
+                db.eachRow( sqlStatement1, [oracleUserName.toUpperCase()] ) { row ->
+                    accountStatus = row.account_status
+                }
+                if ( accountStatus.contains("LOCKED")) {
+                    log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId account status of user $oracleUserName is Locked"
+                    authenticationResults = [locked : true]
+                } else if ( accountStatus.contains("EXPIRED")) {
+                    log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId account status of user $oracleUserName is expired"
+                    authenticationResults = [expired : true]
+                } else {
+                    log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId account status of user $oracleUserName is valid"
+                    authenticationResults = [ name: oracleUserName, pidm: pidm, oracleUserName: oracleUserName, valid: true ].withDefault { k -> false }
+                }
+            } else {
+                log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId oracleUsername $oracleUserName not found"
+                // Not an Admin user, must map to a self service user
+                def sqlStatement2 = '''SELECT spriden_id, gobumap_pidm FROM gobumap,spriden WHERE spriden_pidm = gobumap_pidm AND spriden_change_ind is null AND gobumap_udc_id = ?'''
+                db.eachRow( sqlStatement2, [assertAttributeValue] ) { row ->
+                    spridenId = row.spriden_id
+                    pidm = row.gobumap_pidm
+                }
+                log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId query spriden_id for UDC IDENTIFIER $assertAttributeValue"
+                if(spridenId && pidm) {
+                    log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId spridenID $spridenId and gobumap pidm $pidm found"
+                    authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: null ].withDefault { k -> false }
+                } else {
+                    throw new CredentialNotFoundException("spriden ID / gobumap PIDM not found for  UDC IDENTIFIER $assertAttributeValue")
+                }
+            }
+
+        } catch (SQLException e) {
+            log.error "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId not able to map $CH?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue to db user"
+            throw e
+        } finally {
+            conn?.close()
+        }
+        log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId results are $authenticationResults"
+        authenticationResults
+    }
 }
 
 class UserAuthorityMediator {
