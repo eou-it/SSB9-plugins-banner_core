@@ -72,7 +72,11 @@ public class BannerDS implements DataSource {
         BannerConnection bannerConnection
         String[] roles
         def user = SecurityContextHolder?.context?.authentication?.principal
-        if (((user instanceof BannerUser && !user?.oracleUserName) || (user instanceof String && user == 'anonymousUser')) && isSelfServiceRequest()) {
+        if ( (ApiUtils.isApiRequest() && !shouldProxyApiRequest() ) ||  
+             ( isSelfServiceRequest() && 
+                 ((user instanceof BannerUser && !user?.oracleUserName) || 
+                  (user instanceof String && user == 'anonymousUser')) 
+             )) {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
@@ -131,7 +135,6 @@ public class BannerDS implements DataSource {
         else
             return new BannerConnection(conn, user, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
     }
-
 
     public void setFGAC(conn) {
 
@@ -572,6 +575,12 @@ public class BannerDS implements DataSource {
         enabled && proxySsb
     }
 
+    private boolean shouldProxyApiRequest() {
+
+        def proxyApi = CH.config.apiOracleUsersProxied instanceof Boolean ?: false
+        log.trace "BannerDS.shouldProxyApiRequest() will return ${proxyApi} (since apiOracleUsersProxied is ${proxyApi})"
+        proxyApi
+    }
 
     private isSelfServiceRequest() {
         log.trace "BannerDS.isSelfServiceRequest() will return '${FormContext.isSelfService()}' (FormContext = ${FormContext.get()})"
