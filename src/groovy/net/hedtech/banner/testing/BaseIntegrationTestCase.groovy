@@ -13,15 +13,14 @@ import groovy.sql.Sql
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
-import org.codehaus.groovy.grails.test.support.GrailsTestTransactionInterceptor
-import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore // not used, but imported here for convenience of subclasses
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken as UPAT
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import grails.test.spock.IntegrationSpec
+
 
 /**
  * Base class for integration tests, that sets the FormContext and logs in 'GRAILS_USER' if necessary
@@ -63,8 +62,7 @@ class BaseIntegrationTestCase extends Assert {
      * then you must either NOT call super.setUp from your setUp method
      * or you must not extend from this class (but extend from GroovyTestCase directly).
      **/
-    @Before
-    public void setup() {
+    protected void setUp() {
         params = [:]
         renderMap = [:]
         redirectMap = [:]
@@ -108,8 +106,7 @@ class BaseIntegrationTestCase extends Assert {
      * Clears the hibernate session, but does not logout the user. If your test
      * needs to logout the user, it should do so by explicitly calling logout().
      **/
-    @After
-    public void tearDown() {
+    protected void tearDown() {
          FormContext.clear()
 
          if (useTransactions) {
