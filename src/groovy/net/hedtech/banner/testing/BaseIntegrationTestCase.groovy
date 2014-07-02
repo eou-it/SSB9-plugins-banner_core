@@ -13,10 +13,13 @@ import groovy.sql.Sql
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
+import org.hibernate.Transaction
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore // not used, but imported here for convenience of subclasses
+import org.springframework.transaction.annotation.Transactional
 
+import static org.junit.Assert.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken as UPAT
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
@@ -37,6 +40,7 @@ class BaseIntegrationTestCase extends Assert {
 
     def transactional = false         // this turns off 'Grails' test framework management of transactions
     def useTransactions = true        // and this enables our own management of transactions, which is what most tests will want
+    def exposeTransactionAwareSessionFactory = false
 
     def formContext = null            // This may be set within the subclass, prior to calling super.setUp(). If it isn't,
                                       // it will be looked up automatically.
@@ -62,7 +66,8 @@ class BaseIntegrationTestCase extends Assert {
      * then you must either NOT call super.setUp from your setUp method
      * or you must not extend from this class (but extend from GroovyTestCase directly).
      **/
-    protected void setUp() {
+    @Before
+    public void setUp() {
         params = [:]
         renderMap = [:]
         redirectMap = [:]
@@ -106,13 +111,22 @@ class BaseIntegrationTestCase extends Assert {
      * Clears the hibernate session, but does not logout the user. If your test
      * needs to logout the user, it should do so by explicitly calling logout().
      **/
-    protected void tearDown() {
+    @After
+    public void tearDown() {
          FormContext.clear()
 
          if (useTransactions) {
              sessionFactory.currentSession.connection().rollback()
-             sessionFactory.currentSession.close()
-         }
+			//Below code is not required in case  of the Test Classes participating  in  Transaction
+			//this code will end up in org.hibernate.HibernateException: No Hibernate Session bound to thread            
+			// sessionFactory.currentSession.close()
+             //sessionFactory.close()
+
+        }//else block closes the session and SessionFactory if this Test Class doesn't participate in Transaction
+        else{
+            sessionFactory.currentSession.close()
+            sessionFactory.close()
+        }
     }
 
 
