@@ -124,6 +124,7 @@ class BaseIntegrationTestCase extends Assert {
 
         }//else block closes the session and SessionFactory if this Test Class doesn't participate in Transaction
         else{
+            sessionFactory.currentSession.connection().rollback()
             sessionFactory.currentSession.close()
             sessionFactory.close()
         }
