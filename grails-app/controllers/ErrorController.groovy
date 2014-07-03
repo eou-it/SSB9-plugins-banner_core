@@ -20,7 +20,7 @@ class ErrorController {
 
     def internalServerError = {
         def exception = request.exception
-        if (exception.cause instanceof MepCodeNotFoundException) {
+        if (exception?.cause instanceof MepCodeNotFoundException) {
             returnHomeLinkAddress = VIEW_LOGOUT_PAGE
         }
          //SCH.context?.authentication is passed and logout is fired on the logout handlers registered
