@@ -51,6 +51,7 @@ class BaseIntegrationTestCase extends Assert {
     def sessionFactory                // injected via spring
     def nativeJdbcExtractor           // injected via spring
     def messageSource                 // injected via spring
+	 def codecLookup                  // injected via spring
     private validationTagLibInstance  // assigned lazily - see getValidationTagLib method
 
     def controller = null             // assigned by subclasses, e.g., within the setUp()
