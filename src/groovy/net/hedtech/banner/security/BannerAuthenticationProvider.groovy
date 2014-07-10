@@ -1,6 +1,6 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/
+ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.security
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
@@ -9,7 +9,6 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
 
-import javax.security.auth.login.CredentialNotFoundException
 import java.sql.SQLException
 import javax.sql.DataSource
 import org.apache.log4j.Logger
@@ -17,6 +16,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.authentication.*
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 
 /**
  * An authentication provider which authenticates a user by logging into the Banner database.
@@ -83,7 +83,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
 
     /**
-     * Throws appropriate Spring Security exceptions for disabled accounts, locked accounts, expired pin, 
+     * Throws appropriate Spring Security exceptions for disabled accounts, locked accounts, expired pin,
      * @throws DisabledException if account is disabled
      * @throws CredentialsExpiredException if credential is expired
      * @throws LockedException if the user account has been locked
@@ -100,38 +100,38 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     }
 
 
-    private static handleFailure( provider, authentication, authenticationResults, exception ) { 
+    private static handleFailure( provider, authentication, authenticationResults, exception ) {
 
-        log.warn "${provider.class.simpleName} was not able to authenticate user $authentication.name due to exception ${exception.class.simpleName}: ${exception.message} " 
+        log.warn "${provider.class.simpleName} was not able to authenticate user $authentication.name due to exception ${exception.class.simpleName}: ${exception.message} "
         def msg = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( exception.class.simpleName, "Exception" ) )
         def module = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( provider.class.simpleName, "AuthenticationProvider" ) )
         getApplicationContext().publishEvent( new BannerAuthenticationEvent( authentication.name, false, msg, module, new Date(), 1 ) )
-        throw exception 
+        throw exception
     }
 
 
     /**
-     * Returns a new authentication object based upon the supplied arguments.  
+     * Returns a new authentication object based upon the supplied arguments.
      * This method, when used within other providers, should NOT catch the exceptions but should let them be caught by the filter.
      * @param provider the provider who needs to create a token (used for logging purposes)
      * @param authentication the initial authentication object containing credentials
-     * @param authenticationResults the authentication results, including the user's Oracle database username 
+     * @param authenticationResults the authentication results, including the user's Oracle database username
      * @param authorities the user's authorities that must be included in the new authentication object
      * @throws AuthenticationException various AuthenticationException types may be thrown, and should NOT be caught by providers using this method
      **/
-    public static def newAuthenticationToken( provider, authenticationResults ) { 
+    public static def newAuthenticationToken( provider, authenticationResults ) {
 
         try {
             def user = new BannerUser( authenticationResults.name,                       // username
-                                       authenticationResults.credentials as String,      // password
-                                       authenticationResults.oracleUserName,             // oracle username (note this may be null)
-                                       !authenticationResults.disabled,                  // enabled (account)
-                                       true,                                             // accountNonExpired - NOT USED
-                                       !authenticationResults.expired,                   // credentialsNonExpired 
-                                       true,                                             // accountNonLocked - NOT USED (YET)
-                                       authenticationResults.authorities as Collection, 
-                                       authenticationResults.fullName
-                                       )
+                    authenticationResults.credentials as String,      // password
+                    authenticationResults.oracleUserName,             // oracle username (note this may be null)
+                    !authenticationResults.disabled,                  // enabled (account)
+                    true,                                             // accountNonExpired - NOT USED
+                    !authenticationResults.expired,                   // credentialsNonExpired
+                    true,                                             // accountNonLocked - NOT USED (YET)
+                    authenticationResults.authorities as Collection,
+                    authenticationResults.fullName
+            )
             if (authenticationResults?.webTimeout) user.webTimeout = authenticationResults.webTimeout
             if (authenticationResults?.pidm) user.pidm = authenticationResults.pidm
             if (authenticationResults?.gidm) user.gidm = authenticationResults.gidm
@@ -166,42 +166,42 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
      * Returns the user's full name.
      **/
     public static getFullName( String name, def dataSource ) {
-      def conn = null
-      def fullName
-      Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
-      name = name.toUpperCase()
-      try {
-          conn = dataSource.unproxiedConnection
-          Sql db = new Sql( conn )
-          db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname from spriden, gobeacc where gobeacc_username = ? AND spriden_pidm = gobeacc_pidm AND  spriden_change_ind is null", [name] ) {
-            row -> fullName = row.fullname
-          }
-          log.trace "BannerAuthenticationProvider.getFullName after checking f_formatname $fullName"
-          if (null == fullName) {
-            db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname  from gurlogn,spriden where gurlogn_user = ? and gurlogn_pidm = spriden_pidm", [name] ) { row ->
-               fullName = row.fullname
-            }
-          }
-          log.trace "BannerAuthenticationProvider.getFullName after checking gurlogn_pidm $fullName"
-          if (null == fullName) {
-            db.eachRow( "select gurlogn_first_name|| ' '||gurlogn_last_name fullname from gurlogn where gurlogn_user = ? and gurlogn_first_name is not null and gurlogn_last_name is not null", [name] ) { row ->
-               fullName = row.fullname
-            }
-          }
-          if (null == fullName) {
-            db.eachRow( "select f_format_name(spriden_pidm,'FMIL') fullname from spriden where spriden_id = ?", [name] ) {
+        def conn = null
+        def fullName
+        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
+        name = name.toUpperCase()
+        try {
+            conn = dataSource.unproxiedConnection
+            Sql db = new Sql( conn )
+            db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname from spriden, gobeacc where gobeacc_username = ? AND spriden_pidm = gobeacc_pidm AND  spriden_change_ind is null", [name] ) {
                 row -> fullName = row.fullname
             }
-          }
-          if (null == fullName) fullName = name
-      } catch (SQLException e) {
-          log.error "BannerAuthenticationProvider not able to getFullName $name due to exception $e.message"
-          return null
-      } finally {
-          conn?.close()
-      }
-      log.trace "BannerAuthenticationProvider.getFullName is returning $fullName"
-      fullName
+            log.trace "BannerAuthenticationProvider.getFullName after checking f_formatname $fullName"
+            if (null == fullName) {
+                db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname  from gurlogn,spriden where gurlogn_user = ? and gurlogn_pidm = spriden_pidm", [name] ) { row ->
+                    fullName = row.fullname
+                }
+            }
+            log.trace "BannerAuthenticationProvider.getFullName after checking gurlogn_pidm $fullName"
+            if (null == fullName) {
+                db.eachRow( "select gurlogn_first_name|| ' '||gurlogn_last_name fullname from gurlogn where gurlogn_user = ? and gurlogn_first_name is not null and gurlogn_last_name is not null", [name] ) { row ->
+                    fullName = row.fullname
+                }
+            }
+            if (null == fullName) {
+                db.eachRow( "select f_format_name(spriden_pidm,'FMIL') fullname from spriden where spriden_id = ?", [name] ) {
+                    row -> fullName = row.fullname
+                }
+            }
+            if (null == fullName) fullName = name
+        } catch (SQLException e) {
+            log.error "BannerAuthenticationProvider not able to getFullName $name due to exception $e.message"
+            return null
+        } finally {
+            conn?.close()
+        }
+        log.trace "BannerAuthenticationProvider.getFullName is returning $fullName"
+        fullName
     }
 
 
@@ -218,10 +218,10 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             authenticationDataSource.setURL( dataSource.getUrl() )
             conn = authenticationDataSource.getConnection( authentication.name, authentication.credentials )
             log.trace "BannerAuthenticationProvider.defaultAuthentication was able to connect, and will create authenticationResults..."
-            authenticationResults = [ name:           authentication.name, 
-                                      credentials:    authentication.credentials, 
-                                      oracleUserName: authentication.name,
-                                      valid:          true ].withDefault { k -> false }
+            authenticationResults = [ name:           authentication.name,
+                    credentials:    authentication.credentials,
+                    oracleUserName: authentication.name,
+                    valid:          true ].withDefault { k -> false }
             log.trace "BannerAuthenticationProvider.defaultAuthentication successfully authenticated user ${authentication.name} and will return authenticationResults[name:${authentication.name},credentials:{PROTECTED},oracleUserName:${authentication.name},valid:true]"
             authenticationResults
         }
@@ -304,7 +304,9 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
                     log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId spridenID $spridenId and gobumap pidm $pidm found"
                     authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: null ].withDefault { k -> false }
                 } else {
-                    throw new CredentialNotFoundException("spriden ID / gobumap PIDM not found for  UDC IDENTIFIER $assertAttributeValue")
+                    log.fatal "System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user"
+                    throw new UsernameNotFoundException("System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user")
+
                 }
             }
 
