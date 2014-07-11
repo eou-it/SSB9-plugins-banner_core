@@ -1,29 +1,22 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.testing
 
-import net.hedtech.banner.configuration.ConfigurationUtils
-import net.hedtech.banner.exceptions.*
-import net.hedtech.banner.security.FormContext // this IS used - damn you IntelliJ ;-)
-
 import grails.util.GrailsNameUtils
-
 import groovy.sql.Sql
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import net.hedtech.banner.configuration.ConfigurationUtils
+import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.security.FormContext
 import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
-import org.hibernate.Transaction
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.springframework.transaction.annotation.Transactional
-
-import static org.junit.Assert.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken as UPAT
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 
+import static org.junit.Assert.*
 
 /**
  * Base class for integration tests, that sets the FormContext and logs in 'GRAILS_USER' if necessary
@@ -118,17 +111,9 @@ class BaseIntegrationTestCase extends Assert {
 
          if (useTransactions) {
              sessionFactory.currentSession.connection().rollback()
-			//Below code is not required in case  of the Test Classes participating  in  Transaction
-			//this code will end up in org.hibernate.HibernateException: No Hibernate Session bound to thread            
-			// sessionFactory.currentSession.close()
-             //sessionFactory.close()
-
-        }//else block closes the session and SessionFactory if this Test Class doesn't participate in Transaction
-        else{
-            sessionFactory.currentSession.connection().rollback()
-            sessionFactory.currentSession.close()
-            sessionFactory.close()
+			 sessionFactory.currentSession.close()
         }
+
     }
 
 
