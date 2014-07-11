@@ -181,4 +181,9 @@ class LoginController {
             redirect controller : "resetPassword", action: "questans", params : params
         }
     }
+
+    def error = {
+        def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+        render view: "customerror", model: [msg: exception.getMessage()]
+    }
 }
