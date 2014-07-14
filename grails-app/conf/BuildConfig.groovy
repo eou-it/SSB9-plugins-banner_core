@@ -21,7 +21,7 @@ grails.project.dependency.resolution = {
     plugins {
         runtime  ":hibernate:3.6.10.10"
         compile ":spring-security-core:1.2.7.3"
-        compile ':resources:1.1.6'
+        compile ':resources:1.2.7'
         compile ':markdown:1.0.0.RC1'
 		runtime ":webxml:1.4.1"
     }
