@@ -98,7 +98,7 @@ class LoginController {
     }
 
     /**
-     * Callback after a failed login. Redirects to the auth page with a warning message.
+     * Callback after a failed login. forwards to the auth page with a warning message.
      */
     def authfail = {
 
@@ -112,7 +112,7 @@ class LoginController {
         }
         else {
             flash.message = msg
-            redirect action: auth, params: params
+            forward action: "auth", params: params
         }
     }
 
