@@ -291,9 +291,6 @@ class BannerCoreGrailsPlugin {
             case 'external':
                 filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
                 filterChain['/**/qapi/**'] = 'statelessSecurityContextPersistenceFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
-                filterChain['/login/error'] = 'anonymousAuthenticationFilter'
-                filterChain['/**/css/timeout.css'] = 'anonymousAuthenticationFilter'
-                filterChain['/**/images/**'] = 'anonymousAuthenticationFilter'
                 filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,bannerPreAuthenticatedFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
                 break
             default:
