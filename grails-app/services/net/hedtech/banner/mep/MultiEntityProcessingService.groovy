@@ -265,6 +265,7 @@ class MultiEntityProcessingService {
 
     def resetUserProcessContext(home) {
         SCH.context?.authentication?.principal?.mepProcessContext = home
+        setProcessContext(home)
     }
 
 
@@ -326,6 +327,9 @@ class MultiEntityProcessingService {
         } finally {
             sql?.close()
         }
+
+        setHomeContext(home)
+        setProcessContext(home)
     }
 
 }
