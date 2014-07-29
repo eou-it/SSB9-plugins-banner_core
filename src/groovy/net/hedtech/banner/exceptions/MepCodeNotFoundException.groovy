@@ -3,7 +3,7 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.exceptions
 
-import net.hedtech.banner.utility.MessageResolver
+import net.hedtech.banner.ui.zk.i18n.MessageHelper
 
 /**
  * A runtime exception indicating an entity or resource was not found.
@@ -17,9 +17,9 @@ class MepCodeNotFoundException extends RuntimeException {
 
     public String getMessage() {
         if (!mepCode || mepCode == NO_MEP_CODE_PROVIDED) {
-            MessageResolver.message(MESSAGE_KEY_MEPCODE_NOT_FOUND)
+            MessageHelper.message(MESSAGE_KEY_MEPCODE_NOT_FOUND)
         } else {
-            MessageResolver.message(MESSAGE_KEY_MEPCODE_INVALID, [mepCode]?.toArray() )
+            MessageHelper.message(MESSAGE_KEY_MEPCODE_INVALID, [mepCode]?.toArray() )
         }
     }
 
