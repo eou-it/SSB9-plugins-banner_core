@@ -107,10 +107,13 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
             return false
         }
 
-        String url = request.strippedServletPath
+        String url = request.getRequestURI().substring(request.getContextPath().length());
+        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url"
         HashMap interceptUrlMap = org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils.securityConfig["interceptUrlMap"]
         AntUrlPathMatcher antUrlPathMatcher = new AntUrlPathMatcher()
+        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication antUrlPathMatcher $antUrlPathMatcher"
         for (Map.Entry<Object, Collection<ConfigAttribute>> entry : interceptUrlMap.entrySet()) {
+            log.debug "BannerPreAuthenticatedFilter.requiresAuthentication entry : $entry"
             if (antUrlPathMatcher.pathMatchesUrl(entry.getKey(), url)) {
                 log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url matches $entry from interceptUrlMap"
                 if(entry.getValue().contains("IS_AUTHENTICATED_ANONYMOUSLY")) {
