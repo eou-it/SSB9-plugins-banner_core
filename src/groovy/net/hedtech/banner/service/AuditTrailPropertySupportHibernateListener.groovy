@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.service
 
+import net.hedtech.banner.apisupport.ApiUtils
 import org.apache.commons.lang.ArrayUtils
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
@@ -69,8 +70,11 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         cal.set( Calendar.MILLISECOND, 0 ) // truncate fractional seconds, so that we can compare dates to those retrieved from the database
         Date lastModified = new Date( cal.getTime().getTime() )
         def  lastModifiedBy = getLastModifiedBy()
+        def  dataOrigin = ApiUtils.isApiRequest() ?
+                event.entity?.dataOrigin ?: (CH.config?.dataOrigin ?: "Banner") :
+                CH.config?.dataOrigin ?: "Banner"
         if(lastModifiedBy) {
-            (setPropertyValue( event, "dataOrigin" ) { CH.config?.dataOrigin ?: "Banner" }
+            (setPropertyValue( event, "dataOrigin" ) { dataOrigin }
                     && setPropertyValue( event, "lastModifiedBy" ) { lastModifiedBy }
                     && setPropertyValue( event, "lastModified" ) { lastModified })
         }
