@@ -12,10 +12,11 @@ import org.springframework.security.core.GrantedAuthority
 public class BannerAuthenticationToken implements Authentication {
 
     private BannerUser user
+    private Date tokenExpiration;
 
-
-    BannerAuthenticationToken( BannerUser user ) {
+    BannerAuthenticationToken( BannerUser user , Date tokenExpiration) {
         this.user = user
+        this.tokenExpiration = tokenExpiration;
     }
 
 
@@ -78,4 +79,17 @@ public class BannerAuthenticationToken implements Authentication {
         "${super.toString()}[isAuthenticated()=${isAuthenticated()}, user=$user]"
     }
 
+    /**
+     * @return null if no expiration is set, expiration date otherwise
+     */
+    public Date getTokenExpiration() {
+        return tokenExpiration;
+    }
+
+    /**
+     * SAML credentials can be kept without clearing.
+     */
+    @Override
+    public void eraseCredentials() {
+    }
 }

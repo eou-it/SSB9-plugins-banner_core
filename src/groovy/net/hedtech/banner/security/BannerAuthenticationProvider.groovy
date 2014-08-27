@@ -135,7 +135,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             if (authenticationResults?.webTimeout) user.webTimeout = authenticationResults.webTimeout
             if (authenticationResults?.pidm) user.pidm = authenticationResults.pidm
             if (authenticationResults?.gidm) user.gidm = authenticationResults.gidm
-            def token = new BannerAuthenticationToken( user )
+            def token = new BannerAuthenticationToken( user, null )
             log.trace "${provider?.class?.simpleName}.newAuthenticationToken is returning token $token"
             token
         } catch (e) {
