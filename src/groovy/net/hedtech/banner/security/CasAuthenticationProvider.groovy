@@ -130,9 +130,20 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
         def spridenId
         def authenticationResults
         String accountStatus
-
+        def ssbAccountStatus = CH.config.ssbUsersCheckOracleAccountStatus instanceof Boolean ? CH.config.ssbUsersCheckOracleAccountStatus : false
+        def proxySsb = CH.config.ssbOracleUsersProxied instanceof Boolean ? CH.config.ssbOracleUsersProxied : false
+        def processSsbOracleAccount = true
         try {
             log.trace "CasAuthenticationProvider.casAuthentication mapping for $CH?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue"
+            // Determine if ssb users need oracle authenticatoion
+            if (isSsbEnabled() && !proxySsb  ) {
+                log.trace "CasAuthenticationProvider.casAuthentication configuration values ssbOracleUsersProxied = $proxySsb"
+                processSsbOracleAccount = false
+            }
+            if (isSsbEnabled() && proxySsb && !ssbAccountStatus  ) {
+                log.trace "CasAuthenticationProvider.casAuthentication configuration values ssbUsersCheckOracleAccountStatus = $ssbAccountStatus"
+                processSsbOracleAccount = false
+            }
             // Determine if they map to a Banner Admin user
             def sqlStatement = '''SELECT gobeacc_username, gobeacc_pidm FROM gobumap, gobeacc
                                   WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
@@ -140,7 +151,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
                 oracleUserName = row.gobeacc_username
                 pidm = row.gobeacc_pidm
             }
-            if ( oracleUserName ) {
+            if ( oracleUserName && processSsbOracleAccount ) {
 
                 // check if the oracle user account is locked
 
