@@ -133,6 +133,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
         def ssbAccountStatus = CH.config.ssbUsersCheckOracleAccountStatus instanceof Boolean ? CH.config.ssbUsersCheckOracleAccountStatus : false
         def proxySsb = CH.config.ssbOracleUsersProxied instanceof Boolean ? CH.config.ssbOracleUsersProxied : false
         def processSsbOracleAccount = true
+        def processAccountError = true
         try {
             log.trace "CasAuthenticationProvider.casAuthentication mapping for $CH?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue"
             // Determine if ssb users need oracle authenticatoion
@@ -142,7 +143,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
             }
             if (isSsbEnabled() && proxySsb && !ssbAccountStatus  ) {
                 log.trace "CasAuthenticationProvider.casAuthentication configuration values ssbUsersCheckOracleAccountStatus = $ssbAccountStatus"
-                processSsbOracleAccount = false
+                processAccountError = false
             }
             // Determine if they map to a Banner Admin user
             def sqlStatement = '''SELECT gobeacc_username, gobeacc_pidm FROM gobumap, gobeacc
@@ -159,9 +160,9 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
                 db.eachRow( sqlStatement1, [oracleUserName.toUpperCase()] ) { row ->
                     accountStatus = row.account_status
                 }
-                if ( accountStatus.contains("LOCKED")) {
+                if ( accountStatus.contains("LOCKED") && processAccountError) {
                     authenticationResults = [locked : true]
-                } else if ( accountStatus.contains("EXPIRED")) {
+                } else if ( accountStatus.contains("EXPIRED") && processAccountError) {
                     authenticationResults = [expired : true]
                 } else {
                     authenticationResults = [ name: oracleUserName, pidm: pidm, oracleUserName: oracleUserName, valid: true ].withDefault { k -> false }
