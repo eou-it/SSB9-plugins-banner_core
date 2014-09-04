@@ -130,20 +130,14 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
         def spridenId
         def authenticationResults
         String accountStatus
-        def ssbAccountStatus = CH.config.ssbUsersCheckOracleAccountStatus instanceof Boolean ? CH.config.ssbUsersCheckOracleAccountStatus : false
         def proxySsb = CH.config.ssbOracleUsersProxied instanceof Boolean ? CH.config.ssbOracleUsersProxied : false
         def processSsbOracleAccount = true
-        def processAccountError = true
         try {
             log.trace "CasAuthenticationProvider.casAuthentication mapping for $CH?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue"
             // Determine if ssb users need oracle authenticatoion
             if (isSsbEnabled() && !proxySsb  ) {
                 log.trace "CasAuthenticationProvider.casAuthentication configuration values ssbOracleUsersProxied = $proxySsb"
                 processSsbOracleAccount = false
-            }
-            if (isSsbEnabled() && proxySsb && !ssbAccountStatus  ) {
-                log.trace "CasAuthenticationProvider.casAuthentication configuration values ssbUsersCheckOracleAccountStatus = $ssbAccountStatus"
-                processAccountError = false
             }
             // Determine if they map to a Banner Admin user
             def sqlStatement = '''SELECT gobeacc_username, gobeacc_pidm FROM gobumap, gobeacc
@@ -160,11 +154,9 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
                 db.eachRow( sqlStatement1, [oracleUserName.toUpperCase()] ) { row ->
                     accountStatus = row.account_status
                 }
-                if ( accountStatus.contains("LOCKED") && processAccountError) {
+                if ( accountStatus.contains("LOCKED")) {
                     authenticationResults = [locked : true]
-                } else if ( accountStatus.contains("EXPIRED") && processAccountError) {
-                    authenticationResults = [expired : true]
-                } else {
+                }  else {
                     authenticationResults = [ name: oracleUserName, pidm: pidm, oracleUserName: oracleUserName, valid: true ].withDefault { k -> false }
                 }
             } else {
