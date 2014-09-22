@@ -24,6 +24,7 @@ grails.project.dependency.resolution = {
         compile ':resources:1.2.7'
         compile ':markdown:1.0.0.RC1'
 		runtime ":webxml:1.4.1"
+        compile ":functional-test:2.0.0"
     }
 
     distribution = {
