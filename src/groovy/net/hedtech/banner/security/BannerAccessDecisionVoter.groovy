@@ -98,7 +98,9 @@ class BannerAccessDecisionVoter extends RoleVoter {
         Map<String,String> params = urlMappingMatch?.getParameters()
         List<String> determinedForms
         if( params?.containsKey('pluralizedResourceName'))
-            determinedForms = formControllerMap[ params.pluralizedResourceName ] ?: []
+            determinedForms = formControllerMap[
+                    (params.parentPluralizedResourceName ? params.parentPluralizedResourceName + "/" : "") +
+                    params.pluralizedResourceName ] ?: []
         else
         determinedForms = UrlBasedFormsIdentifier.getFormsFor( url, prefixes,
                                                  formControllerMap, pageName )
