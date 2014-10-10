@@ -6,7 +6,7 @@ package net.hedtech.banner.security
 import org.apache.log4j.Logger
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-
+import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingInfo
 import org.springframework.security.access.vote.RoleVoter
 import org.springframework.security.access.AccessDecisionVoter
 import org.springframework.security.access.ConfigAttribute
@@ -92,9 +92,17 @@ class BannerAccessDecisionVoter extends RoleVoter {
         if (url.contains("banner.zul")) {
             pageName = RequestContextHolder.currentRequestAttributes().request.getParameter("page")?.toLowerCase()
         }
-
-        List<String> determinedForms =
-            UrlBasedFormsIdentifier.getFormsFor( url, prefixes,
+        def ctx=ServletContextHolder.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
+        def grailsUrlMappingsHolder = ctx?.grailsUrlMappingsHolder
+        DefaultUrlMappingInfo urlMappingMatch = grailsUrlMappingsHolder?.match(url)
+        Map<String,String> params = urlMappingMatch?.getParameters()
+        List<String> determinedForms
+        if( params?.containsKey('pluralizedResourceName') && urlMappingMatch?.controllerName == 'restfulApi' )
+            determinedForms = formControllerMap[
+                    (params.parentPluralizedResourceName ? params.parentPluralizedResourceName + "/" : "") +
+                    params.pluralizedResourceName ] ?: []
+        else
+        determinedForms = UrlBasedFormsIdentifier.getFormsFor( url, prefixes,
                                                  formControllerMap, pageName )
        log.debug "getCorrespondingFormNamesFor() will return form name(s): ${determinedForms?.join(', ')}"
        determinedForms
