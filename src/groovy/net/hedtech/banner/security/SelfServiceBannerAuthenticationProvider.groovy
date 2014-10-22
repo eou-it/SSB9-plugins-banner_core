@@ -300,7 +300,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             }
         }
         if (authentictionResults.pidm) {
-            authorities << BannerGrantedAuthority.create( "SELFSERVICE-WEBUSER", "BAN_DEFAULT_M", null )
+            authorities << BannerGrantedAuthority.create( "SELFSERVICE-ALLROLES", "BAN_DEFAULT_M", null )
         }
        // def selfServiceRolePassword
         if (authentictionResults.oracleUserName) {
