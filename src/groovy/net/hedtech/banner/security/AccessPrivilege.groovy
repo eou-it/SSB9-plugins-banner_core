@@ -5,15 +5,7 @@ import java.util.regex.Pattern
 /**
  */
 public enum AccessPrivilege {
-    READONLY(~/DEFAULT_Q/ as Pattern){
-
-    },
-    READWRITE(~/DEFAULT_M/  as Pattern){
-
-    },
-    UNDEFINED(null){
-
-    };
+    READONLY(~/DEFAULT_Q/ as Pattern), READWRITE(~/DEFAULT_M/  as Pattern), UNDEFINED(null);
 
     private Pattern pattern = null
 

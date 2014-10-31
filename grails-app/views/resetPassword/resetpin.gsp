@@ -9,6 +9,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
   <head>
       <title><g:message code="net.hedtech.banner.resetpassword.resetpassword.title"/></title>
        <meta name="layout" content="bannerSelfServicePage"/>
+       <meta name="menuBaseURL" content="${createLink(uri: '/ssb')}" />
        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword.css')}"/>
        <script language="javascript">
             function gotoLogin(){

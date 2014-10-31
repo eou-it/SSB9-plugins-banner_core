@@ -54,8 +54,8 @@ class BannerCoreGrailsPlugin {
     def grailsVersion = "2.2.1 > *"
 
     // the other plugins this plugin depends on
-    def dependsOn = ['springSecurityCore': '1.2.7.3',
-    ]
+    def dependsOn = ['springSecurityCore': '1.2.7.3']
+    List loadAfter = ['springSecurityCore']
 
     // resources that are excluded from plugin packaging
     def pluginExcludes = ["grails-app/views/error.gsp"]
@@ -134,7 +134,7 @@ class BannerCoreGrailsPlugin {
 
         multiEntityProcessingService(MultiEntityProcessingService) { bean ->
             dataSource = ref(dataSource)
-            sessionFactory = ref(sessionFactory)
+            sessionFactory = ref('sessionFactory')
             bean.initMethod = 'init'
         }
 
@@ -169,7 +169,7 @@ class BannerCoreGrailsPlugin {
 
         bannerPreAuthenticatedFilter(BannerPreAuthenticatedFilter) {
             dataSource = ref(dataSource)
-            authenticationManager = ref(authenticationManager)
+            authenticationManager = ref('authenticationManager')
         }
 
         bannerMepCodeFilter(BannerMepCodeFilter) 
@@ -215,7 +215,7 @@ class BannerCoreGrailsPlugin {
         resetPasswordService(ResetPasswordService) {
             dataSource = ref(dataSource)
             authenticationDataSource = ref(authenticationDataSource)
-            sessionFactory = ref(sessionFactory)
+            sessionFactory = ref('sessionFactory')
         }
 
         // ---------------- JMX Mbeans (incl. Logging) ----------------

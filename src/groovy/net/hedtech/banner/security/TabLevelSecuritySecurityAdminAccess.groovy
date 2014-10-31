@@ -3,15 +3,7 @@ package net.hedtech.banner.security
 /**
  */
 public enum TabLevelSecuritySecurityAdminAccess {
-    NO_PRIVILEGES("F"){
-
-    },
-    NO_PRIVILEGE_TO_HIDE("Q"){
-
-    },
-    ALL_PRIVILEGES("N"){
-
-    };
+    NO_PRIVILEGES("F"), NO_PRIVILEGE_TO_HIDE("Q"), ALL_PRIVILEGES("N");
 
     private String indicatorCode = null
 

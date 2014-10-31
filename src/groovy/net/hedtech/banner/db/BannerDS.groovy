@@ -31,6 +31,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
+import java.sql.SQLFeatureNotSupportedException
 
 /**
  * A dataSource that wraps an 'underlying' datasource.
@@ -71,7 +72,11 @@ public class BannerDS implements DataSource {
         BannerConnection bannerConnection
         String[] roles
         def user = SecurityContextHolder?.context?.authentication?.principal
-        if (((user instanceof BannerUser && !user?.oracleUserName) || (user instanceof String && user == 'anonymousUser')) && isSelfServiceRequest()) {
+        if ( (ApiUtils.isApiRequest() && !shouldProxyApiRequest() ) ||  
+             ( isSelfServiceRequest() && 
+                 ((user instanceof BannerUser && !user?.oracleUserName) || 
+                  (user instanceof String && user == 'anonymousUser')) 
+             )) {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
@@ -130,7 +135,6 @@ public class BannerDS implements DataSource {
         else
             return new BannerConnection(conn, user, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
     }
-
 
     public void setFGAC(conn) {
 
@@ -414,6 +418,19 @@ public class BannerDS implements DataSource {
         log.trace 'getLoginTimeout'
         getUnderlyingDataSource().getLoginTimeout()
     }
+	
+	/*
+     * Added for java7 support 
+     * don't use 	@Override annotation so as to  have backward compatibility (JDK 6)
+	 * This method returns java.util.logging.Logger used by Data Source,
+	 * Since this class uses different logger i.e. org.apache.log4j.Logger method will rethrow back 
+	 * SQLFeatureNotSupportedException
+	 * @return java.util.logging.Logger
+     **/
+    java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+        throw new SQLFeatureNotSupportedException("Operation getParentLogger not supported.");
+
+    }
 
 // --------------------------- end of public methods ----------------------------
 
@@ -558,6 +575,12 @@ public class BannerDS implements DataSource {
         enabled && proxySsb
     }
 
+    private boolean shouldProxyApiRequest() {
+
+        def proxyApi = CH.config.apiOracleUsersProxied instanceof Boolean ?: false
+        log.trace "BannerDS.shouldProxyApiRequest() will return ${proxyApi} (since apiOracleUsersProxied is ${proxyApi})"
+        proxyApi
+    }
 
     private isSelfServiceRequest() {
         log.trace "BannerDS.isSelfServiceRequest() will return '${FormContext.isSelfService()}' (FormContext = ${FormContext.get()})"

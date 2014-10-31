@@ -1,9 +1,16 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.security
 
+import groovy.sql.Sql
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.springframework.security.access.ConfigAttribute
+import org.springframework.security.core.AuthenticationException
+import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.security.web.authentication.AuthenticationFailureHandler
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler
+import org.springframework.security.web.util.AntUrlPathMatcher
 
 import javax.servlet.FilterChain
 import javax.servlet.ServletException
@@ -15,48 +22,124 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter
 
+import javax.servlet.http.HttpServletResponse
+
 class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFilter {
 
     private final Logger log = Logger.getLogger(getClass())
 
     def dataSource // injected by Spring
 
+    private AuthenticationFailureHandler failureHandler = new SimpleUrlAuthenticationFailureHandler();
 
     public void doFilter( ServletRequest request, ServletResponse response,
                           FilterChain chain ) throws IOException, ServletException {
 
-                log.debug "BannerPreAuthenticatedFilter.doFilter invoked with request $request"
+        log.debug "BannerPreAuthenticatedFilter.doFilter invoked with request $request"
         HttpServletRequest req = (HttpServletRequest) request
-        def assertAttributeValue = req.getHeader( CH?.config?.banner.sso.authenticationAssertionAttribute )
+
+        if(!requiresAuthentication(req)) {
+            chain.doFilter( request, response );
+            return
+        }
+
+        def authenticationAssertionAttribute = CH?.config?.banner.sso.authenticationAssertionAttribute
+        def assertAttributeValue = req.getHeader( authenticationAssertionAttribute )
 
         if (assertAttributeValue) {
-            if (!SecurityContextHolder.context?.authentication) {
-                log.debug "BannerPreAuthenticatedFilter.doFilter found assertAttributeValue $assertAttributeValue"
-                def dbUser = BannerAuthenticationProvider.getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource )
+
+            log.debug "BannerPreAuthenticatedFilter.doFilter found assertAttributeValue $assertAttributeValue"
+            def dbUser
+            try {
+                dbUser = BannerAuthenticationProvider.getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource )
                 log.debug "BannerPreAuthenticatedFilter.doFilter found Oracle database user $dbUser for assertAttributeValue $assertAttributeValue"
-                Collection<GrantedAuthority> authorities = BannerAuthenticationProvider.determineAuthorities( dbUser, dataSource )
-                def user = new BannerUser( dbUser,       // username
-                                           'none',       // password
-                                           dbUser,       // oracle username (note this may be null)
-                                           true,         // enabled (account)
-                                           true,         // accountNonExpired
-                                           true,         // credentialsNonExpired 
-                                           true,         // accountNonLocked 
-                                           authorities)
-                def token = new BannerAuthenticationToken( user )
-                SecurityContextHolder.context.setAuthentication( token )
+            } catch(UsernameNotFoundException ue) {
+                unsuccessfulAuthentication(request, response, ue);
+                return;
+            }
+
+            def fullName = BannerAuthenticationProvider.getFullName( dbUser['name'].toUpperCase(), dataSource ) as String
+            log.debug "BannerPreAuthenticatedFilter.doFilter found full name $fullName"
+
+            Collection<GrantedAuthority> authorities
+            def conn
+            if (isSsbEnabled()) {
+                try {
+                    conn = dataSource.getSsbConnection()
+                    Sql db = new Sql( conn )
+                    authorities = SelfServiceBannerAuthenticationProvider.determineAuthorities( dbUser, db )
+                    log.debug "BannerPreAuthenticatedFilter.doFilter found Self Service authorities $authorities"
+                } catch(Exception e) {
+                    log.fatal("Error occurred in loading authorities : " + e.localizedMessage())
+                    unsuccessfulAuthentication(request, response, new UsernameNotFoundException(e.localizedMessage()));
+                } finally {
+                    conn?.close()
+                }
+
+            }
+            else {
+                authorities = BannerAuthenticationProvider.determineAuthorities( dbUser, dataSource )
+                log.debug "BannerPreAuthenticatedFilter.doFilter found Banner Admin authorities $authorities"
+            }
+
+            dbUser.authorities = authorities
+            dbUser.fullName = fullName
+            def token = BannerAuthenticationProvider.newAuthenticationToken( this, dbUser )
+            log.debug "BannerPreAuthenticatedFilter.doFilter BannerAuthenticationToken created $token"
+
+            SecurityContextHolder.context.setAuthentication( token )
+            log.debug "BannerPreAuthenticatedFilter.doFilter $token set in SecurityContextHolder"
+
+        } else {
+            if(CH?.config?.banner?.sso?.authenticationProvider.equalsIgnoreCase('external')) {
+                log.fatal("System is configured for external authentication and identity assertion $authenticationAssertionAttribute is null")
+                unsuccessfulAuthentication(request, response, new UsernameNotFoundException("System is configured for external authentication and identity assertion $authenticationAssertionAttribute is null"));
+                return;
             }
         }
+
         chain.doFilter( request, response );
+
+    }
+    private boolean requiresAuthentication(HttpServletRequest request) {
+        if (SecurityContextHolder.context?.authentication){
+            log.debug "BannerPreAuthenticatedFilter.requiresAuthentication SecurityContextHolder has the BannerToken"
+            return false
+        }
+
+        String url = request.getRequestURI().substring(request.getContextPath().length());
+        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url"
+        HashMap interceptUrlMap = org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils.securityConfig["interceptUrlMap"]
+        AntUrlPathMatcher antUrlPathMatcher = new AntUrlPathMatcher()
+        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication antUrlPathMatcher $antUrlPathMatcher"
+        for (Map.Entry<Object, Collection<ConfigAttribute>> entry : interceptUrlMap.entrySet()) {
+            log.debug "BannerPreAuthenticatedFilter.requiresAuthentication entry : $entry"
+            if (antUrlPathMatcher.pathMatchesUrl(entry.getKey(), url)) {
+                log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url matches $entry from interceptUrlMap"
+                if(entry.getValue().contains("IS_AUTHENTICATED_ANONYMOUSLY")) {
+                    log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url is authenticated anonymously"
+                    return false
+                }
+            }
+        }
+        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url requires authentication"
+        return true
     }
 
+    private static def isSsbEnabled() {
+        SelfServiceBannerAuthenticationProvider.isSsbEnabled()
+    }
 
     protected Object getPreAuthenticatedPrincipal( HttpServletRequest request ) {
-       log.info "BannerPreAuthenticatedFilter.getPreAuthenticatedPrincipal method called"
+        log.info "BannerPreAuthenticatedFilter.getPreAuthenticatedPrincipal method called"
     }
 
     protected Object getPreAuthenticatedCredentials( HttpServletRequest request ) {
-       log.info "BannerPreAuthenticatedFilter.getPreAuthenticatedCredentials method called"
+        log.info "BannerPreAuthenticatedFilter.getPreAuthenticatedCredentials method called"
     }
 
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
+        failureHandler.defaultFailureUrl = '/login/error'
+        failureHandler.onAuthenticationFailure(request, response, failed)
+    }
 }

@@ -98,7 +98,7 @@ class LoginController {
     }
 
     /**
-     * Callback after a failed login. Redirects to the auth page with a warning message.
+     * Callback after a failed login. forwards to the auth page with a warning message.
      */
     def authfail = {
 
@@ -112,7 +112,7 @@ class LoginController {
         }
         else {
             flash.message = msg
-            redirect action: auth, params: params
+            forward action: "auth", params: params
         }
     }
 
@@ -180,5 +180,10 @@ class LoginController {
             session.setAttribute("requestPage", "questans")
             redirect controller : "resetPassword", action: "questans", params : params
         }
+    }
+
+    def error = {
+        def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+        render view: "customerror", model: [msg: exception.getMessage()]
     }
 }

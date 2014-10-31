@@ -1,25 +1,22 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.testing
 
-import net.hedtech.banner.configuration.ConfigurationUtils
-import net.hedtech.banner.exceptions.*
-import net.hedtech.banner.security.FormContext // this IS used - damn you IntelliJ ;-)
-
 import grails.util.GrailsNameUtils
-
 import groovy.sql.Sql
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import net.hedtech.banner.configuration.ConfigurationUtils
+import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.security.FormContext
 import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
-
-import org.junit.Ignore // not used, but imported here for convenience of subclasses
-
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken as UPAT
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 
+import static org.junit.Assert.*
 
 /**
  * Base class for integration tests, that sets the FormContext and logs in 'GRAILS_USER' if necessary
@@ -32,10 +29,11 @@ import org.springframework.security.core.context.SecurityContextHolder
  * Lastly, this base class provides additional helper methods.  To ensure the login/logout is
  * effective, this class manipulates the hibernate session and database connecitons.
  */
-class BaseIntegrationTestCase extends GroovyTestCase {
+class BaseIntegrationTestCase extends Assert {
 
     def transactional = false         // this turns off 'Grails' test framework management of transactions
     def useTransactions = true        // and this enables our own management of transactions, which is what most tests will want
+    def exposeTransactionAwareSessionFactory = false
 
     def formContext = null            // This may be set within the subclass, prior to calling super.setUp(). If it isn't,
                                       // it will be looked up automatically.
@@ -46,6 +44,7 @@ class BaseIntegrationTestCase extends GroovyTestCase {
     def sessionFactory                // injected via spring
     def nativeJdbcExtractor           // injected via spring
     def messageSource                 // injected via spring
+	 def codecLookup                  // injected via spring
     private validationTagLibInstance  // assigned lazily - see getValidationTagLib method
 
     def controller = null             // assigned by subclasses, e.g., within the setUp()
@@ -61,8 +60,8 @@ class BaseIntegrationTestCase extends GroovyTestCase {
      * then you must either NOT call super.setUp from your setUp method
      * or you must not extend from this class (but extend from GroovyTestCase directly).
      **/
-    protected void setUp() {
-        super.setUp()
+    @Before
+    public void setUp() {
         params = [:]
         renderMap = [:]
         redirectMap = [:]
@@ -106,14 +105,15 @@ class BaseIntegrationTestCase extends GroovyTestCase {
      * Clears the hibernate session, but does not logout the user. If your test
      * needs to logout the user, it should do so by explicitly calling logout().
      **/
-    protected void tearDown() {
-         super.tearDown()
+    @After
+    public void tearDown() {
          FormContext.clear()
 
          if (useTransactions) {
              sessionFactory.currentSession.connection().rollback()
-             sessionFactory.currentSession.close()
-         }
+			 sessionFactory.currentSession.close()
+        }
+
     }
 
 
@@ -336,6 +336,10 @@ class BaseIntegrationTestCase extends GroovyTestCase {
      **/
     protected void assertNoErrorsUponValidation( domainObj ) {
         validate( domainObj )
+    }
+
+    protected void assertLength(int length, def array) {
+        assertEquals(length, array?.size());
     }
 
 

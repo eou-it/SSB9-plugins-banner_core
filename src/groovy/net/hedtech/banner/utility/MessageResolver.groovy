@@ -10,8 +10,17 @@ import org.springframework.context.i18n.LocaleContextHolder as LCH
 /**
  * This is a helper class that is used for retrieving Message from i18n messsage.properties
  */
+
 class MessageResolver {
 
+    /**
+     *@deprecated use MessageHelper.message Instead
+     * @param key
+     * @param args
+     * @param locale
+     * @return
+     */
+    @Deprecated
     public static String message(key, args = null, locale = null) {
         String value = "";
         if (key){

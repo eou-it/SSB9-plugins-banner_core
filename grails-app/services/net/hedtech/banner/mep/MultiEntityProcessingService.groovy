@@ -17,7 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder as SCH
  */
 class MultiEntityProcessingService {
 
-    static transactional = false
+    static transactional = true
     private final Logger log = Logger.getLogger(getClass())
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
@@ -74,7 +74,6 @@ class MultiEntityProcessingService {
         Sql sql = new Sql(con)
         try {
             sql.call("{call g\$_vpdi_security.g\$_vpdi_set_home_context(${home})}")
-
         } catch (e) {
            log.error("ERROR: Could not establish mif context. $e")
            throw e
@@ -82,6 +81,7 @@ class MultiEntityProcessingService {
             //sql?.close()
         }
     }
+
 
     def getHomeContext() {
         def homeContext
@@ -257,14 +257,15 @@ class MultiEntityProcessingService {
 
 
     def resetUserHomeContext(home) {
-
         SCH.context?.authentication?.principal?.mepHomeContext = home
         SCH.context?.authentication?.principal?.mepProcessContext = home
+        setUserDefault(home)
     }
 
 
     def resetUserProcessContext(home) {
         SCH.context?.authentication?.principal?.mepProcessContext = home
+        setProcessContext(home)
     }
 
 
@@ -311,6 +312,24 @@ class MultiEntityProcessingService {
 
         desc
 
+    }
+
+
+
+    private void setUserDefault(home) {
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        try {
+            sql.call("{call g\$_vpdi_security.g\$_vpdi_set_user_default(${home})}")
+
+        } catch (e) {
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
+        } finally {
+            sql?.close()
+        }
+
+        setHomeContext(home)
+        setProcessContext(home)
     }
 
 }

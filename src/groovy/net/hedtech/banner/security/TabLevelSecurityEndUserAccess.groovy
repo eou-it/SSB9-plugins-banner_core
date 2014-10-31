@@ -3,15 +3,7 @@ package net.hedtech.banner.security
 /**
  */
 public enum TabLevelSecurityEndUserAccess {
-    FULL("F"){
-
-    },
-    READONLY("Q"){
-
-    },
-    HIDDEN("N"){
-
-    };
+    FULL("F"),READONLY("Q"),HIDDEN("N");
 
     private String indicatorCode = null
 
