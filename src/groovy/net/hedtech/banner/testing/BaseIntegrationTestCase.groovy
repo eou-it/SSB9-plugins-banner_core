@@ -338,6 +338,10 @@ class BaseIntegrationTestCase extends Assert {
         validate( domainObj )
     }
 
+    protected void assertLength(int length, def array) {
+        assertEquals(length, array?.size());
+    }
+
 
     private getFormControllerMap() {
         ConfigurationUtils.getConfiguration()?.formControllerMap
