@@ -188,6 +188,7 @@ class LoginController {
 
     def error = {
         def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
-        render view: "customerror", model: [msg: getMessageFor( exception )]
+        def uri = ControllerUtils.buildLogoutRedirectURI()
+        render view: "customerror", model: [msg: getMessageFor( exception ), uri: uri]
     }
 }
