@@ -561,7 +561,7 @@ public class BannerDS implements DataSource {
      * Returns true if the current request is for an administrative page or if the solution is configured to proxy connections for SSB users.
      * */
     private boolean shouldProxy() {
-        isAdministrativeRequest() || shouldProxySsbRequest()
+        isAdministrativeRequest() || shouldProxySsbRequest() || ( ApiUtils.isApiRequest() && shouldProxyApiRequest() )
     }
 
     /**
@@ -577,7 +577,7 @@ public class BannerDS implements DataSource {
 
     private boolean shouldProxyApiRequest() {
 
-        def proxyApi = CH.config.apiOracleUsersProxied instanceof Boolean ?: false
+        def proxyApi = CH.config.apiOracleUsersProxied instanceof Boolean ? CH.config.apiOracleUsersProxied : false
         log.trace "BannerDS.shouldProxyApiRequest() will return ${proxyApi} (since apiOracleUsersProxied is ${proxyApi})"
         proxyApi
     }
