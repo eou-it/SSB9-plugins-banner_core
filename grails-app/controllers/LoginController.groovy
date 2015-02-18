@@ -7,6 +7,7 @@ import net.hedtech.banner.controllers.ControllerUtils
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import org.springframework.security.authentication.*
 import org.springframework.security.core.context.SecurityContextHolder as SCH
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
@@ -138,6 +139,9 @@ class LoginController {
             else if (exception instanceof BadCredentialsException) {
                 msg = message( code:"net.hedtech.banner.errors.login.fail" )
             }
+            else if (exception instanceof UsernameNotFoundException) {
+                msg = message( code: "net.hedtech.banner.errors.login.credentialnotfound" )
+            }
             else {
                 msg = message( code:"net.hedtech.banner.errors.login.fail" )
             }
@@ -184,6 +188,6 @@ class LoginController {
 
     def error = {
         def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
-        render view: "customerror", model: [msg: exception.getMessage()]
+        render view: "customerror", model: [msg: getMessageFor( exception )]
     }
 }

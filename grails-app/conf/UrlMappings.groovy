@@ -15,6 +15,10 @@ class UrlMappings {
              controller = "login"
              action = "forgotpassword"
         }
+        "/login/error" {
+            controller = "login"
+            action = "error"
+        }
         "/resetPassword/validateans" {
             controller = "resetPassword"
             action = "validateAnswer"

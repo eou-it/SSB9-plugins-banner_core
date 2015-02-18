@@ -61,9 +61,11 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         log.trace "SelfServiceBannerAuthenticationProvider asked to authenticate $authentication"
         def conn
         try {
-            if ('cas'.equalsIgnoreCase( CH?.config.banner.sso.authenticationProvider )) {
-                log.trace "SelfServiceBannerAuthenticationProvider will not authenticate user since CAS is enabled"
-                return null
+            if ( !isGuestAuthenticationEnabled() ) {
+                if ('cas'.equalsIgnoreCase( CH?.config.banner.sso.authenticationProvider )) {
+                    log.trace "SelfServiceBannerAuthenticationProvider will not authenticate user since CAS is enabled"
+                    return null
+                }
             }
             conn = dataSource.getSsbConnection()
             Sql db = new Sql( conn )
@@ -102,6 +104,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
 
 // ------------------------------- Helper Methods ------------------------------
+
 
 
     public static def isSsbEnabled() {
@@ -296,7 +299,9 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                 authorities << BannerGrantedAuthority.create( "SELFSERVICE-$row.TWGRROLE_ROLE", "BAN_DEFAULT_M", null )
             }
         }
-
+        if (authentictionResults.pidm) {
+            authorities << BannerGrantedAuthority.create( "SELFSERVICE-ALLROLES", "BAN_DEFAULT_M", null )
+        }
        // def selfServiceRolePassword
         if (authentictionResults.oracleUserName) {
             authorities << BannerGrantedAuthority.create( "SELFSERVICE", "BAN_DEFAULT_M", null )

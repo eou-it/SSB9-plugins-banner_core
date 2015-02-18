@@ -3,7 +3,7 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.exceptions
 
-import net.hedtech.banner.ui.zk.i18n.MessageHelper
+import net.hedtech.banner.i18n.MessageHelper
 
 /**
  * A runtime exception indicating an entity or resource was not found.
