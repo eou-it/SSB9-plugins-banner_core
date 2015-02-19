@@ -115,7 +115,7 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
         dbUser.authorities = authorities
         dbUser.fullName = fullName
         BannerAuthenticationToken bannerAuthenticationToken = BannerAuthenticationProvider.newAuthenticationToken( this, dbUser )
-        bannerAuthenticationToken.tokenExpiration = getExpirationDate(credential)       // TODO: this is currently null. Need to fix this & use in isauthenticated() method in BannerAuthenticationToken
+        // extract map & store in bannerAuthenticationToken
 
         log.debug "BannerPreAuthenticatedFilter.doFilter BannerAuthenticationToken created $bannerAuthenticationToken"
 
