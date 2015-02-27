@@ -1,6 +1,7 @@
 package net.hedtech.banner.security
 
 import groovy.sql.Sql
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.springframework.security.saml.SAMLAuthenticationProvider
 import org.springframework.security.saml.SAMLAuthenticationToken
 import org.springframework.security.saml.SAMLConstants
@@ -8,10 +9,7 @@ import org.springframework.security.saml.SAMLCredential
 import org.springframework.security.saml.context.SAMLMessageContext
 
 import org.springframework.security.core.Authentication
-import org.springframework.security.authentication.*
 
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import org.opensaml.common.SAMLException;
 import org.opensaml.common.SAMLRuntimeException;
 
@@ -58,35 +56,48 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
                 throw new SAMLException("Unsupported profile encountered in the context " + context.getCommunicationProfileId());
             }
         } catch (SAMLRuntimeException e) {
-            samlLogger.log(SAMLConstants.AUTH_N_RESPONSE, SAMLConstants.FAILURE, context, e);
+            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an exception $e"
             throw new AuthenticationServiceException("Error validating SAML message", e);
         } catch (SAMLException e) {
-            samlLogger.log(SAMLConstants.AUTH_N_RESPONSE, SAMLConstants.FAILURE, context, e);
+            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an exception $e"
             throw new AuthenticationServiceException("Error validating SAML message", e);
         } catch (ValidationException e) {
             log.debug("Error validating signature", e);
-            samlLogger.log(SAMLConstants.AUTH_N_RESPONSE, SAMLConstants.FAILURE, context);
+            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an exception $e"
             throw new AuthenticationServiceException("Error validating SAML message signature", e);
         } catch (org.opensaml.xml.security.SecurityException e) {
             log.debug("Error validating signature", e);
-            samlLogger.log(SAMLConstants.AUTH_N_RESPONSE, SAMLConstants.FAILURE, context);
+            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an exception $e"
             throw new AuthenticationServiceException("Error validating SAML message signature", e);
         } catch (DecryptionException e) {
             log.debug("Error decrypting SAML message", e);
-            samlLogger.log(SAMLConstants.AUTH_N_RESPONSE, SAMLConstants.FAILURE, context);
+            log.fatal "BannerSamlAuthenticationProvider.authenticate ecountered an exception $e"
             throw new AuthenticationServiceException("Error decrypting SAML message", e);
         }
 
-        // TODO:  need to extract UDC_ID from credentials
-        def udc_id = '30078' //  credential.nameID?.value gives the name passed from SAML assertion. Need to add additional attributes in SAML assertion
-        def dbUser
-        try {
-            dbUser = BannerAuthenticationProvider.getMappedDatabaseUserForUdcId( udc_id, dataSource )
-            log.debug "BannerPreAuthenticatedFilter.doFilter found Oracle database user $dbUser for assertAttributeValue 30078"
-        } catch(UsernameNotFoundException ue) {
-            unsuccessfulAuthentication(request, response, ue);
-            return;
+        Map claims = new HashMap();
+        String udc_id
+        def authenticationAssertionAttribute = ConfigurationHolder?.config?.banner.sso.authenticationAssertionAttribute
+        log.debug  "BannerSamlAuthenticationProvider.authenticate found assertAttribute $authenticationAssertionAttribute"
+
+        for(attribute in credential.getAttributes()) {
+             if(attribute.name == authenticationAssertionAttribute) {
+                 udc_id = attribute.attributeValues.get(0).getValue()
+                 log.debug  "BannerSamlAuthenticationProvider.authenticate found assertAttributeValue $udc_id"
+             } else {
+                 def value = attribute.attributeValues.get(0).getValue()
+                 claims.put(attribute.name, value)
+                 log.debug  "BannerSamlAuthenticationProvider.authenticate found claim value $value"
+             }
         }
+
+        if(udc_id == null ) {
+            throw new UsernameNotFoundException("System is configured for SAML authentication and identity assertion $authenticationAssertionAttribute is null")
+        }
+
+        def dbUser = BannerAuthenticationProvider.getMappedDatabaseUserForUdcId( udc_id, dataSource )
+        log.debug "BannerPreAuthenticatedFilter.doFilter found Oracle database user $dbUser for assertAttributeValue"
+
 
         def fullName = BannerAuthenticationProvider.getFullName( dbUser['name'].toUpperCase(), dataSource ) as String
         log.debug "BannerPreAuthenticatedFilter.doFilter found full name $fullName"
@@ -101,7 +112,7 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
                 log.debug "BannerPreAuthenticatedFilter.doFilter found Self Service authorities $authorities"
             } catch(Exception e) {
                 log.fatal("Error occurred in loading authorities : " + e.localizedMessage())
-                unsuccessfulAuthentication(request, response, new UsernameNotFoundException(e.localizedMessage()));
+                throw new UsernameNotFoundException(e.localizedMessage());
             } finally {
                 conn?.close()
             }
@@ -115,7 +126,7 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
         dbUser.authorities = authorities
         dbUser.fullName = fullName
         BannerAuthenticationToken bannerAuthenticationToken = BannerAuthenticationProvider.newAuthenticationToken( this, dbUser )
-        // extract map & store in bannerAuthenticationToken
+        bannerAuthenticationToken.claims = claims
 
         log.debug "BannerPreAuthenticatedFilter.doFilter BannerAuthenticationToken created $bannerAuthenticationToken"
 
@@ -127,8 +138,4 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
         SelfServiceBannerAuthenticationProvider.isSsbEnabled()
     }
 
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
-        failureHandler.defaultFailureUrl = '/login/error'
-        failureHandler.onAuthenticationFailure(request, response, failed)
-    }
 }
