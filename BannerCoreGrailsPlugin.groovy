@@ -6,6 +6,8 @@
 import grails.util.GrailsUtil
 import grails.util.Holders
 import org.apache.log4j.Logger
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler
 
 import java.util.concurrent.Executors
 
@@ -175,6 +177,9 @@ class BannerCoreGrailsPlugin {
             hokConsumer = ref('webSSOprofileConsumer')
             dataSource = ref(dataSource)
         }
+
+        samlLogoutFilter(BannerSamlLogoutFilter,
+                ref('successLogoutHandler'), ref('logoutHandler'), ref('logoutHandler'))
 
         bannerPreAuthenticatedFilter(BannerPreAuthenticatedFilter) {
             dataSource = ref(dataSource)

@@ -14,6 +14,11 @@ public class BannerAuthenticationToken implements Authentication {
     private BannerUser user
     // include a map
     private Map claims
+    private def SAMLCredential
+
+    public def getSAMLCredential(){
+        SAMLCredential
+    }
 
     BannerAuthenticationToken( BannerUser user , Date tokenExpiration) {
         this.user = user

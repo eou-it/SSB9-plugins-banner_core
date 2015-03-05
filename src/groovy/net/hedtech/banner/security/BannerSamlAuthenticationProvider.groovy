@@ -127,12 +127,12 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
         dbUser.fullName = fullName
         BannerAuthenticationToken bannerAuthenticationToken = BannerAuthenticationProvider.newAuthenticationToken( this, dbUser )
         bannerAuthenticationToken.claims = claims
+        bannerAuthenticationToken.SAMLCredential=credential
 
         log.debug "BannerPreAuthenticatedFilter.doFilter BannerAuthenticationToken created $bannerAuthenticationToken"
 
         samlLogger.log(SAMLConstants.AUTH_N_RESPONSE, SAMLConstants.SUCCESS, context, bannerAuthenticationToken, null);
         return bannerAuthenticationToken
-
     }
     private static def isSsbEnabled() {
         SelfServiceBannerAuthenticationProvider.isSsbEnabled()
