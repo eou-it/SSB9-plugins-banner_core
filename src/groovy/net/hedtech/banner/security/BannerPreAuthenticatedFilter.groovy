@@ -3,7 +3,6 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
-import groovy.sql.Sql
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.springframework.security.access.ConfigAttribute
 import org.springframework.security.core.AuthenticationException
@@ -18,7 +17,6 @@ import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
 import org.apache.log4j.Logger
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter
 
@@ -46,56 +44,29 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
         def authenticationAssertionAttribute = CH?.config?.banner.sso.authenticationAssertionAttribute
         def assertAttributeValue = req.getHeader( authenticationAssertionAttribute )
 
-        if (assertAttributeValue) {
-
-            log.debug "BannerPreAuthenticatedFilter.doFilter found assertAttributeValue $assertAttributeValue"
-            def dbUser
-            try {
-                dbUser = BannerAuthenticationProvider.getMappedDatabaseUserForUdcId( assertAttributeValue, dataSource )
-                log.debug "BannerPreAuthenticatedFilter.doFilter found Oracle database user $dbUser for assertAttributeValue $assertAttributeValue"
-            } catch(UsernameNotFoundException ue) {
-                unsuccessfulAuthentication(request, response, ue);
-                return;
-            }
-
-            def fullName = BannerAuthenticationProvider.getFullName( dbUser['name'].toUpperCase(), dataSource ) as String
-            log.debug "BannerPreAuthenticatedFilter.doFilter found full name $fullName"
-
-            Collection<GrantedAuthority> authorities
-            def conn
-            if (isSsbEnabled()) {
-                try {
-                    conn = dataSource.getSsbConnection()
-                    Sql db = new Sql( conn )
-                    authorities = SelfServiceBannerAuthenticationProvider.determineAuthorities( dbUser, db )
-                    log.debug "BannerPreAuthenticatedFilter.doFilter found Self Service authorities $authorities"
-                } catch(Exception e) {
-                    log.fatal("Error occurred in loading authorities : " + e.localizedMessage())
-                    unsuccessfulAuthentication(request, response, new UsernameNotFoundException(e.localizedMessage()));
-                } finally {
-                    conn?.close()
-                }
-
-            }
-            else {
-                authorities = BannerAuthenticationProvider.determineAuthorities( dbUser, dataSource )
-                log.debug "BannerPreAuthenticatedFilter.doFilter found Banner Admin authorities $authorities"
-            }
-
-            dbUser.authorities = authorities
-            dbUser.fullName = fullName
-            def token = BannerAuthenticationProvider.newAuthenticationToken( this, dbUser )
-            log.debug "BannerPreAuthenticatedFilter.doFilter BannerAuthenticationToken created $token"
-
-            SecurityContextHolder.context.setAuthentication( token )
-            log.debug "BannerPreAuthenticatedFilter.doFilter $token set in SecurityContextHolder"
-
-        } else {
+        if (assertAttributeValue == null) {
             if(CH?.config?.banner?.sso?.authenticationProvider.equalsIgnoreCase('external')) {
                 log.fatal("System is configured for external authentication and identity assertion $authenticationAssertionAttribute is null")
                 unsuccessfulAuthentication(request, response, new UsernameNotFoundException("System is configured for external authentication and identity assertion $authenticationAssertionAttribute is null"));
                 return;
             }
+        }
+
+        log.debug "BannerPreAuthenticatedFilter.doFilter found assertAttributeValue $assertAttributeValue"
+        def dbUser
+        try {
+            dbUser = AuthenticationProviderUtility.getMappedUserForUdcId( assertAttributeValue, dataSource )
+            log.debug "BannerPreAuthenticatedFilter.doFilter found database user $dbUser for assertAttributeValue $assertAttributeValue"
+
+            BannerAuthenticationToken token = AuthenticationProviderUtility.createAuthenticationToken(dbUser, dataSource, this)
+            log.debug "BannerPreAuthenticatedFilter.doFilter BannerAuthenticationToken created $token"
+
+            SecurityContextHolder.context.setAuthentication( token )
+            log.debug "BannerPreAuthenticatedFilter.doFilter $token set in SecurityContextHolder"
+
+        } catch(Exception e) {
+            unsuccessfulAuthentication(request, response, e);
+            return;
         }
 
         chain.doFilter( request, response );
@@ -124,10 +95,6 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
         }
         log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url requires authentication"
         return true
-    }
-
-    private static def isSsbEnabled() {
-        SelfServiceBannerAuthenticationProvider.isSsbEnabled()
     }
 
     protected Object getPreAuthenticatedPrincipal( HttpServletRequest request ) {

@@ -1,6 +1,5 @@
 package net.hedtech.banner.security
 
-import groovy.sql.Sql
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.springframework.security.saml.SAMLAuthenticationProvider
 import org.springframework.security.saml.SAMLAuthenticationToken
@@ -17,7 +16,6 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.opensaml.xml.encryption.DecryptionException;
 import org.opensaml.xml.validation.ValidationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.AuthenticationException;
 
 class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
@@ -76,66 +74,38 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
         }
 
         Map claims = new HashMap();
-        String udc_id
+        String assertAttributeValue
         def authenticationAssertionAttribute = ConfigurationHolder?.config?.banner.sso.authenticationAssertionAttribute
         log.debug  "BannerSamlAuthenticationProvider.authenticate found assertAttribute $authenticationAssertionAttribute"
 
         for(attribute in credential.getAttributes()) {
-             if(attribute.name == authenticationAssertionAttribute) {
-                 udc_id = attribute.attributeValues.get(0).getValue()
-                 log.debug  "BannerSamlAuthenticationProvider.authenticate found assertAttributeValue $udc_id"
-             } else {
-                 def value = attribute.attributeValues.get(0).getValue()
-                 claims.put(attribute.name, value)
-                 log.debug  "BannerSamlAuthenticationProvider.authenticate found claim value $value"
-             }
+            if(attribute.name == authenticationAssertionAttribute) {
+                assertAttributeValue = attribute.attributeValues.get(0).getValue()
+                log.debug  "BannerSamlAuthenticationProvider.authenticate found assertAttributeValue $assertAttributeValue"
+            } else {
+                def value = attribute.attributeValues.get(0).getValue()
+                claims.put(attribute.name, value)
+                log.debug  "BannerSamlAuthenticationProvider.authenticate found claim value $value"
+            }
         }
 
-        if(udc_id == null ) {
-            throw new UsernameNotFoundException("System is configured for SAML authentication and identity assertion $authenticationAssertionAttribute is null")
+        if(assertAttributeValue == null ) {
+            log.fatal("System is configured for SAML authentication and identity assertion is $assertAttributeValue")  // NULL
+            throw new UsernameNotFoundException("System is configured for SAML authentication and identity assertion is $assertAttributeValue")
         }
 
-        def dbUser = BannerAuthenticationProvider.getMappedDatabaseUserForUdcId( udc_id, dataSource )
+        def dbUser = AuthenticationProviderUtility.getMappedUserForUdcId( assertAttributeValue, dataSource )
         log.debug "BannerPreAuthenticatedFilter.doFilter found Oracle database user $dbUser for assertAttributeValue"
 
-
-        def fullName = BannerAuthenticationProvider.getFullName( dbUser['name'].toUpperCase(), dataSource ) as String
-        log.debug "BannerPreAuthenticatedFilter.doFilter found full name $fullName"
-
-        Collection<GrantedAuthority> authorities
-        def conn
-        if (isSsbEnabled()) {
-            try {
-                conn = dataSource.getSsbConnection()
-                Sql db = new Sql( conn )
-                authorities = SelfServiceBannerAuthenticationProvider.determineAuthorities( dbUser, db )
-                log.debug "BannerPreAuthenticatedFilter.doFilter found Self Service authorities $authorities"
-            } catch(Exception e) {
-                log.fatal("Error occurred in loading authorities : " + e.localizedMessage())
-                throw new UsernameNotFoundException(e.localizedMessage());
-            } finally {
-                conn?.close()
-            }
-
-        }
-        else {
-            authorities = BannerAuthenticationProvider.determineAuthorities( dbUser, dataSource )
-            log.debug "BannerPreAuthenticatedFilter.doFilter found Banner Admin authorities $authorities"
-        }
-
-        dbUser.authorities = authorities
-        dbUser.fullName = fullName
-        BannerAuthenticationToken bannerAuthenticationToken = BannerAuthenticationProvider.newAuthenticationToken( this, dbUser )
+        BannerAuthenticationToken bannerAuthenticationToken = AuthenticationProviderUtility.createAuthenticationToken(dbUser,dataSource, this)
         bannerAuthenticationToken.claims = claims
         bannerAuthenticationToken.SAMLCredential=credential
 
-        log.debug "BannerPreAuthenticatedFilter.doFilter BannerAuthenticationToken created $bannerAuthenticationToken"
+        log.debug "BannerPreAuthenticatedFilter.doFilter BannerAuthenticationToken updated with claims $bannerAuthenticationToken"
 
-        samlLogger.log(SAMLConstants.AUTH_N_RESPONSE, SAMLConstants.SUCCESS, context, bannerAuthenticationToken, null);
         return bannerAuthenticationToken
+
     }
-    private static def isSsbEnabled() {
-        SelfServiceBannerAuthenticationProvider.isSsbEnabled()
-    }
+
 
 }
