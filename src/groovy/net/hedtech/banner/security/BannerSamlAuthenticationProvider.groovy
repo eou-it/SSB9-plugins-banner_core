@@ -90,8 +90,8 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
         }
 
         if(assertAttributeValue == null ) {
-            log.fatal("System is configured for SAML authentication and identity assertion is $assertAttributeValue")  // NULL
-            throw new UsernameNotFoundException("System is configured for SAML authentication and identity assertion is $assertAttributeValue")
+            log.fatal("System is configured for SAML authentication and identity assertion is $authenticationAssertionAttribute is null")  // NULL
+            throw new UsernameNotFoundException("System is configured for SAML authentication and identity assertion $authenticationAssertionAttribute is null")
         }
 
         def dbUser = AuthenticationProviderUtility.getMappedUserForUdcId( assertAttributeValue, dataSource )

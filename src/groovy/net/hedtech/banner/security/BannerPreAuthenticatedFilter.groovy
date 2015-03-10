@@ -58,6 +58,10 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
             dbUser = AuthenticationProviderUtility.getMappedUserForUdcId( assertAttributeValue, dataSource )
             log.debug "BannerPreAuthenticatedFilter.doFilter found database user $dbUser for assertAttributeValue $assertAttributeValue"
 
+            // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
+            AuthenticationProviderUtility.verifyAuthenticationResults dbUser
+            log.debug "BannerPreAuthenticatedFilter.doFilter verify authentication results"
+
             BannerAuthenticationToken token = AuthenticationProviderUtility.createAuthenticationToken(dbUser, dataSource, this)
             log.debug "BannerPreAuthenticatedFilter.doFilter BannerAuthenticationToken created $token"
 

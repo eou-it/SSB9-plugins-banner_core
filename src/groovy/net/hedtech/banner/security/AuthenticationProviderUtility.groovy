@@ -28,8 +28,8 @@ class AuthenticationProviderUtility {
         log.trace "AuthenticationProviderUtility.getMappedUserForUdcId doing external authentication"
 
         if(assertAttributeValue == null) {
-            log.fatal("System is configured for external authentication and identity assertion is $assertAttributeValue")  // NULL
-            throw new BadCredentialsException("System is configured for external authentication and identity assertion is $assertAttributeValue")
+            log.fatal("System is configured for non default authentication and identity assertion is $assertAttributeValue")  // NULL
+            throw new BadCredentialsException("System is configured for non default authentication and identity assertion is $assertAttributeValue")
         }
 
         def oracleUserName
@@ -176,7 +176,32 @@ class AuthenticationProviderUtility {
         }
     }
 
+    /**
+     * Throws appropriate Spring Security exceptions for disabled accounts, locked accounts, expired pin,
+     * @throws org.springframework.security.authentication.DisabledException if account is disabled
+     * @throws org.springframework.security.authentication.CredentialsExpiredException if credential is expired
+     * @throws org.springframework.security.authentication.LockedException if the user account has been locked
+     * @throws RuntimeException if the pin was invalid or the id was incorrect (i.e., the default error)
+     **/
+    public static verifyAuthenticationResults( Map authenticationResults ) {
 
+        if (authenticationResults.disabled){
+            log.warn "Provider was not able to authenticate user - Account Disabled"
+            throw new DisabledException('')
+        }
+        if (authenticationResults.expired) {
+            log.warn "Provider was not able to authenticate user - Account Expired"
+            throw new CredentialsExpiredException('')
+        }
+        if (authenticationResults.locked) {
+            log.warn "Provider was not able to authenticate user - Account Locked"
+            throw new LockedException('')
+        }
+        if (!authenticationResults.valid) {
+            log.warn "Provider was not able to authenticate user - Account Invalid"
+            throw new BadCredentialsException('')
+        }
+    }
 
     /**
      * Throws appropriate Spring Security exceptions for disabled accounts, locked accounts, expired pin,
