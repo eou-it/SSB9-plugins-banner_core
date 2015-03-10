@@ -95,13 +95,17 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
         }
 
         def dbUser = AuthenticationProviderUtility.getMappedUserForUdcId( assertAttributeValue, dataSource )
-        log.debug "BannerPreAuthenticatedFilter.doFilter found Oracle database user $dbUser for assertAttributeValue"
+        log.debug "BannerSamlAuthenticationProvider.authenticate found Oracle database user $dbUser for assertAttributeValue"
+
+        // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
+        AuthenticationProviderUtility.verifyAuthenticationResults this, authentication, dbUser
+        log.debug "BannerSamlAuthenticationProvider.authenticate verify authentication results"
 
         BannerAuthenticationToken bannerAuthenticationToken = AuthenticationProviderUtility.createAuthenticationToken(dbUser,dataSource, this)
         bannerAuthenticationToken.claims = claims
         bannerAuthenticationToken.SAMLCredential=credential
 
-        log.debug "BannerPreAuthenticatedFilter.doFilter BannerAuthenticationToken updated with claims $bannerAuthenticationToken"
+        log.debug "BannerSamlAuthenticationProvider.authenticate BannerAuthenticationToken updated with claims $bannerAuthenticationToken"
 
         return bannerAuthenticationToken
 
