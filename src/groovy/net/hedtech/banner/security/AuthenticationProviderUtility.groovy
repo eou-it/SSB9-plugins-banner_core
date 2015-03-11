@@ -29,7 +29,7 @@ class AuthenticationProviderUtility {
 
         if(assertAttributeValue == null) {
             log.fatal("System is configured for non default authentication and identity assertion is $assertAttributeValue")  // NULL
-            throw new BadCredentialsException("System is configured for non default authentication and identity assertion is $assertAttributeValue")
+            throw new UsernameNotFoundException("System is configured for non default authentication and identity assertion is $assertAttributeValue")
         }
 
         def oracleUserName

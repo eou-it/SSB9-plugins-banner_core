@@ -63,7 +63,7 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
 
             if(assertAttributeValue == null) {
                 log.fatal("System is configured for CAS authentication and identity assertion is $assertAttributeValue")  // NULL
-                throw new BadCredentialsException("System is configured for CAS authentication and identity assertion is $assertAttributeValue")
+                throw new UsernameNotFoundException("System is configured for CAS authentication and identity assertion is $assertAttributeValue")
             }
 
             def dbUser = AuthenticationProviderUtility.getMappedUserForUdcId(assertAttributeValue, dataSource)
