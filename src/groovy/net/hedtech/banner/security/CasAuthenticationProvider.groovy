@@ -17,6 +17,7 @@ import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.LockedException
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
 
