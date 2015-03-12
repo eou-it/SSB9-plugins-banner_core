@@ -6,6 +6,8 @@
 import grails.util.GrailsUtil
 import grails.util.Holders
 import org.apache.log4j.Logger
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler
 
@@ -58,7 +60,7 @@ class BannerCoreGrailsPlugin {
 
     // the other plugins this plugin depends on
     def dependsOn = ['springSecurityCore': '1.2.7.3',
-                     'springSecuritySaml': '1.0.0.M20']
+            'springSecuritySaml': '1.0.0.M20']
     List loadAfter = ['springSecurityCore', 'springSecuritySaml']
 
     // resources that are excluded from plugin packaging
@@ -189,8 +191,8 @@ class BannerCoreGrailsPlugin {
         bannerMepCodeFilter(BannerMepCodeFilter) 
 
         authenticationManager(ProviderManager) {
-            if (isSsbEnabled()) providers = [casBannerAuthenticationProvider, selfServiceBannerAuthenticationProvider, bannerAuthenticationProvider]
-            else providers = [casBannerAuthenticationProvider, bannerAuthenticationProvider]
+            if (isSsbEnabled()) providers = [casBannerAuthenticationProvider, selfServiceBannerAuthenticationProvider, bannerAuthenticationProvider, samlAuthenticationProvider]
+            else providers = [casBannerAuthenticationProvider, bannerAuthenticationProvider, samlAuthenticationProvider]
         }
 
         basicAuthenticationEntryPoint(BasicAuthenticationEntryPoint) {
@@ -256,6 +258,10 @@ class BannerCoreGrailsPlugin {
         if (!CH.config.privacy?.codes) {
             // Populate with default privacy policy codes
             CH.config.privacy.codes = "INT NAV UNI"
+        }
+
+        if('saml'.equals(ConfigurationHolder?.config?.banner.sso.authenticationProvider)) {
+            SpringSecurityUtils.registerLogoutHandler 'successLogoutHandler'
         }
     }
 

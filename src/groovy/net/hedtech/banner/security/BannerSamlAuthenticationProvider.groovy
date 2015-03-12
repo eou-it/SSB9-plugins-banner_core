@@ -1,5 +1,6 @@
 package net.hedtech.banner.security
 
+import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.springframework.security.saml.SAMLAuthenticationProvider
 import org.springframework.security.saml.SAMLAuthenticationToken
@@ -20,6 +21,8 @@ import org.springframework.security.core.AuthenticationException;
 
 class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
     def dataSource
+    // note: using 'getClass()' here doesn't work
+    private static final Logger log = Logger.getLogger( "net.hedtech.banner.security.BannerSamlAuthenticationProvider" )
 
     public BannerSamlAuthenticationProvider() {
         super();
