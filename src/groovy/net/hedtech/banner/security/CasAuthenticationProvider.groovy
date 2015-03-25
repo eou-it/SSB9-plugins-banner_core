@@ -4,6 +4,7 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 package net.hedtech.banner.security
 
 import groovy.sql.Sql
+import net.hedtech.banner.exceptions.AuthorizationException
 import org.apache.log4j.Logger
 import org.jasig.cas.client.util.AbstractCasFilter
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
@@ -11,6 +12,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 
 import org.springframework.context.ApplicationContext
+import org.springframework.security.authentication.AuthenticationServiceException
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.security.authentication.DisabledException
@@ -83,16 +85,19 @@ public class CasAuthenticationProvider implements AuthenticationProvider {
             bannerAuthenticationToken
         }
         catch (DisabledException de)           {
-            log.fatal "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${de.message}"
+            log.fatal "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to DisabledException: ${de.message}"
             throw de
         } catch (CredentialsExpiredException ce) {
-            log.fatal "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${ce.message}"
+            log.fatal "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to CredentialsExpiredException: ${ce.message}"
             throw ce
         } catch (LockedException le)             {
-            log.fatal "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${le.message}"
+            log.fatal "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to LockedException: ${le.message}"
             throw le
+        } catch(AuthorizationException ae) {
+            log.fatal "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to AuthorizationException: ${ae.message}"
+            throw ae
         } catch (BadCredentialsException be)     {
-            log.fatal "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to exception: ${be.message}"
+            log.fatal "CasAuthenticationProvider was not able to authenticate user $authentication.name, due to BadCredentialsException: ${be.message}"
             throw be
         }
         catch (e) {

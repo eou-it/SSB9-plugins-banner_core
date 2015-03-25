@@ -4,6 +4,7 @@
 
 import grails.converters.JSON
 import net.hedtech.banner.controllers.ControllerUtils
+import net.hedtech.banner.exceptions.AuthorizationException
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import org.springframework.security.authentication.*
 import org.springframework.security.core.context.SecurityContextHolder as SCH
@@ -135,6 +136,9 @@ class LoginController {
             }
             else if (exception instanceof LockedException) {
                 msg = message( code:"net.hedtech.banner.errors.login.locked" )
+            }
+            else if(exception instanceof AuthorizationException) {
+                msg = message( code: "net.hedtech.banner.access.denied.message" )
             }
             else if (exception instanceof BadCredentialsException) {
                 msg = message( code:"net.hedtech.banner.errors.login.fail" )

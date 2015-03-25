@@ -1,5 +1,9 @@
+/*******************************************************************************
+ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.security
 
+import org.apache.log4j.Logger
 import org.opensaml.common.SAMLException
 import org.opensaml.saml2.metadata.provider.MetadataProviderException
 import org.opensaml.ws.message.encoder.MessageEncodingException
@@ -20,10 +24,11 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 /**
- * Created by mohitj on 3/2/15.
+ * An Filter added to handle the SAMl logout with token of type BannerAuthenticationToken.
  */
 class BannerSamlLogoutFilter extends SAMLLogoutFilter{
 
+    private static final Logger log = Logger.getLogger( "net.hedtech.banner.security.BannerSamlLogoutFilter" )
 
     BannerSamlLogoutFilter(String successUrl, LogoutHandler[] localHandler, LogoutHandler[] globalHandlers) {
         super(successUrl, localHandler, globalHandlers)
@@ -40,24 +45,30 @@ class BannerSamlLogoutFilter extends SAMLLogoutFilter{
             try {
                BannerAuthenticationToken auth=SecurityContextHolder.getContext().getAuthentication();
                 if (auth != null && isGlobalLogout(request,auth)) {
-                    Assert.isInstanceOf(BannerAuthenticationToken.class,auth,"Authentication object doesn't contain SAML credential, cannot perform global logout");
-                    for (        LogoutHandler handler : globalHandlers) {
-                        handler.logout(request,response,auth);
+                    if(!(auth instanceof BannerAuthenticationToken)) {
+                        log.fatal("Authentication object doesn't contain SAML credential, cannot perform global logout")
+                        throw new ServletException("Authentication object doesn't contain SAML credential, cannot perform global logout")
                     }
-                    SAMLMessageContext context=contextProvider.getLocalEntity(request,response,(SAMLCredential)auth.getSAMLCredential());
-                    profile.sendLogoutRequest(context,auth.getSAMLCredential());
-                    samlLogger.log(SAMLConstants.LOGOUT_REQUEST,SAMLConstants.SUCCESS,context);
+                    Assert.isInstanceOf(BannerAuthenticationToken.class,auth,"Authentication object doesn't contain SAML credential, cannot perform global logout")
+                    for (        LogoutHandler handler : globalHandlers) {
+                        handler.logout(request,response,auth)
+                    }
+                    SAMLMessageContext context = contextProvider.getLocalEntity(request,response,(SAMLCredential)auth.getSAMLCredential())
+                    profile.sendLogoutRequest(context,auth.getSAMLCredential())
+                    log.debug("Logout Request initiated with ontext : " + context)
                 }
                 else {
                     super.doFilter(request,response,chain);
                 }
             } catch (SAMLException e1) {
-                throw new ServletException("Error initializing global logout", e1);
+                log.fatal("Error initializing global logout " + e1)
+                throw new ServletException("Error initializing global logout", e1)
             } catch (MetadataProviderException e1) {
-                throw new ServletException("Error processing metadata", e1);
+                log.fatal("Error processing metadata " + e1)
+                throw new ServletException("Error processing metadata", e1)
             } catch (MessageEncodingException e1) {
-                println("catch block messageencoding exception")
-                throw new ServletException("Error encoding outgoing message", e1);
+                log.fatal("Error encoding outgoing message " + e1)
+                throw new ServletException("Error encoding outgoing message", e1)
             }
         } else {
             chain.doFilter(request, response);

@@ -1,3 +1,6 @@
+/*******************************************************************************
+ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.security
 
 import org.apache.log4j.Logger
@@ -19,6 +22,9 @@ import org.opensaml.xml.validation.ValidationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.core.AuthenticationException;
 
+/**
+ * An authentication provider for Banner that authenticates a user using SAML.
+ */
 class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
     def dataSource
     // note: using 'getClass()' here doesn't work
@@ -35,7 +41,7 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
      * and assertion used to verify the user as credential (SAMLCredential object) is created and set as authenticated.
      *
      * @param authentication SAMLAuthenticationToken to verify
-     * @return UsernamePasswordAuthenticationToken with name as NameID value and SAMLCredential as credential object
+     * @return BannerAuthenticationToken with name as NameID value and SAMLCredential as credential object
      * @throws AuthenticationException user can't be authenticated due to an error
      */
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -57,23 +63,20 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
                 throw new SAMLException("Unsupported profile encountered in the context " + context.getCommunicationProfileId());
             }
         } catch (SAMLRuntimeException e) {
-            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an exception $e"
-            throw new AuthenticationServiceException("Error validating SAML message", e);
+            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an SAMLRuntimeException $e"
+            throw new AuthenticationServiceException("Error validating SAML message", e)
         } catch (SAMLException e) {
-            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an exception $e"
-            throw new AuthenticationServiceException("Error validating SAML message", e);
+            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an SAMLException $e"
+            throw new AuthenticationServiceException("Error validating SAML message", e)
         } catch (ValidationException e) {
-            log.debug("Error validating signature", e);
-            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an exception $e"
-            throw new AuthenticationServiceException("Error validating SAML message signature", e);
+            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an ValidationException $e"
+            throw new AuthenticationServiceException("Error validating SAML message signature", e)
         } catch (org.opensaml.xml.security.SecurityException e) {
-            log.debug("Error validating signature", e);
-            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an exception $e"
-            throw new AuthenticationServiceException("Error validating SAML message signature", e);
+            log.fatal  "BannerSamlAuthenticationProvider.authenticate ecountered an SecurityException $e"
+            throw new AuthenticationServiceException("Error validating SAML message signature", e)
         } catch (DecryptionException e) {
-            log.debug("Error decrypting SAML message", e);
-            log.fatal "BannerSamlAuthenticationProvider.authenticate ecountered an exception $e"
-            throw new AuthenticationServiceException("Error decrypting SAML message", e);
+            log.fatal "BannerSamlAuthenticationProvider.authenticate ecountered an DecryptionException $e"
+            throw new AuthenticationServiceException("Error decrypting SAML message", e)
         }
 
         Map claims = new HashMap();

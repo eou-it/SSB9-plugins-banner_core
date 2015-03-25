@@ -1,7 +1,11 @@
+/*******************************************************************************
+ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.security
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
+import net.hedtech.banner.exceptions.AuthorizationException
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
@@ -18,6 +22,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import java.sql.SQLException
 
 
+/**
+ * An Utility Class to handle the common logic of mapping user to Banner user.
+ */
 class AuthenticationProviderUtility {
 
     // note: using 'getClass()' here doesn't work -- we'll just use a String
@@ -95,12 +102,12 @@ class AuthenticationProviderUtility {
             }
 
         } catch (SQLException e) {
-            log.error "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId not able to map $ConfigurationHolder?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue to db user"
+            log.error "AuthenticationProviderUtility.getMappedDatabaseUserForUdcId not able to map $ConfigurationHolder?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue to db user"
             throw e
         } finally {
             conn?.close()
         }
-        log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId results are $authenticationResults"
+        log.trace "AuthenticationProviderUtility.getMappedDatabaseUserForUdcId results are $authenticationResults"
         authenticationResults
     }
 
@@ -132,7 +139,10 @@ class AuthenticationProviderUtility {
             authorities = BannerAuthenticationProvider.determineAuthorities( dbUser, dataSource )
             log.debug "AuthenticationProviderUtility.createAuthenticationToken found Banner Admin authorities $authorities"
         }
-
+        if(!authorities || authorities.size() == 0) {
+            log.fatal("No authorities found")
+            throw new AuthorizationException("No authorities found")
+        }
         dbUser['authorities'] = authorities
         dbUser['fullName'] = fullName
         BannerAuthenticationToken bannerAuthenticationToken = newAuthenticationToken( provider, dbUser )
