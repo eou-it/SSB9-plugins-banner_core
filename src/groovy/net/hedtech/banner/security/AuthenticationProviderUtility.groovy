@@ -139,7 +139,7 @@ class AuthenticationProviderUtility {
             authorities = BannerAuthenticationProvider.determineAuthorities( dbUser, dataSource )
             log.debug "AuthenticationProviderUtility.createAuthenticationToken found Banner Admin authorities $authorities"
         }
-        if(!authorities || authorities.size() == 0) {
+        if(authorities == null || authorities.size() == 0) {
             log.fatal("No authorities found")
             throw new AuthorizationException("No authorities found")
         }

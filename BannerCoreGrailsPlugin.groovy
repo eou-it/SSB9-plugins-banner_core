@@ -260,9 +260,6 @@ class BannerCoreGrailsPlugin {
             CH.config.privacy.codes = "INT NAV UNI"
         }
 
-        if('saml'.equals(ConfigurationHolder?.config?.banner.sso.authenticationProvider)) {
-            SpringSecurityUtils.registerLogoutHandler 'successLogoutHandler'
-        }
     }
 
 
