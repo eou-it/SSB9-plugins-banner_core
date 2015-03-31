@@ -88,6 +88,7 @@ class BannerSamlLogoutFilter extends LogoutFilter {
                     log.debug("Logout Request initiated with ontext : " + context)
                 }
                 else {
+                    log.fatal("Error initializing global logout due to internal errors. Only Local logout will be initiated.")
                     super.doFilter(request,response,chain)
                 }
             } catch (SAMLException e1) {
