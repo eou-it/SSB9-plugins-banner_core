@@ -2,9 +2,14 @@
  Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 
+
 import grails.util.GrailsUtil
 import grails.util.Holders
 import org.apache.log4j.Logger
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler
 
 import java.util.concurrent.Executors
 
@@ -54,8 +59,9 @@ class BannerCoreGrailsPlugin {
     def grailsVersion = "2.2.1 > *"
 
     // the other plugins this plugin depends on
-    def dependsOn = ['springSecurityCore': '1.2.7.3']
-    List loadAfter = ['springSecurityCore']
+    def dependsOn = ['springSecurityCore': '1.2.7.3',
+            'springSecuritySaml': '1.0.0.M20']
+    List loadAfter = ['springSecurityCore', 'springSecuritySaml']
 
     // resources that are excluded from plugin packaging
     def pluginExcludes = ["grails-app/views/error.gsp"]
@@ -154,6 +160,7 @@ class BannerCoreGrailsPlugin {
             dataSource = ref(dataSource)
         }
 
+
         bannerAuthenticationProvider(BannerAuthenticationProvider) {
             dataSource = ref(dataSource)
             authenticationDataSource = ref(authenticationDataSource)
@@ -167,6 +174,15 @@ class BannerCoreGrailsPlugin {
             dataSource = ref(dataSource)
         }
 
+        samlAuthenticationProvider(BannerSamlAuthenticationProvider) {
+            userDetails = ref('userDetailsService')
+            hokConsumer = ref('webSSOprofileConsumer')
+            dataSource = ref(dataSource)
+        }
+
+        samlLogoutFilter(BannerSamlLogoutFilter,
+                ref('successLogoutHandler'), ref('logoutHandler'), ref('logoutHandler'))
+
         bannerPreAuthenticatedFilter(BannerPreAuthenticatedFilter) {
             dataSource = ref(dataSource)
             authenticationManager = ref('authenticationManager')
@@ -175,8 +191,8 @@ class BannerCoreGrailsPlugin {
         bannerMepCodeFilter(BannerMepCodeFilter) 
 
         authenticationManager(ProviderManager) {
-            if (isSsbEnabled()) providers = [casBannerAuthenticationProvider, selfServiceBannerAuthenticationProvider, bannerAuthenticationProvider]
-            else providers = [casBannerAuthenticationProvider, bannerAuthenticationProvider]
+            if (isSsbEnabled()) providers = [casBannerAuthenticationProvider, selfServiceBannerAuthenticationProvider, bannerAuthenticationProvider, samlAuthenticationProvider]
+            else providers = [casBannerAuthenticationProvider, bannerAuthenticationProvider, samlAuthenticationProvider]
         }
 
         basicAuthenticationEntryPoint(BasicAuthenticationEntryPoint) {
@@ -243,6 +259,7 @@ class BannerCoreGrailsPlugin {
             // Populate with default privacy policy codes
             CH.config.privacy.codes = "INT NAV UNI"
         }
+
     }
 
 
@@ -294,6 +311,11 @@ class BannerCoreGrailsPlugin {
                 filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
                 filterChain['/**/qapi/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
                 filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,bannerMepCodeFilter,bannerPreAuthenticatedFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
+                break
+            case 'saml':
+                filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/**/qapi/**'] = 'statelessSecurityContextPersistenceFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/**'] = 'securityContextPersistenceFilter,samlEntryPoint,metadataFilter,samlProcessingFilter,samlLogoutFilter,samlLogoutProcessingFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
                 break
             default:
                 filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'

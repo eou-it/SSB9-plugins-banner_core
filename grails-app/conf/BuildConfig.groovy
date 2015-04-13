@@ -8,6 +8,7 @@ grails.project.test.class.dir   = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 
 grails.plugin.location.'spring-security-cas' = "../spring_security_cas.git"
+grails.plugin.location.'spring-security-saml' = "../spring_security_saml.git"
 grails.plugin.location.'banner-codenarc'     = "../banner_codenarc.git"
 grails.plugin.location.'i18n-core'           = "../i18n_core.git"
 

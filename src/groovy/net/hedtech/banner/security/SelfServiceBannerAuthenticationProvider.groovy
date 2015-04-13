@@ -3,32 +3,15 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.security
 
-import org.springframework.security.authentication.AuthenticationProvider
-
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.authentication.CredentialsExpiredException
-import org.springframework.security.authentication.DisabledException
-import org.springframework.security.authentication.LockedException
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import groovy.sql.Sql
+import org.apache.log4j.Logger
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.springframework.security.authentication.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
-
 import org.springframework.web.context.request.RequestContextHolder
 
 import java.sql.SQLException
-
-import groovy.sql.Sql
-
-import org.apache.log4j.Logger
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
-
-// import org.jasig.cas.client.util.AbstractCasFilter
-
-import org.springframework.context.ApplicationContext
-
 
 /**
  * An authentication provider which authenticates a self service user.  Self service users
@@ -73,7 +56,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             def authenticationResults = selfServiceAuthentication( authentication, db ) // may throw exceptions, like SQLException
 
             // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
-            BannerAuthenticationProvider.verifyAuthenticationResults this, authentication, authenticationResults
+            AuthenticationProviderUtility.verifyAuthenticationResults this, authentication, authenticationResults
 
             authenticationResults['authorities']        = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
             authenticationResults['webTimeout']         = getWebTimeOut( authenticationResults, db )
@@ -242,8 +225,8 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     }
 
 
-    def newAuthenticationToken( authenticationResults ) {
-        BannerAuthenticationProvider.newAuthenticationToken( this, authenticationResults )
+    private BannerAuthenticationToken newAuthenticationToken( authenticationResults ) {
+        AuthenticationProviderUtility.newAuthenticationToken( this, authenticationResults )
     }
 
 
@@ -305,7 +288,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
        // def selfServiceRolePassword
         if (authentictionResults.oracleUserName) {
             authorities << BannerGrantedAuthority.create( "SELFSERVICE", "BAN_DEFAULT_M", null )
-            Collection<GrantedAuthority> adminAuthorities = BannerAuthenticationProvider.determineAuthorities( authentictionResults, db )
+            Collection<GrantedAuthority> adminAuthorities = AuthenticationProviderUtility.determineAuthorities( authentictionResults, db )
             authorities.addAll( adminAuthorities )
         }
        log.trace "SelfServiceAuthenticationProvider.determineAuthorities will return $authorities"

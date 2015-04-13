@@ -12,9 +12,15 @@ import org.springframework.security.core.GrantedAuthority
 public class BannerAuthenticationToken implements Authentication {
 
     private BannerUser user
+    // include a map
+    private Map claims
+    private def SAMLCredential
 
+    public def getSAMLCredential(){
+        SAMLCredential
+    }
 
-    BannerAuthenticationToken( BannerUser user ) {
+    BannerAuthenticationToken( BannerUser user , Date tokenExpiration) {
         this.user = user
     }
 
@@ -72,7 +78,11 @@ public class BannerAuthenticationToken implements Authentication {
 
      public String getFullName() {
         user?.fullName
-    }   
+    }
+
+    public Map getClaims() {
+        claims
+    }
     
     public String toString() {
         "${super.toString()}[isAuthenticated()=${isAuthenticated()}, user=$user]"
