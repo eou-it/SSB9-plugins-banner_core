@@ -95,6 +95,7 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
                     log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url is authenticated anonymously"
                     return false
                 }
+                return true
             }
         }
         log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url requires authentication"
