@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.context.request.RequestContextHolder
 
 class LoginController {
 
@@ -192,6 +193,15 @@ class LoginController {
 
     def error = {
         def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
-        render view: "customerror", model: [msg: getMessageFor( exception )]
+        render view: "customerror", model: [msg: getMessageFor( exception ), uri: buildLogout()]
+    }
+
+    private def buildLogout() {
+        def uri = '/logout/customLogout'
+        def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
+        if (mep) {
+            uri += "?mepCode=${mep}"
+        }
+        uri
     }
 }

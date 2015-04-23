@@ -12,6 +12,7 @@ class LogoutController {
     static defaultAction = "index"
     public static final String VIEW_LOGOUT_PAGE = "logoutPage"
     public static final String VIEW_TIMEOUT = "timeout"
+    public static final String VIEW_CUSTOM_LOGOUT = "customLogout"
     public static final String HTTP_REQUEST_REFERER_STRING = "referer"
     public static final String LOGIN_AUTH_ACTION_URI = "login/auth"
     public static final String LOGIN_CONTROLLER = "login"
@@ -50,5 +51,16 @@ class LogoutController {
         cookie.setPath(request.getContextPath());
         cookie.setMaxAge(0);
         response.addCookie(cookie);
+    }
+
+    def customLogout = {
+        invalidateSession( response )
+        def logoutUri = ControllerUtils.buildGlobalLogoutURI()
+        if(logoutUri && logoutUri.size() > 0) {
+            render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.buildGlobalLogoutURI(), uri: ControllerUtils.buildAfterLogoutRedirectURI()  ]
+        } else {
+            render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.buildAfterLogoutRedirectURI()  ]
+        }
+
     }
 }
