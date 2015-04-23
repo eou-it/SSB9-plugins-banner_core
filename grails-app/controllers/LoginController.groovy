@@ -86,8 +86,7 @@ class LoginController {
             redirect action: full, params: params
         }
 
-        def uri = ControllerUtils.buildLogoutRedirectURI()
-        render view: "denied", model: [uri: uri]
+        render view: "denied", model: [uri: buildLogout()]
     }
 
     /**
