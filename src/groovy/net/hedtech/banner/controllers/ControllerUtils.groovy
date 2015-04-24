@@ -46,12 +46,12 @@ class ControllerUtils {
         uri
     }
 
-    public static def buildGlobalLogoutURI() {
-        return SpringSecurityUtils.securityConfig.logout.globalLogoutUrl
+    public static def getHomePageURL() {
+        return SpringSecurityUtils.securityConfig.homePageUrl
 
     }
 
-    public static def buildAfterLogoutRedirectURI() {
+    public static def getAfterLogoutRedirectURI() {
         return SpringSecurityUtils.securityConfig.logout.afterLogoutUrl
 
     }

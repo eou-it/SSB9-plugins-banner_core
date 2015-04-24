@@ -196,10 +196,10 @@ class LoginController {
     }
 
     private def buildLogout() {
-        def uri = '/logout/customLogout'
+        def uri = '/logout/customLogout?error=true'
         def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
         if (mep) {
-            uri += "?mepCode=${mep}"
+            uri += "&mepCode=${mep}"
         }
         uri
     }

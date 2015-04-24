@@ -54,12 +54,16 @@ class LogoutController {
     }
 
     def customLogout = {
-        invalidateSession( response )
-        def logoutUri = ControllerUtils.buildGlobalLogoutURI()
-        if(logoutUri && logoutUri.size() > 0) {
-            render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.buildGlobalLogoutURI(), uri: ControllerUtils.buildAfterLogoutRedirectURI()  ]
+        boolean show = true
+        String casEnabled =  grailsApplication.config.banner.sso.authenticationProvider
+        if (request.getParameter("error") || casEnabled.equalsIgnoreCase("cas")){
+            show = false
+        }
+
+        if(casEnabled.equalsIgnoreCase("cas")) {
+            render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show  ]
         } else {
-            render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.buildAfterLogoutRedirectURI()  ]
+            render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show  ]
         }
 
     }
