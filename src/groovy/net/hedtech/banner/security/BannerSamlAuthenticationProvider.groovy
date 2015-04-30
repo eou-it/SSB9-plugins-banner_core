@@ -5,22 +5,19 @@ package net.hedtech.banner.security
 
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.opensaml.common.SAMLException
+import org.opensaml.common.SAMLRuntimeException
+import org.opensaml.xml.encryption.DecryptionException
+import org.opensaml.xml.validation.ValidationException
+import org.springframework.security.authentication.AuthenticationServiceException
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.AuthenticationException
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.saml.SAMLAuthenticationProvider
 import org.springframework.security.saml.SAMLAuthenticationToken
 import org.springframework.security.saml.SAMLConstants
 import org.springframework.security.saml.SAMLCredential
 import org.springframework.security.saml.context.SAMLMessageContext
-
-import org.springframework.security.core.Authentication
-
-import org.opensaml.common.SAMLException;
-import org.opensaml.common.SAMLRuntimeException;
-
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.opensaml.xml.encryption.DecryptionException;
-import org.opensaml.xml.validation.ValidationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.springframework.security.core.AuthenticationException;
 
 /**
  * An authentication provider for Banner that authenticates a user using SAML.
@@ -110,6 +107,7 @@ class BannerSamlAuthenticationProvider extends SAMLAuthenticationProvider  {
         BannerAuthenticationToken bannerAuthenticationToken = AuthenticationProviderUtility.createAuthenticationToken(dbUser,dataSource, this)
         bannerAuthenticationToken.claims = claims
         bannerAuthenticationToken.SAMLCredential=credential
+        bannerAuthenticationToken.sessionIndex=credential.getAuthenticationAssertion().getStatements().get(0).getAt("sessionIndex")
 
         log.debug "BannerSamlAuthenticationProvider.authenticate BannerAuthenticationToken updated with claims $bannerAuthenticationToken"
 

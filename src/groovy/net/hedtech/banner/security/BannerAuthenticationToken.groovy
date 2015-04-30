@@ -15,11 +15,15 @@ public class BannerAuthenticationToken implements Authentication {
     // include a map
     private Map claims
     private def SAMLCredential
+    private def sessionIndex
 
     public def getSAMLCredential(){
         SAMLCredential
     }
 
+    public def getsessionIndex(){
+        sessionIndex
+    }
     BannerAuthenticationToken( BannerUser user , Date tokenExpiration) {
         this.user = user
     }

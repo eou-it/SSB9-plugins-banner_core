@@ -3,37 +3,22 @@
  ****************************************************************************** */
 
 
+
 import grails.util.GrailsUtil
 import grails.util.Holders
-import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler
-
-import java.util.concurrent.Executors
-
-import javax.servlet.Filter
-
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.mep.MultiEntityProcessingService
 import net.hedtech.banner.security.*
-import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
-import net.hedtech.banner.service.DefaultLoaderService
-import net.hedtech.banner.service.HttpSessionService
-import net.hedtech.banner.service.LoginAuditService
-import net.hedtech.banner.service.ServiceBase
-
+import net.hedtech.banner.service.*
 import oracle.jdbc.pool.OracleDataSource
-
 import org.apache.commons.dbcp.BasicDataSource
+import org.apache.log4j.Logger
 import org.apache.log4j.jmx.HierarchyDynamicMBean
-
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import org.codehaus.groovy.runtime.GStringImpl
-
 import org.springframework.context.event.SimpleApplicationEventMulticaster
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jmx.export.MBeanExporter
@@ -46,6 +31,9 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
+
+import javax.servlet.Filter
+import java.util.concurrent.Executors
 
 /**
  * A Grails Plugin supporting cross cutting concerns.
@@ -82,7 +70,7 @@ class BannerCoreGrailsPlugin {
     def doWithSpring = {
 
         secureAdhocPatterns()
-
+        def conf = SpringSecurityUtils.securityConfig
         switch (GrailsUtil.environment) {
             case GrailsApplication.ENV_PRODUCTION:
                 log.info "Will use a dataSource configured via JNDI"
@@ -182,6 +170,18 @@ class BannerCoreGrailsPlugin {
 
         samlLogoutFilter(BannerSamlLogoutFilter,
                 ref('successLogoutHandler'), ref('logoutHandler'), ref('logoutHandler'))
+
+        samlSessionRegistry(BannerSamlSessionRegistryImpl)
+
+        samlSessionFilter(BannerSamlConcurrentSessionFilter){
+            sessionRegistry = ref("samlSessionRegistry")
+            contextProvider=ref("contextProvider")
+        }
+        successRedirectHandler(BannerSamlSavedRequestAwareAuthenticationSuccessHandler) {
+            alwaysUseDefaultTargetUrl = conf.saml.alwaysUseAfterLoginUrl ?: false
+            defaultTargetUrl = conf.saml.afterLoginUrl
+            sessionRegistry = ref("samlSessionRegistry")
+        }
 
         bannerPreAuthenticatedFilter(BannerPreAuthenticatedFilter) {
             dataSource = ref(dataSource)
@@ -315,7 +315,7 @@ class BannerCoreGrailsPlugin {
             case 'saml':
                 filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
                 filterChain['/**/qapi/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
-                filterChain['/**'] = 'securityContextPersistenceFilter,bannerMepCodeFilter,samlEntryPoint,metadataFilter,samlProcessingFilter,samlLogoutFilter,samlLogoutProcessingFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
+                filterChain['/**'] = 'samlSessionFilter,securityContextPersistenceFilter,bannerMepCodeFilter,samlEntryPoint,metadataFilter,samlProcessingFilter,samlLogoutFilter,samlLogoutProcessingFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
                 break
             default:
                 filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
@@ -344,6 +344,12 @@ class BannerCoreGrailsPlugin {
             'listener' {
                 'display-name'("Banner Core Session Cleaner")
                 'listener-class'("net.hedtech.banner.db.DbConnectionCacheSessionListener")
+            }
+        }
+        listenerElements + {
+            'listener' {
+                'display-name'("Http Session Listener")
+                'listener-class'("net.hedtech.banner.security.SessionCounterListener")
             }
         }
 
