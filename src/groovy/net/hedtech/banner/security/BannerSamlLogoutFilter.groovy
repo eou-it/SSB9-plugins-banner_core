@@ -75,7 +75,7 @@ class BannerSamlLogoutFilter extends LogoutFilter {
 
             try {
                 BannerAuthenticationToken auth=SecurityContextHolder.getContext().getAuthentication();
-                if (auth != null && isGlobalLogout(request,auth)) {
+                if (auth != null && isGlobalLogout(request,auth)  && auth.getSAMLCredential() != null) {
                     if(!(auth instanceof BannerAuthenticationToken)) {
                         log.fatal("Authentication object doesn't contain SAML credential, cannot perform global logout")
                         throw new ServletException("Authentication object doesn't contain SAML credential, cannot perform global logout")
