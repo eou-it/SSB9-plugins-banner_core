@@ -173,7 +173,7 @@ class BannerCoreGrailsPlugin {
 
         samlSessionRegistry(BannerSamlSessionRegistryImpl)
 
-        samlSessionFilter(BannerSamlConcurrentSessionFilter){
+        samlSessionFilter(BannerSamlSessionFilter){
             sessionRegistry = ref("samlSessionRegistry")
             contextProvider=ref("contextProvider")
         }

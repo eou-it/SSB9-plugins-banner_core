@@ -24,8 +24,8 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 
-class BannerSamlConcurrentSessionFilter extends GenericFilterBean{
-    private static final Logger log = Logger.getLogger( BannerSamlConcurrentSessionFilter.class )
+class BannerSamlSessionFilter extends GenericFilterBean{
+    private static final Logger log = Logger.getLogger( BannerSamlSessionFilter.class )
 
     private BannerSamlSessionRegistryImpl sessionRegistry;
     private SAMLContextProvider contextProvider;
@@ -38,7 +38,7 @@ class BannerSamlConcurrentSessionFilter extends GenericFilterBean{
         HttpSession session = request.getSession(false);
         if(session==null){
             if(request.getRequestURL().contains(SAMLLogoutProcessingFilter.FILTER_URL)){
-                log.debug  "BannerSamlConcurrentSessionFilter.dofilter get request for single logout"
+                log.debug  "BannerSamlSessionFilter.dofilter get request for single logout"
                 SAMLMessageContext context;
                 try {
                     context = contextProvider.getLocalEntity(request, response);
@@ -48,7 +48,7 @@ class BannerSamlConcurrentSessionFilter extends GenericFilterBean{
                     String sessionId=sessionRegistry.getSessionIndexInformation(sessionIndex);
                     HttpSession httpsession= sessionRegistry.getSessionObjectInformation(sessionId);
                     if(httpsession!=null){
-                        log.debug  "BannerSamlConcurrentSessionFilter.dofilter found session from session regsitry $httpsession"
+                        log.debug  "BannerSamlSessionFilter.dofilter found session from session regsitry $httpsession"
                         httpsession.invalidate();
                         sessionRegistry.removeSessionInformation(sessionId);
                     }
@@ -68,7 +68,7 @@ class BannerSamlConcurrentSessionFilter extends GenericFilterBean{
             }
         }else{
             if(request.getRequestURL().contains(BannerSamlLogoutFilter.FILTER_URL)){
-                log.debug  "BannerSamlConcurrentSessionFilter.dofilter get request from application to logout"
+                log.debug  "BannerSamlSessionFilter.dofilter get request from application to logout"
                 HttpSession httpSession=request.getSession(false);
                 if(httpSession!=null){
                     sessionRegistry.removeSessionInformation(httpSession.getId());
