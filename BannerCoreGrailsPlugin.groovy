@@ -190,11 +190,6 @@ class BannerCoreGrailsPlugin {
 
         bannerMepCodeFilter(BannerMepCodeFilter) 
 
-        authenticationManager(ProviderManager) {
-            if (isSsbEnabled()) providers = [casBannerAuthenticationProvider, selfServiceBannerAuthenticationProvider, bannerAuthenticationProvider, samlAuthenticationProvider]
-            else providers = [casBannerAuthenticationProvider, bannerAuthenticationProvider, samlAuthenticationProvider]
-        }
-
         basicAuthenticationEntryPoint(BasicAuthenticationEntryPoint) {
             realmName = 'Banner REST API Realm'
         }
@@ -290,6 +285,21 @@ class BannerCoreGrailsPlugin {
 
     // Register Hibernate event listeners.
     def doWithApplicationContext = { applicationContext ->
+
+
+        // build providers list here to give dependent plugins a chance to register some
+        def conf = SpringSecurityUtils.securityConfig
+        def providerNames = []
+        if (conf.providerNames) {
+            providerNames.addAll conf.providerNames
+        }
+        else {
+            if (isSsbEnabled()) providerNames = ['casBannerAuthenticationProvider', 'selfServiceBannerAuthenticationProvider', 'bannerAuthenticationProvider', 'samlAuthenticationProvider']
+            else providerNames = ['casBannerAuthenticationProvider', 'bannerAuthenticationProvider', 'samlAuthenticationProvider']
+        }
+        applicationContext.authenticationManager.providers = createBeanList(providerNames, applicationContext)
+
+
         def listeners = applicationContext.sessionFactory.eventListeners
 
         // register hibernate listener for populating audit trail properties before inserting and updating models
@@ -420,6 +430,8 @@ class BannerCoreGrailsPlugin {
         staticLogger.info("Final grails.resources.adhoc.includes" + resourcesConfig.adhoc.includes)
         staticLogger.info("Final grails.resources.adhoc.excludes" + resourcesConfig.adhoc.excludes)
     }
+
+    private createBeanList(names, ctx) { names.collect { name -> ctx.getBean(name) } }
 
 }
 
