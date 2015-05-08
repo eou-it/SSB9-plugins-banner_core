@@ -3,6 +3,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.controllers
 
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -36,8 +37,16 @@ class ControllerUtils {
 
 
     public static def buildLogoutRedirectURI() {
-        def uri = SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
 
+        def uri = SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
+        def authenticationProvider = ConfigurationHolder?.config?.banner.sso.authenticationProvider
+        switch (authenticationProvider) {
+            case 'saml':
+                uri = "/saml/logout"
+                break
+            default:
+                break
+        }
         def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
         if (mep) {
             uri += "?spring-security-redirect=?mepCode=${mep}"
