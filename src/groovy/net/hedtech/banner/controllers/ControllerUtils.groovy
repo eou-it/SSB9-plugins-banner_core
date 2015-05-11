@@ -5,6 +5,7 @@ package net.hedtech.banner.controllers
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
@@ -39,13 +40,8 @@ class ControllerUtils {
     public static def buildLogoutRedirectURI() {
 
         def uri = SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
-        def authenticationProvider = ConfigurationHolder?.config?.banner.sso.authenticationProvider
-        switch (authenticationProvider) {
-            case 'saml':
-                uri = "/saml/logout"
-                break
-            default:
-                break
+        if("saml".equalsIgnoreCase(ConfigurationHolder?.config?.banner.sso.authenticationProvider.toString())) {
+            uri= "/"+RequestContextHolder?.currentRequestAttributes()?.request?.session?.getServletContext().getAttribute("logoutEndpoint")
         }
         def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
         if (mep) {
