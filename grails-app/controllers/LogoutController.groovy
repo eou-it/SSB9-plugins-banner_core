@@ -2,6 +2,10 @@
  Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 import net.hedtech.banner.controllers.ControllerUtils
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+
 import javax.servlet.http.Cookie
 
 /**
@@ -23,7 +27,9 @@ class LogoutController {
      * Index action. Redirects to the Spring security logout uri.
      */
     def index = {
-        invalidateSession( response )
+        if(!"saml".equalsIgnoreCase(ConfigurationHolder?.config?.banner.sso.authenticationProvider.toString())) {
+            invalidateSession( response )
+        }
         redirect uri: ControllerUtils.buildLogoutRedirectURI()
     }
 
@@ -67,4 +73,11 @@ class LogoutController {
         }
 
     }
+    /*def logout={
+        def uri = SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
+        if("saml".equalsIgnoreCase(ConfigurationHolder?.config?.banner.sso.authenticationProvider.toString())) {
+            uri= "/"+RequestContextHolder?.currentRequestAttributes()?.request?.session?.getServletContext().getAttribute("logoutEndpoint")
+        }
+        redirect uri :uri
+    }*/
 }
