@@ -33,7 +33,7 @@ body {
 
 }
 .LogoutSuccessImage {
-    background: url("../images/check-mark.svg") 52px 52px;
+    background: url("../images/check-mark-sm.svg") 52px 52px;
     width: 52px;
     height: 52px;
     margin-left: auto;
