@@ -2,10 +2,6 @@
  Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 import net.hedtech.banner.controllers.ControllerUtils
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
-
 import javax.servlet.http.Cookie
 
 /**
@@ -27,7 +23,7 @@ class LogoutController {
      * Index action. Redirects to the Spring security logout uri.
      */
     def index = {
-        if(!"saml".equalsIgnoreCase(ConfigurationHolder?.config?.banner.sso.authenticationProvider.toString())) {
+        if(!ControllerUtils.isSamlEnabled()){
             invalidateSession( response )
         }
         redirect uri: ControllerUtils.buildLogoutRedirectURI()
@@ -61,23 +57,15 @@ class LogoutController {
 
     def customLogout = {
         boolean show = true
-        String casEnabled =  grailsApplication.config.banner.sso.authenticationProvider
-        if (request.getParameter("error") || casEnabled.equalsIgnoreCase("cas")){
+        if (request.getParameter("error") || ControllerUtils.isCasEnabled()){
             show = false
         }
 
-        if(casEnabled.equalsIgnoreCase("cas")) {
+        if(ControllerUtils.isCasEnabled()) {
             render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show  ]
         } else {
             render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show  ]
         }
 
     }
-    /*def logout={
-        def uri = SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
-        if("saml".equalsIgnoreCase(ConfigurationHolder?.config?.banner.sso.authenticationProvider.toString())) {
-            uri= "/"+RequestContextHolder?.currentRequestAttributes()?.request?.session?.getServletContext().getAttribute("logoutEndpoint")
-        }
-        redirect uri :uri
-    }*/
 }

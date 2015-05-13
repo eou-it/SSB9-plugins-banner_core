@@ -40,7 +40,7 @@ class ControllerUtils {
     public static def buildLogoutRedirectURI() {
 
         def uri = SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
-        if("saml".equalsIgnoreCase(ConfigurationHolder?.config?.banner.sso.authenticationProvider.toString())) {
+        if(isSamlEnabled()) {
             uri= "/"+RequestContextHolder?.currentRequestAttributes()?.request?.session?.getServletContext().getAttribute("logoutEndpoint")
         }
         def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
@@ -59,5 +59,20 @@ class ControllerUtils {
     public static def getAfterLogoutRedirectURI() {
         return SpringSecurityUtils.securityConfig.logout.afterLogoutUrl
 
+    }
+
+    public static boolean isSamlEnabled() {
+        def samlEnabled = ConfigurationHolder?.config.banner.sso.authenticationProvider
+        return 'saml'.equalsIgnoreCase( samlEnabled )
+    }
+
+    public static boolean isCasEnabled() {
+        def casEnabled = ConfigurationHolder?.config.banner.sso.authenticationProvider
+        return 'cas'.equalsIgnoreCase( casEnabled )
+    }
+
+    public static boolean isLocalLogoutEnabled() {
+        def localLogoutEnabled = ConfigurationHolder?.config.banner?.sso?.authentication.saml.localLogout
+        return 'true'.equalsIgnoreCase( localLogoutEnabled )
     }
 }
