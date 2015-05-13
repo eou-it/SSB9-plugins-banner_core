@@ -17,7 +17,7 @@
 </div>
 <div class="dialog">
     <div class="message">${msg}</div>
-    <button onclick=location.href="${target}">${actionLabel}</button>
+    <button onclick=location.href="${target}" autofocus="true">${actionLabel}</button>
 </div>
 <div class="footer">
     <span class="logo"></span>
