@@ -23,7 +23,9 @@ class LogoutController {
      * Index action. Redirects to the Spring security logout uri.
      */
     def index = {
-        invalidateSession( response )
+        if(!ControllerUtils.isSamlEnabled()){
+            invalidateSession( response )
+        }
         redirect uri: ControllerUtils.buildLogoutRedirectURI()
     }
 
@@ -55,12 +57,11 @@ class LogoutController {
 
     def customLogout = {
         boolean show = true
-        String casEnabled =  grailsApplication.config.banner.sso.authenticationProvider
-        if (request.getParameter("error") || casEnabled.equalsIgnoreCase("cas")){
+        if (request.getParameter("error") || ControllerUtils.isCasEnabled()){
             show = false
         }
 
-        if(casEnabled.equalsIgnoreCase("cas")) {
+        if(ControllerUtils.isCasEnabled()) {
             render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show  ]
         } else {
             render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show  ]
