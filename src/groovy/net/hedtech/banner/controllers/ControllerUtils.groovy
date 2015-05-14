@@ -63,16 +63,28 @@ class ControllerUtils {
 
     public static boolean isSamlEnabled() {
         def samlEnabled = ConfigurationHolder?.config.banner.sso.authenticationProvider
-        return 'saml'.equalsIgnoreCase( samlEnabled )
+        if(samlEnabled){
+            return 'saml'.equalsIgnoreCase( samlEnabled )
+        }else{
+            return false;
+        }
     }
 
     public static boolean isCasEnabled() {
         def casEnabled = ConfigurationHolder?.config.banner.sso.authenticationProvider
-        return 'cas'.equalsIgnoreCase( casEnabled )
+        if(casEnabled){
+            return 'cas'.equalsIgnoreCase( casEnabled )
+        }else{
+            return false;
+        }
     }
 
     public static boolean isLocalLogoutEnabled() {
         def localLogoutEnabled = ConfigurationHolder?.config.banner?.sso?.authentication.saml.localLogout
-        return 'true'.equalsIgnoreCase( localLogoutEnabled )
+        if(localLogoutEnabled){
+            return 'true'.equalsIgnoreCase( localLogoutEnabled );
+        }else {
+            return false;
+        }
     }
 }
