@@ -24,8 +24,6 @@ class BannerSamlSavedRequestAwareAuthenticationSuccessHandler extends SavedReque
         log.debug  "BannerSamlSavedRequestAwareAuthenticationSuccessHandler.onAuthenticationSuccess adding new session in sessionregistry $sessionIndex"
         sessionRegistry.registerNewSession(request.getSession(),sessionIndex);
         super.onAuthenticationSuccess(request, response, authentication);
-        clearAuthenticationAttributes(request);
-
     }
 
 
