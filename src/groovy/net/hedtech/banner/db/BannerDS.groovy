@@ -103,8 +103,12 @@ public class BannerDS implements DataSource {
 
                 setRoles(oconn, user, applicableAuthorities)
 
-                if (ApiUtils.isApiRequest()) setMepSsb(conn) // APIs handle MEP like SSB
-                else                         setMep(conn, user)
+                if (ApiUtils.isApiRequest() || shouldProxySsbRequest()){ // APIs handle MEP like SSB
+                    setMepSsb(conn) 
+                }
+                else {
+                    setMep(conn, user)
+                }
 
                 setFGAC(conn)
                 bannerConnection = new BannerConnection(conn, user?.username, this)
