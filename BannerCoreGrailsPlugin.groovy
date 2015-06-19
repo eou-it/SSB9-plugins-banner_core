@@ -48,7 +48,7 @@ class BannerCoreGrailsPlugin {
 
     // the other plugins this plugin depends on
     def dependsOn = ['springSecurityCore': '1.2.7.3',
-            'springSecuritySaml': '2.10.2.1']
+            'springSecuritySaml': '2.10.2.2']
     List loadAfter = ['springSecurityCore', 'springSecuritySaml']
 
     // resources that are excluded from plugin packaging
