@@ -1,7 +1,7 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
-package net.hedtech.banner.testing.testing
+package net.hedtech.banner.testing
 
 import net.hedtech.banner.service.DatabaseModifiesState
 import javax.persistence.*

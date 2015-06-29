@@ -1,4 +1,4 @@
-package net.hedtech.banner.testing.testing
+package net.hedtech.banner.testing
 
 class CommonMenuControllerFunctionalTests extends BaseFunctionalTestCase {
 

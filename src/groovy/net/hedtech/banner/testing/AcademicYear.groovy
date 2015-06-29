@@ -5,7 +5,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  Banner Automator Version: 0.1.1
  Generated: Mon Jan 03 15:56:54 CST 2011
  */
-package net.hedtech.banner.testing.testing
+package net.hedtech.banner.testing
 
 import org.hibernate.annotations.Type
 import javax.persistence.*
