@@ -1,7 +1,7 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
-package net.hedtech.banner.testing
+package net.hedtech.banner.testing.testing
 
 import net.hedtech.banner.security.FormContext
 

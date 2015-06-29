@@ -26,5 +26,17 @@ there is no concept of an 'entity manager' within this project.
         <property name="dialect">org.hibernate.dialect.Oracle10gDialect</property>
         <mapping class="net.hedtech.banner.general.utility.MenuAndToolbarPreference"/>
         <mapping class="net.hedtech.banner.general.utility.PersonalPreference"/>
+
+        <mapping class="net.hedtech.banner.testing.AcademicYear"/>
+        <mapping class="net.hedtech.banner.testing.AreaLibrary"/>
+        <mapping class="net.hedtech.banner.testing.Bar"/>
+        <mapping class="net.hedtech.banner.testing.CourseLaborDistribution"/>
+        <mapping class="net.hedtech.banner.testing.FacultyScheduleQueryView"/>
+        <mapping class="net.hedtech.banner.testing.Foo"/>
+        <mapping class="net.hedtech.banner.testing.Interest"/>
+        <mapping class="net.hedtech.banner.testing.Term"/>
+        <mapping class="net.hedtech.banner.testing.TermType"/>
+        <mapping class="net.hedtech.banner.testing.Zip"/>
+
     </session-factory>
 </hibernate-configuration>

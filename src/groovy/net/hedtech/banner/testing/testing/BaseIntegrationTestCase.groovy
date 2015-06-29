@@ -1,7 +1,7 @@
 /*******************************************************************************
 Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
-package net.hedtech.banner.testing
+package net.hedtech.banner.testing.testing
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql

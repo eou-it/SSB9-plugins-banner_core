@@ -4,6 +4,17 @@ import net.hedtech.banner.configuration.ApplicationConfigurationUtils
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
+// ******************************************************************************
+//                       +++ DATA ORIGIN CONFIGURATION +++
+// ******************************************************************************
+// This field is a Banner standard, along with 'lastModifiedBy' and lastModified.
+// These properties are populated automatically before an entity is inserted or updated
+// within the database. The lastModifiedBy uses the username of the logged in user,
+// the lastModified uses the current timestamp, and the dataOrigin uses the value
+// specified here:
+//
+dataOrigin = "Banner"
+
 grails.doc.authors = '''Prepared by: Ellucian
                         |4 Country View Road Malvern, Pennsylvania 19355 United States of America (800) 522 - 4827'''.stripMargin()
 

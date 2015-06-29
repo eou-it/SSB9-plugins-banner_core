@@ -58,6 +58,8 @@ grails.project.dependency.resolution = {
     dependencies {
 		compile "commons-dbcp:commons-dbcp:1.4"
         test ":ojdbc6:11.2.0.1.0"
+        test 'org.easymock:easymock:3.2'
+
     }
 
 }

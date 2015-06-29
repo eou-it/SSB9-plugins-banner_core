@@ -98,10 +98,18 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
             if (returnMap.errors instanceof List){
                 def errors = returnMap.errors
                 errors.each { error ->
-                    assertTrue ((error.field == "description" && error.model == "net.hedtech.banner.testing.Foo" && error.message?.contains( "exceeds the maximum size of" )
-                    && error.rejectedValue == "Horizon Test - TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT") ||
-                    (error.field == "code" && error.model == "net.hedtech.banner.testing.Foo" && error.message=="The foo code is too long, it must be no more than 2 characters"
-                    && error.rejectedValue == "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"))
+                    assertTrue (
+                            (
+                                    error.field == "description" && error.model == "net.hedtech.banner.testing.Foo" &&
+                                    error.message?.contains( "exceeds the maximum size of" )  &&
+                                    error.rejectedValue == "Horizon Test - TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+                            ) ||
+                            (
+                                error.field == "code" && error.model == "net.hedtech.banner.testing.Foo" &&
+                                        error.message=="The foo code is too long, it must be no more than 2 characters" &&
+                                        error.rejectedValue == "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+                            )
+                    )
                 }
             }  else {
                 assertTrue returnMap.errors ==~ /.*The foo code is too long, it must be no more than 2 characters.*/
