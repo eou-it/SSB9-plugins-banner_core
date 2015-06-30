@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.mep
 
@@ -98,6 +98,7 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         assertTrue "Mep is not set up correctly",  mep
     }
 
+
     @Test
     void testGetMepDescription() {
         def desc = multiEntityProcessingService.getMepDescription(cccCollege)
@@ -115,10 +116,40 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
     }
 
 
-
     @Test
     void testIsMEP() {
+        //remove the mepEnabled indicator from the session so that the service is forced to check for mep indicator
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
         assertTrue "MEP is not setup", multiEntityProcessingService.isMEP()
+        //remove the mepEnabled indicator from the session
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
+    }
+
+
+    @Test
+    void testIsMEPEnabledTrue() {
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', true)
+        assertTrue "MEP is not setup", multiEntityProcessingService.isMEP()
+        assertTrue RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
+        //remove the mepEnabled indicator from the session
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
+    }
+
+
+    @Test
+    void testIsMEPEnabledFalse() {
+        //remove the mepEnabled indicator from the session so that the service is forced to check for mep indicator
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
+        //MEP should be enabled when we come into this test
+        assertTrue "MEP is not setup", multiEntityProcessingService.isMEP()
+
+        //now set the session indicator to false
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
+        //the service will not perform the JDBC call because it already has mepEnabled in the session
+        assertFalse "MEP is setup", multiEntityProcessingService.isMEP()
+        assertFalse RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
+        //remove the mepEnabled indicator from the session
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
     }
 
 
@@ -164,6 +195,8 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
     }
 
     private setMepSsb() {
+        //remove the mepEnabled indicator from the session
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
         if (multiEntityProcessingService?.isMEP()) {
             if (!RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")) {
                 throw new RuntimeException("The Mep Code must be provided when running in multi institution context")
