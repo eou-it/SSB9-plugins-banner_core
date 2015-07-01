@@ -31,13 +31,13 @@ class MultiEntityProcessingService {
 
 
     def isMEP() {
-        def mepEnabled = RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled');
+        def mepEnabled = RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
         if (mepEnabled == null) {
             Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
             try {
                 sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_is_mif_enabled_str()}") { mifEnabled -> mif = mifEnabled.toLowerCase().toBoolean() }
-                RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', mif);
-                mepEnabled = mif;
+                RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', mif)
+                mepEnabled = mif
             } catch (e) {
                 log.error("ERROR: Could not establish mif context. $e")
                 throw e
@@ -45,18 +45,18 @@ class MultiEntityProcessingService {
                 //sql?.close()
             }
         }
-        return mepEnabled;
+        return mepEnabled
     }
 
 
     def isMEP(con) {
-        def mepEnabled = RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled');
+        def mepEnabled = RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
         if (mepEnabled == null) {
             Sql sql = new Sql(con)
             try {
                 sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_is_mif_enabled_str()}") { mifEnabled -> mif = mifEnabled.toLowerCase().toBoolean() }
-                RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', mif);
-                mepEnabled = mif;
+                RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', mif)
+                mepEnabled = mif
             } catch (e) {
                 log.error("ERROR: Could not establish mif context. $e")
                 throw e
@@ -64,7 +64,7 @@ class MultiEntityProcessingService {
                 //sql?.close()
             }
         }
-        return mepEnabled;
+        return mepEnabled
     }
 
 
