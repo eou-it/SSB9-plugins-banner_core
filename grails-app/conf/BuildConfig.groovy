@@ -44,6 +44,7 @@ grails.project.dependency.resolution = {
         }
 
         flatDir name:'banner_core_repo', dirs:'../banner_core.git/lib'
+        flatDir name:'app_banner_core_repo', dirs:'plugins/banner_core.git/lib'
 
         ebr()
             grailsPlugins()

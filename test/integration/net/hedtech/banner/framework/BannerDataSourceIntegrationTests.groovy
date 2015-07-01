@@ -45,12 +45,13 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
     @Before
     public void setUp(){
+        super.setUp()
 
     }
 
     @After
     public void tearDown() {
-
+        super.setUp()
     }
     @Test
     void testExpectedConfiguration() {
