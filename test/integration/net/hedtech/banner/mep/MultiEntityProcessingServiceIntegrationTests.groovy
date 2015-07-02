@@ -154,6 +154,46 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
 
 
     @Test
+    void testIsMEPWithConnection() {
+        //remove the mepEnabled indicator from the session so that the service is forced to check for mep indicator
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        assertTrue "MEP is not setup", multiEntityProcessingService.isMEP(sql)
+        //remove the mepEnabled indicator from the session
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
+    }
+
+
+    @Test
+    void testIsMEPWithConnectionEnabledTrue() {
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', true)
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        assertTrue "MEP is not setup", multiEntityProcessingService.isMEP(sql)
+        assertTrue RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
+        //remove the mepEnabled indicator from the session
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
+    }
+
+
+    @Test
+    void testIsMEPWithConnectionEnabledFalse() {
+        //remove the mepEnabled indicator from the session so that the service is forced to check for mep indicator
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
+        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        //MEP should be enabled when we come into this test
+        assertTrue "MEP is not setup", multiEntityProcessingService.isMEP(sql)
+
+        //now set the session indicator to false
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
+        //the service will not perform the JDBC call because it already has mepEnabled in the session
+        assertFalse "MEP is setup", multiEntityProcessingService.isMEP(sql)
+        assertFalse RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
+        //remove the mepEnabled indicator from the session
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
+    }
+
+
+    @Test
     void testSetHomeContext() {
         multiEntityProcessingService.setHomeContext(aaaCollege)
 
