@@ -23,21 +23,21 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
-        super.setUp()
+        FormContext.set( formContext )
     }
 	
 	@After
     public void tearDown() {
-        super.tearDown()
+        logout()
+        FormContext.clear()
     }
 
     @Test
     void testDummyTest() {
     }
 
-    @Ignore
+    @Test
     void testDetermineAuthorities() {
-        logout()
 
         Authentication authentication = bannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(EDITABLE_USER, "u_pick_it"))
         Map authenticationResults = [ name:           authentication.name,
@@ -48,9 +48,9 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
         def s = BannerGrantedAuthorityService.determineAuthorities(authenticationResults, dataSource)
         assertNotNull(s)
     }
-    @Ignore
+
+    @Test
     void testFilterAuthoritiesFromFormContext() {
-        logout()
 
         Authentication authentication = bannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(EDITABLE_USER, "u_pick_it"))
         Map authenticationResults = [ name:           authentication.name,
@@ -64,9 +64,9 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
         def t = BannerGrantedAuthorityService.filterAuthorities(s)
         assertNotNull(t)
     }
-    @Ignore
+
+    @Test
     void testFilterAuthoritiesForFormNames() {
-        logout()
 
         Authentication authentication = bannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(EDITABLE_USER, "u_pick_it"))
         Map authenticationResults = [ name:           authentication.name,
@@ -81,53 +81,51 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
         def t = BannerGrantedAuthorityService.filterAuthorities(formNames, authentication)
         assertNotNull(t)
     }
-    @Ignore
+
+    @Test
     void testGetAuthorityForFormNameAndPatternList () {
-        logout()
         login (EDITABLE_USER, "u_pick_it")
 
         def s = BannerGrantedAuthorityService.getAuthority('SCACRSE', [(AccessPrivilege.READONLY),(AccessPrivilege.READWRITE)])
         assertNotNull(s)
     }
-    @Ignore
+
+    @Test
     void testGetAuthorityForFormNameAndPattern () {
-        logout()
         login (EDITABLE_USER, "u_pick_it")
 
         def s = BannerGrantedAuthorityService.getAuthority('SCACRSE', AccessPrivilege.READWRITE)
         assertNotNull(s)
     }
-    @Ignore
+
+    @Test
     void testGetAuthorityForAnyPattern1 () {
-        logout()
         login (EDITABLE_USER, "u_pick_it")
 
         def authority = BannerGrantedAuthorityService.getAuthorityForAnyAccessPrivilegeType('SCACRSE')
         assertNotNull authority
     }
-    @Ignore
+
+    @Test
     void testIsReadonlyPattern () {
-        logout()
         login (READONLY_USER, "u_pick_it")
 
         assertEquals true, BannerGrantedAuthorityService.isFormReadonly('SCACRSE')
     }
 
-    @Ignore
+    @Test
     void testIsReadWritePattern() {
-        logout()
         login (EDITABLE_USER, "u_pick_it")
 
         assertEquals true, BannerGrantedAuthorityService.isFormEditable('SCACRSE')
     }
 
 
-    @Ignore
-    void testUserRoles () {
-        logout()
+    @Test
+    void testGetSelfServiceUserRole () {
         login (READONLY_USER, "u_pick_it")
         def roles
-        assertNotNull  BannerGrantedAuthorityService.getUserRoles()
+        assertNotNull  BannerGrantedAuthorityService.getSelfServiceUserRole()
     }
 
 }

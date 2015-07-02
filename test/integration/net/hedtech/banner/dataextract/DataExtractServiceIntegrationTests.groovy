@@ -3,12 +3,11 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.dataextract
 
-import net.hedtech.banner.testing.BaseIntegrationTestCase
-import org.junit.Before
-import org.junit.After
-import org.junit.Test
-import org.springframework.security.core.context.SecurityContextHolder as SCH
 import groovy.sql.Sql
+import net.hedtech.banner.testing.BaseIntegrationTestCase
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 
 class DataExtractServiceIntegrationTests extends BaseIntegrationTestCase {
 

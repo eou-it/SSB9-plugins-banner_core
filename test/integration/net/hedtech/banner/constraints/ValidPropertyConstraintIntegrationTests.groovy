@@ -5,6 +5,7 @@ package net.hedtech.banner.constraints
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.testing.Foo
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
@@ -17,6 +18,11 @@ class ValidPropertyConstraintIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
+    }
+
+    @After
+    public void tearDown() {
+        super.tearDown()
     }
 
     @Test

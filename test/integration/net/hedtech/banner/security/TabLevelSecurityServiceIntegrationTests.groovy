@@ -3,15 +3,14 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.security
 
-import net.hedtech.banner.testing.BaseIntegrationTestCase
 import groovy.sql.Sql
+import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.junit.Before
 import org.junit.After
+import org.junit.Before
 import org.junit.Test
 
 import java.sql.SQLException
-import org.junit.Ignore
 
 /**
  * Integration test for the self service Banner authentication provider.  
@@ -38,10 +37,6 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    void testDummyTest() {
-    }
-
-    @Ignore
     void testUserWithReadwritePermissionForTheForm() {
         Sql sql
         def url = ConfigurationHolder.config.bannerDataSource.url
@@ -120,7 +115,7 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
     /**
      * No Gurutab records, So no tab level security.
      */
-    @Ignore
+    @Test
     void testUserWithReadonlyPermissionForTheForm() {
 
         Sql sql

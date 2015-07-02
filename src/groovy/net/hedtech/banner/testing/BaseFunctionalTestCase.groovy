@@ -3,6 +3,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.testing
 
+import com.grailsrocks.functionaltest.BrowserTestCase
 import net.hedtech.banner.security.FormContext
 
 import javax.xml.XMLConstants
@@ -13,7 +14,7 @@ import javax.xml.validation.SchemaFactory
 /**
  * Base class for functional tests.
  */
-class BaseFunctionalTestCase  extends functionaltestplugin.FunctionalTestCase {
+class BaseFunctionalTestCase  extends BrowserTestCase {
 
     def sessionFactory      // injected by Spring
     def dataSource          // injected by Spring
@@ -63,6 +64,7 @@ class BaseFunctionalTestCase  extends functionaltestplugin.FunctionalTestCase {
 
 
     protected def login( username, password ) {
+
         post( "/j_spring_security_check" ) {
             j_username = username
             j_password = password

@@ -3,32 +3,16 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.framework
 
-import grails.test.GrailsUnitTestCase
-
 import groovy.sql.Sql
+import net.hedtech.banner.db.BannerConnection
+import net.hedtech.banner.db.BannerDS as BannerDataSource
+import net.hedtech.banner.testing.BaseIntegrationTestCase
+import oracle.jdbc.OracleConnection
 import org.junit.After
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
 import java.sql.Connection
-
-import net.hedtech.banner.db.BannerDS as BannerDataSource
-import net.hedtech.banner.db.BannerConnection
-import net.hedtech.banner.security.FormContext
-import net.hedtech.banner.testing.BaseIntegrationTestCase
-import net.hedtech.banner.testing.Foo
-import net.hedtech.banner.security.FormContext
-import grails.test.GrailsUnitTestCase
-
-import groovy.sql.Sql
-
-import java.sql.Connection
-
-import oracle.jdbc.OracleConnection
-
-import org.junit.Ignore
-
 
 /**
  * Integration tests exercising the BannerDS (formerly named BannerDataSource) data source implementation.
@@ -39,25 +23,19 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
     // NOTE: Please also see 'FooServiceIntegrationTests', as that test also includes framework tests pertaining to connections.
 
-
-    def formContext
-
-
     @Before
     public void setUp(){
+        formContext = ['GUAGMNU']
         super.setUp()
-
     }
 
     @After
     public void tearDown() {
-        super.setUp()
+        super.tearDown()
     }
+
     @Test
     void testExpectedConfiguration() {
-        formContext = ['GUAGMNU']
-        FormContext.set(formContext)
-
         assertTrue "Expected to have a BannerDataSource but instead have ${dataSource?.class}", (dataSource instanceof BannerDataSource)
         Connection conn = dataSource.getConnection()
         assertTrue "Expected BannerConnection but have ${conn?.class}", conn instanceof BannerConnection

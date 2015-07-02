@@ -20,12 +20,16 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
 
     def bannerPreAuthenticatedFilter
 
+    def grailsApplication
+
+
     @Before
     public void setUp() {
         createPerson()
         //def bannerID = generateBannerId()
         //def bannerPIDM = generatePidm()
-    }
+        grailsApplication.config.banner.sso.authenticationAssertionAttribute = "UDC_IDENTIFIER"
+}
     @After
     public void tearDown() {
         deletePerson()
@@ -70,6 +74,7 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
 
     @Test
     void testAttributeNull() {
+
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setServletPath("/ssb/foo/secure/super/somefile2.html");
         request.strippedServletPath =  "/ssb/foo/secure/super/somefile.html"
@@ -84,6 +89,7 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
         } catch(Exception e) {
             assertEquals("System is configured for external authentication and identity assertion UDC_IDENTIFIER is null", e.message)
         }
+
     }
 
     @Test

@@ -19,13 +19,17 @@ class AdminAuthenticationFunctionalTests extends BaseFunctionalTestCase {
 
 
     void testAdminUserAccessFailed() {
+        def currentAuthProvider = grailsApplication.config.banner.sso.authenticationProvider
+        grailsApplication.config.banner.sso.authenticationProvider = "default"
 
         login "grails_user", "u_pick_i"
 
         def stringContent = page?.webResponse?.contentAsString
 
+        grailsApplication.config.banner.sso.authenticationProvider = currentAuthProvider
         if (stringContent =~ "invalid username/password") assert true
         else assert false
+
     }
 
 
