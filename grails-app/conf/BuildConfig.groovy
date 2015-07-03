@@ -38,19 +38,25 @@ grails.project.dependency.resolution = {
     repositories {
         if (System.properties['PROXY_SERVER_NAME']) {
             mavenRepo "${System.properties['PROXY_SERVER_NAME']}"
-        } else
-        {
+        }
+
+        flatDir name:'banner_core_repo', dirs:'../banner_core.git/lib'
+
+        ebr()
             grailsPlugins()
             grailsHome()
             grailsCentral()
             mavenCentral()
             mavenRepo "http://repository.jboss.org/maven2/"
             mavenRepo "http://repository.codehaus.org"
-        }
+
     }
 
     dependencies {
 		compile "commons-dbcp:commons-dbcp:1.4"
+        test ":ojdbc6:11.2.0.1.0"
+        test 'org.easymock:easymock:3.2'
+
     }
 
 }

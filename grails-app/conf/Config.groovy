@@ -1,6 +1,19 @@
+import net.hedtech.banner.configuration.ApplicationConfigurationUtils
+
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
+
+// ******************************************************************************
+//                       +++ DATA ORIGIN CONFIGURATION +++
+// ******************************************************************************
+// This field is a Banner standard, along with 'lastModifiedBy' and lastModified.
+// These properties are populated automatically before an entity is inserted or updated
+// within the database. The lastModifiedBy uses the username of the logged in user,
+// the lastModified uses the current timestamp, and the dataOrigin uses the value
+// specified here:
+//
+dataOrigin = "Banner"
 
 grails.doc.authors = '''Prepared by: Ellucian
                         |4 Country View Road Malvern, Pennsylvania 19355 United States of America (800) 522 - 4827'''.stripMargin()
@@ -26,6 +39,19 @@ grails.doc.alias.overview   = "2.1 Architecture Overview"
 grails.doc.alias.security   = "2.2 Application Security"
 grails.doc.alias.services   = "2.3 Services"
 grails.doc.alias.dev        = "3. Developer Guide"
+
+grails.config.locations = [] // leave this initialized to an empty list, and add your locations
+// in the EXTERNALIZED CONFIGURATION section below.
+def locationAdder = ApplicationConfigurationUtils.&addLocation.curry( grails.config.locations )
+[ BANNER_APP_CONFIG:              "banner_configuration.groovy",
+  BANNER_TEST_APP_CONFIG:         "${appName}_configuration.groovy",
+  releaseProperties:              "release.properties",
+].each { envName, defaultFileName -> locationAdder( envName, defaultFileName ) }
+
+// In case logging is problematic, we'll just write this to the console immediately
+grails.config.locations.each {
+    println "Using configuration: " + it
+}
 
 
 // Code Coverage configuration
