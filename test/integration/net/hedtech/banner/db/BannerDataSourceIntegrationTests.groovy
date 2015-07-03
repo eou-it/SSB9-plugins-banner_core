@@ -1,31 +1,22 @@
+/*******************************************************************************
+ Copyright 2015 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
+
 package net.hedtech.banner.db
 
-import net.hedtech.banner.db.dbutility.DBUtility
-import org.junit.Before
-import org.junit.Test
-import org.junit.After
-
-import grails.test.spock.IntegrationSpec
 import groovy.sql.Sql
-import net.hedtech.banner.db.BannerConnection
-import net.hedtech.banner.db.BannerDS
-import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import oracle.jdbc.OracleConnection
-import org.junit.Test
-import org.springframework.security.core.context.SecurityContextHolder
-import spock.lang.*
-import org.junit.Before
 import org.junit.After
-import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
 
 import java.sql.Connection
-
 
 /**
  *
  */
-class BannerDataSourceIntegrationTestsSpec extends BaseIntegrationTestCase {
+class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
 
     def dataSource
@@ -96,11 +87,5 @@ class BannerDataSourceIntegrationTestsSpec extends BaseIntegrationTestCase {
         } finally {
             sql?.close()
         }
-    }
-
-    @Test
-    public void testIsOracleUser(){
-        def user = SecurityContextHolder?.context?.authentication?.principal
-        assertTrue(DBUtility.isOracleUser(user))
     }
 }
