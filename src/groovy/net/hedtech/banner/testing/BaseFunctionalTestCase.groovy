@@ -10,7 +10,6 @@ import javax.xml.XMLConstants
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.SchemaFactory
 
-
 /**
  * Base class for functional tests.
  */
@@ -45,7 +44,6 @@ class BaseFunctionalTestCase  extends BrowserTestCase {
         }
 
     }
-
 
     // -------------------- Login / Logout Helper Methods ---------------------
 

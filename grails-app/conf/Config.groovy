@@ -59,6 +59,15 @@ coverage {
 	enabledByDefault = false
 }
 
+formControllerMap = [
+        'foo':        [ 'GUAGMNU', 'SELFSERVICE' ],
+        'foos':       [ 'GUAGMNU', 'SELFSERVICE' ],
+        'restfulapi': [ 'GUAGMNU', 'SELFSERVICE' ],
+        'foobar':     [ 'GUAGMNU', 'SELFSERVICE' ],
+        'term':       [ 'GUAGMNU' ],
+        'nope':       [ 'NOPE' ], // not a real controller - used for testing...
+]
+
 grails.views.default.codec="none" // none, html, base64
 grails.views.gsp.encoding="UTF-8"
 privacy.codes = "INT NAV UNI"

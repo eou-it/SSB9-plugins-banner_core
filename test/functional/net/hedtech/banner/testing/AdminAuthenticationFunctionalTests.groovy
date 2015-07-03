@@ -3,36 +3,46 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.testing
 
-import java.sql.Connection
 import groovy.sql.Sql
+import net.hedtech.banner.SpringContextUtils
+import net.hedtech.banner.security.FormContext
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+
+import java.sql.Connection
 
 /**
  * Functional tests of banner admin authentication.
  */
+
 class AdminAuthenticationFunctionalTests extends BaseFunctionalTestCase {
 
-    protected void setUp() {
+    @Before
+    public void setUp(){
+        SpringContextUtils.grailsApplication.config.banner.sso.authenticationProvider = "default"
         formContext = ['GUAGMNU']
         super.setUp()
     }
 
+    @After
+    public void tearDown() {
+        FormContext.clear()
+    }
 
+    @Test
     void testAdminUserAccessFailed() {
-        def currentAuthProvider = grailsApplication.config.banner.sso.authenticationProvider
-        grailsApplication.config.banner.sso.authenticationProvider = "default"
-
         login "grails_user", "u_pick_i"
 
         def stringContent = page?.webResponse?.contentAsString
 
-        grailsApplication.config.banner.sso.authenticationProvider = currentAuthProvider
         if (stringContent =~ "invalid username/password") assert true
         else assert false
 
     }
 
-
+    @Test
     void testLockAccount() {
         Connection sessionConnection
         Sql sql
