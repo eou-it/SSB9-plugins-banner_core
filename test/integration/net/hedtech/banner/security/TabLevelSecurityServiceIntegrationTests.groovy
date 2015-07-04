@@ -50,50 +50,53 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
                     "bansecr",
                     PASSWORD,
                     'oracle.jdbc.driver.OracleDriver')
-            try{
-                insertIntoGuratab (EDITABLE_FORM_NAME,
+            try {
+                insertIntoGuratab(EDITABLE_FORM_NAME,
                         [
-                                'tabScheduleRestrictionsDept':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Department'],
-                                'tabScheduleRestrictionsMajor':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Field of Study'],
-                                'tabScheduleRestrictionsClass':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Class and Level'],
-                                'tabScheduleRestrictionsDegree':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Degree and Program'],
-                                'tabScheduleRestrictionsCampus':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Campus and College'],
-                                'tabScheduleRestrictionsAttr':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Student Attribute and Cohort']
+                                'tabScheduleRestrictionsDept'  : [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Department'],
+                                'tabScheduleRestrictionsMajor' : [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Field of Study'],
+                                'tabScheduleRestrictionsClass' : [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Class and Level'],
+                                'tabScheduleRestrictionsDegree': [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Degree and Program'],
+                                'tabScheduleRestrictionsCampus': [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Campus and College'],
+                                'tabScheduleRestrictionsAttr'  : [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Student Attribute and Cohort']
                         ], sql)
-            }catch (SQLException se){
+            } catch (SQLException se) {
                 fail(" Scripts for Inserting Test Data into GURUTAB could not run successfully for the form - $EDITABLE_FORM_NAME")
             }
-            try{
-                insertIntoGuruobj(EDITABLE_FORM_NAME,"BAN_DEFAULT_M",EDITABLE_USER_NAME, sql)
-            }catch (SQLException se){
+
+            try {
+                insertIntoGuruobj(EDITABLE_FORM_NAME, "BAN_DEFAULT_M", EDITABLE_USER_NAME, sql)
+            } catch (SQLException se) {
                 fail(" Scripts for Inserting Test Data into GURUOBJ could not run successfully for the form - - $EDITABLE_FORM_NAME")
             }
-            try{
-                insertIntoGurutab (EDITABLE_FORM_NAME, EDITABLE_USER_NAME,
+            try {
+                insertIntoGurutab(EDITABLE_FORM_NAME, EDITABLE_USER_NAME,
                         [
-                                'tabScheduleRestrictionsDept':TabLevelSecurityEndUserAccess.HIDDEN.getCode(),
-                                'tabScheduleRestrictionsMajor':TabLevelSecurityEndUserAccess.HIDDEN.getCode(),
-                                'tabScheduleRestrictionsCampus':TabLevelSecurityEndUserAccess.READONLY.getCode()
+                                'tabScheduleRestrictionsDept'  : TabLevelSecurityEndUserAccess.HIDDEN.getCode(),
+                                'tabScheduleRestrictionsMajor' : TabLevelSecurityEndUserAccess.HIDDEN.getCode(),
+                                'tabScheduleRestrictionsCampus': TabLevelSecurityEndUserAccess.READONLY.getCode()
                         ], sql)
-            }catch (SQLException se){
+            } catch (SQLException se) {
                 fail(" Scripts for Inserting Test Data into GURATAB could not run successfully for the form - - $EDITABLE_FORM_NAME")
             }
             logout()
 
-            login (EDITABLE_USER_NAME, PASSWORD)
+            login(EDITABLE_USER_NAME, PASSWORD)
             def s = tabLevelSecurityService.getTabSecurityRestrictions(EDITABLE_FORM_NAME)
             verifyTabLevelSecurityIndicators(s,
-                    ['tabScheduleRestrictionsDept', 'tabScheduleRestrictionsMajor','tabScheduleRestrictionsClass','tabScheduleRestrictionsDegree','tabScheduleRestrictionsCampus','tabScheduleRestrictionsAttr'],
+                    ['tabScheduleRestrictionsDept', 'tabScheduleRestrictionsMajor', 'tabScheduleRestrictionsClass', 'tabScheduleRestrictionsDegree', 'tabScheduleRestrictionsCampus', 'tabScheduleRestrictionsAttr'],
                     [TabLevelSecurityEndUserAccess.HIDDEN, TabLevelSecurityEndUserAccess.HIDDEN,
-                            TabLevelSecurityEndUserAccess.FULL, TabLevelSecurityEndUserAccess.FULL,
-                            TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.FULL])
+                     TabLevelSecurityEndUserAccess.FULL, TabLevelSecurityEndUserAccess.FULL,
+                     TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.FULL])
             logout()
 
+        } catch (e) {
+            println e
         } finally {
             deleteFromGurutab(EDITABLE_FORM_NAME,EDITABLE_USER_NAME, sql)
             deleteFromGuratab(EDITABLE_FORM_NAME, sql)
             deleteFromGuruobj(EDITABLE_FORM_NAME, EDITABLE_USER_NAME, sql)
-            sql?.close() // note that the test will close the connection, since it's our current session's connection
+            sql?.close()
         }
     }
 
@@ -131,41 +134,44 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
                     PASSWORD,
                     'oracle.jdbc.driver.OracleDriver')
             try {
-                insertIntoGuratab (READONLY_FORM_NAME,
+                insertIntoGuratab(READONLY_FORM_NAME,
                         [
-                                'tabScheduleRestrictionsDept':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Department'],
-                                'tabScheduleRestrictionsMajor':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Field of Study'],
-                                'tabScheduleRestrictionsClass':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Class and Level'],
-                                'tabScheduleRestrictionsDegree':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Degree and Program'],
-                                'tabScheduleRestrictionsCampus':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Campus and College'],
-                                'tabScheduleRestrictionsAttr':[TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Student Attribute and Cohort']
+                                'tabScheduleRestrictionsDept'  : [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Department'],
+                                'tabScheduleRestrictionsMajor' : [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Field of Study'],
+                                'tabScheduleRestrictionsClass' : [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Class and Level'],
+                                'tabScheduleRestrictionsDegree': [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Degree and Program'],
+                                'tabScheduleRestrictionsCampus': [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Campus and College'],
+                                'tabScheduleRestrictionsAttr'  : [TabLevelSecuritySecurityAdminAccess.ALL_PRIVILEGES.getCode(), 'Student Attribute and Cohort']
                         ], sql)
-            }catch (SQLException se){
+            } catch (SQLException se) {
                 fail(" Scripts for Inserting Test Data into GURUTAB could not run successfully for the form - $READONLY_FORM_NAME")
             }
             try {
-                insertIntoGuruobj(READONLY_FORM_NAME,FORM_READONLY_ACCESS_ROLE, READONLY_USER_NAME, sql)
-            }catch (SQLException se){
+                insertIntoGuruobj(READONLY_FORM_NAME, FORM_READONLY_ACCESS_ROLE, READONLY_USER_NAME, sql)
+            } catch (SQLException se) {
                 fail(" Scripts for Inserting Test Data into GURUOBJ could not run successfully for the form - - $READONLY_FORM_NAME")
             }
-            try{
-                insertIntoGurutab (READONLY_FORM_NAME, READONLY_USER_NAME,
-                        ['tabScheduleRestrictionsDept':TabLevelSecurityEndUserAccess.READONLY.getCode(),
-                                'tabScheduleRestrictionsMajor':TabLevelSecurityEndUserAccess.HIDDEN.getCode(),
-                                'tabScheduleRestrictionsCampus':TabLevelSecurityEndUserAccess.READONLY.getCode()
+            try {
+                insertIntoGurutab(READONLY_FORM_NAME, READONLY_USER_NAME,
+                        ['tabScheduleRestrictionsDept'  : TabLevelSecurityEndUserAccess.READONLY.getCode(),
+                         'tabScheduleRestrictionsMajor' : TabLevelSecurityEndUserAccess.HIDDEN.getCode(),
+                         'tabScheduleRestrictionsCampus': TabLevelSecurityEndUserAccess.READONLY.getCode()
                         ], sql)
-            }catch (SQLException se){
+            } catch (SQLException se) {
                 fail(" Scripts for Inserting Test Data into GURATAB could not run successfully for the form - - $READONLY_FORM_NAME")
             }
             logout()
 
-            login (READONLY_USER_NAME, PASSWORD)
+            login(READONLY_USER_NAME, PASSWORD)
             def s1 = tabLevelSecurityService.getTabSecurityRestrictions(READONLY_FORM_NAME)
             verifyTabLevelSecurityIndicators(s1,
-                                ['tabScheduleRestrictionsDept', 'tabScheduleRestrictionsMajor','tabScheduleRestrictionsClass','tabScheduleRestrictionsDegree','tabScheduleRestrictionsCampus','tabScheduleRestrictionsAttr'],
-                                [TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.HIDDEN,
-                                        TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.READONLY,
-                                        TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.READONLY])
+                    ['tabScheduleRestrictionsDept', 'tabScheduleRestrictionsMajor', 'tabScheduleRestrictionsClass', 'tabScheduleRestrictionsDegree', 'tabScheduleRestrictionsCampus', 'tabScheduleRestrictionsAttr'],
+                    [TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.HIDDEN,
+                     TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.READONLY,
+                     TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.READONLY])
+            logout()
+        } catch (e) {
+            println e
         } finally {
             deleteFromGurutab(READONLY_FORM_NAME,READONLY_USER_NAME, sql)
             deleteFromGuratab(READONLY_FORM_NAME, sql)

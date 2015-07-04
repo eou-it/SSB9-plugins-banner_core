@@ -3,17 +3,14 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.testing
 
-import java.sql.Connection
-
-import javax.sql.DataSource
-
 import groovy.sql.Sql
-
 import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-
+import org.junit.After
+import org.junit.Before
 import org.springframework.context.ApplicationContext
 
+import javax.sql.DataSource
 
 /**
  * Functional tests of self service authentication.
@@ -23,12 +20,16 @@ class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
 
     def dataSource  // injected by Spring
 
-
+    @Before
     protected void setUp() {
         formContext = [ 'SELFSERVICE' ]
         super.setUp()
     }
 
+    @After
+    public void tearDown() {
+        super.tearDown()
+    }
 
     // Tests ability to access a self service URL. 
     void testSelfServiceUserAccess() {

@@ -3,33 +3,20 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.security
 
-import net.hedtech.banner.db.BannerDS as BannerDataSource
-import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.service.KeyBlockHolder
-import net.hedtech.banner.service.ServiceBase
+import grails.util.Holders
+import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
+import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.junit.After
-import org.junit.Assert
 import org.junit.Before
-import org.junit.Test
-
-import java.sql.Connection
-
-import groovy.sql.Sql
-
 import org.junit.Ignore
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-
-import org.springframework.security.authentication.AccountExpiredException
+import org.junit.Test
+import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.security.authentication.DisabledException
-import org.springframework.security.authentication.LockedException
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
-
 
 /**
  * Integration test for the self service Banner authentication provider.  
@@ -37,38 +24,50 @@ import org.springframework.security.core.context.SecurityContextHolder
 class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCase{
 
 
-    def dataSource  // injected by Spring
-    
     def provider    // set in setUp
     def conn        // set in setUp
     def db          // set in setUp
     def testUser    // set in setUp
+    def currentSsbEnabledValue
 
     @Before
     public void setUp() {
-        
-        if (isSsbEnabled()) {
-            provider = new SelfServiceBannerAuthenticationProvider()
-            provider.dataSource = dataSource
 
-            conn = dataSource.getSsbConnection()                
-            db = new Sql( conn )
-
-            testUser = newUserMap( '210009105' )
-           // super.setUp()
+        def bb = new grails.spring.BeanBuilder()
+        bb.beans {
+            underlyingSsbDataSource(BasicDataSource) {
+                maxActive = 5
+                maxIdle = 2
+                defaultAutoCommit = "false"
+                driverClassName = "${CH.config.bannerSsbDataSource.driver}"
+                url = "${CH.config.bannerSsbDataSource.url}"
+                password = "${CH.config.bannerSsbDataSource.password}"
+                username = "${CH.config.bannerSsbDataSource.username}"
+            }
         }
-    }
 
+        ApplicationContext testSpringContext = bb.createApplicationContext()
+        dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
+
+        provider = new SelfServiceBannerAuthenticationProvider()
+        provider.dataSource = dataSource
+
+        conn = dataSource.getSsbConnection()
+        db = new Sql( conn )
+
+        testUser = newUserMap( 'HOSWEB002' )
+        // super.setUp()
+    }
 
     @After
     public void tearDown() {
+        dataSource.underlyingSsbDataSource =  null;
         //super.tearDown()
     }
 
-    @Ignore
+    @Test
     void testRetrievalOfRoleBasedTimeouts() {
 
-        if (!isSsbEnabled()) return     
         def timeouts = provider.retrieveRoleBasedTimeOuts( db )
         assertTrue timeouts.size() > 0
     }
@@ -76,15 +75,13 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     @Test
     void testGetPidm() {  
         
-        if (!isSsbEnabled()) return     
         def pidm = provider.getPidm( new TestAuthenticationRequest( testUser ), db )
         assertEquals testUser.pidm, pidm
     }
 
-    @Ignore
+    @Test
     void testAuthentication() {
         
-        if (!isSsbEnabled()) return     
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
         assertEquals  auth.name, testUser.id as String
@@ -95,10 +92,9 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertEquals auth.fullName,"Edward Engle"
     }
         
-    @Ignore
+    @Test
     void testAuthorization() {
         
-        if (!isSsbEnabled()) return     
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-ALUMNI_BAN_DEFAULT_M" }
@@ -107,20 +103,18 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertEquals  2, auth.authorities.size()
     }
     
-    @Ignore
+    @Test
     void testExpiredPin() {
         
-        if (!isSsbEnabled()) return
         def expiredPinUser = newUserMap( 'HOSS002' )
         shouldFail( CredentialsExpiredException ) {
             provider.authenticate( new TestAuthenticationRequest( expiredPinUser ) )
         }
     }
 
-    @Ignore
+    @Test
     void testDisabledAccount() {
         
-        if (!isSsbEnabled()) return         
         def disabledUser = newUserMap( 'HOSS003' )
         shouldFail( DisabledException ) {
             provider.authenticate( new TestAuthenticationRequest( disabledUser ) )
@@ -130,14 +124,13 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     @Test
     void testInvalidAccount() {
            
-        if (!isSsbEnabled()) return
         def disabledUser = newUserMap( 'HOSS003' )
         disabledUser['pin'] = disabledUser.pin + '1'
         assertNull(provider.authenticate( new TestAuthenticationRequest( disabledUser ) ))   
     }
         
     
-    @Ignore // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
+    @Test // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
     void testAuthenticateWithSocialSecurity() {
         
         db.executeUpdate "update twgbparm set twgbparm_param_value = 'Y' where twgbparm_param_name = 'ALLOWSSNLOGIN'"
@@ -148,7 +141,7 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     }
 
 
-    @Ignore // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
+    @Test // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
     void testDisableOnInvalidLogins() {
         
         def auth
