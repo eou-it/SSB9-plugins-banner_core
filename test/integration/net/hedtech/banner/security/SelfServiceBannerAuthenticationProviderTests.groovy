@@ -3,14 +3,12 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.security
 
-import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.junit.After
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.BadCredentialsException
