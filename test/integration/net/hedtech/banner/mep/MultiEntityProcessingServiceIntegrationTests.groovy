@@ -32,12 +32,14 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-       retrieveDefaultInsitution()
+        retrieveDefaultInsitution()
         updateOtherInstitutionToNonDefault()
         createNewMepCodesInDB([[mepCode: aaaCollege,mepDesc:'aaa college',mepTypCode:'a',defIndicator:'Y'],
                                [mepCode: bbbCollege,mepDesc:'bbb college',mepTypCode:'b',defIndicator:'N'],
                                [mepCode: cccCollege,mepDesc:'ccc college',mepTypCode:'c',defIndicator:'N']])
         setMepLogon(aaaCollege)
+        //remove the mepEnabled indicator from the session
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
     }
 
     @After
@@ -235,8 +237,6 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
     }
 
     private setMepSsb() {
-        //remove the mepEnabled indicator from the session
-        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
         if (multiEntityProcessingService?.isMEP()) {
             if (!RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")) {
                 throw new RuntimeException("The Mep Code must be provided when running in multi institution context")

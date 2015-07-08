@@ -30,28 +30,11 @@ class MultiEntityProcessingService {
     }
 
 
-    def isMEP() {
+    def isMEP(con = null) {
         def mepEnabled = RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
         if (mepEnabled == null) {
-            Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-            try {
-                sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_is_mif_enabled_str()}") { mifEnabled -> mif = mifEnabled.toLowerCase().toBoolean() }
-                RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', mif)
-                mepEnabled = mif
-            } catch (e) {
-                log.error("ERROR: Could not establish mif context. $e")
-                throw e
-            } finally {
-                //sql?.close()
-            }
-        }
-        return mepEnabled
-    }
-
-
-    def isMEP(con) {
-        def mepEnabled = RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
-        if (mepEnabled == null) {
+            if (!con)
+                con = new Sql(sessionFactory.getCurrentSession().connection())
             Sql sql = new Sql(con)
             try {
                 sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_is_mif_enabled_str()}") { mifEnabled -> mif = mifEnabled.toLowerCase().toBoolean() }
