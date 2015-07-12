@@ -22,7 +22,7 @@ grails.project.dependency.resolution = {
 
     }
 
-    log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
+    log "error" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
 
     plugins {
         runtime  ":hibernate:3.6.10.10"
