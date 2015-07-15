@@ -8,7 +8,7 @@ import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.service.KeyBlockHolder
 import net.hedtech.banner.service.ServiceBase
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as CH
 import org.junit.Assert
 import org.junit.Before
 import org.junit.After

@@ -14,7 +14,7 @@ import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.Logger
 import org.apache.log4j.jmx.HierarchyDynamicMBean
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as CH
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils

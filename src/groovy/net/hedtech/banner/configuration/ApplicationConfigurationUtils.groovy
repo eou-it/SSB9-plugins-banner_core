@@ -8,8 +8,8 @@ import grails.util.GrailsUtil
 import org.apache.log4j.Logger
 import org.apache.commons.logging.LogFactory
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as AH
+import grails.util.Holders  as CH
 import org.codehaus.groovy.grails.commons.GrailsApplication
 
 

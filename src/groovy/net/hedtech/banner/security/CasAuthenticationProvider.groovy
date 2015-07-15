@@ -7,7 +7,7 @@ import groovy.sql.Sql
 import net.hedtech.banner.exceptions.AuthorizationException
 import org.apache.log4j.Logger
 import org.jasig.cas.client.util.AbstractCasFilter
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as CH
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 

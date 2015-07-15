@@ -4,8 +4,8 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 package net.hedtech.banner.testing
 
 import groovy.sql.Sql
-import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as AH
+import grails.util.Holders  as CH
 import org.junit.After
 import org.junit.Before
 import org.springframework.context.ApplicationContext

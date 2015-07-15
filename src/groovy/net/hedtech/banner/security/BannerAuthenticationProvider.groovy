@@ -3,8 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as AH
+import grails.util.Holders  as CH
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql

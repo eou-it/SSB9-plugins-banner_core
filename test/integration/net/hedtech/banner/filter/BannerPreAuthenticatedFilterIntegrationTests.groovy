@@ -6,7 +6,7 @@ package net.hedtech.banner.filter
 
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

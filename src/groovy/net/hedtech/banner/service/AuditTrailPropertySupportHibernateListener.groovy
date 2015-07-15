@@ -6,7 +6,7 @@ package net.hedtech.banner.service
 import net.hedtech.banner.apisupport.ApiUtils
 import org.apache.commons.lang.ArrayUtils
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as CH
 
 import org.hibernate.cfg.Configuration
 import org.hibernate.event.Initializable

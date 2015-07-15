@@ -6,7 +6,7 @@ package net.hedtech.banner.testing
 import groovy.sql.Sql
 import net.hedtech.banner.SpringContextUtils
 import net.hedtech.banner.security.FormContext
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as CH
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

@@ -4,7 +4,7 @@
 package net.hedtech.banner.security
 
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders
 import org.opensaml.common.SAMLException
 import org.opensaml.common.SAMLRuntimeException
 import org.opensaml.xml.encryption.DecryptionException

@@ -5,7 +5,7 @@ package net.hedtech.banner.security
 
 import groovy.sql.Sql
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as CH
 import org.springframework.security.authentication.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority

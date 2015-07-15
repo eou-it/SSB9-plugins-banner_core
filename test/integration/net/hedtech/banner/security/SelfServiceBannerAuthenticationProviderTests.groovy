@@ -6,7 +6,7 @@ package net.hedtech.banner.security
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.commons.dbcp.BasicDataSource
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as CH
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

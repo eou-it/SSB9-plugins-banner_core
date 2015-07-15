@@ -3,7 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as CH
 import org.springframework.security.access.ConfigAttribute
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UsernameNotFoundException

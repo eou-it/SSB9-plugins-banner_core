@@ -4,7 +4,7 @@
 
 import net.hedtech.banner.security.ResetPasswordService
 import org.apache.commons.codec.binary.Base64
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as CH
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 
 import javax.servlet.http.HttpSession

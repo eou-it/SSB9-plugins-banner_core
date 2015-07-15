@@ -17,7 +17,7 @@ import java.sql.Connection
 
 import groovy.sql.Sql
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders
 import org.springframework.security.core.context.SecurityContextHolder
 
 import org.junit.Ignore

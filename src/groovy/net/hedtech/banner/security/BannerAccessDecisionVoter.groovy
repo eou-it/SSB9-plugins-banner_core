@@ -5,7 +5,7 @@ package net.hedtech.banner.security
 
 import org.apache.log4j.Logger
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as CH
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingInfo
 import org.springframework.security.access.vote.RoleVoter
 import org.springframework.security.access.AccessDecisionVoter

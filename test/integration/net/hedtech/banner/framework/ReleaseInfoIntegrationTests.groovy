@@ -7,8 +7,8 @@ import net.hedtech.banner.configuration.ApplicationConfigurationUtils as Release
 
 import grails.test.GrailsUnitTestCase
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder as AH
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as AH
+import grails.util.Holders  as CH
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Assert

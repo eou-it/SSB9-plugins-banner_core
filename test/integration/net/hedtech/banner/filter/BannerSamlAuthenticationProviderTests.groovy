@@ -7,7 +7,7 @@ package net.hedtech.banner.filter
 import net.hedtech.banner.security.BannerAuthenticationToken
 import net.hedtech.banner.security.BannerSamlAuthenticationProvider
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders
 import org.joda.time.DateTime
 import org.junit.After
 import org.junit.Before

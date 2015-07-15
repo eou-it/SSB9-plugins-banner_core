@@ -3,7 +3,7 @@
  **********************************************************************************/
 package net.hedtech.banner.utility
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
+import grails.util.Holders
 import org.springframework.context.MessageSource
 import org.springframework.context.i18n.LocaleContextHolder as LCH
 

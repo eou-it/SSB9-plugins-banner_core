@@ -6,7 +6,7 @@ package net.hedtech.banner.db
 
 import net.hedtech.banner.service.HttpSessionService
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
+import grails.util.Holders
 
 import javax.servlet.http.HttpSession
 import javax.servlet.http.HttpSessionEvent

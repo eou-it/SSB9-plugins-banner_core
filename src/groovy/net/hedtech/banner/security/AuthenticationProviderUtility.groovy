@@ -7,8 +7,8 @@ import grails.util.GrailsNameUtils
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.AuthorizationException
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders
+import grails.util.Holders
 import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.BadCredentialsException
