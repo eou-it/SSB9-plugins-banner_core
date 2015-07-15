@@ -1,11 +1,15 @@
 /*******************************************************************************
-Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+Copyright 2015 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.testing
 
 import grails.util.GrailsNameUtils
+import grails.util.Holder
+import grails.util.Holders
 import groovy.sql.Sql
+import net.hedtech.banner.apisupport.ApiUtils
 import net.hedtech.banner.configuration.ConfigurationUtils
+import net.hedtech.banner.db.dbutility.DBUtility
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.security.FormContext
 import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
@@ -38,6 +42,7 @@ class BaseIntegrationTestCase extends Assert {
     def formContext = null            // This may be set within the subclass, prior to calling super.setUp(). If it isn't,
                                       // it will be looked up automatically.
 
+    def selfServiceBannerAuthenticationProvider
     def bannerAuthenticationProvider  // injected
     def dataSource                    // injected via spring
     def transactionManager            // injected via spring
@@ -53,6 +58,8 @@ class BaseIntegrationTestCase extends Assert {
     def renderMap                     // Use this to look at the rendered map: MyController.metaClass.render = { Map map -> renderMap = map }
     def redirectMap                   // Use this to look at the rendered map: MyController.metaClass.redirect = { Map map -> redirectMap = map }
 
+    def username = "grails_user"
+    def password = "u_pick_it"
 
     /**
      * Performs a login for the standard 'grails_user' if necessary, and calls super.setUp().
@@ -62,6 +69,7 @@ class BaseIntegrationTestCase extends Assert {
      **/
     @Before
     public void setUp() {
+        println "Before parent"
         params = [:]
         renderMap = [:]
         redirectMap = [:]
@@ -87,7 +95,7 @@ class BaseIntegrationTestCase extends Assert {
             controller.class.metaClass.render = { Map args -> renderMap = args  }
         }
 
-        loginIfNecessary()
+        loginIfNecessary(username, password)
 
         if (useTransactions) {
             sessionFactory.currentSession.with {
@@ -97,6 +105,7 @@ class BaseIntegrationTestCase extends Assert {
                 reconnect( dataSource.getConnection() ) // get a new connection that has unlocked the needed roles
             }
             transactionManager.getTransaction().setRollbackOnly()                 // and make sure we don't commit to the database
+            sessionFactory.queryCache.clear()
         }
     }
 
@@ -108,7 +117,6 @@ class BaseIntegrationTestCase extends Assert {
     @After
     public void tearDown() {
          FormContext.clear()
-
          if (useTransactions) {
              sessionFactory.currentSession.connection().rollback()
 			 sessionFactory.currentSession.close()
@@ -122,9 +130,14 @@ class BaseIntegrationTestCase extends Assert {
      * or omit and accept the default 'grails_user' and 'u_pick_it'.
      **/
     protected void loginIfNecessary( userName = "grails_user", password = "u_pick_it" ) {
+        def config = Holders.config
         if (!SecurityContextHolder.getContext().getAuthentication()) {
-            login userName, password
-        }
+            if((config.ssbEnabled)||(ApiUtils.isApiRequest()))  {
+                loginSSB userName, password
+            } else {
+                login userName, password
+            }
+           }
     }
 
 
@@ -134,6 +147,15 @@ class BaseIntegrationTestCase extends Assert {
      **/
     protected void login( userName = "grails_user", password = "u_pick_it" ) {
         Authentication auth = bannerAuthenticationProvider.authenticate( new UPAT( userName, password ) )
+        SecurityContextHolder.getContext().setAuthentication( auth )
+    }
+
+    /**
+     * Convenience method to login a user. You may pass in a username and password,
+     * or omit and accept the default 'grails_user' and 'u_pick_it'.
+     **/
+    protected void loginSSB( userName, password ) {
+        Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UPAT( userName, password ) )
         SecurityContextHolder.getContext().setAuthentication( auth )
     }
 

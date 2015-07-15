@@ -1,10 +1,11 @@
 package net.hedtech.banner.db.dbutility
 
+import net.hedtech.banner.SpringContextUtils
 import net.hedtech.banner.apisupport.ApiUtils
 import net.hedtech.banner.security.BannerUser
 import net.hedtech.banner.security.FormContext
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders
 
 /**
  * Created by karthick on 7/2/2015.
@@ -12,6 +13,8 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 class DBUtility {
 
     private final static Logger log = Logger.getLogger(getClass())
+
+    private static def  config = Holders.getConfig()
 
     public static boolean isSSBOrAPITypeRequestProxyNotRequired(user)   {
         return ( ApiUtils.isApiRequest() && !isAPITypeRequestAndProxyRequired()) ||
@@ -55,20 +58,20 @@ class DBUtility {
      * Returns true if SSB support is enabled and configured to proxy connections for SSB users.
      * */
     public static boolean isSSBTypeRequestAndProxyRequired() {
-        def enabled = ConfigurationHolder.config.ssbEnabled instanceof Boolean ? ConfigurationHolder.config.ssbEnabled : false
-        def proxySsb = ConfigurationHolder.config.ssbOracleUsersProxied instanceof Boolean ? ConfigurationHolder.config.ssbOracleUsersProxied : false
+        def enabled = config.ssbEnabled instanceof Boolean ? config.ssbEnabled : false
+        def proxySsb = config.ssbOracleUsersProxied instanceof Boolean ? config.ssbOracleUsersProxied : false
         log.trace "BannerDS.isSSBTypeRequestAndProxyRequired() will return '${enabled && proxySsb}' (since SSB is ${enabled ? '' : 'not '} enabled and proxy SSB is $proxySsb)"
         enabled && proxySsb
     }
 
     public static boolean shouldProxyApiRequest() {
-        def proxyApi = ConfigurationHolder.config.apiOracleUsersProxied instanceof Boolean ? ConfigurationHolder.config.apiOracleUsersProxied : false
+        def proxyApi = config.apiOracleUsersProxied instanceof Boolean ? config.apiOracleUsersProxied : false
         log.trace "BannerDS.shouldProxyApiRequest() will return ${proxyApi} (since apiOracleUsersProxied is ${proxyApi})"
         proxyApi
     }
 
     public static boolean isAPITypeRequestAndProxyRequired() {
-        def proxyApi  = ConfigurationHolder.config.apiOracleUsersProxied instanceof Boolean ? ConfigurationHolder.config.apiOracleUsersProxied : false
+        def proxyApi  = config.apiOracleUsersProxied instanceof Boolean ? config.apiOracleUsersProxied : false
         log.trace "BannerDS.isAPITypeRequestAndProxyRequired() will return ${proxyApi} (since apiOracleUsersProxied is ${proxyApi})"
         return proxyApi;
     }

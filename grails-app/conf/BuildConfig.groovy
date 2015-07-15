@@ -7,10 +7,11 @@ grails.project.class.dir        = "target/classes"
 grails.project.test.class.dir   = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 
-grails.plugin.location.'spring-security-cas' = "../spring_security_cas.git"
+grails.plugin.location.'spring-security-cas'  = "../spring_security_cas.git"
 grails.plugin.location.'spring-security-saml' = "../spring_security_saml.git"
-grails.plugin.location.'banner-codenarc'     = "../banner_codenarc.git"
-grails.plugin.location.'i18n-core'           = "../i18n_core.git"
+grails.plugin.location.'banner-codenarc'      = "../banner_codenarc.git"
+grails.plugin.location.'i18n-core'            = "../i18n_core.git"
+grails.plugin.location.'grails-constraints'   = "../grails_constraints.git"
 
 grails.project.dependency.resolution = {
 
@@ -26,6 +27,7 @@ grails.project.dependency.resolution = {
         compile ':markdown:1.0.0.RC1'
 		runtime ":webxml:1.4.1"
         compile ":functional-test:2.0.0"
+        compile ":spring-security-mock:1.0.1"
         test ':code-coverage:2.0.3-2',
         {
             excludes 'xercesImpl'
@@ -41,6 +43,7 @@ grails.project.dependency.resolution = {
         }
 
         flatDir name:'banner_core_repo', dirs:'../banner_core.git/lib'
+        flatDir name:'app_banner_core_repo', dirs:'plugins/banner_core.git/lib'
 
         ebr()
             grailsPlugins()
