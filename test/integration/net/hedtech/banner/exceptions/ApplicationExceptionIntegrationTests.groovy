@@ -421,9 +421,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
         def ae = new ApplicationException( this.getClass(), new BusinessLogicValidationException( "blank.message",
                                                                                       ["S9034823","default.home.label"]
                                                                                     ) )
-        assertTrue "toString() does not have expected content, but has: ${ae}",
-
-        ae.toString().contains( "blank.message" )
+        assertTrue "toString() does not have expected content, but has: ${ae}", ae.toString().contains( "blank.message" )
 
         def returnMap = ae.returnMap( controller.localizer )
 
