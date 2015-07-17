@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 // Support Hibernate annotations
@@ -12,7 +12,7 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguratio
 dataSource {
     configClass = GrailsAnnotationConfiguration.class
     dialect = "org.hibernate.dialect.Oracle10gDialect"
-    loggingSql = false
+    //loggingSql = false
 }
 
 
@@ -21,7 +21,7 @@ hibernate {
     cache.use_query_cache = true
     cache.provider_class = 'net.sf.ehcache.hibernate.EhCacheProvider'
     hbm2ddl.auto = null
-    show_sql = false
+    //show_sql = true
 //   	naming_strategy = "org.hibernate.cfg.ImprovedNamingStrategy"
     dialect = "org.hibernate.dialect.Oracle10gDialect"
     config.location = ["classpath:hibernate-banner-core.cfg.xml"]

@@ -95,7 +95,7 @@ class ResetPasswordController {
         response.setHeader("Cache-Control", "no-store")
         response.setDateHeader("Expires", 0)
         response.setHeader("Pragma", "no-cache")
-        def config = org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils.securityConfig
+        def config = SpringSecurityUtils.securityConfig
         String postBackUrl = "${request.contextPath}/resetPassword/validateans"
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
         String id = request.getParameter("username")

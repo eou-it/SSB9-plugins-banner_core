@@ -3,15 +3,15 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.security
 
+import grails.spring.BeanBuilder
+import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.commons.dbcp.BasicDataSource
-import grails.util.Holders  as CH
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.context.ApplicationContext
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.core.Authentication
@@ -22,171 +22,167 @@ import org.springframework.security.core.Authentication
 class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCase{
 
 
-    def provider    // set in setUp
-    def conn        // set in setUp
-    def db          // set in setUp
-    def testUser    // set in setUp
-    def currentSsbEnabledValue
+    public static final String PERSON_HOSWEB002 = 'HOSWEB002'
+    private SelfServiceBannerAuthenticationProvider provider
+    def conn
+    Sql sqlObj
+    def testUser
 
     @Before
     public void setUp() {
+        Holders.config.ssbEnabled = true
 
-        def bb = new grails.spring.BeanBuilder()
-        bb.beans {
-            underlyingSsbDataSource(BasicDataSource) {
-                maxActive = 5
-                maxIdle = 2
-                defaultAutoCommit = "false"
-                driverClassName = "${CH.config.bannerSsbDataSource.driver}"
-                url = "${CH.config.bannerSsbDataSource.url}"
-                password = "${CH.config.bannerSsbDataSource.password}"
-                username = "${CH.config.bannerSsbDataSource.username}"
-            }
-        }
-
-        ApplicationContext testSpringContext = bb.createApplicationContext()
+        ApplicationContext testSpringContext = createUnderlyingSsbDataSourceBean()
         dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
 
-        provider = new SelfServiceBannerAuthenticationProvider()
-        provider.dataSource = dataSource
-
+        provider = Holders.applicationContext.getBean("selfServiceBannerAuthenticationProvider")
         conn = dataSource.getSsbConnection()
-        db = new Sql( conn )
-
-        testUser = newUserMap( 'HOSWEB002' )
-        // super.setUp()
+        sqlObj = new Sql( conn )
+        testUser = existingUser(PERSON_HOSWEB002, 123456)
+        enableUser (sqlObj, testUser.pidm)
     }
 
     @After
     public void tearDown() {
+        testUser = existingUser(PERSON_HOSWEB002, 111111)
+        sqlObj.close()
         dataSource.underlyingSsbDataSource =  null;
-        //super.tearDown()
+        Holders.config.ssbEnabled = false
     }
 
     @Test
     void testRetrievalOfRoleBasedTimeouts() {
-
-        def timeouts = provider.retrieveRoleBasedTimeOuts( db )
+        def timeouts = provider.retrieveRoleBasedTimeOuts( sqlObj )
         assertTrue timeouts.size() > 0
     }
 
     @Test
     void testGetPidm() {  
-        
-        def pidm = provider.getPidm( new TestAuthenticationRequest( testUser ), db )
+        def pidm = provider.getPidm( new TestAuthenticationRequest( testUser ), sqlObj )
         assertEquals testUser.pidm, pidm
     }
 
     @Test
-    void testAuthentication() {
-        
+    void testSsbAuthentication() {
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
-        assertEquals  auth.name, testUser.id as String
-        assertNotNull auth.oracleUserName
+        assertEquals  auth.name, testUser.name as String
         assertTrue    auth.details.credentialsNonExpired
         assertEquals  auth.pidm,testUser.pidm
         assertTrue    auth.webTimeout >= 30
-        assertEquals auth.fullName,"Edward Engle"
+        assertEquals auth.fullName,"Bernadette McKall"
     }
         
     @Test
     void testAuthorization() {
-        
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
-        assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-ALUMNI_BAN_DEFAULT_M" }
+        assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-ALLROLES_BAN_DEFAULT_M" }
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M" }
-//        assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE_BAN_DEFAULT_M" }
         assertEquals  2, auth.authorities.size()
     }
     
     @Test
     void testExpiredPin() {
-        
-        def expiredPinUser = newUserMap( 'HOSS002' )
-        shouldFail( CredentialsExpiredException ) {
-            provider.authenticate( new TestAuthenticationRequest( expiredPinUser ) )
-        }
-    }
+        expireUser(testUser.pidm)
 
-    @Test
-    void testDisabledAccount() {
-        
-        def disabledUser = newUserMap( 'HOSS003' )
-        shouldFail( DisabledException ) {
-            provider.authenticate( new TestAuthenticationRequest( disabledUser ) )
+        shouldFail( CredentialsExpiredException ) {
+            provider.authenticate( new TestAuthenticationRequest( testUser ) )
         }
+
+        extendExpiration(testUser.pidm)
     }
 
     @Test
     void testInvalidAccount() {
            
-        def disabledUser = newUserMap( 'HOSS003' )
-        disabledUser['pin'] = disabledUser.pin + '1'
-        assertNull(provider.authenticate( new TestAuthenticationRequest( disabledUser ) ))   
+        def invalidUser = testUser.clone()
+        invalidUser['pin'] = invalidUser.pin + '1'
+
+        assertNull(provider.authenticate(new TestAuthenticationRequest(invalidUser)))
+
+        resetInvalidLoginAttemptCount()
     }
         
     
     @Test // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
     void testAuthenticateWithSocialSecurity() {
-        
-        db.executeUpdate "update twgbparm set twgbparm_param_value = 'Y' where twgbparm_param_name = 'ALLOWSSNLOGIN'"
-        def user = newUserMap( 'HOSS001' )
-        def auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: user.pin ] ) )
+        sqlObj.executeUpdate "update twgbparm set twgbparm_param_value = 'Y' where twgbparm_param_name = 'ALLOWSSNLOGIN'"
+        def auth = provider.authenticate( new TestAuthenticationRequest(testUser ) )
         assertTrue auth.isAuthenticated()
-        assertTrue auth.pidm = user.pidm
+        assertEquals testUser.pidm, auth.pidm
     }
 
 
     @Test // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
     void testDisableOnInvalidLogins() {
-        
-        def auth
-        def user = newUserMap( 'HOSS001' )
-        
-        shouldFail( BadCredentialsException ) {
-            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+        resetInvalidLoginAttemptCount()
+
+        def user = testUser.clone()
+        user.pin = "XXXXXX"
+        (1..4).each {
+            assertNull provider.authenticate( new TestAuthenticationRequest( user) )
         }
-        shouldFail( BadCredentialsException ) {
-            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
-        }
-        shouldFail( BadCredentialsException ) {
-            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
-        }
-        shouldFail( BadCredentialsException ) {
-            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
-        }
-        shouldFail( BadCredentialsException ) {
-            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
-        }
+
         shouldFail( DisabledException) {
-            auth = provider.authenticate( new TestAuthenticationRequest( [ id: '111-11-1111', pidm: user.pidm, pin: 'XXXXXX' ] ) )
+            provider.authenticate( new TestAuthenticationRequest( user ) )
         }
+        enableUser (sqlObj, testUser.pidm)
+    }
+
+    //----------------------------- Helper Methods ------------------------------
+
+    private void extendExpiration(pidm) {
+        sqlObj.executeUpdate("update gobtpac set gobtpac_pin_exp_date = NULL where gobtpac_pidm=${pidm}")
+        sqlObj.commit()
+    }
+
+    private void expireUser(pidm) {
+        sqlObj.executeUpdate("update gobtpac set gobtpac_pin_exp_date = (SYSDATE-1) where gobtpac_pidm=${pidm}")
+        sqlObj.commit()
     }
 
 
-    //----------------------------- Helper Methods ------------------------------    
-    
-    
-    private def isSsbEnabled() {
-        CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
+    private void resetInvalidLoginAttemptCount() {
+        sqlObj.executeUpdate("update twgbwses set twgbwses_login_attempts=0 where twgbwses_pidm=$testUser.pidm")
+        sqlObj.commit()
     }
-    
-    
-    private def newUserMap( id ) {
-        def expiredPinUser = [ id: id ]
-        expiredPinUser['pidm'] = provider.getPidm( new TestAuthenticationRequest( expiredPinUser ), db )
 
-        // retrieve pin for good user by generating a new one. This will be rolled back .         
-        db.call( "{? = call gb_third_party_access.f_proc_pin(?)}", [ Sql.VARCHAR, expiredPinUser.pidm ] ) { pin -> 
-            expiredPinUser['pin'] = pin
+    private def existingUser (userId, newPin) {
+        def existingUser = [ name: userId]
+
+        def testAuthenticationRequest = new TestAuthenticationRequest(existingUser)
+        existingUser['pidm'] = provider.getPidm(testAuthenticationRequest, sqlObj )
+        sqlObj.commit()
+        sqlObj.call ("{call gb_third_party_access.p_update(p_pidm=>${existingUser.pidm}, p_pin=>${newPin})}")
+        sqlObj.commit()
+        existingUser.pin = newPin
+        return existingUser
+    }
+
+    private ApplicationContext createUnderlyingSsbDataSourceBean() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            underlyingSsbDataSource(BasicDataSource) {
+                maxActive = 5
+                maxIdle = 2
+                defaultAutoCommit = "false"
+                driverClassName = "${Holders.config.bannerSsbDataSource.driver}"
+                url = "${Holders.config.bannerSsbDataSource.url}"
+                password = "${Holders.config.bannerSsbDataSource.password}"
+                username = "${Holders.config.bannerSsbDataSource.username}"
+            }
         }
-        expiredPinUser
+        ApplicationContext testSpringContext = bb.createApplicationContext()
+        return testSpringContext
+    }
+
+    private void enableUser(Sql db, pidm) {
+        db.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
+        db.commit()
     }
 
 
-    
 }
 
 
@@ -204,7 +200,7 @@ class TestAuthenticationRequest implements Authentication {
     public Object getPrincipal() { user }
     public boolean isAuthenticated() { false }
     public void setAuthenticated( boolean b ) { }
-    public String getName() { user.id }
+    public String getName() { user.name }
     public Object getPidm() { user.pidm }
     public Object getOracleUserName() { user.oracleUserName }
 }
