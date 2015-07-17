@@ -5,7 +5,7 @@
 import grails.converters.JSON
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.AuthorizationException
-import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import grails.plugin.springsecurity.SpringSecurityUtils
 import org.springframework.security.authentication.*
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.core.userdetails.UsernameNotFoundException

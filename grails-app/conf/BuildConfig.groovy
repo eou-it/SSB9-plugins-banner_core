@@ -24,13 +24,12 @@ grails.project.dependency.resolution = {
     log "error" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
 
     plugins {
-        runtime  ":hibernate:3.6.10.19"
-//        compile ":spring-security-core:1.2.7.3"
+        compile ":spring-security-core:2.0-RC5"
         compile ':resources:1.2.8'
         compile ':markdown:1.0.0.RC1'
 		runtime ":webxml:1.4.1"
         compile ":functional-test:2.0.0"
-        test ':code-coverage:2.0.3-2'
+
     }
 
     distribution = {
@@ -47,7 +46,11 @@ grails.project.dependency.resolution = {
     }
 
     dependencies {
+        compile( 'net.sourceforge.nekohtml:nekohtml:1.9.18') {
+            excludes 'xml-apis', 'xerces'
+        }
 		compile "commons-dbcp:commons-dbcp:1.4"
+        runtime "com.oracle:xdb6:11.2.0.3"
         test "com.oracle:ojdbc6:11.2.0.1.0"
         test 'org.easymock:easymock:3.2'
 

@@ -7,7 +7,7 @@ import groovy.sql.Sql
 import java.sql.SQLException
 import javax.sql.DataSource
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import grails.plugin.springsecurity.SpringSecurityUtils
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.GrantedAuthority
 

@@ -6,7 +6,8 @@ package net.hedtech.banner.security
 import org.apache.log4j.Logger
 import org.springframework.security.core.GrantedAuthority
 
-import org.codehaus.groovy.grails.plugins.springsecurity.GrailsUser
+import grails.plugin.springsecurity.userdetails.GrailsUser
+
 
 /**
  * A user domain class for use with Spring Security (aka acegi). Note that the plugin's AuthenticateService
