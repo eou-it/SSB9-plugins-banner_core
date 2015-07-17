@@ -109,7 +109,7 @@ class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
      
     def getDataSource() {
         if (!dataSource) {
-            ApplicationContext ctx = (ApplicationContext) AH.getApplication().getMainContext()
+            ApplicationContext ctx = (ApplicationContext) AH.grailsApplication.getMainContext()
             dataSource = (DataSource) ctx.getBean( 'dataSource' )
         }
         dataSource

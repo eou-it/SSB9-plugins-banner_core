@@ -3,15 +3,10 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.framework
 
+import grails.util.Holders
 import net.hedtech.banner.configuration.ApplicationConfigurationUtils as ReleaseVersionHolder
-
-import grails.test.GrailsUnitTestCase
-
-import grails.util.Holders  as AH
-import grails.util.Holders  as CH
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
@@ -38,20 +33,20 @@ public class ReleaseInfoIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testBuildNumber() {
-        def appVersion = AH.application.metadata[ 'app.version' ] 
+        def appVersion = Holders.grailsApplication.metadata[ 'app.version' ]
         def releasePropertiesFile = new File( "target/classes/release.properties" )
         if (releasePropertiesFile.exists()) {
             // the release.properties file exists, so we should expect to have a 'real' build number  
-            assertTrue CH.config.application.version.contains( appVersion )
-            assertTrue CH.config.application.build.number.isInteger()
-            assertNotNull CH.config.build.number.url
+            assertTrue Holders.config.application.version.contains( appVersion )
+            assertTrue Holders.config.application.build.number.isInteger()
+            assertNotNull Holders.config.build.number.url
             assertTrue ReleaseVersionHolder.getReleaseNumber()?.contains( appVersion )
-            assertTrue ReleaseVersionHolder.getReleaseNumber()?.contains( "-${CH.config.application.build.number}" )
+            assertTrue ReleaseVersionHolder.getReleaseNumber()?.contains( "-${Holders.config.application.build.number}" )
             assertFalse ReleaseVersionHolder.getReleaseNumber()?.contains( "-DEVELOPMENT" )
         } else {
             assertTrue ReleaseVersionHolder.getReleaseNumber() == "$appVersion-DEVELOPMENT"  
             // default behavior is an empty map if a config property does not exist
-            assertTrue CH.config.application.build.version instanceof Map 
+            assertTrue Holders.config.application.build.version instanceof Map
         }
     }
 

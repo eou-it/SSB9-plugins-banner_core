@@ -600,7 +600,7 @@ public class BannerDS implements DataSource {
 
     private MultiEntityProcessingService getMultiEntityProcessingService() {
         if (!multiEntityProcessingService) {
-            ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+            ApplicationContext ctx = (ApplicationContext) Holders.grailsApplication.getMainContext()
             multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
         }
         multiEntityProcessingService

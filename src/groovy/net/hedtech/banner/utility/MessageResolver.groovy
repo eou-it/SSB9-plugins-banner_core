@@ -25,7 +25,7 @@ class MessageResolver {
         String value = "";
         if (key){
               if(!locale) locale = LCH.getLocale()
-              MessageSource messageSource = ApplicationHolder.application.mainContext.getBean('messageSource')
+              MessageSource messageSource = Holders.grailsApplication.mainContext.getBean('messageSource')
               value = messageSource.getMessage(key,args,locale)
         }
         return value

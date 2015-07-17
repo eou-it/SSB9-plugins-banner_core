@@ -37,7 +37,7 @@ class DbConnectionCacheSessionListener implements HttpSessionListener {
 
     private synchronized HttpSessionService getHttpSessionService() {
         if (httpSessionService == null) {
-            httpSessionService = (HttpSessionService) ApplicationHolder.getApplication().getMainContext().getBean('httpSessionService')
+            httpSessionService = (HttpSessionService) Holders.grailsApplication.getMainContext().getBean('httpSessionService')
         }
         httpSessionService
     }

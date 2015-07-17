@@ -22,7 +22,7 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
     String aaaCollege = "aaa"
     String bbbCollege = "bbb"
     String cccCollege = "ccc"
-    final String URL=ConfigurationHolder.config.bannerDataSource.url
+    final String URL=Holders.config.bannerDataSource.url
     final String BANSECR_USERNAME="bansecr"
     final String BANSECR_PASSWORD="u_pick_it"
     String defaultInstitution

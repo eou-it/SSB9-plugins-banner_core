@@ -1,13 +1,11 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.help
 
-import net.hedtech.banner.SpringContextUtils
+import grails.util.Holders
 import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.testing.BaseFunctionalTestCase
-
-import grails.converters.JSON
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -19,7 +17,7 @@ class HelpFunctionalTests extends BaseFunctionalTestCase {
 
     @Before
     public void setUp(){
-        SpringContextUtils.grailsApplication.config.banner.sso.authenticationProvider = "default"
+        Holders.config.banner.sso.authenticationProvider = "default"
         formContext = ['STVCOLL']
         super.setUp()
     }

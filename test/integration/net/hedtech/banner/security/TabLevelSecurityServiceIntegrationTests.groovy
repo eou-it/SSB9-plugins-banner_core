@@ -39,7 +39,7 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testUserWithReadwritePermissionForTheForm() {
         Sql sql
-        def url = ConfigurationHolder.config.bannerDataSource.url
+        def url = Holders.config.bannerDataSource.url
 
         final EDITABLE_FORM_NAME = "SSARRES"
         final EDITABLE_USER_NAME = "GRAILS_USER"
@@ -122,7 +122,7 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
     void testUserWithReadonlyPermissionForTheForm() {
 
         Sql sql
-        def url = ConfigurationHolder.config.bannerDataSource.url
+        def url = Holders.config.bannerDataSource.url
 
         final READONLY_FORM_NAME = "SCACLBD"
         final READONLY_USER_NAME = "GRAILS_USER_READONLY"

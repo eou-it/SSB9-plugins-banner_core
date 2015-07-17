@@ -27,7 +27,7 @@ class DomainAttributePropertiesService {
         if (!domainName)
             return null
 
-        ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+        ApplicationContext ctx = (ApplicationContext) Holders.grailsApplication.getMainContext()
         grailsApplication = (GrailsApplication) ctx.getBean("grailsApplication")
 
         def domainClass = grailsApplication.getArtefactByLogicalPropertyName("Domain", domainName)
@@ -41,7 +41,7 @@ class DomainAttributePropertiesService {
         if (!domainName)
             return null
 
-        ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+        ApplicationContext ctx = (ApplicationContext) Holders.grailsApplication.getMainContext()
         grailsApplication = (GrailsApplication) ctx.getBean("grailsApplication")
 
         def domainClass = grailsApplication.getArtefactByLogicalPropertyName("Domain", domainName)

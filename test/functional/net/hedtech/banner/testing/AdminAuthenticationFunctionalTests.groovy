@@ -3,10 +3,10 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.testing
 
-import groovy.sql.Sql
-import net.hedtech.banner.SpringContextUtils
-import net.hedtech.banner.security.FormContext
+import grails.util.Holders
 import grails.util.Holders  as CH
+import groovy.sql.Sql
+import net.hedtech.banner.security.FormContext
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -21,7 +21,7 @@ class AdminAuthenticationFunctionalTests extends BaseFunctionalTestCase {
 
     @Before
     public void setUp(){
-        SpringContextUtils.grailsApplication.config.banner.sso.authenticationProvider = "default"
+        Holders.config.banner.sso.authenticationProvider = "default"
         formContext = ['GUAGMNU']
         super.setUp()
     }

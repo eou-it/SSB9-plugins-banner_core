@@ -75,7 +75,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     public static def getApplicationContext() {
         if (!applicationContext) {
-            applicationContext = (ApplicationContext) AH.getApplication().getMainContext()
+            applicationContext = (ApplicationContext) AH.grailsApplication.getMainContext()
         }
         applicationContext
     }

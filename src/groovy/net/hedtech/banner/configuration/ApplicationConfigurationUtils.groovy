@@ -3,15 +3,9 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.configuration
 
-import grails.util.GrailsUtil
-
-import org.apache.log4j.Logger
+import grails.util.Environment
+import grails.util.Holders
 import org.apache.commons.logging.LogFactory
-
-import grails.util.Holders  as AH
-import grails.util.Holders  as CH
-import org.codehaus.groovy.grails.commons.GrailsApplication
-
 
 /**
  * Utilities for application configuration.
@@ -31,11 +25,11 @@ class ApplicationConfigurationUtils {
      **/
     public static String getReleaseNumber() {
         if (!releaseNum) {
-            def buildNum = CH.config.application.build.number
+            def buildNum = Holders.config.application.build.number
             if (!(buildNum instanceof String)) {
                 buildNum = "DEVELOPMENT"
             }
-            releaseNum = "${AH.application.metadata['app.version']}-${buildNum}"
+            releaseNum = "${Holders.grailsApplication.metadata['app.version']}-${buildNum}"
         }
         releaseNum
     }
@@ -54,7 +48,7 @@ class ApplicationConfigurationUtils {
             def filePathName = getFilePath( System.getProperty( propertyName ) ) 
             if (filePathName) LogFactory.getLog(this).info "Using configuration file specified by system property '$propertyName'"
 
-            if (GrailsUtil.environment != GrailsApplication.ENV_PRODUCTION) {
+            if (Environment.getCurrent() != Environment.PRODUCTION) {
                 if (!filePathName) {
                     filePathName = getFilePath( "${System.getProperty( 'user.home' )}/.grails/${fileName}" )
                     if (filePathName) LogFactory.getLog(this).info "Using configuration file '\$HOME/.grails/$fileName'"
