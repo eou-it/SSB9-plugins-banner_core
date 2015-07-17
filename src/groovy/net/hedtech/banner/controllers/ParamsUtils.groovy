@@ -3,6 +3,8 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.controllers
 
+import org.codehaus.groovy.runtime.InvokerHelper
+
 /**
  * Utility class for managing params
  */
@@ -69,8 +71,9 @@ class ParamsUtils {
             try {
                 assert propertyMap.id
                 def domain = domainClass.get( propertyMap.id )
-
-                domain.properties = propertyMap
+                use(InvokerHelper){
+                    domain.setProperties(propertyMap)
+                }
                 if (propertyMap.version && domain.hasProperty( "version" )) {
 // TODO:  This is absolutely wrong and needs to be resolved.  For some reason I'm unable to set the version in certain undetermined scenarios
 //                    domain.version = propertyMap.version

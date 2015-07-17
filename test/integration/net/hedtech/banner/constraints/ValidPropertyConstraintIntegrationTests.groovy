@@ -5,6 +5,7 @@ package net.hedtech.banner.constraints
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.testing.Foo
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -68,10 +69,14 @@ class ValidPropertyConstraintIntegrationTests extends BaseIntegrationTestCase {
     }
 
     private Foo createFoo(params = null) {
-        def foo = new Foo([code: "TT", description: "TT", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
-                addressState: "TT", addressCountry: "TT", addressZipCode: "TT", systemRequiredIndicator: "N", voiceResponseMessageNumber: 1, statisticsCanadianInstitution: "TT",
-                districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT", lastModified: new Date()])
-        foo.properties = params
+        def foo = new Foo([code            : "TT", description: "TT", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",
+                           addressState    : "TT", addressCountry: "TT", addressZipCode: "TT", systemRequiredIndicator: "N", voiceResponseMessageNumber: 1, statisticsCanadianInstitution: "TT",
+                           districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT", lastModified: new Date()])
+        if (params) {
+            use(InvokerHelper) {
+                foo.setProperties(params)
+            }
+        }
         return foo
     }
 
@@ -79,8 +84,8 @@ class ValidPropertyConstraintIntegrationTests extends BaseIntegrationTestCase {
         return createFoo(params)
     }
 
-    private Foo createBadFooChild(params) {
-        def foo = createFoo(params)
+    private Foo createBadFooChild() {
+        def foo = createFoo()
         foo.code = "badcode"
         return foo
 

@@ -20,7 +20,7 @@ import org.apache.log4j.Logger
 import grails.util.Holders
 import grails.util.Holders  as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
-
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.hibernate.StaleObjectStateException
 
 import org.springframework.context.ApplicationContext
@@ -166,7 +166,10 @@ class ServiceBase {
             domainObject = fetch( getDomainClass(), content?.id, log )
 
             // Now we'll set the provided properties (content) onto our pristine domainObject instance -- this may make the model dirty
-            domainObject.properties = content
+            use(InvokerHelper) {
+                domainObject.setProperties(content)
+            }
+
 
             def updatedModel
             if (isDirty( domainObject )) {
@@ -490,7 +493,7 @@ class ServiceBase {
      **/
     public void setApiContext( String packageName, String contextName, String contextVal ) {
 
-        def sessionFactory = ApplicationHolder.getApplication().getMainContext().sessionFactory
+        def sessionFactory = Holders.grailsApplication.getMainContext().sessionFactory
         def sql = new Sql( sessionFactory?.currentSession?.connection() )
         sql.call( "{call gb_common.p_set_context( ?, ?, ?)}", [ packageName, contextName, contextVal ] )
         // note: the connection is managed by hibernate, hence we won't close it here
@@ -772,7 +775,7 @@ class ServiceBase {
 
     protected def getBannerConnection() {
         if (!sessionFactory) {
-            ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+            ApplicationContext ctx = (ApplicationContext) Holders.grailsApplication.getMainContext()
             sessionFactory = ctx.getBean( 'sessionFactory' )
         }
         sessionFactory.getCurrentSession().connection()
@@ -856,7 +859,10 @@ class ServiceBase {
                 preUpdateParam = domainModelOrMap
             }
             this.preUpdate( preUpdateParam )
-            domainObject.properties = extractParams( getDomainClass(), domainModelOrMap, log ) // re-apply changes
+
+            use(InvokerHelper) {
+                domainObject.setProperties(extractParams( getDomainClass(), domainModelOrMap, log )) // re-apply changes)
+            }
         }
         domainObject
     }
