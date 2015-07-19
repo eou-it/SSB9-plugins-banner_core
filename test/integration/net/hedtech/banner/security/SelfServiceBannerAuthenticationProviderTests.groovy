@@ -187,13 +187,13 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
 
 
 class TestAuthenticationRequest implements Authentication {
-    
+
     def user
-    
+
     public TestAuthenticationRequest( user ) {
         this.user = user
     }
-    
+
     public Collection getAuthorities() { [] }
     public Object getCredentials() { user.pin }
     public Object getDetails() { user }

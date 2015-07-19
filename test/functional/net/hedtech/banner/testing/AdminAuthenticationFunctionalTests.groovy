@@ -1,10 +1,8 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.testing
 
-import grails.util.Holders
-import grails.util.Holders  as CH
 import groovy.sql.Sql
 import net.hedtech.banner.security.FormContext
 import org.junit.After
@@ -18,28 +16,38 @@ import java.sql.Connection
  */
 
 class AdminAuthenticationFunctionalTests extends BaseFunctionalTestCase {
+    boolean envSsbEnabledValue
+
+
 
     @Before
     public void setUp(){
-        Holders.config.banner.sso.authenticationProvider = "default"
         formContext = ['GUAGMNU']
         super.setUp()
+        grailsApplication.config.banner.sso.authenticationProvider = "default"
+        envSsbEnabledValue = grailsApplication.config.ssbEnabled
+        grailsApplication.config.ssbEnabled = false
     }
 
     @After
     public void tearDown() {
         FormContext.clear()
+        grailsApplication.config.ssbEnabled = envSsbEnabledValue
+    }
+
+    @Test
+    void testAdminUserAccessSuccess() {
+        login "grails_user", "u_pick_it"
+
+        assertStatus 200
+        assertContentContains "Welcome Back grails_user"
     }
 
     @Test
     void testAdminUserAccessFailed() {
         login "grails_user", "u_pick_i"
-
-        def stringContent = page?.webResponse?.contentAsString
-
-        if (stringContent =~ "invalid username/password") assert true
-        else assert false
-
+        assertStatus 200
+        assertContentContains "invalid username/password; logon denied"
     }
 
     @Test
@@ -49,7 +57,7 @@ class AdminAuthenticationFunctionalTests extends BaseFunctionalTestCase {
         String lockStmt = "ALTER USER grails_user ACCOUNT LOCK"
         String unlockStmt = "ALTER USER grails_user ACCOUNT UNLOCK"
 
-        def url = CH.config.bannerDataSource.url
+        def url = grailsApplication.config.bannerDataSource.url
         try {
             sql = Sql.newInstance(url,
                     "bansecr",
@@ -61,10 +69,8 @@ class AdminAuthenticationFunctionalTests extends BaseFunctionalTestCase {
 
             login "grails_user", "u_pick_it"
 
-            def stringContent = page?.webResponse?.contentAsString
-
-            if (stringContent =~ "account is locked") assert true
-            else assert false
+            assertStatus 200
+            assertContentContains "account is locked; logon denied"
 
         } finally {
             sql.execute(unlockStmt)

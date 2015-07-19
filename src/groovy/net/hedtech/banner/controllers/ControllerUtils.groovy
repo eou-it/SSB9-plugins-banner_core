@@ -41,7 +41,7 @@ class ControllerUtils {
 
     public static def buildLogoutRedirectURI() {
 
-        def uri = SecurityConf SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
+        def uri =  SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
         if(isSamlEnabled()) {
             uri= "/"+RequestContextHolder?.currentRequestAttributes()?.request?.session?.getServletContext().getAttribute("logoutEndpoint")
         }

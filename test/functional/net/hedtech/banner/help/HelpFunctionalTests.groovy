@@ -17,9 +17,9 @@ class HelpFunctionalTests extends BaseFunctionalTestCase {
 
     @Before
     public void setUp(){
-        Holders.config.banner.sso.authenticationProvider = "default"
         formContext = ['STVCOLL']
         super.setUp()
+        grailsApplication.config.banner.sso.authenticationProvider = "default"
     }
 
     @After
@@ -39,8 +39,7 @@ class HelpFunctionalTests extends BaseFunctionalTestCase {
         assertStatus 200
         assertEquals 'application/json', page?.webResponse?.contentType
 
-        def stringContent = page?.webResponse?.contentAsString
-        def data = JSON.parse(stringContent)
+        def data = new groovy.json.JsonSlurper().parseText(page.webResponse.contentAsString)
 
         assertNotNull "On-Line url is not configured", data.help.url
 

@@ -3,7 +3,7 @@
  ****************************************************************************** */
 
 
-
+import grails.plugin.springsecurity.web.filter.GrailsAnonymousAuthenticationFilter
 import grails.util.GrailsUtil
 import grails.util.Holders
 import net.hedtech.banner.db.BannerDS as BannerDataSource
@@ -32,6 +32,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.security.web.util.matcher.RequestMatcher
 
 import javax.servlet.Filter
 import java.util.concurrent.Executors
@@ -185,9 +186,9 @@ class BannerCoreGrailsPlugin {
             accessDeniedHandler = ref('accessDeniedHandler')
         }
 
-        anonymousProcessingFilter(AnonymousAuthenticationFilter) {
+        anonymousProcessingFilter(GrailsAnonymousAuthenticationFilter) {
+            authenticationDetailsSource = ref('authenticationDetailsSource')
             key = 'horizon-anon'
-            userAttribute = 'anonymousUser,ROLE_ANONYMOUS'
         }
 
         applicationEventMulticaster(SimpleApplicationEventMulticaster) {
@@ -305,7 +306,7 @@ class BannerCoreGrailsPlugin {
                 break
         }
 
-        LinkedHashMap<AntPathRequestMatcher, List<Filter>> filterChainMap = new LinkedHashMap()
+        LinkedHashMap<RequestMatcher, List<Filter>> filterChainMap = new LinkedHashMap()
         filterChain.each { key, value ->
             def filters = value.toString().split(',').collect {
                 name -> applicationContext.getBean(name)

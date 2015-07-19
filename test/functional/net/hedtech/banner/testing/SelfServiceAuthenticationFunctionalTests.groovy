@@ -3,20 +3,25 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.testing
 
-import groovy.sql.Sql
-import grails.util.Holders  as AH
-import grails.util.Holders  as CH
 import org.junit.After
 import org.junit.Before
-import org.springframework.context.ApplicationContext
-
-import javax.sql.DataSource
+import org.junit.Ignore
+import org.junit.Test
 
 /**
  * Functional tests of self service authentication.
+ * @TODO Grails Functional Tests require the support of grails-remote-control plugin
+ * to gain runtime config property modification abilities. This is essential for
+ * Authentication test cases since it has toggles the ssbEnabled and authenticationProvider
+ * flags to test various cases in one test suite itself.
+ *
+ * The default grails Holders class support is not available to manipulate config properties,
+ * because functional test framework run in a different JVM than the one used by the Application
+ * Under Test.
+ *
  */
 class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
-
+    boolean envSsbEnabledValue
 
     def dataSource  // injected by Spring
 
@@ -24,122 +29,36 @@ class SelfServiceAuthenticationFunctionalTests extends BaseFunctionalTestCase {
     protected void setUp() {
         formContext = [ 'SELFSERVICE' ]
         super.setUp()
+        grailsApplication.config.banner.sso.authenticationProvider = "default"
+        envSsbEnabledValue = grailsApplication.config.ssbEnabled
+        grailsApplication.config.ssbEnabled = true
     }
 
     @After
     public void tearDown() {
         super.tearDown()
+        grailsApplication.config.ssbEnabled = envSsbEnabledValue
     }
 
-    // Tests ability to access a self service URL. 
-    void testSelfServiceUserAccess() {
-         if (isSsbEnabled()) {
-             
-            loginSelfServiceUser( [ spridenId: '210009105' ] )
-             
-            get "/ssb/foobar/view"
-            
-            assertStatus 200
-            assertEquals 'text/html', page?.webResponse?.contentType
-            
-            def stringContent = page?.webResponse?.contentAsString
-            assertTrue stringContent ==~ /.*If I had a UI.*/
-         }
-    }
-    
-    
-    void testSelfServiceExpiredPin() {
-         if (isSsbEnabled()) {
-             
-            loginSelfServiceUser( [ spridenId: 'HOSS002', pidm: 49528 ] )
-             
-            get "/ssb/foobar/view"
-            
-            assertTitle 'Sign In'
-            assertStatus 200
-            assertEquals 'text/html', page?.webResponse?.contentType
-         }
-    }
-    
-    
-    void testSelfServiceDisabled() {
-         if (isSsbEnabled()) {
-             
-            loginSelfServiceUser( [ spridenId: 'HOSS003', pidm: 49529 ] )
-             
-            get "/ssb/foobar/view"
-            
-            assertTitle 'Sign In'
-            assertStatus 200
-            assertEquals 'text/html', page?.webResponse?.contentType
-         }
-    }
-    
+    @Ignore
+    void testSuccessfulLogin() {
+        login "HOSWEB002", "111111"
 
-
-    // Expects a map like: [ spridenId: #########, pidm: ### ]
-    def loginSelfServiceUser( Map user_credentials ) { 
-        def conn
-        def db
-        def pidm = getPidm(user_credentials.spridenId)
-        
-        try {             
-            conn = getDataSource().getSsbConnection()                
-            db = new Sql( conn )
-
-            
-            // retrieve pin for user by generating a new one. This will be rolled back.         
-            db.call( "{? = call gb_third_party_access.f_proc_pin(?)}", 
-                     [ Sql.VARCHAR, pidm ] ) {
-                pin -> user_credentials['pin'] = pin 
-            }             
-            login "${user_credentials.spridenId}", "${user_credentials.pin}"
-        } 
-        finally {
-            conn?.close()
-            db?.close()
-        }         
-     }
-
-
-    private def isSsbEnabled() {
-        CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
-    }
-     
-     
-    def getDataSource() {
-        if (!dataSource) {
-            ApplicationContext ctx = (ApplicationContext) AH.grailsApplication.getMainContext()
-            dataSource = (DataSource) ctx.getBean( 'dataSource' )
-        }
-        dataSource
+        assertStatus 200
+        assertContentContains "Welcome Back HOSWEB002"
     }
 
+    /**
+     * @TODO Warning: Failed test will increment the unsuccessful attempts in Database; won't get reset by
+     * subsequent successful logins. Because of this, this test case should have reset that to nullify
+     * the side-effect of the test case to the applicaiton.
+     */
+    @Test
+    void testFailedLogin() {
+        login "HOSWEB002", "111115"
 
-      private def getPidm(id) {
-        def pidm
-          def conn
-        def sql 
-  
-        try {
-            conn = getDataSource().getSsbConnection()
-            sql = new Sql( conn )
-            sql.eachRow("""
-                     SELECT SPRIDEN_PIDM
-                       FROM SPRIDEN
-                       WHERE SPRIDEN_ID = ?
-                   """, [id]) {
-
-                pidm = it[0]
-
-            };
-
-        } finally {
-            sql?.close()
-        }
-
-        pidm
+        assertStatus 200
+        assertContentContains "invalid username/password; logon denied"
     }
-     
 
 }

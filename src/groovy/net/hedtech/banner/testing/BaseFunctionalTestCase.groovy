@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.testing
 
@@ -15,13 +15,10 @@ import javax.xml.validation.SchemaFactory
  */
 class BaseFunctionalTestCase  extends BrowserTestCase {
 
-    def sessionFactory      // injected by Spring
-    def dataSource          // injected by Spring
-    def transactionManager  // injected by Spring
+    def grailsApplication
 
     // IMPORTANT: Either the formContext property or FormContext threadlocal needs to be set -- prior to calling super.setUp() from a subclass.
     def formContext = null  // This may be set within the subclass, or the FormContext may be set directly by the subclass.
-
 
     /**
      * Performs a login for the standard 'grails_user' and calls super.setUp().
@@ -30,6 +27,8 @@ class BaseFunctionalTestCase  extends BrowserTestCase {
      * or you must not extend from this class (but extend from GroovyTestCase directly).
      **/
     protected void setUp() {
+        grailsApplication = new org.codehaus.groovy.grails.commons.DefaultGrailsApplication()
+
         super.setUp()
 
         if (formContext) {
