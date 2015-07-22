@@ -47,7 +47,7 @@ import org.springframework.security.web.context.SecurityContextPersistenceFilter
  * */
 class BannerCoreGrailsPlugin {
 
-    String version = "2.5.1"
+    String version = "2.10.1.4"
     private static final Logger staticLogger = Logger.getLogger(BannerCoreGrailsPlugin.class)
 
     // the version or versions of Grails the plugin is designed for
