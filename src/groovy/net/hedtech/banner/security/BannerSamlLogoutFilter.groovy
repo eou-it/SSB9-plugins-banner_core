@@ -80,9 +80,6 @@ class BannerSamlLogoutFilter extends LogoutFilter {
                         log.fatal("Authentication object doesn't contain SAML credential, cannot perform global logout")
                         throw new ServletException("Authentication object doesn't contain SAML credential, cannot perform global logout")
                     }
-                    for (LogoutHandler handler : globalHandlers) {
-                        handler.logout(request,response,auth)
-                    }
                     SAMLMessageContext context = contextProvider.getLocalEntity(request,response,(SAMLCredential)auth.getSAMLCredential())
                     profile.sendLogoutRequest(context,auth.getSAMLCredential())
                     log.debug("Logout Request initiated with ontext : " + context)
