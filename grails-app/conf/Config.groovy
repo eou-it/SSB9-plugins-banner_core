@@ -24,7 +24,7 @@ def locationAdder = ConfigFinder.&addLocation.curry(grails.config.locations)
 println "App Name ${appName}"
 
 [ BANNER_APP_CONFIG:        "banner_configuration.groovy",
-  PLATFORM_SANDBOX_APP_CONFIG: "banner_core_testapp_configuration.groovy",
+  BANNER_CORE_TESTAPP_CONFIG: "banner_core_testapp_configuration.groovy",
 ].each { envName, defaultFileName -> locationAdder( envName, defaultFileName ) }
 
 grails.config.locations.each {
@@ -130,6 +130,7 @@ dataOrigin = "Banner"
 // connection is attained and the user has the necessary role, the role is enabled
 // for that user and Banner object.
 formControllerMap = [
+        '/':['GUAGMNU'],
         'uiCatalog' : ['SELFSERVICE'],
         'home' : ['SELFSERVICE']
 ]
@@ -141,21 +142,12 @@ grails {
                 mepErrorLogoutUrl='/logout/logoutPage'
             }
             useRequestMapDomainClass = false
-            providerNames = ['selfServiceBannerAuthenticationProvider', 'bannerAuthenticationProvider']
-//    rejectIfNoRule = true
-            filterChain.chainMap = [
-                    '/api/**': 'authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor',
-                    '/**': 'securityContextPersistenceFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
-            ]
             securityConfigType = SecurityConfigType.InterceptUrlMap
             interceptUrlMap = [
-                    '/': ['IS_AUTHENTICATED_ANONYMOUSLY'],
+                    '/': ['ROLE_GUAGMNU_BAN_DEFAULT_M'],
                     '/login/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
                     '/logout/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-                    '/ssb/uiCatalog/index': ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M',
-                                             'ROLE_SELFSERVICE_BAN_DEFAULT_M',
-                                             'ROLE_SELFSERVICE-REGISTRAR_BAN_DEFAULT_M',
-                                             'ROLE_SELFSERVICE-FACULTY_BAN_DEFAULT_M'],
+                    '/index': ['IS_AUTHENTICATED_ANONYMOUSLY'],
                     '/**': ['IS_AUTHENTICATED_ANONYMOUSLY']
             ]
         }

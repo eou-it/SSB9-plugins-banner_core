@@ -49,7 +49,7 @@ grails.project.dependency.resolution = {
             excludes 'xml-apis', 'xerces'
         }
 		compile "commons-dbcp:commons-dbcp:1.4"
-        runtime "com.oracle:xdb6:11.2.0.3"
+        runtime "com.oracle:xdb6:11.2.0.4"
         test "com.oracle:ojdbc6:11.2.0.1.0"
         test 'org.easymock:easymock:3.2'
 
