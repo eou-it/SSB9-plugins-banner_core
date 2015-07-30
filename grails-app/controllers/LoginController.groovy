@@ -186,7 +186,7 @@ class LoginController {
         }
         else{
             session.setAttribute("requestPage", "questans")
-            redirect controller : "resetPassword", action: "questans", params : params
+            forward controller : "resetPassword", action: "questans", params : params
         }
     }
 
