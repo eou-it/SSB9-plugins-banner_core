@@ -10,7 +10,7 @@ import org.hibernate.annotations.Type
 // can be reported. This model is NOT persistable -- it is used for testing an exception. 
 @Entity
 @Table(name="SMRALIB")
-class AreaLibrary implements Serializable {
+class AreaLibraryForTesting implements Serializable {
 	
 	@Id
 	@Column(name="SMRALIB_SURROGATE_ID")
@@ -57,7 +57,7 @@ class AreaLibrary implements Serializable {
 
 	
 	public String toString() {
-		"AreaLibrary[id=$id, area=$area, areaDescription=$areaDescription, dynamicIndicator=$dynamicIndicator, printIndicator=$printIndicator, lastModified=$lastModified, complUsageIndicator=$complUsageIndicator, prerequisiteUsageIndicator=$prerequisiteUsageIndicator, version=$version, lastModifiedBy=$lastModifiedBy, dataOrigin=$dataOrigin]"
+		"AreaLibraryForTesting[id=$id, area=$area, areaDescription=$areaDescription, dynamicIndicator=$dynamicIndicator, printIndicator=$printIndicator, lastModified=$lastModified, complUsageIndicator=$complUsageIndicator, prerequisiteUsageIndicator=$prerequisiteUsageIndicator, version=$version, lastModifiedBy=$lastModifiedBy, dataOrigin=$dataOrigin]"
 	}
 	
 

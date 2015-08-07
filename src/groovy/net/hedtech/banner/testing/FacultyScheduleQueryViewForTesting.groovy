@@ -10,7 +10,7 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "SVQ_SIVASGQ")
-class FacultyScheduleQueryView {
+class FacultyScheduleQueryViewForTesting {
     /**
      * Surrogate ID for SIBINST
      */
@@ -217,7 +217,7 @@ class FacultyScheduleQueryView {
      */
 
     public String toString() {
-        """FacultyAdvisorQueryView[
+        """FacultyScheduleQueryViewForTesting[
 				id=$id,
 				version=$version,
 				pidm=$pidm,

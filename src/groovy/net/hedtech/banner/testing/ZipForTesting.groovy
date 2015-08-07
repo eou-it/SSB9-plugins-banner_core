@@ -11,7 +11,7 @@ import javax.persistence.*
  */
 @Entity
 @Table(name="GTVZIPC")
-class Zip implements Serializable {
+class ZipForTesting implements Serializable {
 
 	@Id
 	@Column(name="GTVZIPC_SURROGATE_ID")
@@ -40,7 +40,7 @@ class Zip implements Serializable {
 
 
 	public String toString() {
-		"Zip[id=$id, code=$code, city=$city, lastModifiedBy=$lastModifiedBy, version=$version, dataOrigin=$dataOrigin]"
+		"ZipForTesting[id=$id, code=$code, city=$city, lastModifiedBy=$lastModifiedBy, version=$version, dataOrigin=$dataOrigin]"
 	}
 
 

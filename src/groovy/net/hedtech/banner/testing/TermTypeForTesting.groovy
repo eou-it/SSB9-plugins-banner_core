@@ -14,7 +14,7 @@ import javax.persistence.*
  */
 @Entity
 @Table(name = "STVTRMT")
-class TermType implements Serializable {
+class TermTypeForTesting implements Serializable {
 
   /**
    * Surrogate ID for STVTRMT
@@ -65,7 +65,7 @@ class TermType implements Serializable {
 
 
   public String toString() {
-    "TermType[id=$id, code=$code, description=$description, lastModified=$lastModified, lastModifiedBy=$lastModifiedBy, version=$version, dataOrigin=$dataOrigin]"
+    "TermTypeForTesting[id=$id, code=$code, description=$description, lastModified=$lastModified, lastModifiedBy=$lastModifiedBy, version=$version, dataOrigin=$dataOrigin]"
   }
 
   static constraints = {
@@ -80,9 +80,9 @@ class TermType implements Serializable {
   boolean equals(o) {
     if (this.is(o)) return true
 
-    if (!(o instanceof TermType)) return false
+    if (!(o instanceof TermTypeForTesting)) return false
 
-    TermType termType = (TermType) o
+      TermTypeForTesting termType = (TermTypeForTesting) o
 
     if (code != termType.code) return false
     if (dataOrigin != termType.dataOrigin) return false
