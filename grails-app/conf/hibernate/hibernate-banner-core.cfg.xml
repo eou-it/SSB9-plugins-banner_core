@@ -27,16 +27,16 @@ there is no concept of an 'entity manager' within this project.
         <mapping class="net.hedtech.banner.general.utility.MenuAndToolbarPreference"/>
         <mapping class="net.hedtech.banner.general.utility.PersonalPreference"/>
 
-        <mapping class="net.hedtech.banner.testing.AcademicYear"/>
-        <mapping class="net.hedtech.banner.testing.AreaLibrary"/>
+        <mapping class="net.hedtech.banner.testing.AcademicYearForTesting"/>
+        <mapping class="net.hedtech.banner.testing.AreaLibraryForTesting"/>
         <mapping class="net.hedtech.banner.testing.Bar"/>
-        <mapping class="net.hedtech.banner.testing.CourseLaborDistribution"/>
-        <mapping class="net.hedtech.banner.testing.FacultyScheduleQueryView"/>
+        <mapping class="net.hedtech.banner.testing.CourseLaborDistributionForTesting"/>
+        <mapping class="net.hedtech.banner.testing.FacultyScheduleQueryViewForTesting"/>
         <mapping class="net.hedtech.banner.testing.Foo"/>
-        <mapping class="net.hedtech.banner.testing.Interest"/>
-        <mapping class="net.hedtech.banner.testing.Term"/>
-        <mapping class="net.hedtech.banner.testing.TermType"/>
-        <mapping class="net.hedtech.banner.testing.Zip"/>
+        <mapping class="net.hedtech.banner.testing.InterestForTesting"/>
+        <mapping class="net.hedtech.banner.testing.TermForTesting"/>
+        <mapping class="net.hedtech.banner.testing.TermTypeForTesting"/>
+        <mapping class="net.hedtech.banner.testing.ZipForTesting"/>
 
     </session-factory>
 </hibernate-configuration>

@@ -20,7 +20,7 @@ import javax.persistence.GenerationType
  */
 @Entity
 @Table(name = "SV_GTVZIPC")
-class CourseLaborDistribution implements Serializable {
+class CourseLaborDistributionForTesting implements Serializable {
 
     /**
      * Surrogate ID for SCRCLBD
@@ -148,7 +148,7 @@ class CourseLaborDistribution implements Serializable {
 
 
     public String toString() {
-        "CourseLaborDistribution[id=$id, " +
+        "CourseLaborDistributionForTesting[id=$id, " +
 		         "   courseNumber=$courseNumber, " +
                  "   sequenceNumber=$sequenceNumber," +
                  "   percent=$percent,      " +

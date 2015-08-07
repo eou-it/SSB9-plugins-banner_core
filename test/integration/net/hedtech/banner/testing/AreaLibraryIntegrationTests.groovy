@@ -38,7 +38,7 @@ class AreaLibraryIntegrationTests extends BaseIntegrationTestCase {
             entity.save(flush: true)
             fail "AreaLibrary should not have been successfully saved, due to and expected 'invalid hex number' error"
         } catch (e) {
-            def ae = new ApplicationException( AreaLibrary, e )
+            def ae = new ApplicationException( AreaLibraryForTesting, e )
             assertTrue ('SQLException' == ae.type || 'UncategorizedSQLException' == ae.type)
             assertEquals 1465, ae.sqlExceptionErrorCode
 
@@ -54,7 +54,7 @@ class AreaLibraryIntegrationTests extends BaseIntegrationTestCase {
 
 
     def newAreaLibrary() {
-        new AreaLibrary( prescrUsageIndicator: 'Y', area: "oldArea",  areaDescription: "description of oldArea",
+        new AreaLibraryForTesting( prescrUsageIndicator: 'Y', area: "oldArea",  areaDescription: "description of oldArea",
                          dynamicIndicator: true, printIndicator: 'N', complUsageIndicator: true, prerequisiteUsageIndicator: true,
                          lastModified: new Date(), lastModifiedBy: "test", dataOrigin: "Banner" )
     }

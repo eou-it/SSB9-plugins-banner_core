@@ -15,7 +15,7 @@ import javax.persistence.*
  */
 @Entity
 @Table(name = "STVACYR")
-class AcademicYear implements Serializable {
+class AcademicYearForTesting implements Serializable {
 
   /**
    * Surrogate ID for STVACYR
@@ -73,7 +73,7 @@ class AcademicYear implements Serializable {
 
 
   public String toString() {
-    "AcademicYear[id=$id, code=$code, description=$description, lastModified=$lastModified, sysreqInd=$sysreqInd, lastModifiedBy=$lastModifiedBy, version=$version, dataOrigin=$dataOrigin]"
+    "AcademicYearForTesting[id=$id, code=$code, description=$description, lastModified=$lastModified, sysreqInd=$sysreqInd, lastModifiedBy=$lastModifiedBy, version=$version, dataOrigin=$dataOrigin]"
   }
 
   static constraints = {
@@ -88,8 +88,8 @@ class AcademicYear implements Serializable {
 
   boolean equals(o) {
     if (this.is(o)) return true
-    if (!(o instanceof AcademicYear)) return false
-    AcademicYear that = (AcademicYear) o
+    if (!(o instanceof AcademicYearForTesting)) return false
+    AcademicYearForTesting that = (AcademicYearForTesting) o
     if (code != that.code) return false
     if (dataOrigin != that.dataOrigin) return false
     if (description != that.description) return false

@@ -25,7 +25,7 @@ import javax.persistence.GenerationType
  */
 @Entity
 @Table(name = "STVINTS")
-class Interest implements Serializable {
+class InterestForTesting implements Serializable {
 
     /**
      * Surrogate ID for STVINTS
@@ -82,7 +82,7 @@ class Interest implements Serializable {
 
 
     public String toString() {
-        " Interests[  " +
+        " InterestForTesting[  " +
 				"	id=$id,   " +
 				"	code=$code,   " +
 				"	description=$description,    " +

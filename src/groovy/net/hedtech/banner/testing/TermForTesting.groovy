@@ -16,17 +16,17 @@ import javax.persistence.*
 @Entity
 @Table(name = "STVTERM")
 @NamedQueries(value = [
-@NamedQuery(name = "Term.fetchPreviousTerm",
-query = """FROM Term a
+@NamedQuery(name = "TermForTesting.fetchPreviousTerm",
+query = """FROM TermForTesting a
            WHERE a.code = ( SELECT MAX(b.code)
-                            FROM Term b
+                            FROM TermForTesting b
                             WHERE b.code < :term)"""),
-@NamedQuery(name = "Term.fetchTerm",
-query = """FROM Term a
+@NamedQuery(name = "TermForTesting.fetchTerm",
+query = """FROM TermForTesting a
            WHERE a.code = :term""")
 ])
 
-class Term implements Serializable {
+class TermForTesting implements Serializable {
 
   /**
    * Surrogate ID for STVTERM
@@ -144,7 +144,7 @@ class Term implements Serializable {
   @JoinColumns([
   @JoinColumn(name = "STVTERM_ACYR_CODE", referencedColumnName = "stvacyr_code")
   ])
-  AcademicYear academicYear
+  AcademicYearForTesting academicYear
 
   // TODO:  Determine the appropriate name for trmt_code
   /**
@@ -154,7 +154,7 @@ class Term implements Serializable {
   @JoinColumns([
   @JoinColumn(name = "STVTERM_TRMT_CODE", referencedColumnName = "STVTRMT_CODE")
   ])
-  TermType termType
+  TermTypeForTesting termType
 
 
   public String toString() {
@@ -184,9 +184,9 @@ class Term implements Serializable {
   boolean equals(o) {
     if (this.is(o)) return true
 
-    if (!(o instanceof Term)) return false
+    if (!(o instanceof TermForTesting)) return false
 
-    Term term = (Term) o
+    TermForTesting term = (TermForTesting) o
 
     if (academicYear != term.academicYear) return false
     if (code != term.code) return false
