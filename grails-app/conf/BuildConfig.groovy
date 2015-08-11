@@ -29,6 +29,7 @@ grails.project.dependency.resolution = {
         compile ':markdown:1.0.0.RC1'
 		runtime ":webxml:1.4.1"
         compile ":functional-test:2.0.0"
+
     }
 
     distribution = {
@@ -48,6 +49,7 @@ grails.project.dependency.resolution = {
         compile( 'net.sourceforge.nekohtml:nekohtml:1.9.18') {
             excludes 'xml-apis', 'xerces'
         }
+        compile 'org.grails:grails-web-databinding-spring:2.4.4'
 		compile "commons-dbcp:commons-dbcp:1.4"
         runtime "com.oracle:xdb6:11.2.0.4"
         test "com.oracle:ojdbc6:11.2.0.1.0"
