@@ -398,7 +398,7 @@ Whether or not a user is allowed to access a URL depends upon a Spring Security 
 // In general, users should be granted access to Banner pages if they have any roles that pertain to
 // the corresponding Banner Form/Object (except if their only applicable role ends with '_CONNECT').
 // Please see comments below regarding the special 'ROLE_DETERMINED_DYNAMICALLY' role.
-grails.plugins.springsecurity.interceptUrlMap = [
+grails.plugin.springsecurity.interceptUrlMap = [
         '/'          : ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/zkau/**'   : ['IS_AUTHENTICATED_ANONYMOUSLY'],
         '/zkau**'    : ['IS_AUTHENTICATED_ANONYMOUSLY'],
