@@ -140,7 +140,7 @@ public class BannerDS implements DataSource {
         if (user instanceof BannerUser)
             return bannerConnection
         else
-            return new BannerConnection(conn, user, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
+            return new BannerConnection(conn, user?.username, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
     }
 
     public void setFGAC(conn) {
