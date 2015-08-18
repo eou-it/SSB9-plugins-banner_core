@@ -59,6 +59,9 @@ public class BannerDS implements DataSource {
 
     private final Logger log = Logger.getLogger(getClass())
 
+    private isAnonymousUser (def user) {
+        user?.authorities?.size() && user?.authorities[0]?.role == 'ROLE_ANONYMOUS'
+    }
     /**
      * Returns a proxied connection for the current logged in user, from the underlying connection pool.
      * In addition to proxying the connection, appropriate password protected roles are unlocked
@@ -75,7 +78,7 @@ public class BannerDS implements DataSource {
         if ( (ApiUtils.isApiRequest() && !shouldProxyApiRequest() ) ||  
              ( isSelfServiceRequest() && 
                  ((user instanceof BannerUser && !user?.oracleUserName) || 
-                  (user instanceof String && user == 'anonymousUser')) 
+                  (isAnonymousUser(user)))
              )) {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
