@@ -60,7 +60,7 @@ public class BannerDS implements DataSource {
     private final Logger log = Logger.getLogger(getClass())
 
     private isAnonymousUser (def user) {
-        user?.authorities?.size() && user?.authorities[0]?.role == 'ROLE_ANONYMOUS'
+        user?.authorities?.size() && user?.authorities[0]?.authority == 'ROLE_ANONYMOUS'
     }
     /**
      * Returns a proxied connection for the current logged in user, from the underlying connection pool.
