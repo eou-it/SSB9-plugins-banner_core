@@ -12,6 +12,7 @@ class LogoutController {
     static defaultAction = "index"
     public static final String VIEW_LOGOUT_PAGE = "logoutPage"
     public static final String VIEW_TIMEOUT = "timeout"
+    public static final String VIEW_CUSTOM_LOGOUT = "customLogout"
     public static final String HTTP_REQUEST_REFERER_STRING = "referer"
     public static final String LOGIN_AUTH_ACTION_URI = "login/auth"
     public static final String LOGIN_CONTROLLER = "login"
@@ -22,7 +23,9 @@ class LogoutController {
      * Index action. Redirects to the Spring security logout uri.
      */
     def index = {
-        invalidateSession( response )
+        if(!ControllerUtils.isSamlEnabled()){
+            invalidateSession( response )
+        }
         redirect uri: ControllerUtils.buildLogoutRedirectURI()
     }
 
@@ -50,5 +53,19 @@ class LogoutController {
         cookie.setPath(request.getContextPath());
         cookie.setMaxAge(0);
         response.addCookie(cookie);
+    }
+
+    def customLogout = {
+        boolean show = true
+        if (request.getParameter("error") || ControllerUtils.isCasEnabled()){
+            show = false
+        }
+
+        if(ControllerUtils.isCasEnabled()) {
+            render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show  ]
+        } else {
+            render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show  ]
+        }
+
     }
 }

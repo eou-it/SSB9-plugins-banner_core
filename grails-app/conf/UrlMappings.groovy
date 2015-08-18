@@ -49,6 +49,10 @@ class UrlMappings {
             action = "timeout"
         }
 
+        "/logout/customLogout" {
+            controller = "logout"
+            action = "customLogout"
+        }
 	}
 
 }

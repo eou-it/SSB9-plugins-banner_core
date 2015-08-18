@@ -7,7 +7,8 @@
 <head>
     <title><g:message code="net.hedtech.banner.productTitle"/></title>
     <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'timeout.css')}"/>
-    <link rel="shortcut icon" href="${resource(plugin: 'bannerCore', dir: 'images', file: 'favicon.ico')}" type="image/x-icon"/>
+    <g:set var="actionLabel" value="${g.message(code: 'net.hedtech.banner.custom.error.action')}"/>
+    <g:set var="target" value="${request.contextPath}${uri}"/>
 </head>
 
 <body>
@@ -16,6 +17,7 @@
 </div>
 <div class="dialog">
     <div class="message">${msg}</div>
+    <button onclick=location.href="${target}" autofocus="true">${actionLabel}</button>
 </div>
 <div class="footer">
     <span class="logo"></span>

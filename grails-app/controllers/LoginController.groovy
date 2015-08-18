@@ -4,12 +4,14 @@
 
 import grails.converters.JSON
 import net.hedtech.banner.controllers.ControllerUtils
+import net.hedtech.banner.exceptions.AuthorizationException
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import org.springframework.security.authentication.*
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.context.request.RequestContextHolder
 
 class LoginController {
 
@@ -84,8 +86,7 @@ class LoginController {
             redirect action: full, params: params
         }
 
-        def uri = ControllerUtils.buildLogoutRedirectURI()
-        render view: "denied", model: [uri: uri]
+        render view: "denied", model: [uri: buildLogout()]
     }
 
     /**
@@ -135,6 +136,9 @@ class LoginController {
             }
             else if (exception instanceof LockedException) {
                 msg = message( code:"net.hedtech.banner.errors.login.locked" )
+            }
+            else if(exception instanceof AuthorizationException) {
+                msg = message( code: "net.hedtech.banner.access.denied.message" )
             }
             else if (exception instanceof BadCredentialsException) {
                 msg = message( code:"net.hedtech.banner.errors.login.fail" )
@@ -188,6 +192,15 @@ class LoginController {
 
     def error = {
         def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
-        render view: "customerror", model: [msg: getMessageFor( exception )]
+        render view: "customerror", model: [msg: getMessageFor( exception ), uri: buildLogout()]
+    }
+
+    private def buildLogout() {
+        def uri = '/logout/customLogout?error=true'
+        def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
+        if (mep) {
+            uri += "&mepCode=${mep}"
+        }
+        uri
     }
 }

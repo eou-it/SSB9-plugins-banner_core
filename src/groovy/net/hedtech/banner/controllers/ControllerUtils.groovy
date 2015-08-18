@@ -3,7 +3,9 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.controllers
 
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
@@ -36,13 +38,53 @@ class ControllerUtils {
 
 
     public static def buildLogoutRedirectURI() {
-        def uri = SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
 
+        def uri = SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
+        if(isSamlEnabled()) {
+            uri= "/"+RequestContextHolder?.currentRequestAttributes()?.request?.session?.getServletContext().getAttribute("logoutEndpoint")
+        }
         def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
         if (mep) {
             uri += "?spring-security-redirect=?mepCode=${mep}"
         }
 
         uri
+    }
+
+    public static def getHomePageURL() {
+        return SpringSecurityUtils.securityConfig.homePageUrl
+
+    }
+
+    public static def getAfterLogoutRedirectURI() {
+        return SpringSecurityUtils.securityConfig.logout.afterLogoutUrl
+
+    }
+
+    public static boolean isSamlEnabled() {
+        def samlEnabled = ConfigurationHolder?.config.banner.sso.authenticationProvider
+        if(samlEnabled){
+            return 'saml'.equalsIgnoreCase( samlEnabled )
+        }else{
+            return false;
+        }
+    }
+
+    public static boolean isCasEnabled() {
+        def casEnabled = ConfigurationHolder?.config.banner.sso.authenticationProvider
+        if(casEnabled){
+            return 'cas'.equalsIgnoreCase( casEnabled )
+        }else{
+            return false;
+        }
+    }
+
+    public static boolean isLocalLogoutEnabled() {
+        def localLogoutEnabled = ConfigurationHolder?.config.banner?.sso?.authentication.saml.localLogout
+        if(localLogoutEnabled){
+            return 'true'.equalsIgnoreCase( localLogoutEnabled );
+        }else {
+            return false;
+        }
     }
 }

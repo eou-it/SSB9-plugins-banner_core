@@ -16,7 +16,6 @@ import org.springframework.context.ApplicationContext
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.authentication.*
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 
 /**
  * An authentication provider which authenticates a user by logging into the Banner database.
@@ -60,7 +59,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
 
-            newAuthenticationToken( this, authenticationResults )
+            AuthenticationProviderUtility.newAuthenticationToken( this, authenticationResults )
         }
         catch (DisabledException de)           { throw de }
         catch (CredentialsExpiredException ce) { throw ce }
@@ -107,42 +106,6 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         def module = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( provider.class.simpleName, "AuthenticationProvider" ) )
         getApplicationContext().publishEvent( new BannerAuthenticationEvent( authentication.name, false, msg, module, new Date(), 1 ) )
         throw exception
-    }
-
-
-    /**
-     * Returns a new authentication object based upon the supplied arguments.
-     * This method, when used within other providers, should NOT catch the exceptions but should let them be caught by the filter.
-     * @param provider the provider who needs to create a token (used for logging purposes)
-     * @param authentication the initial authentication object containing credentials
-     * @param authenticationResults the authentication results, including the user's Oracle database username
-     * @param authorities the user's authorities that must be included in the new authentication object
-     * @throws AuthenticationException various AuthenticationException types may be thrown, and should NOT be caught by providers using this method
-     **/
-    public static def newAuthenticationToken( provider, authenticationResults ) {
-
-        try {
-            def user = new BannerUser( authenticationResults.name,                       // username
-                    authenticationResults.credentials as String,      // password
-                    authenticationResults.oracleUserName,             // oracle username (note this may be null)
-                    !authenticationResults.disabled,                  // enabled (account)
-                    true,                                             // accountNonExpired - NOT USED
-                    !authenticationResults.expired,                   // credentialsNonExpired
-                    true,                                             // accountNonLocked - NOT USED (YET)
-                    authenticationResults.authorities as Collection,
-                    authenticationResults.fullName
-            )
-            if (authenticationResults?.webTimeout) user.webTimeout = authenticationResults.webTimeout
-            if (authenticationResults?.pidm) user.pidm = authenticationResults.pidm
-            if (authenticationResults?.gidm) user.gidm = authenticationResults.gidm
-            def token = new BannerAuthenticationToken( user )
-            log.trace "${provider?.class?.simpleName}.newAuthenticationToken is returning token $token"
-            token
-        } catch (e) {
-            // We don't expect an exception when simply constructing the user and token, so we'll report this as an error
-            log.error "BannerAuthenticationProvider.newAuthenticationToken was not able to construct a token for user $authenticationResults.name, due to exception: ${e.message}"
-            return null // this is a rare situation where we want to bury the exception - we *need* to return null to allow other providers a chance...
-        }
     }
 
 
@@ -250,77 +213,5 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     private void loadDefault( ApplicationContext appContext, def userName ) {
         appContext.getBean("defaultLoaderService").loadDefault( userName )
     }
-
-    public static def getMappedDatabaseUserForUdcId(assertAttributeValue, dataSource ) {
-        log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId doing external authentication"
-        def oracleUserName
-        def pidm
-        def spridenId
-        def authenticationResults
-        String accountStatus
-        def conn
-
-        try {
-
-            conn = dataSource.unproxiedConnection
-            Sql db = new Sql( conn )
-
-            log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId mapping for $CH?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue"
-            // Determine if they map to a Banner Admin user
-            def sqlStatement = '''SELECT gobeacc_username, gobeacc_pidm FROM gobumap, gobeacc
-                                  WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
-            db.eachRow( sqlStatement, [assertAttributeValue] ) { row ->
-                oracleUserName = row.gobeacc_username
-                pidm = row.gobeacc_pidm
-            }
-            if ( oracleUserName ) {
-                log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId oracleUsername $oracleUserName found"
-                // check if the oracle user account is locked
-
-                def sqlStatement1 = '''select account_status,lock_date from dba_users where username=?'''
-                db.eachRow( sqlStatement1, [oracleUserName.toUpperCase()] ) { row ->
-                    accountStatus = row.account_status
-                }
-                if ( accountStatus.contains("LOCKED")) {
-                    log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId account status of user $oracleUserName is Locked"
-                    authenticationResults = [locked : true]
-                } else if ( accountStatus.contains("EXPIRED")) {
-                    log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId account status of user $oracleUserName is expired"
-                    authenticationResults = [expired : true]
-                } else {
-                    log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId account status of user $oracleUserName is valid"
-                    authenticationResults = [ name: oracleUserName, pidm: pidm, oracleUserName: oracleUserName, valid: true ].withDefault { k -> false }
-                }
-            } else {
-                log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId oracleUsername $oracleUserName not found"
-                // Not an Admin user, must map to a self service user
-                def sqlStatement2 = '''SELECT spriden_id, gobumap_pidm FROM gobumap,spriden WHERE spriden_pidm = gobumap_pidm AND spriden_change_ind is null AND gobumap_udc_id = ?'''
-                db.eachRow( sqlStatement2, [assertAttributeValue] ) { row ->
-                    spridenId = row.spriden_id
-                    pidm = row.gobumap_pidm
-                }
-                log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId query spriden_id for UDC IDENTIFIER $assertAttributeValue"
-                if(spridenId && pidm) {
-                    log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId spridenID $spridenId and gobumap pidm $pidm found"
-                    authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: null ].withDefault { k -> false }
-                } else {
-                    log.fatal "System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user"
-                    throw new UsernameNotFoundException("System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user")
-
-                }
-            }
-
-        } catch (SQLException e) {
-            log.error "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId not able to map $CH?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue to db user"
-            throw e
-        } finally {
-            conn?.close()
-        }
-        log.trace "BannerAuthenticationProvider.getMappedDatabaseUserForUdcId results are $authenticationResults"
-        authenticationResults
-    }
 }
 
-class UserAuthorityMediator {
-
-}
