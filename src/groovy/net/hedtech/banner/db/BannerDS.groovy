@@ -626,35 +626,38 @@ public class BannerDS implements DataSource {
 
     private setMepSsb(conn) {
 
-        def session = RequestContextHolder.currentRequestAttributes()?.request?.session
-        def mepCode = session?.getAttribute("mep")
+        if (RequestContextHolder.getRequestAttributes()?.request?.session) {
 
-        if (mepCode == "FORCE_MEPCODENOTFOUND" && Environment.current == Environment.TEST) {
-            log.warn "**** FORCING a MepCodeNotFoundException"
-            throw new MepCodeNotFoundException(mepCode: mepCode)
-        }
+            def session = RequestContextHolder.currentRequestAttributes()?.request?.session
+            def mepCode = session?.getAttribute("mep")
 
-        if (getMultiEntityProcessingService().isMEP(conn)) {
-
-            if (!mepCode) {
-                log.error "The Mep Code must be provided when running in multi institution context"
-                conn?.close()
-                throw new MepCodeNotFoundException(mepCode: "NO_MEP_CODE_PROVIDED")
-            }
-
-            def desc = getMultiEntityProcessingService().getMepDescription(mepCode, conn)
-
-            if (!desc) {
-                conn?.close()
-                // We'll throw a MepCodeNotFoundException so that a '404' error code will be
-                // specified when this is wrapped in an ApplicationException
-                log.error "Mep Code is invalid, will throw MepCodeNotFoundException"
+            if (mepCode == "FORCE_MEPCODENOTFOUND" && Environment.current == Environment.TEST) {
+                log.warn "**** FORCING a MepCodeNotFoundException"
                 throw new MepCodeNotFoundException(mepCode: mepCode)
             }
-            else {
-                session.setAttribute("ssbMepDesc", desc)
-                getMultiEntityProcessingService().setHomeContext(mepCode, conn)
-                getMultiEntityProcessingService().setProcessContext(mepCode, conn)
+
+            if (getMultiEntityProcessingService().isMEP(conn)) {
+
+                if (!mepCode) {
+                    log.error "The Mep Code must be provided when running in multi institution context"
+                    conn?.close()
+                    throw new MepCodeNotFoundException(mepCode: "NO_MEP_CODE_PROVIDED")
+                }
+
+                def desc = getMultiEntityProcessingService().getMepDescription(mepCode, conn)
+
+                if (!desc) {
+                    conn?.close()
+                    // We'll throw a MepCodeNotFoundException so that a '404' error code will be
+                    // specified when this is wrapped in an ApplicationException
+                    log.error "Mep Code is invalid, will throw MepCodeNotFoundException"
+                    throw new MepCodeNotFoundException(mepCode: mepCode)
+                }
+                else {
+                    session.setAttribute("ssbMepDesc", desc)
+                    getMultiEntityProcessingService().setHomeContext(mepCode, conn)
+                    getMultiEntityProcessingService().setProcessContext(mepCode, conn)
+                }
             }
         }
     }
