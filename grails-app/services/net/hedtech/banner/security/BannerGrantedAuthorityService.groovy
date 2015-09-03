@@ -127,9 +127,11 @@ class BannerGrantedAuthorityService {
      * Find matching authoritiese for each of the form names.
      */
     private static List<BannerGrantedAuthority> filterAuthoritiesForFormNames(List<BannerGrantedAuthority> grantedAuthorities, List<String> formNames) {
-        List<BannerGrantedAuthority> applicableAuthorities = grantedAuthorities.grep { BannerGrantedAuthority authority ->
-            formNames?.find { String formName ->
-                authority?.checkIfCompatibleWithACEGIRolePattern(formName)
+        List<BannerGrantedAuthority> applicableAuthorities = grantedAuthorities.grep { GrantedAuthority authority ->
+            if(authority instanceof BannerGrantedAuthority)   {
+                formNames?.find { String formName ->
+                    authority?.checkIfCompatibleWithACEGIRolePattern(formName)
+                }
             }
         }
         staticLogger.debug "Given FormContext of ${formNames?.join(',')}, the user's applicable authorities are $applicableAuthorities"
