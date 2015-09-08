@@ -162,6 +162,10 @@ class BannerCoreGrailsPlugin {
             dataSource = ref(dataSource)
         }
 
+        bannerPreAuthenticatedFilter(BannerPreAuthenticatedFilter) {
+            dataSource = ref(dataSource)
+            authenticationManager = ref('authenticationManager')
+        }
 
 
         bannerMepCodeFilter(BannerMepCodeFilter) 
