@@ -6,6 +6,7 @@ package net.hedtech.banner.db
 import grails.util.Environment
 
 import groovy.sql.Sql
+import net.hedtech.banner.db.dbutility.DBUtility
 
 import java.sql.Connection
 import java.sql.SQLException
@@ -75,18 +76,14 @@ public class BannerDS implements DataSource {
         BannerConnection bannerConnection
         String[] roles
         def user = SecurityContextHolder?.context?.authentication?.principal
-        if ( (ApiUtils.isApiRequest() && !shouldProxyApiRequest() ) ||  
-             ( isSelfServiceRequest() && 
-                 ((user instanceof BannerUser && !user?.oracleUserName) || 
-                  (isAnonymousUser(user)))
-             )) {
+        if ( DBUtility.isSSBOrAPITypeRequestProxyNotRequired(user) ) {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
-        else if ((user instanceof BannerUser && user?.oracleUserName) && shouldProxy()) {
+        else if (DBUtility.isAdminOrProxyRequiredTypeRequest(user)) {
             bannerConnection = getCachedConnection(user)
             if (!bannerConnection) {
                 List applicableAuthorities = extractApplicableAuthorities(user)
@@ -106,7 +103,7 @@ public class BannerDS implements DataSource {
 
                 setRoles(oconn, user, applicableAuthorities)
 
-                if (ApiUtils.isApiRequest() || shouldProxySsbRequest()){ // APIs handle MEP like SSB
+                if (ApiUtils.isApiRequest() || DBUtility.isSSBTypeRequestAndProxyRequired()){ // APIs handle MEP like SSB
                     setMepSsb(conn) 
                 }
                 else {
@@ -124,7 +121,7 @@ public class BannerDS implements DataSource {
                 }
             }
         }
-        else if (isSelfServiceRequest())  {
+        else if (DBUtility.isSelfServiceRequest())  {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
@@ -556,7 +553,7 @@ public class BannerDS implements DataSource {
 
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (user) {
-            if (user.oracleUserName && shouldProxy()) return underlyingDataSource
+            if (isAdminOrProxyRequiredTypeRequest(user)) return underlyingDataSource
             else return underlyingSsbDataSource
         }
         else {
@@ -564,41 +561,9 @@ public class BannerDS implements DataSource {
         }
     }
 
-    /**
-     * Returns true if the current request is for an administrative page or if the solution is configured to proxy connections for SSB users.
-     * */
-    private boolean shouldProxy() {
-        isAdministrativeRequest() || shouldProxySsbRequest()
-    }
-
-    /**
-     * Returns true if SSB support is enabled and configured to proxy connections for SSB users.
-     * */
-    private boolean shouldProxySsbRequest() {
-
-        def enabled = CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
-        def proxySsb = CH.config.ssbOracleUsersProxied instanceof Boolean ? CH.config.ssbOracleUsersProxied : false
-        log.trace "BannerDS.shouldProxySsbRequest() will return '${enabled && proxySsb}' (since SSB is ${enabled ? '' : 'not '} enabled and proxy SSB is $proxySsb)"
-        enabled && proxySsb
-    }
-
-    private boolean shouldProxyApiRequest() {
-
-        def proxyApi = CH.config.apiOracleUsersProxied instanceof Boolean ?: false
-        log.trace "BannerDS.shouldProxyApiRequest() will return ${proxyApi} (since apiOracleUsersProxied is ${proxyApi})"
-        proxyApi
-    }
-
-    private isSelfServiceRequest() {
-        log.trace "BannerDS.isSelfServiceRequest() will return '${FormContext.isSelfService()}' (FormContext = ${FormContext.get()})"
-        FormContext.isSelfService()
-    }
 
 
-    private isAdministrativeRequest() {
-        log.trace "BannerDS.isAdministrativeRequest() will return '${!FormContext.isSelfService()}' (FormContext = ${FormContext.get()})"
-        !FormContext.isSelfService()
-    }
+
 
 
     private MultiEntityProcessingService getMultiEntityProcessingService() {
