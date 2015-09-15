@@ -17,7 +17,7 @@ class ZipService extends ServiceBase {
 
     @Transactional( readOnly = true, propagation = Propagation.REQUIRED )
     public ZipForTesting fetch( long id ) {
-        Zip.get( id )
+        ZipForTesting.get( id )
     }
 
     public testSimple() {
