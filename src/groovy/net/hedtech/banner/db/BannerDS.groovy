@@ -24,7 +24,7 @@ import net.hedtech.banner.security.FormContext
 import oracle.jdbc.OracleConnection
 
 import org.apache.log4j.Logger
-import grails.util.Holders  as CH
+import grails.util.Holders
 
 import org.springframework.context.ApplicationContext
 import org.springframework.security.core.GrantedAuthority
