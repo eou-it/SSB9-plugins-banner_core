@@ -3,7 +3,7 @@ package net.hedtech.banner.db.dbutility
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.commons.dbcp.BasicDataSource
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders  as CH
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
