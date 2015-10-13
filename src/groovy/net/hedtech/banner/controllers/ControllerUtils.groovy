@@ -47,7 +47,11 @@ class ControllerUtils {
         }
         def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
         if (mep) {
-            uri += "?spring-security-redirect=?mepCode=${mep}"
+            if(uri.contains("?")){
+                uri += "&spring-security-redirect=?mepCode=${mep}"
+            }else{
+                uri += "?spring-security-redirect=?mepCode=${mep}"
+            }
         }
 
         uri
