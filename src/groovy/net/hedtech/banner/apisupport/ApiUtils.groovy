@@ -69,7 +69,7 @@ class ApiUtils {
             }
         }
         def forwardUri = RequestContextHolder.getRequestAttributes()?.getRequest()?.forwardURI
-        boolean requestIsApi = apiUrlPrefixes.any { forwardUri ==~ /$it/}
+        boolean requestIsApi = apiUrlPrefixes.any { forwardUri =~ "/$it/" }
         requestIsApi
     }
 }
