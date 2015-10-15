@@ -1,11 +1,13 @@
+/* *****************************************************************************
+ Copyright 2015 Ellucian Company L.P. and its affiliates.
+ ****************************************************************************** */
 package net.hedtech.banner.db.dbutility
 
-import net.hedtech.banner.SpringContextUtils
+import grails.util.Holders
 import net.hedtech.banner.apisupport.ApiUtils
 import net.hedtech.banner.security.BannerUser
 import net.hedtech.banner.security.FormContext
 import org.apache.log4j.Logger
-import grails.util.Holders
 
 /**
  * Created by karthick on 7/2/2015.
@@ -16,10 +18,10 @@ class DBUtility {
 
     private static def  config = Holders.getConfig()
 
-    public static boolean isSSBOrAPITypeRequestProxyNotRequired(user)   {
-        return ( ApiUtils.isApiRequest() && !isAPITypeRequestAndProxyRequired()) ||
+    public static boolean isNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(user)   {
+        return ( ApiUtils.isApiRequest() && isApiProxySupportDisabled()) ||
                 ( isSelfServiceRequest() &&
-                        (isApplicationUserNotOracleUser(user) ||
+                        (isNotOracleUser(user) ||
                                 isAnonymousTypeUser(user))
                 )
     }
@@ -29,7 +31,7 @@ class DBUtility {
         isOracleUser
     }
 
-    public static boolean isApplicationUserNotOracleUser(user)   {
+    public static boolean isNotOracleUser(user)   {
         return isOracleUser(user) == false
     }
 
@@ -38,15 +40,15 @@ class DBUtility {
         isAnonymousUser
     }
 
-    public static boolean isAPITypeRequestAndProxyNotRequired(){
-        return (isAPITypeRequestAndProxyRequired() == false)
+    public static boolean isApiProxySupportDisabled(){
+        return (isApiProxySupportEnabled() == false)
     }
 
     /**
      * Returns true if the current request is for an administrative page or if the solution is configured to proxy connections for SSB users.
      * */
-    public static boolean isAdminOrProxyRequiredTypeRequest(user) {
-        isOracleUser(user) && (isAdministrativeRequest() || isSSBTypeRequestAndProxyRequired() || isAPITypeRequestAndProxyRequired())
+    public static boolean isAdminOrOracleProxyRequired(user) {
+        isOracleUser(user) && (isAdministrativeRequest() || isSSBProxySupportEnabled() || isApiProxySupportEnabled())
     }
 
     private static boolean isAdministrativeRequest() {
@@ -57,22 +59,16 @@ class DBUtility {
     /**
      * Returns true if SSB support is enabled and configured to proxy connections for SSB users.
      * */
-    public static boolean isSSBTypeRequestAndProxyRequired() {
+    public static boolean isSSBProxySupportEnabled() {
         def enabled = config.ssbEnabled instanceof Boolean ? config.ssbEnabled : false
         def proxySsb = config.ssbOracleUsersProxied instanceof Boolean ? config.ssbOracleUsersProxied : false
-        log.trace "BannerDS.isSSBTypeRequestAndProxyRequired() will return '${enabled && proxySsb}' (since SSB is ${enabled ? '' : 'not '} enabled and proxy SSB is $proxySsb)"
+        log.trace "BannerDS.isSSBProxySupportEnabled() will return '${enabled && proxySsb}' (since SSB is ${enabled ? '' : 'not '} enabled and proxy SSB is $proxySsb)"
         enabled && proxySsb
     }
 
-    public static boolean shouldProxyApiRequest() {
-        def proxyApi = config.apiOracleUsersProxied instanceof Boolean ? config.apiOracleUsersProxied : false
-        log.trace "BannerDS.shouldProxyApiRequest() will return ${proxyApi} (since apiOracleUsersProxied is ${proxyApi})"
-        proxyApi
-    }
-
-    public static boolean isAPITypeRequestAndProxyRequired() {
+    public static boolean isApiProxySupportEnabled() {
         def proxyApi  = config.apiOracleUsersProxied instanceof Boolean ? config.apiOracleUsersProxied : false
-        log.trace "BannerDS.isAPITypeRequestAndProxyRequired() will return ${proxyApi} (since apiOracleUsersProxied is ${proxyApi})"
+        log.trace "BannerDS.isApiProxySupportEnabled() will return ${proxyApi} (since apiOracleUsersProxied is ${proxyApi})"
         return proxyApi;
     }
 

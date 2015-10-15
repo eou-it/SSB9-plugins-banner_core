@@ -1,35 +1,29 @@
 /* *****************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2015 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db
 
 import grails.util.Environment
-
-import groovy.sql.Sql
-import net.hedtech.banner.db.dbutility.DBUtility
-
-import java.sql.Connection
-import java.sql.SQLException
-
-import javax.sql.DataSource
-
-import net.hedtech.banner.apisupport.ApiUtils
-import net.hedtech.banner.exceptions.*
-import net.hedtech.banner.mep.MultiEntityProcessingService
-import net.hedtech.banner.security.BannerUser
-import net.hedtech.banner.security.BannerGrantedAuthorityService
-import net.hedtech.banner.security.BannerGrantedAuthority
-import net.hedtech.banner.security.FormContext
-
-import oracle.jdbc.OracleConnection
-
-import org.apache.log4j.Logger
 import grails.util.Holders
-
+import groovy.sql.Sql
+import net.hedtech.banner.apisupport.ApiUtils
+import net.hedtech.banner.db.dbutility.DBUtility
+import net.hedtech.banner.exceptions.MepCodeNotFoundException
+import net.hedtech.banner.mep.MultiEntityProcessingService
+import net.hedtech.banner.security.BannerGrantedAuthority
+import net.hedtech.banner.security.BannerGrantedAuthorityService
+import net.hedtech.banner.security.BannerUser
+import net.hedtech.banner.security.FormContext
+import oracle.jdbc.OracleConnection
+import org.apache.log4j.Logger
 import org.springframework.context.ApplicationContext
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
+
+import javax.sql.DataSource
+import java.sql.Connection
+import java.sql.SQLException
 import java.sql.SQLFeatureNotSupportedException
 
 /**
@@ -74,14 +68,14 @@ public class BannerDS implements DataSource {
         BannerConnection bannerConnection
         String[] roles
         def user = SecurityContextHolder?.context?.authentication?.principal
-        if ( DBUtility.isSSBOrAPITypeRequestProxyNotRequired(user) ) {
+        if ( DBUtility.isNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(user) ) {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
-        else if (DBUtility.isAdminOrProxyRequiredTypeRequest(user)) {
+        else if (DBUtility.isAdminOrOracleProxyRequired(user)) {
             bannerConnection = getCachedConnection(user)
             if (!bannerConnection) {
                 List applicableAuthorities = extractApplicableAuthorities(user)
@@ -101,7 +95,7 @@ public class BannerDS implements DataSource {
 
                 setRoles(oconn, user, applicableAuthorities)
 
-                if (ApiUtils.isApiRequest() || DBUtility.isSSBTypeRequestAndProxyRequired()){ // APIs handle MEP like SSB
+                if (ApiUtils.isApiRequest() || DBUtility.isSSBProxySupportEnabled()){ // APIs handle MEP like SSB
                     setMepSsb(conn) 
                 }
                 else {
@@ -551,7 +545,7 @@ public class BannerDS implements DataSource {
 
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (user) {
-            if (isAdminOrProxyRequiredTypeRequest(user)) return underlyingDataSource
+            if (isAdminOrOracleProxyRequired(user)) return underlyingDataSource
             else return underlyingSsbDataSource
         }
         else {
