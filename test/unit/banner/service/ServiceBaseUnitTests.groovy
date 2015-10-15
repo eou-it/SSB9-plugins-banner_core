@@ -6,6 +6,7 @@ package banner.service
 import grails.test.GrailsUnitTestCase
 import net.hedtech.banner.service.ServiceBase
 import org.hibernate.Session
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
