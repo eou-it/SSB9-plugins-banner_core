@@ -41,6 +41,8 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         assertTrue "Expected BannerConnection but have ${conn?.class}", conn instanceof BannerConnection
         assertTrue "Expected to be able to extract OracleConnection but found ${(conn as BannerConnection).extractOracleConnection()?.class}",
                    (conn as BannerConnection).extractOracleConnection() instanceof OracleConnection
+        dataSource.removeConnection(conn)
+        if (conn) conn.close()
     }
 
 
@@ -63,6 +65,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             row = sql.firstRow( "select sys_context('userenv','current_user') from dual" )
             assertEquals "GRAILS_USER", row.getAt( "SYS_CONTEXT('USERENV','CURRENT_USER')" )
         } finally {
+            if(conn) {
+                dataSource.removeConnection(conn);
+            }
             sql?.close()
         }
     }
@@ -85,6 +90,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             sql = new Sql( conn.extractOracleConnection() )
             sql.execute( stmt )
         } finally {
+            if(conn) {
+                dataSource.removeConnection(conn);
+            }
             sql?.close()
         }
     }
