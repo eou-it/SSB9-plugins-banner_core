@@ -1,6 +1,6 @@
 /*******************************************************************************
-Copyright 2015 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+ Copyright 2015 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.testing
 
 import grails.util.GrailsNameUtils
@@ -40,7 +40,7 @@ class BaseIntegrationTestCase extends Assert {
     def exposeTransactionAwareSessionFactory = false
 
     def formContext = null            // This may be set within the subclass, prior to calling super.setUp(). If it isn't,
-                                      // it will be looked up automatically.
+    // it will be looked up automatically.
 
     def selfServiceBannerAuthenticationProvider
     def bannerAuthenticationProvider  // injected
@@ -49,7 +49,7 @@ class BaseIntegrationTestCase extends Assert {
     def sessionFactory                // injected via spring
     def nativeJdbcExtractor           // injected via spring
     def messageSource                 // injected via spring
-	 def codecLookup                  // injected via spring
+    def codecLookup                  // injected via spring
     private validationTagLibInstance  // assigned lazily - see getValidationTagLib method
 
     def controller = null             // assigned by subclasses, e.g., within the setUp()
@@ -58,8 +58,8 @@ class BaseIntegrationTestCase extends Assert {
     def renderMap                     // Use this to look at the rendered map: MyController.metaClass.render = { Map map -> renderMap = map }
     def redirectMap                   // Use this to look at the rendered map: MyController.metaClass.redirect = { Map map -> redirectMap = map }
 
-    def username = "grails_user"
-    def password = "u_pick_it"
+    def username = ""
+    def password = ""
 
     /**
      * Performs a login for the standard 'grails_user' if necessary, and calls super.setUp().
@@ -87,15 +87,14 @@ class BaseIntegrationTestCase extends Assert {
         } else {
             println "Warning: No FormContext has been set, and it cannot be set automatically without knowing the controller..."
         }
-        
+
         if (controller) {
             controller.class.metaClass.getParams = { -> params }
             controller.class.metaClass.getFlash = { -> flash  }
             controller.class.metaClass.redirect = { Map args -> redirectMap = args  }
             controller.class.metaClass.render = { Map args -> renderMap = args  }
         }
-
-        loginIfNecessary(username, password)
+        loginIfNecessary(username,password)
 
         if (useTransactions) {
             sessionFactory.currentSession.with {
@@ -116,10 +115,10 @@ class BaseIntegrationTestCase extends Assert {
      **/
     @After
     public void tearDown() {
-         FormContext.clear()
-         if (useTransactions) {
-             sessionFactory.currentSession.connection().rollback()
-			 sessionFactory.currentSession.close()
+        FormContext.clear()
+        if (useTransactions) {
+            sessionFactory.currentSession.connection().rollback()
+            sessionFactory.currentSession.close()
         }
 
     }
@@ -127,17 +126,25 @@ class BaseIntegrationTestCase extends Assert {
 
     /**
      * Convenience method to login a user if not already logged in. You may pass in a username and password,
-     * or omit and accept the default 'grails_user' and 'u_pick_it'.
+     * or omit and accept the default 'grails_user' and 'u_pick_it' for admin and 'HOSWEB002' and '111111' for ssb
      **/
-    protected void loginIfNecessary( userName = "grails_user", password = "u_pick_it" ) {
+    protected void loginIfNecessary(username,password) {
         def config = Holders.config
         if (!SecurityContextHolder.getContext().getAuthentication()) {
             if((config.ssbEnabled)||(ApiUtils.isApiRequest()))  {
-                loginSSB userName, password
+                if(username != null && username.isEmpty() || (password != null && password.isEmpty())){
+                    username = "HOSWEB002"
+                    password = "111111"
+                }
+                loginSSB username, password
             } else {
-                login userName, password
+                if(username != null && username.isEmpty() || (password != null && password.Empty())){
+                    username = "grails_user"
+                    password = "u_pick_it"
+                }
+                login username, password
             }
-           }
+        }
     }
 
 
@@ -152,9 +159,9 @@ class BaseIntegrationTestCase extends Assert {
 
     /**
      * Convenience method to login a user. You may pass in a username and password,
-     * or omit and accept the default 'grails_user' and 'u_pick_it'.
+     * or omit and accept the default 'HOSWEB002' and '111111'.
      **/
-    protected void loginSSB( userName, password ) {
+    protected void loginSSB( userName = "HOSWEB002", password = "111111" ) {
         Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UPAT( userName, password ) )
         SecurityContextHolder.getContext().setAuthentication( auth )
     }
@@ -239,22 +246,22 @@ class BaseIntegrationTestCase extends Assert {
 
         if (expected.modelName) {
             assertTrue "Field errors do not have expected model name ('${expected.modelName}'), but instead error(s) have content ${fieldErrors*.model}",
-                       fieldErrors.every { expected.modelName == it.model }
+                    fieldErrors.every { expected.modelName == it.model }
         }
 
         if (expected.rejectedValue) {
             assertTrue "Field error not found having rejected value '${expected.rejectedValue}', but instead error(s) have content ${fieldErrors*.rejectedValue}",
-                       fieldErrors.any { expected.rejectedValue == it.rejectedValue }
+                    fieldErrors.any { expected.rejectedValue == it.rejectedValue }
         }
 
         if (expected.partialMessage) {
             assertTrue "Field error not found having partial message content '${expected.partialMessage}', but instead error(s) have content ${fieldErrors*.message}",
-                       fieldErrors.any { it.message?.contains( expected.partialMessage ) }
+                    fieldErrors.any { it.message?.contains( expected.partialMessage ) }
         }
 
         if (expected.exactMessage) {
             assertTrue "Field error not found having exact message content '${expected.exactMessage}', but instead error(s) have content ${fieldErrors*.message}",
-                       fieldErrors.any { expected.exactMessage == it.message }
+                    fieldErrors.any { expected.exactMessage == it.message }
         }
 
     }
@@ -264,7 +271,7 @@ class BaseIntegrationTestCase extends Assert {
         fieldList.each { field ->
             def fieldError = model.errors.getFieldError( field )
             assertNotNull "Did not find expected '$errorName' error for ${model?.class.simpleName}.$field",
-                          fieldError?.codes.find { it == "${GrailsNameUtils.getPropertyNameRepresentation( model?.class )}.${field}.${errorName}.error" }
+                    fieldError?.codes.find { it == "${GrailsNameUtils.getPropertyNameRepresentation( model?.class )}.${field}.${errorName}.error" }
         }
     }
 
@@ -308,7 +315,7 @@ class BaseIntegrationTestCase extends Assert {
             }
             else {
                 if (message == null) {
-                     message = "Did not find expected error code $resourceCodeOrExceptedMessage.  Found '${ae.wrappedException}' instead."
+                    message = "Did not find expected error code $resourceCodeOrExceptedMessage.  Found '${ae.wrappedException}' instead."
                 }
 
                 fail( message )
@@ -322,7 +329,7 @@ class BaseIntegrationTestCase extends Assert {
 
     protected ValidationTagLib getValidationTagLib() {
         if (!validationTagLibInstance) {
-           validationTagLibInstance = new ValidationTagLib()
+            validationTagLibInstance = new ValidationTagLib()
         }
         validationTagLibInstance
     }
@@ -346,9 +353,9 @@ class BaseIntegrationTestCase extends Assert {
      **/
     protected assertLocalizedError( model, errorName, matchString, prop ) {
         assertTrue "Did not find expected '$errorName' property error for ${model?.class?.simpleName}.$prop, but got ${model.errors.getFieldError( prop )}",
-                    model.errors.getFieldError( prop ).toString() ==~ /.*nullable.*/
+                model.errors.getFieldError( prop ).toString() ==~ /.*nullable.*/
         assertTrue "Did not find expected field error ${getErrorMessage( model.errors.getFieldError( prop ) )}",
-                    getErrorMessage( model.errors.getFieldError( prop ) ) ==~ matchString
+                getErrorMessage( model.errors.getFieldError( prop ) ) ==~ matchString
     }
 
 
