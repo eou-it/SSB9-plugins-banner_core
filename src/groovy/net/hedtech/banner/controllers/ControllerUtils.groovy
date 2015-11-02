@@ -93,4 +93,8 @@ class ControllerUtils {
             return false;
         }
     }
+    public static boolean isGuestAuthenticationEnabled() {
+        Holders.config.guestAuthenticationEnabled instanceof Boolean ? Holders.config.guestAuthenticationEnabled : false
+    }
+
 }
