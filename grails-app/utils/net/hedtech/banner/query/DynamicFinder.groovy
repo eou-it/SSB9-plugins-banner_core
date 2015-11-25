@@ -3,12 +3,16 @@ package net.hedtech.banner.query
 import net.hedtech.banner.query.criteria.CriteriaParam
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.hibernate.hql.ast.QuerySyntaxException
 import org.springframework.context.ApplicationContext
+import org.apache.log4j.Logger
+import net.hedtech.banner.exceptions.ApplicationException
 
 /*******************************************************************************
  Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 class DynamicFinder {
+    static def log = Logger.getLogger( 'net.hedtech.banner.query.DynamicFinder' )
 
     def domainClass
     def query
@@ -73,16 +77,30 @@ class DynamicFinder {
 
 
     public def find(filterData, pagingAndSortParams) {
+
         def filterDataClone = filterData.clone()
         filterDataClone.params = getCriteriaParamsFromParams(filterData.params)
+        filterDataClone.each{k,v ->
+            print("${k}:${v}")
+        }
+        filterDataClone.params.each{k,v ->
+            print("${k}:${v}")
+        }
 
         def queryString = QueryBuilder.buildQuery(query.flattenString(), tableIdentifier, filterDataClone, pagingAndSortParams)
 
         Map params = getParamsFromCriteriaParams(filterDataClone.params)
+        params.each{k,v ->
+            print("${k}:${v}")
+        }
 
-        def list = domainClass.findAll(queryString, params, pagingAndSortParams)
-
-        return list
+        try{
+            def list = domainClass.findAll(queryString, params, pagingAndSortParams)
+            return list
+        }  catch(QuerySyntaxException e){
+            log.error "Error message: " + e.stackTrace
+            throw new ApplicationException(DynamicFinder, "Invalid Request, Please contact System Administrator");
+        }
     }
 
 
@@ -105,9 +123,13 @@ class DynamicFinder {
 
         Map params = getParamsFromCriteriaParams(filterData.params)
 
-        def list = domainClass.findAll(queryString, filterData.params, pagingAndSortParams)
-
-        return list
+       try{
+           def list = domainClass.findAll(queryString, filterData.params, pagingAndSortParams)
+           return list
+       } catch(QuerySyntaxException e){
+            log.error "Error message: " + e.stackTrace
+            throw new ApplicationException(DynamicFinder, "Invalid Request, Please contact System Administrator");
+       }
     }
 
 
