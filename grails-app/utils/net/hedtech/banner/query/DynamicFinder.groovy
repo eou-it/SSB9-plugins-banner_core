@@ -1,5 +1,7 @@
 package net.hedtech.banner.query
 
+
+import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.query.criteria.CriteriaParam
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -12,6 +14,8 @@ import net.hedtech.banner.exceptions.ApplicationException
  Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 class DynamicFinder {
+    static def log = Logger.getLogger( 'net.hedtech.banner.query.DynamicFinder' )
+
     static def log = Logger.getLogger( 'net.hedtech.banner.query.DynamicFinder' )
 
     def domainClass
@@ -80,27 +84,27 @@ class DynamicFinder {
 
         def filterDataClone = filterData.clone()
         filterDataClone.params = getCriteriaParamsFromParams(filterData.params)
-        filterDataClone.each{k,v ->
-            print("${k}:${v}")
-        }
-        filterDataClone.params.each{k,v ->
-            print("${k}:${v}")
-        }
-
+       
         def queryString = QueryBuilder.buildQuery(query.flattenString(), tableIdentifier, filterDataClone, pagingAndSortParams)
 
         Map params = getParamsFromCriteriaParams(filterDataClone.params)
-        params.each{k,v ->
-            print("${k}:${v}")
-        }
-
-        try{
+       
+        try {
             def list = domainClass.findAll(queryString, params, pagingAndSortParams)
             return list
-        }  catch(QuerySyntaxException e){
-            log.error "Error message: " + e.stackTrace
-            throw new ApplicationException(DynamicFinder, "Invalid Request, Please contact System Administrator");
+        }  catch(Exception e){
+            if (e?.cause instanceof QuerySyntaxException) {
+                log.error "Error message: " + e.stackTrace
+                print(e.cause)
+
+                def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
+                throw new ApplicationException(DynamicFinder, message);
+
+            } else {
+                throw e
+            }
         }
+
     }
 
 
@@ -123,13 +127,22 @@ class DynamicFinder {
 
         Map params = getParamsFromCriteriaParams(filterData.params)
 
-       try{
+       try {
            def list = domainClass.findAll(queryString, filterData.params, pagingAndSortParams)
            return list
-       } catch(QuerySyntaxException e){
-            log.error "Error message: " + e.stackTrace
-            throw new ApplicationException(DynamicFinder, "Invalid Request, Please contact System Administrator");
+       }  catch(Exception e){
+           if (e?.cause instanceof QuerySyntaxException) {
+               log.error "Error message: " + e.stackTrace
+               print(e.cause)
+
+               def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
+               throw new ApplicationException(DynamicFinder, message);
+
+           } else {
+               throw e
+           }
        }
+
     }
 
 
