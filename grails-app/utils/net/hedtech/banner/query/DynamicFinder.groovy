@@ -1,14 +1,21 @@
 package net.hedtech.banner.query
 
+
+import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.query.criteria.CriteriaParam
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.hibernate.hql.ast.QuerySyntaxException
 import org.springframework.context.ApplicationContext
+import org.apache.log4j.Logger
+import net.hedtech.banner.exceptions.ApplicationException
 
 /*******************************************************************************
  Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 class DynamicFinder {
+
+    static def log = Logger.getLogger( 'net.hedtech.banner.query.DynamicFinder' )
 
     def domainClass
     def query
@@ -80,9 +87,23 @@ class DynamicFinder {
 
         Map params = getParamsFromCriteriaParams(filterDataClone.params)
 
-        def list = domainClass.findAll(queryString, params, pagingAndSortParams)
+        try {
+            println "I am here"
+            def list = domainClass.findAll(queryString, params, pagingAndSortParams)
+            return list
+        }  catch(Exception e){
+            if (e?.cause instanceof QuerySyntaxException) {
+                log.error "Error message: " + e.stackTrace
+                print(e.cause)
 
-        return list
+                def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
+                throw new ApplicationException(DynamicFinder, message);
+
+            } else {
+                throw e
+            }
+        }
+
     }
 
 
@@ -105,9 +126,22 @@ class DynamicFinder {
 
         Map params = getParamsFromCriteriaParams(filterData.params)
 
-        def list = domainClass.findAll(queryString, filterData.params, pagingAndSortParams)
+       try {
+           def list = domainClass.findAll(queryString, filterData.params, pagingAndSortParams)
+           return list
+       }  catch(Exception e){
+           if (e?.cause instanceof QuerySyntaxException) {
+               log.error "Error message: " + e.stackTrace
+               print(e.cause)
 
-        return list
+               def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
+               throw new ApplicationException(DynamicFinder, message);
+
+           } else {
+               throw e
+           }
+       }
+
     }
 
 
