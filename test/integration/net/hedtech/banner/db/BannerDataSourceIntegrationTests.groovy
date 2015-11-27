@@ -6,6 +6,7 @@ package net.hedtech.banner.db
 
 import groovy.sql.Sql
 import net.hedtech.banner.db.BannerDS as BannerDataSource
+import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import oracle.jdbc.OracleConnection
 import org.apache.commons.dbcp.BasicDataSource
@@ -108,7 +109,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         username = SSB_VALID_USERNAME
         password = SSB_VALID_PASSWORD
         setupSSBData()
-        super.setUp()
+        SSBSetUp(username,password)
     }
 
     public void setupSSBWithProxy(){
@@ -116,7 +117,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         username = PROXY_USERNAME
         password = PROXY_PASSWORD
         setupSSBData()
-        super.setUp()
+        SSBSetUp(username,password)
     }
 
     public void setupUnderlyingSSBDataSource(){
@@ -247,5 +248,45 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
         tearDownDataSetup()
     }*/
+
+    public void SSBSetUp(username,password){
+        println "Before parent"
+        params = [:]
+        renderMap = [:]
+        redirectMap = [:]
+        flash = [:]
+
+        if (formContext) {
+            FormContext.set( formContext )
+        } else if (controller) {
+            // the formContext wasn't set explicitly, but we should be able to set it automatically since we know the controller
+            def controllerName = controller?.class.simpleName.replaceAll( /Controller/, '' )
+            Map formControllerMap = getFormControllerMap() // note: getFormControllerMap() circumvents a current grails bug
+            def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
+            formContext = associatedFormsList
+            FormContext.set( associatedFormsList )
+        } else {
+            println "Warning: No FormContext has been set, and it cannot be set automatically without knowing the controller..."
+        }
+
+        if (controller) {
+            controller.class.metaClass.getParams = { -> params }
+            controller.class.metaClass.getFlash = { -> flash  }
+            controller.class.metaClass.redirect = { Map args -> redirectMap = args  }
+            controller.class.metaClass.render = { Map args -> renderMap = args  }
+        }
+        loginSSB(username,password)
+
+        if (useTransactions) {
+            sessionFactory.currentSession.with {
+                connection().rollback()                 // needed to protect from other tests
+                clear()                                 // needed to protect from other tests
+                disconnect()                            // needed to release the old database connection
+                reconnect( dataSource.getConnection() ) // get a new connection that has unlocked the needed roles
+            }
+            transactionManager.getTransaction().setRollbackOnly()                 // and make sure we don't commit to the database
+            sessionFactory.queryCache.clear()
+        }
+    }
 
 }

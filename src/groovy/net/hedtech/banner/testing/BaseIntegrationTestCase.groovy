@@ -129,22 +129,13 @@ class BaseIntegrationTestCase extends Assert {
      * or omit and accept the default 'grails_user' and 'u_pick_it' for admin and 'HOSWEB002' and '111111' for ssb
      **/
     protected void loginIfNecessary(username,password) {
-        def config = Holders.config
-        if (!SecurityContextHolder.getContext().getAuthentication()) {
-            if((config.ssbEnabled)||(ApiUtils.isApiRequest()))  {
-                if(username != null && username.isEmpty() || (password != null && password.isEmpty())){
-                    username = "HOSWEB002"
-                    password = "111111"
-                }
-                loginSSB username, password
-            } else {
-                if(username != null && username.isEmpty() || (password != null && password.Empty())){
-                    username = "grails_user"
-                    password = "u_pick_it"
-                }
-                login username, password
-            }
-        }
+       if (!SecurityContextHolder.getContext().getAuthentication()) {
+           if(username != null && username.isEmpty() || (password != null && password.Empty())){
+               username = "grails_user"
+               password = "u_pick_it"
+           }
+           login username, password
+       }
     }
 
 
