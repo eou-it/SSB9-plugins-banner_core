@@ -93,8 +93,6 @@ class DynamicFinder {
         }  catch(Exception e){
             if (e?.cause instanceof QuerySyntaxException) {
                 log.error "Error message: " + e.stackTrace
-                print(e.cause)
-
                 def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
                 throw new ApplicationException(DynamicFinder, message);
 
@@ -131,8 +129,6 @@ class DynamicFinder {
        }  catch(Exception e){
            if (e?.cause instanceof QuerySyntaxException) {
                log.error "Error message: " + e.stackTrace
-               print(e.cause)
-
                def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
                throw new ApplicationException(DynamicFinder, message);
 
