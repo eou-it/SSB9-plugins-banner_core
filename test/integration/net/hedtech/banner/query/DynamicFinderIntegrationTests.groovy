@@ -43,7 +43,8 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def dynamicFinder = new DynamicFinder(domainClass, query, "a")
         def result = dynamicFinder.find(filterData,pagingAndSortParams) ;
         assertTrue result.size() == 5
-        assert ((FacultyScheduleQueryViewForTesting)((ArrayList)result).get(0)).beginTime == "0900" && ((FacultyScheduleQueryViewForTesting)((ArrayList)result).get(0)).endTime == "1000"
+        assertTrue (((FacultyScheduleQueryViewForTesting)((ArrayList)result).get(0)).beginTime == "0900")
+        assertTrue (((FacultyScheduleQueryViewForTesting)((ArrayList)result).get(0)).endTime == "1000")
     }
 
 }
