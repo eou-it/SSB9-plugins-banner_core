@@ -66,11 +66,9 @@ class QueryBuilder {
     }
 
     public static orderValidate(String order) {
-        if(order in ['asc', 'desc','ASC','DESC']){
+        if(order?.trim()?.toUpperCase()in['ASC','DESC','']){
             def Order = order
             return Order
-        } else if(order == null) {
-            return order
         } else {
             def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
             throw new ApplicationException(QueryBuilder, message);
