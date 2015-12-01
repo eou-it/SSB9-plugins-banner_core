@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.query
 
@@ -12,6 +12,9 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.i18n.MessageHelper
 
+/**
+ *
+ */
 class QueryBuilder {
     private static boolean isTimeSet(Object date) {
         boolean isTimeSet = false;
@@ -53,28 +56,23 @@ class QueryBuilder {
         }
     }
 
-    public static sortValidate(def domainClass, String sort) {
-        def d = new DefaultGrailsDomainClass(domainClass)
-        def p = d.persistentProperties
-        if(p*.name.contains(sort)){
-            def Sort = sort
-            return Sort
+    public static validateSortColumName(def domainClass, String sortColumnName) {
+        if(new DefaultGrailsDomainClass(domainClass).persistentProperties*.name.contains(sortColumnName)){
+            return sortColumnName
         } else  {
             def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
             throw new ApplicationException(QueryBuilder, message);
         }
     }
 
-    public static orderValidate(String order) {
-        if(order?.trim()?.toUpperCase()in['ASC','DESC','']){
-            def Order = order
-            return Order
+    public static validateSortOrder(String sortOrder) {
+        if(sortOrder?.trim()?.toUpperCase()in['ASC','DESC','']){
+            return sortOrder
         } else {
             def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
             throw new ApplicationException(QueryBuilder, message);
         }
     }
-
 
     public static def buildQuery = { query, tableIdentifier, filterData, pagingAndSortParams, domainClass ->
 
@@ -91,14 +89,7 @@ class QueryBuilder {
         Query newQuery = Query.createQuery(returnQuery);
 
         criteria.each {
-
             def operator = it.operator
-            //Changed
-            //returnQuery += CriteriaOperatorFactory.operators."${operator}"?.dynamicQuery(tableIdentifier,it)
-
-            //CriteriaParam param = new CriteriaParam();
-            //param.data = data
-            //param.addAttribute("containsTime", true)
 
             CriteriaData criteriaData = new CriteriaData()
             criteriaData.tableAlias = tableIdentifier;
@@ -111,29 +102,25 @@ class QueryBuilder {
             newQuery = Query.and(newQuery, criteriaOperator.getQuery(criteriaData));
         }
 
-        //New
-        //returnQuery = newQuery.toString();
-
         if (pagingAndSortParams.sortCriteria && pagingAndSortParams.sortCriteria instanceof Collection) {
-            def sortColumn = sortValidate(domainClass,pagingAndSortParams.sortColumn)
-            def sortDirection = orderValidate(pagingAndSortParams.sortDirection)
-            def sortParams = "${tableIdentifier}.${sortColumn} ${sortDirection}"
-            //returnQuery += "order by " + sortParams.join(", ")
+            def sortParams = pagingAndSortParams.sortCriteria.collect { sortItem ->
+                if (validateSortColumName(domainClass,sortItem.sortColumn) && validateSortOrder(sortItem.sortDirection)) {
+                    "$tableIdentifier.$sortItem.sortColumn  $sortItem.sortDirection"
+                }
+            }
             newQuery.orderBy(sortParams.join(", "))
         } else {
             if (pagingAndSortParams.sortColumn && (pagingAndSortParams.sortDirection != null)) {
-                //returnQuery += "order by  $tableIdentifier.$pagingAndSortParams.sortColumn  $pagingAndSortParams.sortDirection"
-                def sortColumn = sortValidate(domainClass,pagingAndSortParams.sortColumn)
-                def sortDirection = orderValidate(pagingAndSortParams.sortDirection)
+                def sortColumn = validateSortColumName(domainClass,pagingAndSortParams.sortColumn)
+                def sortDirection = validateSortOrder(pagingAndSortParams.sortDirection)
                 def sortParams = "${tableIdentifier}.${sortColumn} ${sortDirection}"
                 newQuery.orderBy(sortParams)
             } else if (pagingAndSortParams.sortColumn) {
                 // we are not using tableIdentifier since there is only one table identifier
                 // and no need to add table identifier
                 // and there is not provision for multiple table identifiers as of now.
-                def sortColumn = sortValidate(domainClass,pagingAndSortParams.sortColumn)
+                def sortColumn = validateSortColumName(domainClass,pagingAndSortParams.sortColumn)
                 String sort = (sortColumn as String).replaceAll("@@table@@", "$tableIdentifier.")
-                //returnQuery += "order by $sort "
                 newQuery.orderBy(sort)
             }
         }
@@ -229,7 +216,7 @@ class QueryBuilder {
         // pull out the pagination criteria
         if (map?.containsKey("max")) pagingAndSortParams.put("max", map["max"].toInteger())
         if (map?.containsKey("offset")) pagingAndSortParams.put("offset", map["offset"].toInteger())
-        // sort
+        // sortColumnName
         if (map?.containsKey("sort")) {
             pagingAndSortParams.put("sortColumn", map["sort"])
             if (map?.containsKey("order")) pagingAndSortParams.put("sortDirection", map["order"])

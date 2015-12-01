@@ -1,3 +1,6 @@
+/*******************************************************************************
+ Copyright 2015 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.query
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -13,7 +16,6 @@ import org.junit.Test
  * So the test case does not have to create a record
  * to ensure the consistent execution.
  *
- * Created by vimalm on 11/25/2015.
  */
 class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
 
@@ -86,6 +88,37 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         assertEquals PAGE_SIZE, result.size()
         assertEquals "Danvers",  result.first().city
         assertEquals "Lansdale",  result.last().city
+    }
+
+    @Test
+    void testSortCriteria(){
+        def query = """FROM  ZipForTesting a WHERE (a.code like :zipcode) """
+        filterData.params = ["zipcode": "%19%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "city", "sortDirection": "asc"],
+                ["sortColumn": "code", "sortDirection": "asc"],
+        ]]
+
+        def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
+        def result = dynamicFinder.find(filterData,pagingAndSortParams) ;
+        assertEquals 28, result.size()
+        assertEquals "31904",  result.get(3).code
+        assertEquals "31907",  result.get(4).code
+    }
+
+    @Test
+    void testFetchAll(){
+        def query = """FROM  ZipForTesting a WHERE (a.code like :zipcode) """
+        filterData.params = ["zipcode": "%19%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "city", "sortDirection": "asc"],
+                ["sortColumn": "code", "sortDirection": "asc"],
+        ]]
+
+        def result = DynamicFinder.fetchAll(zipForTestingObject.class, query, "a", filterData,pagingAndSortParams) ;
+        assertEquals 28, result.size()
+        assertEquals "31904",  result.get(3).code
+        assertEquals "31907",  result.get(4).code
     }
 
 }
