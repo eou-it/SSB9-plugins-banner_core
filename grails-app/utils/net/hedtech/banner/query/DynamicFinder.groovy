@@ -108,7 +108,7 @@ class DynamicFinder {
         def filterDataClone = filterData.clone()
         filterDataClone.params = getCriteriaParamsFromParams(filterData.params)
 
-        def queryString = QueryBuilder.buildCountQuery(query.flattenString(), tableIdentifier, filterDataClone, domainClass)
+        def queryString = QueryBuilder.buildCountQuery(query.flattenString(), tableIdentifier, filterDataClone)
 
         Map params = getParamsFromCriteriaParams(filterDataClone.params)
 
@@ -124,7 +124,7 @@ class DynamicFinder {
         Map params = getParamsFromCriteriaParams(filterData.params)
 
        try {
-           def list = domainClass.findAll(queryString, filterData.params, pagingAndSortParams)
+           def list = domainClass.findAll(queryString, filterData.params, pagingAndSortParams,  domainClass)
            return list
        }  catch(Exception e){
            if (e?.cause instanceof QuerySyntaxException) {
