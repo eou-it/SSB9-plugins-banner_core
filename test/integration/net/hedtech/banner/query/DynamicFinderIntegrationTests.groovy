@@ -3,11 +3,14 @@
  *******************************************************************************/
 package net.hedtech.banner.query
 
+import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.testing.ZipForTesting
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.core.convert.ConversionFailedException
 
 /**
  * ZipForTesting domain is mapped to GTVZIPC which is
@@ -121,4 +124,88 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "31907",  result.get(4).code
     }
 
+    @Test
+    void testInformationLeakPreventionForSortColumn(){
+        def query = """FROM  ZipForTesting a WHERE (a.code like :zipcode) """
+        filterData.params = ["zipcode":"%19%"]
+        def pagingAndSortParams = [sortColumn: "citysome"]
+
+        def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
+        shouldFail(ApplicationException) {
+            try {
+                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
+    }
+
+    @Test
+    void testInformationLeakPreventionforSortDirection(){
+        def query = """FROM  ZipForTesting a WHERE (a.code like :zipcode) """
+        filterData.params = ["zipcode":"%19%"]
+        def pagingAndSortParams = [sortColumn: "city" , sortDirection: "xyz"]
+
+        def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
+        shouldFail(ApplicationException) {
+            try {
+                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
+    }
+
+    @Test
+    void testInformationLeakPreventionforMax(){
+        def query = """FROM  ZipForTesting a WHERE (a.code like :zipcode) """
+        filterData.params = ["zipcode":"%19%"]
+        def pagingAndSortParams = [max: "hjghjj", offset: 5]
+
+        def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
+        shouldFail(ConversionFailedException) {
+            try {
+                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+            } catch (ConversionFailedException ae) {
+                assert "For input string: \"hjghjj\"", ae.message
+                throw ae
+            }
+        }
+    }
+
+    @Test
+    void testInformationLeakPreventionforOffset(){
+        def query = """FROM  ZipForTesting a WHERE (a.code like :zipcode) """
+        filterData.params = ["zipcode":"%19%"]
+        def pagingAndSortParams = [max: 5, offset: "hjghjj"]
+
+        def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
+        shouldFail(ConversionFailedException) {
+            try {
+                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+            } catch (ConversionFailedException ae) {
+                assert "For input string: \"hjghjj\"", ae.message
+                throw ae
+            }
+        }
+    }
+
+    @Test
+    void testHqlInjectionPreventionForSortColumn(){
+        def query = """FROM  ZipForTesting a WHERE (a.code like :zipcode) """
+        filterData.params = ["zipcode":"%19%"]
+        def pagingAndSortParams = [sortColumn: "city;delete from spriden;"]
+
+        def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
+        shouldFail(ApplicationException) {
+            try {
+                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
+    }
 }
