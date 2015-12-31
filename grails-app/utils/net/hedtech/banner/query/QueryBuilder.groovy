@@ -11,6 +11,7 @@ import net.hedtech.banner.query.operators.Operators
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.i18n.MessageHelper
+import org.codehaus.groovy.grails.exceptions.InvalidPropertyException
 
 /**
  *
@@ -57,13 +58,27 @@ class QueryBuilder {
     }
 
     public static validateSortColumName(def domainClass, String sortColumnName) {
-        if(new DefaultGrailsDomainClass(domainClass).persistentProperties*.name.contains(sortColumnName)){
-            return sortColumnName
-        } else  {
+        def domainClassProperties = new DefaultGrailsDomainClass(domainClass)
+        int splitIndex = sortColumnName.indexOf(".")
+        def relDomainClass = (splitIndex > 0) ? sortColumnName.substring(0,splitIndex):sortColumnName
+        try{
+            if((splitIndex < 0) && domainClassProperties.getPropertyByName(sortColumnName)){
+                return sortColumnName
+            } else if(domainClassProperties.getPropertyByName(relDomainClass).isAssociation()){
+                def relDomainSortColumnName = sortColumnName.substring(splitIndex+1)
+                def relationalDomainClassType = domainClassProperties.getPropertyByName(relDomainClass).getType()
+                println relationalDomainClassType
+                domainClassProperties = new DefaultGrailsDomainClass(relationalDomainClassType)
+                if(domainClassProperties.getPropertyByName(relDomainSortColumnName))    {
+                    return sortColumnName
+                }
+            }
+        } catch (InvalidPropertyException e) {
             def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
             throw new ApplicationException(QueryBuilder, message);
         }
     }
+
 
     public static validateSortOrder(String sortOrder) {
         if(sortOrder?.trim()?.toUpperCase()in['ASC','DESC','']){
@@ -124,6 +139,7 @@ class QueryBuilder {
                 newQuery.orderBy(sort)
             }
         }
+        println newQuery.toString()
         returnQuery = newQuery.toString()
         return returnQuery
     }

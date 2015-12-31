@@ -7,6 +7,7 @@ import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.testing.ZipForTesting
+import net.hedtech.banner.testing.TermForTesting
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -24,13 +25,14 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
 
     def zipForTestingObject
     def filterData
+    def termForTestingObject
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         zipForTestingObject = new ZipForTesting(code: '')
-
+        termForTestingObject = new TermForTesting()
         filterData = [:]
     }
 
@@ -122,6 +124,65 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 28, result.size()
         assertEquals "31904",  result.get(3).code
         assertEquals "31907",  result.get(4).code
+    }
+
+    @Test
+    void testSortByColumnInRelationalDomainClass(){
+        def query = """FROM  TermForTesting a WHERE (a.code like :code) """
+        filterData.params = ["code": "%19%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "academicYear.code", "sortDirection": "asc"],
+        ]]
+
+        def result = DynamicFinder.fetchAll(termForTestingObject.class, query, "a", filterData,pagingAndSortParams) ;
+        assertEquals 67, result.size()
+        assertEquals "197410",  result.get(3).code
+        assertEquals "198010",  result.get(4).code
+    }
+
+    @Test
+    void testSortByColumnID(){
+        def query = """FROM  TermForTesting a WHERE (a.code like :code) """
+        filterData.params = ["code": "%20%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "id", "sortDirection": "asc"],
+        ]]
+        def result = DynamicFinder.fetchAll(termForTestingObject.class, query, "a", filterData,pagingAndSortParams) ;
+        assertEquals 375, result.size()
+        assertEquals "200211", result.get(0).code
+        assertEquals "200255", result.get(4).code
+    }
+
+    @Test
+    void testSortByColumnVersion(){
+        def query = """FROM  TermForTesting a WHERE (a.code like :code) """
+        filterData.params = ["code": "%201%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "version", "sortDirection": "asc"],
+        ]]
+        def result = DynamicFinder.fetchAll(termForTestingObject.class, query, "a", filterData,pagingAndSortParams) ;
+        assertEquals 45, result.size()
+        assertEquals "202010", result.get(1).code
+        assertEquals "201440", result.get(3).code
+    }
+
+
+    @Test
+    void testSoryByInvalidColumn(){
+        def query = """FROM  TermForTesting a WHERE (a.code like :code) """
+        filterData.params = ["code": "%19%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "version;delete from spriden;", "sortDirection": "asc"],
+        ]]
+        def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
+        shouldFail(ApplicationException) {
+            try {
+                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
     }
 
     @Test
