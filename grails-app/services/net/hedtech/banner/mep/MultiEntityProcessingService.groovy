@@ -1,12 +1,13 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+ Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.mep
 
 import org.apache.log4j.Logger
 import groovy.sql.Sql
 import oracle.jdbc.OracleTypes
 import org.springframework.security.core.context.SecurityContextHolder as SCH
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * Created by IntelliJ IDEA.
@@ -29,33 +30,26 @@ class MultiEntityProcessingService {
     }
 
 
-    def isMEP() {
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        try {
-            sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_is_mif_enabled_str()}") {mifEnabled -> mif = mifEnabled.toLowerCase().toBoolean() }
-            mif
-        } catch (e) {
-            log.error("ERROR: Could not establish mif context. $e")
-            throw e
-        } finally {
-            //sql?.close()
+    def isMEP(con = null) {
+        def mepEnabled = RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
+        if (mepEnabled == null) {
+            if (!con)
+                con = new Sql(sessionFactory.getCurrentSession().connection())
+            Sql sql = new Sql(con)
+            try {
+                sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_is_mif_enabled_str()}") { mifEnabled -> mif = mifEnabled.toLowerCase().toBoolean() }
+                RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', mif)
+                mepEnabled = mif
+            } catch (e) {
+                log.error("ERROR: Could not establish mif context. $e")
+                throw e
+            } finally {
+                //sql?.close()
+            }
         }
+        return mepEnabled
     }
 
-
-    def isMEP(con) {
-        Sql sql = new Sql(con)
-        try {
-            sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_is_mif_enabled_str()}") {mifEnabled -> mif = mifEnabled.toLowerCase().toBoolean() }
-            mif
-        } catch (e) {
-            log.error("ERROR: Could not establish mif context. $e")
-            throw e
-        } finally {
-            //sql?.close()
-        }
-
-    }
 
     def setHomeContext(home) {
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
@@ -75,8 +69,8 @@ class MultiEntityProcessingService {
         try {
             sql.call("{call g\$_vpdi_security.g\$_vpdi_set_home_context(${home})}")
         } catch (e) {
-           log.error("ERROR: Could not establish mif context. $e")
-           throw e
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
         } finally {
             //sql?.close()
         }
@@ -118,8 +112,8 @@ class MultiEntityProcessingService {
             sql.call("{call g\$_vpdi_security.g\$_vpdi_set_process_context(${process},'NEXT')}")
 
         } catch (e) {
-           log.error("ERROR: Could not establish mif context. $e")
-           throw e
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
         } finally {
             sql?.close()
         }
@@ -145,8 +139,8 @@ class MultiEntityProcessingService {
             sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_vpdi_get_proc_context_fnc()}") {process -> processContext = process}
             processContext
         } catch (e) {
-           log.error("ERROR: Could not establish mif context. $e")
-           throw e
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
         } finally {
             sql?.close()
         }
