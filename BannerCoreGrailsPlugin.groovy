@@ -316,7 +316,7 @@ class BannerCoreGrailsPlugin {
         applicationContext.springSecurityFilterChain.filterChainMap = filterChainMap
 
         //set the teransaction timeout on transaction manager time unit in seconds
-        def transTimeOut = CH.config.banner?.transactionTimeoutx instanceof Integer ? CH.config.banner?.transactionTimeout : 30
+        def transTimeOut = CH.config.banner?.transactionTimeout instanceof Integer ? CH.config.banner?.transactionTimeout : 30
         applicationContext.getBean('transactionManager')?.setDefaultTimeout(transTimeOut)
     }
 
