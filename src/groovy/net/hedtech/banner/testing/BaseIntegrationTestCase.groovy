@@ -104,7 +104,7 @@ class BaseIntegrationTestCase extends Assert {
                 reconnect( dataSource.getConnection() ) // get a new connection that has unlocked the needed roles
             }
             transactionManager.getTransaction().setRollbackOnly()                 // and make sure we don't commit to the database
-            sessionFactory.queryCache.clear()                                     //clear the query cache when ehcache is being used
+            sessionFactory?.queryCache?.clear()                                     //clear the query cache when ehcache is being used
         }
     }
 
@@ -401,7 +401,7 @@ class BaseIntegrationTestCase extends Assert {
                 reconnect( dataSource.getConnection() ) // get a new connection that has unlocked the needed roles
             }
             transactionManager.getTransaction().setRollbackOnly()                 // and make sure we don't commit to the database
-            sessionFactory.queryCache.clear()
+            sessionFactory?.queryCache?.clear()
         }
     }
 
