@@ -4,10 +4,11 @@
 package net.hedtech.banner.query
 
 import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.testing.CommonMatchingSourceRuleForTesting
 import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import net.hedtech.banner.testing.ZipForTesting
 import net.hedtech.banner.testing.TermForTesting
+import net.hedtech.banner.testing.ZipForTesting
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -26,6 +27,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
     def zipForTestingObject
     def filterData
     def termForTestingObject
+    def commonMatchingSourceRule
 
     @Before
     public void setUp() {
@@ -33,6 +35,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         super.setUp()
         zipForTestingObject = new ZipForTesting(code: '')
         termForTestingObject = new TermForTesting()
+        commonMatchingSourceRule = new CommonMatchingSourceRuleForTesting()
         filterData = [:]
     }
 
@@ -138,6 +141,19 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 67, result.size()
         assertEquals "197410",  result.get(3).code
         assertEquals "198010",  result.get(4).code
+    }
+
+    @Test
+    void testSortByColumnInRelationalDomainClassNLevel(){
+        def query = """FROM  CommonMatchingSourceRuleForTesting a WHERE (a.dataOrigin like :dataOrigin) """
+        filterData.params = ["dataOrigin": "%a%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "addressType", "sortDirection": "asc"],
+        ]]
+
+        def result = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+        println result.size()
+        assertEquals 67, result.size()
     }
 
     @Test
