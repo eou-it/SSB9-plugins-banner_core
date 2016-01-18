@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.query
 
@@ -59,18 +59,26 @@ class QueryBuilder {
 
     public static validateSortColumName(def domainClass, String sortColumnName) {
         def domainClassProperties = new DefaultGrailsDomainClass(domainClass)
-        int splitIndex = sortColumnName.indexOf(".")
-        def relDomainClass = (splitIndex > 0) ? sortColumnName.substring(0,splitIndex):sortColumnName
+        def domainArray = sortColumnName.tokenize(".");
+        def relDomainClass, relDomainSortColumnName, relationalDomainClassType
+        int splitIndex=0
         try{
-            if((splitIndex < 0) && domainClassProperties.getPropertyByName(sortColumnName))
+            if((domainArray.size()==1) && domainClassProperties.getPropertyByName(sortColumnName))
                 return sortColumnName
-            else if(domainClassProperties.getPropertyByName(relDomainClass).isAssociation()){
-                def relDomainSortColumnName = sortColumnName.substring(splitIndex+1)
-                def relationalDomainClassType = domainClassProperties.getPropertyByName(relDomainClass).getType()
-                domainClassProperties = new DefaultGrailsDomainClass(relationalDomainClassType)
-                if(domainClassProperties.getPropertyByName(relDomainSortColumnName))
-                    return sortColumnName
-            }
+            else {
+                def sortColumnNameResult = sortColumnName
+                for (int i=0;i<domainArray.size()-1;i++)
+                {    splitIndex = sortColumnName.indexOf(".")
+                    relDomainClass = sortColumnName.substring(0,splitIndex)
+                    if(domainClassProperties.getPropertyByName(relDomainClass).isAssociation()){
+                        relDomainSortColumnName = sortColumnName.substring(splitIndex+1)
+                        relationalDomainClassType = domainClassProperties.getPropertyByName(relDomainClass).getType()
+                        domainClassProperties = new DefaultGrailsDomainClass(relationalDomainClassType)
+                        sortColumnName=relDomainSortColumnName
+                    }
+                }
+                if(domainClassProperties.getPropertyByName(domainArray.last()))
+                    return sortColumnNameResult           }
         } catch (InvalidPropertyException e) {
             def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
             throw new ApplicationException(QueryBuilder, message);
