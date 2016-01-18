@@ -76,6 +76,10 @@ class QueryBuilder {
                         domainClassProperties = new DefaultGrailsDomainClass(relationalDomainClassType)
                         sortColumnName=relDomainSortColumnName
                     }
+                        else{
+                        throw new InvalidPropertyException(MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"))
+                    }
+
                 }
                 if(domainClassProperties.getPropertyByName(domainArray.last()))
                     return sortColumnNameResult           }

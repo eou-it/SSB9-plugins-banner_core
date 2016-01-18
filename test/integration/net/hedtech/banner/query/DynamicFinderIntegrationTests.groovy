@@ -148,12 +148,13 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def query = """FROM  CommonMatchingSourceRuleForTesting a WHERE (a.dataOrigin like :dataOrigin) """
         filterData.params = ["dataOrigin": "%a%"]
         def pagingAndSortParams = [sortCriteria :  [
-                ["sortColumn": "addressType", "sortDirection": "asc"],
+                ["sortColumn": "addressType.telephoneType.code", "sortDirection": "asc"],
         ]]
 
         def result = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
-        println result.size()
-        assertEquals 67, result.size()
+        assertEquals 63, result.size()
+        assertEquals 28, result.get(0).id
+        assertEquals 21, result.get(2).id
     }
 
     @Test
