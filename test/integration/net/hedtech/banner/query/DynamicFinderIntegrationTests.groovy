@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2015- 2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.query
 
@@ -9,6 +9,7 @@ import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.testing.TermForTesting
 import net.hedtech.banner.testing.ZipForTesting
+import org.codehaus.groovy.grails.exceptions.InvalidPropertyException
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -152,9 +153,58 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         ]]
 
         def result = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
-        assertEquals 63, result.size()
-        assertEquals 28, result.get(0).id
-        assertEquals 21, result.get(2).id
+        assertTrue(result.size()>0)
+
+    }
+    @Test
+    void testSortByColumnInRelationalDomainClassNLevelWithoutRelation(){
+        def query = """FROM  CommonMatchingSourceRuleForTesting a WHERE (a.dataOrigin like :dataOrigin) """
+        filterData.params = ["dataOrigin": "%a%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "addressType.telephoneType.code.xyz", "sortDirection": "asc"],
+        ]]
+        shouldFail(ApplicationException) {
+            try {
+                def dynamicFinder = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
+    }
+
+    @Test
+    void testSortByColumnInRelationalDomainClassNLevelForInvalidColumn(){
+        def query = """FROM  CommonMatchingSourceRuleForTesting a WHERE (a.dataOrigin like :dataOrigin) """
+        filterData.params = ["dataOrigin": "%a%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "emailType.urlIndicator.xyz", "sortDirection": "asc"],
+        ]]
+        shouldFail(ApplicationException) {
+            try {
+                def dynamicFinder = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
+       }
+
+    @Test
+    void testSortByColumnInRelationalDomainClassNLevelWithoutAssociation(){
+        def query = """FROM  CommonMatchingSourceRuleForTesting a WHERE (a.dataOrigin like :dataOrigin) """
+        filterData.params = ["dataOrigin": "%a%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "emailType.urlIndicator.lastModified", "sortDirection": "asc"],
+        ]]
+        shouldFail(ApplicationException) {
+            try {
+                def dynamicFinder = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
     }
 
     @Test
