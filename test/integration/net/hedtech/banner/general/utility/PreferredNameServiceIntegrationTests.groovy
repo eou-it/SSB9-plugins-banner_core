@@ -37,7 +37,7 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     @Test
     public void getPreferredNameInvalidUsage(){
         usage = "junk"
-        String defaultName = preferredNameService.getName(pidm, usage)
+        String defaultName = preferredNameService.getName([pidm:pidm, usage:usage])
         println defaultName
         assertEquals "Phrebb Lindblom", defaultName
     }
