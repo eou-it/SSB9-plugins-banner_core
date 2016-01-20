@@ -61,7 +61,7 @@ class QueryBuilder {
         def sortColumnArray = sortColumnName.tokenize(",")
         boolean validateResult
             for (int i=0;i<sortColumnArray.size();i++){
-                validateResult = validateSortColumnName(domainClass, sortColumnArray[i])
+                validateResult = validateSortColumnName(domainClass, sortColumnArray[i].trim())
             }
         return validateResult
     }
