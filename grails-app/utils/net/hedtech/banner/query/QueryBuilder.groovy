@@ -57,18 +57,29 @@ class QueryBuilder {
         }
     }
 
-    public static validateSortColumName(def domainClass, String sortColumnName) {
+    public static boolean validateSortColumns(def domainClass, String sortColumnName) {
+        def sortColumnArray = sortColumnName.tokenize(",")
+        boolean validateResult
+            for (int i=0;i<sortColumnArray.size();i++){
+                validateResult = validateSortColumnName(domainClass, sortColumnArray[i])
+            }
+        return validateResult
+    }
+
+    public static boolean validateSortColumnName(def domainClass, String sortColumnName) {
+        boolean isValidColumn = true;
+
         def domainClassProperties = new DefaultGrailsDomainClass(domainClass)
-        def domainArray = sortColumnName.tokenize(".");
+        def domainArray = sortColumnName.tokenize(".")
         def relDomainClass, relDomainSortColumnName, relationalDomainClassType
-        int splitIndex=0
+        int splitIndex
         try{
             if((domainArray.size()==1) && domainClassProperties.getPropertyByName(sortColumnName))
-                return sortColumnName
+                return isValidColumn
             else {
-                def sortColumnNameResult = sortColumnName
+
                 for (int i=0;i<domainArray.size()-1;i++)
-                {    splitIndex = sortColumnName.indexOf(".")
+                {   splitIndex = sortColumnName.indexOf(".")
                     relDomainClass = sortColumnName.substring(0,splitIndex)
                     if(domainClassProperties.getPropertyByName(relDomainClass).isAssociation()){
                         relDomainSortColumnName = sortColumnName.substring(splitIndex+1)
@@ -82,7 +93,8 @@ class QueryBuilder {
 
                 }
                 if(domainClassProperties.getPropertyByName(domainArray.last()))
-                    return sortColumnNameResult           }
+                    return isValidColumn
+            }
         } catch (InvalidPropertyException e) {
             def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
             throw new ApplicationException(QueryBuilder, message);
@@ -128,14 +140,15 @@ class QueryBuilder {
 
         if (pagingAndSortParams.sortCriteria && pagingAndSortParams.sortCriteria instanceof Collection) {
             def sortParams = pagingAndSortParams.sortCriteria.collect { sortItem ->
-                if (validateSortColumName(domainClass,sortItem.sortColumn) && validateSortOrder(sortItem.sortDirection)) {
+                if (validateSortColumns(domainClass,sortItem.sortColumn) && validateSortOrder(sortItem.sortDirection)) {
                     "$tableIdentifier.$sortItem.sortColumn  $sortItem.sortDirection"
                 }
             }
             newQuery.orderBy(sortParams.join(", "))
         } else {
+            def sortColumn = pagingAndSortParams.sortColumn
             if (pagingAndSortParams.sortColumn && (pagingAndSortParams.sortDirection != null)) {
-                def sortColumn = validateSortColumName(domainClass,pagingAndSortParams.sortColumn)
+                validateSortColumns(domainClass,pagingAndSortParams.sortColumn)
                 def sortDirection = validateSortOrder(pagingAndSortParams.sortDirection)
                 def sortParams = "${tableIdentifier}.${sortColumn} ${sortDirection}"
                 newQuery.orderBy(sortParams)
@@ -143,7 +156,7 @@ class QueryBuilder {
                 // we are not using tableIdentifier since there is only one table identifier
                 // and no need to add table identifier
                 // and there is not provision for multiple table identifiers as of now.
-                def sortColumn = validateSortColumName(domainClass,pagingAndSortParams.sortColumn)
+                validateSortColumns(domainClass,pagingAndSortParams.sortColumn)
                 String sort = (sortColumn as String).replaceAll("@@table@@", "$tableIdentifier.")
                 newQuery.orderBy(sort)
             }

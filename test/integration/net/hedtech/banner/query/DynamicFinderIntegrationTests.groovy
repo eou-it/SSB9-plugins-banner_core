@@ -156,6 +156,65 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         assertTrue(result.size()>0)
 
     }
+
+    @Test
+    void testSortByMultipleColumns(){
+        def query = """FROM  CommonMatchingSourceRuleForTesting a WHERE (a.dataOrigin like :dataOrigin) """
+        filterData.params = ["dataOrigin": "%a%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "addressType,id,version", "sortDirection": "asc"],
+        ]]
+
+        def result = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+        assertTrue(result.size()>0)
+
+    }
+
+    @Test
+    void testSortByMultipleColumnsWithRelationalDomainColumns(){
+        def query = """FROM  CommonMatchingSourceRuleForTesting a WHERE (a.dataOrigin like :dataOrigin) """
+        filterData.params = ["dataOrigin": "%a%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "addressType.telephoneType.code,id,version", "sortDirection": "asc"],
+        ]]
+
+        def result = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+        assertTrue(result.size()>0)
+    }
+
+    @Test
+    void testSortForInvalidMultipleColumnsWithRelationalDomainColumns(){
+        def query = """FROM  CommonMatchingSourceRuleForTesting a WHERE (a.dataOrigin like :dataOrigin) """
+        filterData.params = ["dataOrigin": "%a%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "addressType.telephoneType.code,id,xyz", "sortDirection": "asc"],
+        ]]
+        shouldFail(ApplicationException) {
+            try {
+                def dynamicFinder = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
+    }
+    @Test
+    void testSortForMultipleColumnsWithInvalidRelationalDomainColumns(){
+        def query = """FROM  CommonMatchingSourceRuleForTesting a WHERE (a.dataOrigin like :dataOrigin) """
+        filterData.params = ["dataOrigin": "%a%"]
+        def pagingAndSortParams = [sortCriteria :  [
+                ["sortColumn": "addressType.xyz.code,id,version", "sortDirection": "asc"],
+        ]]
+        shouldFail(ApplicationException) {
+            try {
+                def dynamicFinder = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
+    }
+
     @Test
     void testSortByColumnInRelationalDomainClassNLevelWithoutRelation(){
         def query = """FROM  CommonMatchingSourceRuleForTesting a WHERE (a.dataOrigin like :dataOrigin) """
