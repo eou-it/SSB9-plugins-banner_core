@@ -25,7 +25,26 @@ class PreferredNameService {
         String preferredName = ""
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         try {
-            sql.call("{$Sql.VARCHAR = call gokname.f_get_name(${params.pidm},${params.usage})") {preferredNameOut -> preferredName = preferredNameOut }
+            sql.call("{$Sql.VARCHAR = call gokname.f_get_name(${params.pidm}," +
+                    "${params.usage}," +
+                    "${params.produtname}," +
+                    "${params.appname}," +
+                    "${params.pageName}," +
+                    "${params.sectionname}," +
+                    "${params.maxlength}," +
+                    "${params.usedata}," +
+                    "${params.nametype}," +
+                    "${params.entity}," +
+                    "${params.id}," +
+                    "${params.nameprefix}," +
+                    "${params.firstname}," +
+                    "${params.mi}," +
+                    "${params.surnameprefix}," +
+                    "${params.lastname}," +
+                    "${params.namesuffix}," +
+                    "${params.legalname}," +
+                    "${params.prefname}," +
+                    "${params.debug}") {preferredNameOut -> preferredName = preferredNameOut }
             println "preferredNameOut is "+preferredName
             return preferredName
         } catch (e) {
