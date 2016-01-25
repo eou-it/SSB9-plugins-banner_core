@@ -10,7 +10,7 @@ import org.junit.Before
 import org.junit.Test
 
 class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
-    def pidm
+    int pidm
     def usage
     def preferredNameService
 

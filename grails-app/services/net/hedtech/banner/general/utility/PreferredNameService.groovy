@@ -19,28 +19,13 @@ class PreferredNameService {
 
     public final String PARAM_INDICATOR = "=>"
 
-    def columnNameMap = ["pidm":"p_pidm", "usage":"p_usage"]
 
-    public String getParams(params) {
-        println params
-        String procParams
-        params?.each{ it->
-            println "Initial vlaue is "+procParams
-            procParams = procParams? procParams+",":''
-            println it.key +"- "+it.value
-            procParams  = procParams + columnNameMap.get(it.key) + PARAM_INDICATOR + it.value
-        }
-        println "procParams "+procParams
-        return procParams
-    }
 
     public String getName(params){
         String preferredName = ""
-        String queryParams = getParams(params)
-        println queryParams
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         try {
-            sql.call("{$Sql.VARCHAR = call gokname.f_get_name(p_pidm=>${params.pidm},p_usage=>${params.usage})") {preferredNameOut -> preferredName = preferredNameOut }
+            sql.call("{$Sql.VARCHAR = call gokname.f_get_name(${params.pidm},${params.usage})") {preferredNameOut -> preferredName = preferredNameOut }
             println "preferredNameOut is "+preferredName
             return preferredName
         } catch (e) {
