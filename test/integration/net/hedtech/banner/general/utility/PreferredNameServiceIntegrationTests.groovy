@@ -10,16 +10,30 @@ import org.junit.Before
 import org.junit.Test
 
 class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
+    def params
     int pidm
     def usage
     def preferredNameService
+    public final String LF30= "LF30"
+    public final String L30= "L30"
+    public final String L60= "L60"
+    public final String FL30= "FL30"
+    public final String FL= "FL"
+    public final String FMIL= "FMIL"
+    public final String FML= "FML"
+    public final String LF= "LF"
+    public final String LFMI= "LFMI"
+    public final String LFM= "LFM"
+    public final String LFIMI30= "LFIMI30"
+    public final String DEFAULT= "DEFAULT"
+    public final String LEGAL= "LEGAL"
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        pidm = 2086
-        usage = "DEFAULT"
+        pidm = 30689
+        usage = DEFAULT
     }
 
     @After
@@ -29,23 +43,96 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
 
     @Test
     public void getPreferredNameDefaultUsage(){
-        String defaultName = preferredNameService.getName([pidm:pidm, usage:usage])
+        params = [pidm:pidm, usage:usage]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "Jerryone L Lewis", defaultName
+    }
+
+    @Test
+    public void getPreferredNameFLUsage(){
+        usage = FL
+        params = [pidm:pidm, usage:usage]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "Jerryone Lewis", defaultName
+    }
+
+    @Test
+    public void getPreferredNameLF30Usage(){
+        usage = LF30
+        params = [pidm:pidm, usage:usage]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "Lewis, Jerryone", defaultName
+    }
+
+    @Test
+    public void getPreferredNameL30Usage(){
+        usage = L30
+        params = [pidm:pidm, usage:usage]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "Lewis", defaultName
+    }
+
+    @Test
+    public void getPreferredNameL60Usage(){
+        usage = FL30
+        params = [pidm:pidm, usage:usage]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "Jerryone Lewis", defaultName
+    }
+
+    @Test
+    public void getPreferredNameFMILUsage(){
+        usage = FMIL
+        params = [pidm:pidm, usage:usage]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "Jerryone L. Lewis", defaultName
+    }
+
+    @Test
+    public void getPreferredNameLFMIUsage(){
+        usage = LFMI
+        params = [pidm:pidm, usage:usage]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "Lewis, Jerryone L.", defaultName
+    }
+
+    @Test
+    public void getPreferredNameInvalidPIDM(){
+        usage = LFMI
+        pidm = 11111
+        params = [pidm:pidm, usage:usage]
+        String defaultName = preferredNameService.getName(params)
         println defaultName
-        assertEquals "Phrebb Lindblom", defaultName
+        assertEquals "*ERROR* Name with rule LFMI not found for ID: UNKNOWN", defaultName
     }
 
     @Test
     public void getPreferredNameInvalidUsage(){
         usage = "junk"
-        String defaultName = preferredNameService.getName([pidm:pidm, usage:usage])
-        println defaultName
-        assertEquals "Phrebb Lindblom", defaultName
+        params = [pidm:pidm, usage:usage]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "Jerryone L Lewis", defaultName
+    }
+
+    @Test
+    public void getPreferredNameWithNameParams(){
+        usage = FMIL
+        params = [usage:usage, firstname:"JERRYONE", mi:"MIDDLE", lastname:"LEWIS", usedata:"Y"]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "JERRYONE M. LEWIS", defaultName
+    }
+
+    @Test
+    public void getPreferredNameWithNameAndMaxLength(){
+        usage = FMIL
+        params = [usage:usage, firstname:"JERRYONE", mi:"MIDDLE", lastname:"LEWIS", usedata:"Y", maxlength:10]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "J. LEWIS", defaultName
     }
 
     @Test
     public void getUsageDefault(){
         String defaultName = preferredNameService.getUsage("W4","Header")
-        println defaultName
-        assertEquals "2000DEFAULT", defaultName
+        assertEquals "DEFAULT", defaultName
     }
 }

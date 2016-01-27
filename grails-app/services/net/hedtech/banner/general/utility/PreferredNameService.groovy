@@ -17,10 +17,6 @@ class PreferredNameService {
     def dataSource                         // injected by Spring
     def config = Holders.getConfig()
 
-    public final String PARAM_INDICATOR = "=>"
-
-
-
     public String getName(params){
         String preferredName = ""
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
@@ -44,8 +40,7 @@ class PreferredNameService {
                     "${params.namesuffix}," +
                     "${params.legalname}," +
                     "${params.prefname}," +
-                    "${params.debug}") {preferredNameOut -> preferredName = preferredNameOut }
-            println "preferredNameOut is "+preferredName
+                    "${params.debug})") {preferredNameOut -> preferredName = preferredNameOut }
             return preferredName
         } catch (e) {
             throw e
@@ -55,15 +50,14 @@ class PreferredNameService {
     }
 
     public String getUsage(String pageName='', String sectionName=''){
-        String productName = config.banner?.productName?config.banner?.productName:'Payroll'
-        String applicationName = config.banner?.applicationName?config.banner?.applicationName:'Taxes'
-        println "productName '"+productName+"'"
-        println "applicationName '"+productName+"'"
+        String productName = config.banner.productName?config.banner?.productName:''
+        String applicationName = config.banner.applicationName?config.banner?.applicationName:''
         String usage
+        String result
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         try {
-            sql.call("{$Sql.VARCHAR = call gokname.f_get_usage(${productName},${applicationName},${pageName},${sectionName})") {usageOut -> usage = usageOut }
-            println "usage is "+usage
+            sql.call("{$Sql.VARCHAR = call gokname.f_get_usage(${productName},${applicationName},${pageName},${sectionName})") {usageOut -> result = usageOut }
+            usage = result?.substring(4);
             return usage
         } catch (e) {
             throw e
