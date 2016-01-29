@@ -57,9 +57,16 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, dataSource )
 
-            authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
+            String preferredName=SelfServiceBannerAuthenticationProvider.getPreferredName(authenticationResults.pidm) as String
 
-            authenticationResults['preferredName']=SelfServiceBannerAuthenticationProvider.getPreferredName(authenticationResults.pidm) as String
+            if(preferredName!=null && !preferredName.isEmpty() )
+                authenticationResults['fullName']=preferredName
+            else
+                authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
+
+
+
+
             AuthenticationProviderUtility.newAuthenticationToken( this, authenticationResults )
         }
         catch (DisabledException de)           { throw de }
