@@ -9,6 +9,7 @@ import groovy.sql.Sql
 import org.apache.log4j.Logger
 
 
+
 class PreferredNameService {
 
     static transactional = true
@@ -19,7 +20,7 @@ class PreferredNameService {
 
     public String getName(params){
         String preferredName = ""
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        Sql sql = new Sql( dataSource.getSsbConnection() )
         try {
             sql.call("{$Sql.VARCHAR = call gokname.f_get_name(${params.pidm}," +
                     "${params.usage}," +
@@ -43,24 +44,24 @@ class PreferredNameService {
                     "${params.debug})") {preferredNameOut -> preferredName = preferredNameOut }
             return preferredName
         } catch (e) {
-            throw e
-        } finally {
+            log.error "Error with Preferred Name Procedure gokname.f_get_name . Exception Encountered :"
+      } finally {
             sql?.close()
         }
     }
 
     public String getUsage(String pageName='', String sectionName=''){
-        String productName = config.banner.productName?config.banner?.productName:''
-        String applicationName = config.banner.applicationName?config.banner?.applicationName:''
+        String productName = config?.productName ? Holders?.config?.productName:''
+        String applicationName = config?.banner.applicationName ? Holders?.config?.banner.applicationName:''
         String usage
         String result
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        Sql sql = new Sql( dataSource.getSsbConnection() )
         try {
             sql.call("{$Sql.VARCHAR = call gokname.f_get_usage(${productName},${applicationName},${pageName},${sectionName})") {usageOut -> result = usageOut }
             usage = result?.substring(4);
             return usage
         } catch (e) {
-            throw e
+            log.error "Error with Preferred Name Procedure gokname.f_get_usage . Exception Encountered :"
         } finally {
             sql?.close()
         }

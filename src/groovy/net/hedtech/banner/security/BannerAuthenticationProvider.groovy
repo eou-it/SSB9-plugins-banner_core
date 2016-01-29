@@ -59,6 +59,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
 
+            authenticationResults['preferredName']=SelfServiceBannerAuthenticationProvider.getPreferredName(authenticationResults.pidm) as String
             AuthenticationProviderUtility.newAuthenticationToken( this, authenticationResults )
         }
         catch (DisabledException de)           { throw de }
@@ -213,5 +214,6 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     private void loadDefault( ApplicationContext appContext, def userName ) {
         appContext.getBean("defaultLoaderService").loadDefault( userName )
     }
+
 }
 

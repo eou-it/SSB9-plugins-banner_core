@@ -84,6 +84,10 @@ public class BannerAuthenticationToken implements Authentication {
         user?.fullName
     }
 
+    public String getPreferredName() {
+        user?.preferredName
+    }
+
     public Map getClaims() {
         claims
     }

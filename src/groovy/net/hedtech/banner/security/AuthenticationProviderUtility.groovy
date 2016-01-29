@@ -171,7 +171,8 @@ class AuthenticationProviderUtility {
                     !authenticationResults.expired,                   // credentialsNonExpired
                     true,                                             // accountNonLocked - NOT USED (YET)
                     authenticationResults.authorities as Collection,
-                    authenticationResults.fullName
+                    authenticationResults.fullName,
+                    authenticationResults.preferredName
             )
             if (authenticationResults?.webTimeout) user.webTimeout = authenticationResults.webTimeout
             if (authenticationResults?.pidm) user.pidm = authenticationResults.pidm

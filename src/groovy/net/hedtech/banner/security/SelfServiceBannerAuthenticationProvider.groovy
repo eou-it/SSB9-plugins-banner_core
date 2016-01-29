@@ -10,7 +10,7 @@ import org.springframework.security.authentication.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.web.context.request.RequestContextHolder
-
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
 import java.sql.SQLException
 
 /**
@@ -62,6 +62,9 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             authenticationResults['webTimeout']         = getWebTimeOut( authenticationResults, db )
             authenticationResults['transactionTimeout'] = getTransactionTimeout()
             authenticationResults['fullName']           = getFullName( authenticationResults, dataSource ) as String
+            authenticationResults['preferredName']      = getPreferredName(authenticationResults.pidm) as String
+
+
             setWebSessionTimeout(  authenticationResults['webTimeout'] )
             setTransactionTimeout( authenticationResults['transactionTimeout'] )
 
@@ -348,6 +351,30 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         }
         log.debug "retrieveRoleBasedTimeOuts() has cached web role timeouts: ${roleBasedTimeOutsCache}"
         roleBasedTimeOutsCache // we'll return this to facilitate testing of this method
+    }
+
+    public static String getPreferredName(pidm){
+
+        def ctx = CH.servletContext.getAttribute(GA.APPLICATION_CONTEXT)
+        def preferredNameService = ctx.preferredNameService
+        def productName=CH?.config?.productName ? CH?.config?.productName:null
+        def applicationName=CH?.config?.banner.applicationName ? CH?.config?.banner.applicationName:null
+        def pageName=CH?.config?.pageName ? CH?.config?.pageName:null
+        def sectionName=CH?.config?.sectionName ? CH?.config?.sectionName:null
+
+        def params=[:]
+
+        params.put("pidm",pidm)
+        if(productName!=null)
+            params.put("produtname",productName)
+        if(applicationName!=null)
+            params.put("appname",applicationName)
+        if(pageName!=null)
+            params.put("pageName",pageName)
+        if(sectionName!=null)
+            params.put("sectionname",sectionName)
+
+        return preferredNameService.getName(params)
     }
 
 

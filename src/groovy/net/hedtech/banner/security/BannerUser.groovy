@@ -19,6 +19,7 @@ public class BannerUser extends GrailsUser {
     Integer gidm
     Integer webTimeout
     String  fullName
+    String  preferredName
     String  oracleUserName
     public String mepHomeContext
     public String mepProcessContext
@@ -33,7 +34,7 @@ public class BannerUser extends GrailsUser {
                        final String oracleUserName, final boolean enabled,
 			           final boolean accountNonExpired, final boolean credentialsNonExpired,
 			           final boolean accountNonLocked, final Collection<GrantedAuthority> authorities,
-			           final String fullName
+			           final String fullName,final String preferredName
                      ) throws IllegalArgumentException {
 
         // Note: The spring-security-core plugin now includes an 'id' property, which is normally used to retrieve the user versus keeping the
@@ -42,6 +43,7 @@ public class BannerUser extends GrailsUser {
         // user's id (which would require an additional database query) and instead we simply set this 'id' property to null.
 		super( username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities as Collection<GrantedAuthority>, null /* id */ )
         this.fullName = fullName
+        this.preferredName=preferredName
         this.oracleUserName = oracleUserName
         addAuthoritiesIntoFormToRoleMap( authorities as Collection<GrantedAuthority> )
 	}
@@ -51,7 +53,7 @@ public class BannerUser extends GrailsUser {
                        final String oracleUserName, final boolean enabled,
 			           final boolean accountNonExpired, final boolean credentialsNonExpired,
 			           final boolean accountNonLocked, final Collection<GrantedAuthority> authorities,
-			           final String fullName, final Integer pidm, final Integer webTimeout , final Integer gidm
+			           final String fullName,final String preferredName ,final Integer pidm, final Integer webTimeout , final Integer gidm
                        ) throws IllegalArgumentException {
 
          // Note: The spring-security-core plugin now includes an 'id' property, which is normally used to retrieve the user versus keeping the
