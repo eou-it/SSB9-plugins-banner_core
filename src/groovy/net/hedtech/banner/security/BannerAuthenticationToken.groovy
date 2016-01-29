@@ -1,6 +1,6 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.security
 
 import org.springframework.security.core.Authentication
@@ -50,8 +50,8 @@ public class BannerAuthenticationToken implements Authentication {
 
 
     public boolean isAuthenticated() {
-        (user && user.enabled && user.accountNonExpired && user.credentialsNonExpired 
-         && user.accountNonLocked && user.authorities && user.authorities.size() > 0)
+        (user && user.enabled && user.accountNonExpired && user.credentialsNonExpired
+                && user.accountNonLocked && user.authorities && user.authorities.size() > 0)
     }
 
 
@@ -62,7 +62,7 @@ public class BannerAuthenticationToken implements Authentication {
     public String getName() {
         user?.username
     }
-        
+
     public String getOracleUserName() {
         user?.oracleUserName
     }
@@ -80,18 +80,14 @@ public class BannerAuthenticationToken implements Authentication {
     }
 
 
-     public String getFullName() {
+    public String getFullName() {
         user?.fullName
-    }
-
-    public String getPreferredName() {
-        user?.preferredName
     }
 
     public Map getClaims() {
         claims
     }
-    
+
     public String toString() {
         "${super.toString()}[isAuthenticated()=${isAuthenticated()}, user=$user]"
     }
