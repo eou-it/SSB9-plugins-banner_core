@@ -144,11 +144,42 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     }
 
     @Test
-    public void getPreferredNameWithNameParamsWithNoUseDataParams(){
+    public void getPreferredNameWithNameParamsAndWithoutPIDM(){
         usage = FMIL
-        params = [usage:usage, firstname:"JERRYONE", mi:"MIDDLE", lastname:"LEWIS"]
+        params = [usage:usage, firstname:"JERRYONE", mi:"MIDDLE", lastname:"LEWIS", usedata:"Y"]
         String defaultName = preferredNameService.getName(params)
         assertEquals "JERRYONE M. LEWIS", defaultName
+    }
+
+    @Test
+    public void getPreferredNameWithNameParamsAndWithoutUseData(){
+        usage = DEFAULT
+        params = [pidm:pidm,usage:usage, usedata:"N"]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "Jerryone L Lewis", defaultName
+    }
+
+    @Test
+    public void getPreferredNameWithNameParamsWithNoUseDataParams(){
+        usage = FMIL
+        params = [usage:usage, firstname:"JERRYONE", mi:"MIDDLE", lastname:"LEWIS",usedata:"Y"]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "JERRYONE M. LEWIS", defaultName
+    }
+
+    @Test
+    public void getPreferredNameWithNameParamsWithUseDataParams(){
+
+        params = [firstname:"VARUN", mi:"S", lastname:"SANKAR",produtname:"Payroll",appname:"Taxes",pageName:"W%",usedata:"Y"]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "SANKAR, VARUN S.", defaultName
+    }
+    @Test
+    public void getPreferredNameWithpidmsWithUseDataParams(){
+
+        params = [pidm:pidm,produtname:"Payroll",appname:"Taxes",pageName:"W%",usedata:"N"]
+        String defaultName = preferredNameService.getName(params)
+        assertEquals "Lewis, Jerryone L.", defaultName
     }
 
     @Test
