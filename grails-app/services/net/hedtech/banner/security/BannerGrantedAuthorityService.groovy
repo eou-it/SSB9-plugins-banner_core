@@ -46,22 +46,25 @@ class BannerGrantedAuthorityService {
 
     public static List getSelfServiceUserRole() {
         def user = getUser()
-        def allRoles = new ArrayList()
-        Set<String> distinctRoles = new HashSet<String>()
+        def roles = new ArrayList()
         if (user instanceof BannerUser) {
             Set authorities = user?.authorities
             if(authorities){
                 authorities.each { BannerGrantedAuthority bannerGrantedAuthority ->
                     String role = bannerGrantedAuthority.getAssignedSelfServiceRole()
-                    allRoles << role
+                    roles << role
                 }
             }
         } else if(user instanceof String && user == ANONYMOUS_USER) {
-            allRoles << WEB_USER
+            roles << WEB_USER
         }
-        distinctRoles.addAll(allRoles)
-        def roles = new ArrayList<String>(distinctRoles)
         roles
+    }
+
+    public static List getSelfServiceDistinctUserRole(){
+        def roles = new HashSet<String>(getSelfServiceUserRole())
+        def distinctRoles = new ArrayList<String>(roles)
+        distinctRoles
     }
 
     /**
