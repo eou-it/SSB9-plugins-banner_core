@@ -1,14 +1,22 @@
+/*******************************************************************************
+ Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.query
 
+import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.query.criteria.CriteriaParam
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.hibernate.hql.ast.QuerySyntaxException
 import org.springframework.context.ApplicationContext
+import org.apache.log4j.Logger
+import net.hedtech.banner.exceptions.ApplicationException
 
-/*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
- *******************************************************************************/
+/**
+ *
+ */
 class DynamicFinder {
+    static def log = Logger.getLogger( 'net.hedtech.banner.query.DynamicFinder' )
 
     def domainClass
     def query
@@ -73,16 +81,28 @@ class DynamicFinder {
 
 
     public def find(filterData, pagingAndSortParams) {
+
         def filterDataClone = filterData.clone()
         filterDataClone.params = getCriteriaParamsFromParams(filterData.params)
-
-        def queryString = QueryBuilder.buildQuery(query.flattenString(), tableIdentifier, filterDataClone, pagingAndSortParams)
+       
+        def queryString = QueryBuilder.buildQuery(query.flattenString(), tableIdentifier, filterDataClone, pagingAndSortParams, domainClass)
 
         Map params = getParamsFromCriteriaParams(filterDataClone.params)
+       
+        try {
+            def list = domainClass.findAll(queryString, params, pagingAndSortParams)
+            return list
+        }  catch(Exception e){
+            if (e?.cause instanceof QuerySyntaxException) {
+                log.error "Error message: " + e.stackTrace
+                def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
+                throw new ApplicationException(DynamicFinder, message);
 
-        def list = domainClass.findAll(queryString, params, pagingAndSortParams)
+            } else {
+                throw e
+            }
+        }
 
-        return list
     }
 
 
@@ -101,13 +121,22 @@ class DynamicFinder {
 
 
     public static def fetchAll(domainClass, query, tableIdentifier, filterData, pagingAndSortParams) {
-        def queryString = QueryBuilder.buildQuery(query.flattenString(), "a", filterData.criteria, pagingAndSortParams)
+        def queryString = QueryBuilder.buildQuery(query.flattenString(), "a", filterData, pagingAndSortParams, domainClass)
 
-        Map params = getParamsFromCriteriaParams(filterData.params)
+        try {
+            def list = domainClass.findAll(queryString, filterData.params, pagingAndSortParams)
+            return list
+        }  catch(Exception e){
+            if (e?.cause instanceof QuerySyntaxException) {
+                log.error "Error message: " + e.stackTrace
+                def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
+                throw new ApplicationException(DynamicFinder, message);
 
-        def list = domainClass.findAll(queryString, filterData.params, pagingAndSortParams)
+            } else {
+                throw e
+            }
+        }
 
-        return list
     }
 
 

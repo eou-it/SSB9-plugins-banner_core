@@ -6,6 +6,7 @@ package net.hedtech.banner.db
 
 import groovy.sql.Sql
 import net.hedtech.banner.db.BannerDS as BannerDataSource
+import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import oracle.jdbc.OracleConnection
 import org.apache.commons.dbcp.BasicDataSource
@@ -36,6 +37,11 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     private String PROXY_USERNAME="HOSH00070"
     private String PROXY_PASSWORD="111111"
 
+    def ssbOracleUsersProxiedInFile
+    def apiOracleUsersProxiedInFile
+    def apiUrlPrefixesInFile
+    def ssbEnabledInFile
+
     // NOTE: Please also see 'FooServiceIntegrationTests', as that test also includes framework tests pertaining to connections.
 
     @Before
@@ -48,6 +54,19 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     public void tearDown(){
     }
 
+    public void backupConfigFileConfigurations(){
+        ssbOracleUsersProxiedInFile=config.ssbOracleUsersProxied
+        apiOracleUsersProxiedInFile=config.apiOracleUsersProxied
+        apiUrlPrefixesInFile=config.apiUrlPrefixes
+        ssbEnabledInFile=config.ssbEnabled
+    }
+
+    public void resetConfigAsInTheFile(){
+        config.ssbOracleUsersProxied=ssbOracleUsersProxiedInFile
+        config.apiOracleUsersProxied=apiOracleUsersProxiedInFile
+        config.apiUrlPrefixes=apiUrlPrefixesInFile
+        config.ssbEnabled=ssbEnabledInFile
+    }
 
     public void setupAPIData(){
         username = SSB_VALID_USERNAME
@@ -90,7 +109,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         username = SSB_VALID_USERNAME
         password = SSB_VALID_PASSWORD
         setupSSBData()
-        super.setUp()
+        SSBSetUp(username,password)
     }
 
     public void setupSSBWithProxy(){
@@ -98,7 +117,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         username = PROXY_USERNAME
         password = PROXY_PASSWORD
         setupSSBData()
-        super.setUp()
+        SSBSetUp(username,password)
     }
 
     public void setupUnderlyingSSBDataSource(){
@@ -131,6 +150,8 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         assertTrue "Expected BannerConnection but have ${conn?.class}", conn instanceof BannerConnection
         assertTrue "Expected to be able to extract OracleConnection but found ${(conn as BannerConnection).extractOracleConnection()?.class}",
                 (conn as BannerConnection).extractOracleConnection() instanceof OracleConnection
+        dataSource.removeConnection(conn)
+        if (conn) conn.close()
 
     }
 
@@ -153,6 +174,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             row = sql.firstRow( "select sys_context('userenv','current_user') from dual" )
             assertEquals "GRAILS_USER", row.getAt( "SYS_CONTEXT('USERENV','CURRENT_USER')" )
         } finally {
+            if(conn) {
+                dataSource.removeConnection(conn);
+            }
             sql?.close()
         }
     }
@@ -173,33 +197,47 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             sql = new Sql( conn.extractOracleConnection() )
             sql.execute( stmt )
         } finally {
+            if(conn) {
+                dataSource.removeConnection(conn);
+            }
             sql?.close()
         }
     }
 
     @Test
     public void testSSBTypeRequestWithNoProxy(){
+        backupConfigFileConfigurations();
         setupSSBWithNoProxy()
         def conn = (dataSource as BannerDS).getConnection()
         assertTrue "Expected BannerConnection but have ${conn?.class}", conn instanceof BannerConnection
+        dataSource.removeConnection(conn)
+        if (conn) conn.close()
         tearDownDataSetup()
+        resetConfigAsInTheFile()
     }
 
     @Test
     public void testSSBTypeRequestWithProxy(){
+        backupConfigFileConfigurations();
         setupSSBWithProxy()
         def conn = (dataSource as BannerDS).getConnection()
         assertTrue "Expected BannerConnection but have ${conn?.class}", conn instanceof BannerConnection
+        dataSource.removeConnection(conn)
+        if (conn) conn.close()
         tearDownDataSetup()
+        resetConfigAsInTheFile()
     }
-
 
     @Test
     public void testAPITypeRequestWithNoProxy(){
+        backupConfigFileConfigurations();
         setupAPIWithNoProxy()
         def conn = (dataSource as BannerDS).getConnection()
         assertTrue "Expected BannerConnection but have ${conn?.class}", conn instanceof BannerConnection
+        dataSource.removeConnection(conn)
+        if (conn) conn.close()
         tearDownDataSetup()
+        resetConfigAsInTheFile()
     }
 
     /*@Test
@@ -207,6 +245,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         setupAPIWithProxy()
         def conn = (dataSource as BannerDS).getConnection()
         assertTrue "Expected BannerConnection but have ${conn?.class}", conn instanceof BannerConnection
+
         tearDownDataSetup()
     }*/
 
