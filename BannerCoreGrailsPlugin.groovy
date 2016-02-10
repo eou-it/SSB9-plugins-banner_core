@@ -1,5 +1,5 @@
 /* ******************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 
 
@@ -42,7 +42,7 @@ import java.util.concurrent.Executors
  * */
 class BannerCoreGrailsPlugin {
 
-    String version = "9.14.1"
+    String version = "9.14.2"
     private static final Logger staticLogger = Logger.getLogger(BannerCoreGrailsPlugin.class)
 
     // the version or versions of Grails the plugin is designed for
@@ -316,7 +316,7 @@ class BannerCoreGrailsPlugin {
         applicationContext.springSecurityFilterChain.filterChainMap = filterChainMap
 
         //set the teransaction timeout on transaction manager time unit in seconds
-        def transTimeOut = CH.config.banner?.transactionTimeoutx instanceof Integer ? CH.config.banner?.transactionTimeout : 30
+        def transTimeOut = CH.config.banner?.transactionTimeout instanceof Integer ? CH.config.banner?.transactionTimeout : 30
         applicationContext.getBean('transactionManager')?.setDefaultTimeout(transTimeOut)
     }
 

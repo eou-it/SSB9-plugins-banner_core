@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.testing
 
@@ -70,7 +70,6 @@ class BaseIntegrationTestCase extends Assert {
      **/
     @Before
     public void setUp() {
-        println "Before parent"
         params = [:]
         renderMap = [:]
         redirectMap = [:]
@@ -86,7 +85,7 @@ class BaseIntegrationTestCase extends Assert {
             formContext = associatedFormsList
             FormContext.set( associatedFormsList )
         } else {
-            println "Warning: No FormContext has been set, and it cannot be set automatically without knowing the controller..."
+            log.info("Warning: No FormContext has been set, and it cannot be set automatically without knowing the controller...")
         }
 
         if (controller) {
@@ -105,7 +104,7 @@ class BaseIntegrationTestCase extends Assert {
                 reconnect( dataSource.getConnection() ) // get a new connection that has unlocked the needed roles
             }
             transactionManager.getTransaction().setRollbackOnly()                 // and make sure we don't commit to the database
-            sessionFactory.queryCache.clear()
+            sessionFactory?.queryCache?.clear()                                     //clear the query cache when ehcache is being used
         }
     }
 
@@ -368,7 +367,6 @@ class BaseIntegrationTestCase extends Assert {
         ConfigurationUtils.getConfiguration()?.formControllerMap
     }
     public void SSBSetUp(username,password){
-        log.info("Before parent")
         params = [:]
         renderMap = [:]
         redirectMap = [:]
@@ -403,7 +401,7 @@ class BaseIntegrationTestCase extends Assert {
                 reconnect( dataSource.getConnection() ) // get a new connection that has unlocked the needed roles
             }
             transactionManager.getTransaction().setRollbackOnly()                 // and make sure we don't commit to the database
-            sessionFactory.queryCache.clear()
+            sessionFactory?.queryCache?.clear()
         }
     }
 
