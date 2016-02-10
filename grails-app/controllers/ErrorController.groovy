@@ -4,7 +4,7 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
-import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import grails.plugin.springsecurity.SpringSecurityUtils
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 
 class ErrorController {

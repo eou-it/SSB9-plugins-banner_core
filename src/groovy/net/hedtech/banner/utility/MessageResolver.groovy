@@ -3,7 +3,7 @@
  **********************************************************************************/
 package net.hedtech.banner.utility
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
+import grails.util.Holders
 import org.springframework.context.MessageSource
 import org.springframework.context.i18n.LocaleContextHolder as LCH
 
@@ -25,7 +25,7 @@ class MessageResolver {
         String value = "";
         if (key){
               if(!locale) locale = LCH.getLocale()
-              MessageSource messageSource = ApplicationHolder.application.mainContext.getBean('messageSource')
+              MessageSource messageSource = Holders.grailsApplication.mainContext.getBean('messageSource')
               value = messageSource.getMessage(key,args,locale)
         }
         return value

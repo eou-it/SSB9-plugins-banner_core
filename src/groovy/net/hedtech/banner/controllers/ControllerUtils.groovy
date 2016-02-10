@@ -3,8 +3,10 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.controllers
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import grails.util.Holders
+import grails.plugin.springsecurity.SpringSecurityUtils
+
+
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -39,13 +41,17 @@ class ControllerUtils {
 
     public static def buildLogoutRedirectURI() {
 
-        def uri = SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
+        def uri =  SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
         if(isSamlEnabled()) {
             uri= "/"+RequestContextHolder?.currentRequestAttributes()?.request?.session?.getServletContext().getAttribute("logoutEndpoint")
         }
         def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
         if (mep) {
-            uri += "?spring-security-redirect=?mepCode=${mep}"
+            if(uri.contains("?")){
+                uri += "&spring-security-redirect=?mepCode=${mep}"
+            }else{
+                uri += "?spring-security-redirect=?mepCode=${mep}"
+            }
         }
 
         uri
@@ -62,7 +68,7 @@ class ControllerUtils {
     }
 
     public static boolean isSamlEnabled() {
-        def samlEnabled = ConfigurationHolder?.config.banner.sso.authenticationProvider
+        def samlEnabled = Holders?.config.banner.sso.authenticationProvider
         if(samlEnabled){
             return 'saml'.equalsIgnoreCase( samlEnabled )
         }else{
@@ -71,7 +77,7 @@ class ControllerUtils {
     }
 
     public static boolean isCasEnabled() {
-        def casEnabled = ConfigurationHolder?.config.banner.sso.authenticationProvider
+        def casEnabled = Holders?.config.banner.sso.authenticationProvider
         if(casEnabled){
             return 'cas'.equalsIgnoreCase( casEnabled )
         }else{
@@ -80,7 +86,7 @@ class ControllerUtils {
     }
 
     public static boolean isLocalLogoutEnabled() {
-        def localLogoutEnabled = ConfigurationHolder?.config.banner?.sso?.authentication.saml.localLogout
+        def localLogoutEnabled = Holders?.config.banner?.sso?.authentication.saml.localLogout
         if(localLogoutEnabled){
             return 'true'.equalsIgnoreCase( localLogoutEnabled );
         }else {

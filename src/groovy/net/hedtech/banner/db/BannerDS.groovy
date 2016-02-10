@@ -1,36 +1,29 @@
 /* *****************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2015 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db
 
 import grails.util.Environment
-
+import grails.util.Holders
 import groovy.sql.Sql
-
-import java.sql.Connection
-import java.sql.SQLException
-
-import javax.sql.DataSource
-
 import net.hedtech.banner.apisupport.ApiUtils
-import net.hedtech.banner.exceptions.*
+import net.hedtech.banner.db.dbutility.DBUtility
+import net.hedtech.banner.exceptions.MepCodeNotFoundException
 import net.hedtech.banner.mep.MultiEntityProcessingService
-import net.hedtech.banner.security.BannerUser
-import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.security.BannerGrantedAuthority
+import net.hedtech.banner.security.BannerGrantedAuthorityService
+import net.hedtech.banner.security.BannerUser
 import net.hedtech.banner.security.FormContext
-
 import oracle.jdbc.OracleConnection
-
 import org.apache.log4j.Logger
-
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-
 import org.springframework.context.ApplicationContext
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
+
+import javax.sql.DataSource
+import java.sql.Connection
+import java.sql.SQLException
 import java.sql.SQLFeatureNotSupportedException
 
 /**
@@ -59,6 +52,9 @@ public class BannerDS implements DataSource {
 
     private final Logger log = Logger.getLogger(getClass())
 
+    private isAnonymousUser (def user) {
+        user?.authorities?.size() && user?.authorities[0]?.authority == 'ROLE_ANONYMOUS'
+    }
     /**
      * Returns a proxied connection for the current logged in user, from the underlying connection pool.
      * In addition to proxying the connection, appropriate password protected roles are unlocked
@@ -72,18 +68,14 @@ public class BannerDS implements DataSource {
         BannerConnection bannerConnection
         String[] roles
         def user = SecurityContextHolder?.context?.authentication?.principal
-        if ( (ApiUtils.isApiRequest() && !shouldProxyApiRequest() ) ||  
-             ( isSelfServiceRequest() && 
-                 ((user instanceof BannerUser && !user?.oracleUserName) || 
-                  (user instanceof String && user == 'anonymousUser')) 
-             )) {
+        if ( DBUtility.isNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(user) ) {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
-        else if ((user instanceof BannerUser && user?.oracleUserName) && shouldProxy()) {
+        else if (DBUtility.isAdminOrOracleProxyRequired(user)) {
             bannerConnection = getCachedConnection(user)
             if (!bannerConnection) {
                 List applicableAuthorities = extractApplicableAuthorities(user)
@@ -103,7 +95,7 @@ public class BannerDS implements DataSource {
 
                 setRoles(oconn, user, applicableAuthorities)
 
-                if (ApiUtils.isApiRequest() || shouldProxySsbRequest()){ // APIs handle MEP like SSB
+                if (ApiUtils.isApiRequest() || DBUtility.isSSBProxySupportEnabled()){ // APIs handle MEP like SSB
                     setMepSsb(conn) 
                 }
                 else {
@@ -121,7 +113,7 @@ public class BannerDS implements DataSource {
                 }
             }
         }
-        else if (isSelfServiceRequest())  {
+        else if (DBUtility.isSelfServiceRequest())  {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
@@ -137,7 +129,7 @@ public class BannerDS implements DataSource {
         if (user instanceof BannerUser)
             return bannerConnection
         else
-            return new BannerConnection(conn, user, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
+            return new BannerConnection(conn, user?.username, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
     }
 
     public void setFGAC(conn) {
@@ -553,7 +545,7 @@ public class BannerDS implements DataSource {
 
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (user) {
-            if (user.oracleUserName && shouldProxy()) return underlyingDataSource
+            if (isAdminOrOracleProxyRequired(user)) return underlyingDataSource
             else return underlyingSsbDataSource
         }
         else {
@@ -561,46 +553,14 @@ public class BannerDS implements DataSource {
         }
     }
 
-    /**
-     * Returns true if the current request is for an administrative page or if the solution is configured to proxy connections for SSB users.
-     * */
-    private boolean shouldProxy() {
-        isAdministrativeRequest() || shouldProxySsbRequest()
-    }
-
-    /**
-     * Returns true if SSB support is enabled and configured to proxy connections for SSB users.
-     * */
-    private boolean shouldProxySsbRequest() {
-
-        def enabled = CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
-        def proxySsb = CH.config.ssbOracleUsersProxied instanceof Boolean ? CH.config.ssbOracleUsersProxied : false
-        log.trace "BannerDS.shouldProxySsbRequest() will return '${enabled && proxySsb}' (since SSB is ${enabled ? '' : 'not '} enabled and proxy SSB is $proxySsb)"
-        enabled && proxySsb
-    }
-
-    private boolean shouldProxyApiRequest() {
-
-        def proxyApi = CH.config.apiOracleUsersProxied instanceof Boolean ?: false
-        log.trace "BannerDS.shouldProxyApiRequest() will return ${proxyApi} (since apiOracleUsersProxied is ${proxyApi})"
-        proxyApi
-    }
-
-    private isSelfServiceRequest() {
-        log.trace "BannerDS.isSelfServiceRequest() will return '${FormContext.isSelfService()}' (FormContext = ${FormContext.get()})"
-        FormContext.isSelfService()
-    }
 
 
-    private isAdministrativeRequest() {
-        log.trace "BannerDS.isAdministrativeRequest() will return '${!FormContext.isSelfService()}' (FormContext = ${FormContext.get()})"
-        !FormContext.isSelfService()
-    }
+
 
 
     private MultiEntityProcessingService getMultiEntityProcessingService() {
         if (!multiEntityProcessingService) {
-            ApplicationContext ctx = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+            ApplicationContext ctx = (ApplicationContext) Holders.grailsApplication.getMainContext()
             multiEntityProcessingService = (MultiEntityProcessingService) ctx.getBean("multiEntityProcessingService")
         }
         multiEntityProcessingService

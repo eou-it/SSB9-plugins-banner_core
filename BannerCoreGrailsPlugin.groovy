@@ -3,7 +3,7 @@
  ****************************************************************************** */
 
 
-
+import grails.plugin.springsecurity.web.filter.GrailsAnonymousAuthenticationFilter
 import grails.util.GrailsUtil
 import grails.util.Holders
 import net.hedtech.banner.db.BannerDS as BannerDataSource
@@ -14,10 +14,10 @@ import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.Logger
 import org.apache.log4j.jmx.HierarchyDynamicMBean
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders  as CH
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import grails.plugin.springsecurity.SpringSecurityUtils
 import org.codehaus.groovy.runtime.GStringImpl
 import org.springframework.context.event.SimpleApplicationEventMulticaster
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
@@ -31,6 +31,8 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.security.web.util.matcher.RequestMatcher
 
 import javax.servlet.Filter
 import java.util.concurrent.Executors
@@ -40,16 +42,18 @@ import java.util.concurrent.Executors
  * */
 class BannerCoreGrailsPlugin {
 
-    String version = "2.10.5"
+    String version = "9.14"
     private static final Logger staticLogger = Logger.getLogger(BannerCoreGrailsPlugin.class)
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.2.1 > *"
 
     // the other plugins this plugin depends on
-    def dependsOn = ['springSecurityCore': '1.2.7.3',
-            'springSecuritySaml': '2.10.2.2']
-    List loadAfter = ['springSecurityCore', 'springSecuritySaml']
+    List loadAfter = ['springSecurityCore']
+
+    def dependsOn = [
+            springSecurityCore: '2.0 => *'
+    ]
 
     // resources that are excluded from plugin packaging
     def pluginExcludes = ["grails-app/views/error.gsp"]
@@ -158,35 +162,11 @@ class BannerCoreGrailsPlugin {
             dataSource = ref(dataSource)
         }
 
-        casBannerAuthenticationProvider(CasAuthenticationProvider) {
-            dataSource = ref(dataSource)
-        }
-
-        samlAuthenticationProvider(BannerSamlAuthenticationProvider) {
-            userDetails = ref('userDetailsService')
-            hokConsumer = ref('webSSOprofileConsumer')
-            dataSource = ref(dataSource)
-        }
-
-        samlLogoutFilter(BannerSamlLogoutFilter,
-                ref('successLogoutHandler'), ref('logoutHandler'), ref('logoutHandler'))
-
-        samlSessionRegistry(BannerSamlSessionRegistryImpl)
-
-        samlSessionFilter(BannerSamlSessionFilter){
-            sessionRegistry = ref("samlSessionRegistry")
-            contextProvider=ref("contextProvider")
-        }
-        successRedirectHandler(BannerSamlSavedRequestAwareAuthenticationSuccessHandler) {
-            alwaysUseDefaultTargetUrl = conf.saml.alwaysUseAfterLoginUrl ?: false
-            defaultTargetUrl = conf.saml.afterLoginUrl
-            sessionRegistry = ref("samlSessionRegistry")
-        }
-
         bannerPreAuthenticatedFilter(BannerPreAuthenticatedFilter) {
             dataSource = ref(dataSource)
             authenticationManager = ref('authenticationManager')
         }
+
 
         bannerMepCodeFilter(BannerMepCodeFilter) 
 
@@ -214,9 +194,9 @@ class BannerCoreGrailsPlugin {
             accessDeniedHandler = ref('accessDeniedHandler')
         }
 
-        anonymousProcessingFilter(AnonymousAuthenticationFilter) {
+        anonymousProcessingFilter(GrailsAnonymousAuthenticationFilter) {
+            authenticationDetailsSource = ref('authenticationDetailsSource')
             key = 'horizon-anon'
-            userAttribute = 'anonymousUser,ROLE_ANONYMOUS'
         }
 
         applicationEventMulticaster(SimpleApplicationEventMulticaster) {
@@ -294,8 +274,8 @@ class BannerCoreGrailsPlugin {
             providerNames.addAll conf.providerNames
         }
         else {
-            if (isSsbEnabled()) providerNames = ['casBannerAuthenticationProvider', 'selfServiceBannerAuthenticationProvider', 'bannerAuthenticationProvider', 'samlAuthenticationProvider']
-            else providerNames = ['casBannerAuthenticationProvider', 'bannerAuthenticationProvider', 'samlAuthenticationProvider']
+            if (isSsbEnabled()) providerNames = ['selfServiceBannerAuthenticationProvider', 'bannerAuthenticationProvider']
+            else providerNames = ['bannerAuthenticationProvider']
         }
         applicationContext.authenticationManager.providers = createBeanList(providerNames, applicationContext)
 
@@ -312,20 +292,12 @@ class BannerCoreGrailsPlugin {
         def authenticationProvider = CH?.config?.banner.sso.authenticationProvider
         LinkedHashMap<String, String> filterChain = new LinkedHashMap();
         switch (authenticationProvider) {
-            case 'cas':
-                filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
-                filterChain['/**/qapi/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
-                filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,bannerMepCodeFilter,casAuthenticationFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
-                break
             case 'external':
                 filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
                 filterChain['/**/qapi/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
                 filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,bannerMepCodeFilter,bannerPreAuthenticatedFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
                 break
             case 'saml':
-                filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
-                filterChain['/**/qapi/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
-                filterChain['/**'] = 'samlSessionFilter,securityContextPersistenceFilter,bannerMepCodeFilter,samlEntryPoint,metadataFilter,samlProcessingFilter,samlLogoutFilter,samlLogoutProcessingFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
                 break
             default:
                 filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
@@ -334,17 +306,17 @@ class BannerCoreGrailsPlugin {
                 break
         }
 
-        LinkedHashMap<String, List<Filter>> filterChainMap = new LinkedHashMap()
+        LinkedHashMap<RequestMatcher, List<Filter>> filterChainMap = new LinkedHashMap()
         filterChain.each { key, value ->
             def filters = value.toString().split(',').collect {
                 name -> applicationContext.getBean(name)
             }
-            filterChainMap[key] = filters
+            filterChainMap[new AntPathRequestMatcher(key)] = filters
         }
         applicationContext.springSecurityFilterChain.filterChainMap = filterChainMap
 
         //set the teransaction timeout on transaction manager time unit in seconds
-        def transTimeOut = CH.config.banner?.transactionTimeout instanceof Integer ? CH.config.banner?.transactionTimeout : 30
+        def transTimeOut = CH.config.banner?.transactionTimeoutx instanceof Integer ? CH.config.banner?.transactionTimeout : 30
         applicationContext.getBean('transactionManager')?.setDefaultTimeout(transTimeOut)
     }
 
@@ -356,13 +328,6 @@ class BannerCoreGrailsPlugin {
                 'listener-class'("net.hedtech.banner.db.DbConnectionCacheSessionListener")
             }
         }
-        listenerElements + {
-            'listener' {
-                'display-name'("Http Session Listener")
-                'listener-class'("net.hedtech.banner.security.SessionCounterListener")
-            }
-        }
-
     }
 
 

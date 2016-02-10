@@ -3,13 +3,14 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.plugin.springsecurity.SpringSecurityUtils
+import grails.util.Holders  as CH
 import org.springframework.security.access.ConfigAttribute
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.AuthenticationFailureHandler
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler
-import org.springframework.security.web.util.AntUrlPathMatcher
+import org.springframework.util.AntPathMatcher
 
 import javax.servlet.FilterChain
 import javax.servlet.ServletException
@@ -84,12 +85,12 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
 
         String url = request.getRequestURI().substring(request.getContextPath().length());
         log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url"
-        HashMap interceptUrlMap = org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils.securityConfig["interceptUrlMap"]
-        AntUrlPathMatcher antUrlPathMatcher = new AntUrlPathMatcher()
-        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication antUrlPathMatcher $antUrlPathMatcher"
+        HashMap interceptUrlMap = SpringSecurityUtils.securityConfig["interceptUrlMap"]
+        AntPathMatcher antPathMatcher = new AntPathMatcher()
+        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication antUrlPathMatcher $antPathMatcher"
         for (Map.Entry<Object, Collection<ConfigAttribute>> entry : interceptUrlMap.entrySet()) {
             log.debug "BannerPreAuthenticatedFilter.requiresAuthentication entry : $entry"
-            if (antUrlPathMatcher.pathMatchesUrl(entry.getKey(), url)) {
+            if (antPathMatcher.match(entry.getKey(), url)) {
                 log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url matches $entry from interceptUrlMap"
                 if(entry.getValue().contains("IS_AUTHENTICATED_ANONYMOUSLY")) {
                     log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url is authenticated anonymously"

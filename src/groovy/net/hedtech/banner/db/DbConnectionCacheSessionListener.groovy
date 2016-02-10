@@ -6,7 +6,7 @@ package net.hedtech.banner.db
 
 import net.hedtech.banner.service.HttpSessionService
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
+import grails.util.Holders
 
 import javax.servlet.http.HttpSession
 import javax.servlet.http.HttpSessionEvent
@@ -37,7 +37,7 @@ class DbConnectionCacheSessionListener implements HttpSessionListener {
 
     private synchronized HttpSessionService getHttpSessionService() {
         if (httpSessionService == null) {
-            httpSessionService = (HttpSessionService) ApplicationHolder.getApplication().getMainContext().getBean('httpSessionService')
+            httpSessionService = (HttpSessionService) Holders.grailsApplication.getMainContext().getBean('httpSessionService')
         }
         httpSessionService
     }

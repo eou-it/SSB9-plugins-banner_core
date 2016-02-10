@@ -40,11 +40,11 @@ class LogoutController {
     }
 
     def timeoutPage = {
-        render view: VIEW_TIMEOUT, model: [uri: ControllerUtils.buildLogoutRedirectURI() ]
+        render view: VIEW_TIMEOUT, plugin: "bannerCore", model: [uri: ControllerUtils.buildLogoutRedirectURI() ]
     }
 
     def logoutPage = {
-        render view: VIEW_LOGOUT_PAGE
+        render view: VIEW_LOGOUT_PAGE, plugin: "bannerCore"
     }
     
     private void invalidateSession( response ) {
@@ -62,9 +62,9 @@ class LogoutController {
         }
 
         if(ControllerUtils.isCasEnabled()) {
-            render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show  ]
+            render view: VIEW_CUSTOM_LOGOUT, plugin: "bannerCore", model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show  ]
         } else {
-            render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show  ]
+            render view: VIEW_CUSTOM_LOGOUT, plugin: "bannerCore", model: [uri: ControllerUtils.getHomePageURL(), show: show  ]
         }
 
     }

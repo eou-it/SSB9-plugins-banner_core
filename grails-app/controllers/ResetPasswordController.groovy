@@ -4,8 +4,8 @@
 
 import net.hedtech.banner.security.ResetPasswordService
 import org.apache.commons.codec.binary.Base64
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
-import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import grails.util.Holders  as CH
+import grails.plugin.springsecurity.SpringSecurityUtils
 
 import javax.servlet.http.HttpSession
 import java.sql.SQLException
@@ -95,7 +95,7 @@ class ResetPasswordController {
         response.setHeader("Cache-Control", "no-store")
         response.setDateHeader("Expires", 0)
         response.setHeader("Pragma", "no-cache")
-        def config = org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils.securityConfig
+        def config = SpringSecurityUtils.securityConfig
         String postBackUrl = "${request.contextPath}/resetPassword/validateans"
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
         String id = request.getParameter("username")

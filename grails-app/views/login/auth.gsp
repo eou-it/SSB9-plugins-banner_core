@@ -95,7 +95,7 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 
             </div>
         </div>
-        <g:if test="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.reset.enabled == true || org.codehaus.groovy.grails.commons.ConfigurationHolder.config.ssbPassword.guest.reset.enabled == true}">
+        <g:if test="${grails.util.Holders.config.ssbPassword.reset.enabled == true || grails.util.Holders.config.ssbPassword.guest.reset.enabled == true}">
             <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" id="forgotpasswordLink"
                                               class="forgotpassword">${message(code: 'net.hedtech.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')}</a>
             </div>
@@ -134,7 +134,7 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
     }
 
     function openWindow() {
-    <g:set var="onLineHelpUrl" value="${org.codehaus.groovy.grails.commons.ConfigurationHolder.config.onLineHelp.url}" />
+    <g:set var="onLineHelpUrl" value="${grails.util.Holders.config.onLineHelp.url}" />
 
         window.open("${onLineHelpUrl}?productName=general&formName=login", '_blank');
         return false;

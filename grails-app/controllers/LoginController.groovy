@@ -5,7 +5,7 @@
 import grails.converters.JSON
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.AuthorizationException
-import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
+import grails.plugin.springsecurity.SpringSecurityUtils
 import org.springframework.security.authentication.*
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.core.userdetails.UsernameNotFoundException
@@ -52,7 +52,7 @@ class LoginController {
         String view = 'auth'
         String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
 
-        render view: view, model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
+        render view: view, plugin: "bannerCore", model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
                 rememberMeParameter: config.rememberMe.parameter]
     }
 
@@ -86,7 +86,7 @@ class LoginController {
             redirect action: full, params: params
         }
 
-        render view: "denied", model: [uri: buildLogout()]
+        render view: "denied", plugin: "bannerCore", model: [uri: buildLogout()]
     }
 
     /**
@@ -94,7 +94,7 @@ class LoginController {
      */
     def full = {
         def config = SpringSecurityUtils.securityConfig
-        render view: 'auth', params: params,
+        render view: 'auth', plugin: "bannerCore", params: params,
                 model: [hasCookie: authenticationTrustResolver.isRememberMe(SCH.context?.authentication),
                         postUrl: "${request.contextPath}${config.apf.filterProcessesUrl}"]
     }
@@ -181,7 +181,7 @@ class LoginController {
             String view = 'auth'
             String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
             String forgotPasswordUrl =  "${request.contextPath}/login/resetPassword";
-            render view: view, model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl, userNameRequired: true,
+            render view: view, plugin: "bannerCore", model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl, userNameRequired: true,
                     rememberMeParameter: config.rememberMe.parameter]
         }
         else{
@@ -192,7 +192,7 @@ class LoginController {
 
     def error = {
         def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
-        render view: "customerror", model: [msg: getMessageFor( exception ), uri: buildLogout()]
+        render view: "customerror", plugin: "bannerCore", model: [msg: getMessageFor( exception ), uri: buildLogout()]
     }
 
     private def buildLogout() {

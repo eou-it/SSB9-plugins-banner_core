@@ -7,8 +7,8 @@ import grails.util.GrailsNameUtils
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.AuthorizationException
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders
+import grails.util.Holders
 import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.BadCredentialsException
@@ -46,7 +46,7 @@ class AuthenticationProviderUtility {
         String accountStatus
         def conn
 
-        Boolean proxySsb = ConfigurationHolder.config.ssbOracleUsersProxied instanceof Boolean ? ConfigurationHolder.config.ssbOracleUsersProxied : false
+        Boolean proxySsb = Holders.config.ssbOracleUsersProxied instanceof Boolean ? Holders.config.ssbOracleUsersProxied : false
         Boolean processSsbOracleAccount = true
         try {
 
@@ -59,7 +59,7 @@ class AuthenticationProviderUtility {
             conn = dataSource.unproxiedConnection
             Sql db = new Sql( conn )
 
-            log.trace "AuthenticationProviderUtility.getMappedUserForUdcId mapping for $ConfigurationHolder?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue"
+            log.trace "AuthenticationProviderUtility.getMappedUserForUdcId mapping for $Holders?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue"
             // Determine if they map to a Banner Admin user
             def sqlStatement = '''SELECT gobeacc_username, gobeacc_pidm FROM gobumap, gobeacc
                                   WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
@@ -102,7 +102,7 @@ class AuthenticationProviderUtility {
             }
 
         } catch (SQLException e) {
-            log.error "AuthenticationProviderUtility.getMappedDatabaseUserForUdcId not able to map $ConfigurationHolder?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue to db user"
+            log.error "AuthenticationProviderUtility.getMappedDatabaseUserForUdcId not able to map $Holders?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue to db user"
             throw e
         } finally {
             conn?.close()
@@ -112,7 +112,7 @@ class AuthenticationProviderUtility {
     }
 
     private static Boolean isSsbEnabled() {
-        ConfigurationHolder.config.ssbEnabled instanceof Boolean ? ConfigurationHolder.config.ssbEnabled : false
+        Holders.config.ssbEnabled instanceof Boolean ? Holders.config.ssbEnabled : false
     }
 
     public static BannerAuthenticationToken createAuthenticationToken(dbUser, dataSource, provider ) {
@@ -241,7 +241,7 @@ class AuthenticationProviderUtility {
 
     public static def getApplicationContext() {
         if (!applicationContext) {
-            applicationContext = (ApplicationContext) ApplicationHolder.getApplication().getMainContext()
+            applicationContext = (ApplicationContext) Holders.grailsApplication.getMainContext()
         }
         applicationContext
     }

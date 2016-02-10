@@ -26,5 +26,6 @@ there is no concept of an 'entity manager' within this project.
         <property name="dialect">org.hibernate.dialect.Oracle10gDialect</property>
         <mapping class="net.hedtech.banner.general.utility.MenuAndToolbarPreference"/>
         <mapping class="net.hedtech.banner.general.utility.PersonalPreference"/>
+
     </session-factory>
 </hibernate-configuration>

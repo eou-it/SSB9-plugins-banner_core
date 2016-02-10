@@ -5,8 +5,8 @@ package net.hedtech.banner.apisupport
 
 import org.apache.log4j.Logger
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import grails.util.Holders
+import grails.util.Holders  as CH
 
 import org.springframework.context.ApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
@@ -62,7 +62,7 @@ class ApiUtils {
 
     public static boolean isApiRequest() {
 
-        if (apiUrlPrefixes == null) {
+        if (!apiUrlPrefixes) {
             apiUrlPrefixes = CH.config?.apiUrlPrefixes instanceof List ? CH.config.apiUrlPrefixes  : []
             if (apiUrlPrefixes.size() > 0) {
                 log.info "Configured to recognize API requests as URLs containing: ${apiUrlPrefixes.join(',')}"
