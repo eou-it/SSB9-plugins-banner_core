@@ -363,8 +363,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         def preferredNameService = ctx.preferredNameService
         def productName=CH?.config?.productName ? CH?.config?.productName:null
         def applicationName=CH?.config?.banner.applicationName ? CH?.config?.banner.applicationName:null
-        def pageName=CH?.config?.pageName ? CH?.config?.pageName:null
-        def sectionName=CH?.config?.sectionName ? CH?.config?.sectionName:null
 
         def params=[:]
 
@@ -373,10 +371,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             params.put("produtname",productName)
         if(applicationName!=null)
             params.put("appname",applicationName)
-        if(pageName!=null)
-            params.put("pageName",pageName)
-        if(sectionName!=null)
-            params.put("sectionname",sectionName)
 
         return preferredNameService.getName(params)
     }
