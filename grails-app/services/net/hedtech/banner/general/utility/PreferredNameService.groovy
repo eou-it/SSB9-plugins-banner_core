@@ -24,9 +24,9 @@ class PreferredNameService {
         try {
             sql.call("{$Sql.VARCHAR = call gokname.f_get_name(${params.pidm}," +
                     "${params.usage}," +
-                    "${params.produtname}," +
+                    "${params.productname}," +
                     "${params.appname}," +
-                    "${params.pageName}," +
+                    "${params.pagename}," +
                     "${params.sectionname}," +
                     "${params.maxlength}," +
                     "${params.usedata}," +
@@ -53,8 +53,11 @@ class PreferredNameService {
     public String getUsage(String pageName='', String sectionName=''){
         String productName = config?.productName ? Holders?.config?.productName:''
         String applicationName = config?.banner.applicationName ? Holders?.config?.banner.applicationName:''
-        String usage
-        String result
+        return getUsage(productName, applicationName, pageName, sectionName)
+    }
+
+    public String getUsage(String productName,String applicationName,String pageName, String sectionName){
+        String usage,result
         Sql sql = new Sql( dataSource.getSsbConnection() )
         try {
             sql.call("{$Sql.VARCHAR = call gokname.f_get_usage(${productName},${applicationName},${pageName},${sectionName})") {usageOut -> result = usageOut }

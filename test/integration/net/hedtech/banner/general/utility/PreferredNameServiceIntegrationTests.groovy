@@ -170,14 +170,14 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     @Test
     public void getPreferredNameWithNameParamsWithUseDataParams(){
 
-        params = [firstname:"VARUN", mi:"S", lastname:"SANKAR",produtname:"Payroll",appname:"Taxes",pageName:"W%",usedata:"Y"]
+        params = [firstname:"VARUN", mi:"S", lastname:"SANKAR",productname:"Payroll",appname:"Taxes",pagename:"W%",usedata:"Y"]
         String defaultName = preferredNameService.getName(params)
         assertEquals "SANKAR, VARUN S.", defaultName
     }
     @Test
     public void getPreferredNameWithpidmsWithUseDataParams(){
 
-        params = [pidm:pidm,produtname:"Payroll",appname:"Taxes",pageName:"W%",usedata:"N"]
+        params = [pidm:pidm,productname:"Payroll",appname:"Taxes",pagename:"W%",usedata:"N"]
         String defaultName = preferredNameService.getName(params)
         assertEquals "Lewis, Jerryone L.", defaultName
     }
@@ -192,9 +192,16 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
 
     @Test
     public void getUsageDefault(){
-        String defaultName = preferredNameService.getUsage("W4","Header")
-        assertEquals "DEFAULT", defaultName
+        String defaultName = preferredNameService.getUsage("Payroll","Taxes","W2","Body")
+        assertEquals FL30, defaultName
     }
+
+    @Test
+    public void getUsageDefaultWithNoParams(){
+        String defaultName = preferredNameService.getUsage()
+        assertEquals LEGAL, defaultName
+    }
+
     private ApplicationContext createUnderlyingSsbDataSourceBean() {
         def bb = new BeanBuilder()
         bb.beans {
