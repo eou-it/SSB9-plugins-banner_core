@@ -547,12 +547,13 @@ class ApplicationException extends RuntimeException {
                                                         code: wrappedException.messageCode,
                                                         args: wrappedException.messageArgs.collect {
                                                                   localize( code: it ) } ) as String,
-                                    errors: [[type: "validation", 
+                                    errors: [[type: "validation",
                                               messageCode: wrappedException.messageCode,
                                               message: translate( localize: localize,
                                                         code: wrappedException.messageCode,
                                                         args: wrappedException.messageArgs.collect {
-                                                                  localize( code: it ) } )]]
+                                                                  localize( code: it ) } ),
+                                              errorProperties: wrappedException.errorProperties ?: null ]]
                                 ]
             }
         ]
