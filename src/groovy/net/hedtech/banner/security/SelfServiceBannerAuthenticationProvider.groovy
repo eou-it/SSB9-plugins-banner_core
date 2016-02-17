@@ -368,7 +368,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
         params.put("pidm",pidm)
         if(productName!=null)
-            params.put("produtname",productName)
+            params.put("productname",productName)
         if(applicationName!=null)
             params.put("appname",applicationName)
 
