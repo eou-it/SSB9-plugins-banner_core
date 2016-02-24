@@ -175,7 +175,7 @@ class ResetPasswordService {
         def answer = getAnswerByQuestionNumberAndPidm(questionNumber, pidm, sql)
         boolean matchFlag = false
         try{
-            sql.call IS_ANSWERED_PROCEDURE, [userAnswer, answerSalt, Sql.VARCHAR], { encryptedAnswer ->
+            sql.call IS_ANSWERED_PROCEDURE, [userAnswer.toLowerCase(), answerSalt, Sql.VARCHAR], { encryptedAnswer ->
                if(encryptedAnswer == answer)
                     matchFlag = true
             }
