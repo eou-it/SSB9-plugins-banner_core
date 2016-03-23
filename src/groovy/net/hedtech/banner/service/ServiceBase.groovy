@@ -166,10 +166,7 @@ class ServiceBase {
             domainObject = fetch( getDomainClass(), content?.id, log )
 
             // Now we'll set the provided properties (content) onto our pristine domainObject instance -- this may make the model dirty
-            use(InvokerHelper) {
-                domainObject.setProperties(content)
-            }
-
+            DataBindingUtils.bindObjectToInstance(domainObject, content)
 
             def updatedModel
             if (isDirty( domainObject )) {
