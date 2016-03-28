@@ -29,8 +29,8 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.interceptor.TransactionAspectSupport
 import org.springframework.transaction.support.DefaultTransactionStatus
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 
 /**
  * Base class for services that provides generic support for CRUD.
@@ -857,10 +857,7 @@ class ServiceBase {
                 preUpdateParam = domainModelOrMap
             }
             this.preUpdate( preUpdateParam )
-
-            use(InvokerHelper) {
-                domainObject.setProperties(extractParams( getDomainClass(), domainModelOrMap, log )) // re-apply changes)
-            }
+            DataBindingUtils.bindObjectToInstance(domainObject, extractParams( getDomainClass(), domainModelOrMap, log ))
         }
         domainObject
     }
