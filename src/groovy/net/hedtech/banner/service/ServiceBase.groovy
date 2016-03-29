@@ -6,6 +6,7 @@ package net.hedtech.banner.service
 
 import grails.validation.ValidationException
 import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 
 import groovy.sql.Sql
 
@@ -29,8 +30,6 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.interceptor.TransactionAspectSupport
 import org.springframework.transaction.support.DefaultTransactionStatus
-
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 
 /**
  * Base class for services that provides generic support for CRUD.
@@ -167,7 +166,7 @@ class ServiceBase {
             domainObject = fetch( getDomainClass(), content?.id, log )
 
             // Now we'll set the provided properties (content) onto our pristine domainObject instance -- this may make the model dirty
-            DataBindingUtils.bindObjectToInstance(domainObject, content)
+            updateDomainProperties(domainObject, content)
 
             def updatedModel
             if (isDirty( domainObject )) {
@@ -218,6 +217,12 @@ class ServiceBase {
         }
     }
 
+    private void updateDomainProperties(domainObject, content) {
+        def d = new DefaultGrailsDomainClass(getDomainClass())
+        d.getPersistentProperties().each { it ->
+            domainObject[it.name] = content[it.name]
+        }
+    }
 
     /**
      * Creates or updates model instances provided within the supplied domainModelsOrMaps list.
@@ -857,7 +862,7 @@ class ServiceBase {
                 preUpdateParam = domainModelOrMap
             }
             this.preUpdate( preUpdateParam )
-            DataBindingUtils.bindObjectToInstance(domainObject, extractParams( getDomainClass(), domainModelOrMap, log ))
+            updateDomainProperties(domainObject, extractParams( getDomainClass(), domainModelOrMap, log ))
         }
         domainObject
     }
