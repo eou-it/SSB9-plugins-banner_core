@@ -61,7 +61,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             authenticationResults['authorities']        = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
             authenticationResults['webTimeout']         = getWebTimeOut( authenticationResults, db )
             authenticationResults['transactionTimeout'] = getTransactionTimeout()
-            String preferredName=getPreferredName(authenticationResults.pidm) as String
+            String preferredName = authenticationResults.guest ? "" :getPreferredName(authenticationResults.pidm) as String
             if(preferredName!=null && !preferredName.isEmpty() )
                 authenticationResults['fullName']=preferredName
             else
