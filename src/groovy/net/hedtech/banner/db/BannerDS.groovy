@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.context.i18n.LocaleContextHolder
 
 import javax.sql.DataSource
 import java.sql.Connection
@@ -50,11 +51,27 @@ public class BannerDS implements DataSource {
 
     MultiEntityProcessingService multiEntityProcessingService
 
-    private final Logger log = Logger.getLogger(getClass())
+    private static final Logger log = Logger.getLogger(getClass())
 
     private isAnonymousUser (def user) {
         user?.authorities?.size() && user?.authorities[0]?.authority == 'ROLE_ANONYMOUS'
     }
+
+    public static callNlsUtility(sql,userLocale){
+        try {
+            userLocale = userLocale.toString()?.replaceAll('_','-')
+            sql.call("""{call g\$_nls_utility.p_set_nls(${userLocale})}""")
+        } catch (Exception e) {
+            log.debug "There was an exception while setting nls for locale ${userLocale}:" + e.getMessage()
+        }
+    }
+
+    public static setLocaleInDatabase(conn) {
+        def sql = new Sql(conn)
+        def locale = LocaleContextHolder?.getLocale()
+        callNlsUtility(sql,locale)
+    }
+
     /**
      * Returns a proxied connection for the current logged in user, from the underlying connection pool.
      * In addition to proxying the connection, appropriate password protected roles are unlocked
@@ -126,10 +143,13 @@ public class BannerDS implements DataSource {
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
         }
 
-        if (user instanceof BannerUser)
-            return bannerConnection
-        else
+        if (user instanceof BannerUser){
+            setLocaleInDatabase(bannerConnection.underlyingConnection)
+        }
+        else{
+            setLocaleInDatabase(conn)
             return new BannerConnection(conn, user?.username, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
+        }
     }
 
     public void setFGAC(conn) {
