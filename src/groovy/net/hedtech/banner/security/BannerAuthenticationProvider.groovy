@@ -8,6 +8,7 @@ import grails.util.Holders  as CH
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -45,6 +46,9 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
         log.trace "BannerAuthenticationProvider.authenticate invoked"
 
+        def ctx = CH.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
+        def preferredNameService = ctx.preferredNameService
+
         try {
             def authenticationResults = defaultAuthentication( authentication )
 
@@ -57,7 +61,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, dataSource )
 
-            String preferredName=SelfServiceBannerAuthenticationProvider.getPreferredName(authenticationResults.pidm) as String
+            String preferredName = preferredNameService.getPreferredName(authenticationResults.pidm) as String
 
             if(preferredName!=null && !preferredName.isEmpty() )
                 authenticationResults['fullName']=preferredName

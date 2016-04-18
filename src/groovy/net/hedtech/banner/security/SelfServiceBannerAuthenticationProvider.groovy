@@ -12,7 +12,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
 import java.sql.SQLException
-
+import net.hedtech.banner.general.utility.PreferredNameService
 /**
  * An authentication provider which authenticates a self service user.  Self service users
  * need not have an oracle login..
@@ -22,7 +22,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     private static final Logger log = Logger.getLogger( "net.hedtech.banner.security.SelfServiceBannerAuthenticationProvider" )
 
     def dataSource	// injected by Spring
-
+    def preferredNameService
 
     // a cached map of web roles to their configured timeout values, that is populated on first need
     private static roleBasedTimeOutsCache = [:]
@@ -40,6 +40,9 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
      * @return Authentication an authentication token for the now-authenticated user
      **/
     public Authentication authenticate( Authentication authentication ) {
+
+        def ctx = CH.servletContext.getAttribute(GA.APPLICATION_CONTEXT)
+        def preferredNameService = ctx.preferredNameService
 
         log.trace "SelfServiceBannerAuthenticationProvider asked to authenticate $authentication"
         def conn
@@ -61,13 +64,11 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             authenticationResults['authorities']        = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
             authenticationResults['webTimeout']         = getWebTimeOut( authenticationResults, db )
             authenticationResults['transactionTimeout'] = getTransactionTimeout()
-            String preferredName = authenticationResults.guest ? "" :getPreferredName(authenticationResults.pidm) as String
+            String preferredName = authenticationResults.guest ? "" :preferredNameService.getPreferredName(authenticationResults.pidm, conn) as String
             if(preferredName!=null && !preferredName.isEmpty() )
                 authenticationResults['fullName']=preferredName
             else
                 authenticationResults['fullName']= getFullName( authenticationResults, dataSource ) as String
-
-
 
             setWebSessionTimeout(  authenticationResults['webTimeout'] )
             setTransactionTimeout( authenticationResults['transactionTimeout'] )
@@ -357,23 +358,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         roleBasedTimeOutsCache // we'll return this to facilitate testing of this method
     }
 
-    public static String getPreferredName(pidm){
-
-        def ctx = CH.servletContext.getAttribute(GA.APPLICATION_CONTEXT)
-        def preferredNameService = ctx.preferredNameService
-        def productName=CH?.config?.productName ? CH?.config?.productName:null
-        def applicationName=CH?.config?.banner.applicationName ? CH?.config?.banner.applicationName:null
-
-        def params=[:]
-
-        params.put("pidm",pidm)
-        if(productName!=null)
-            params.put("productname",productName)
-        if(applicationName!=null)
-            params.put("appname",applicationName)
-
-        return preferredNameService.getName(params)
-    }
 
 
 }
