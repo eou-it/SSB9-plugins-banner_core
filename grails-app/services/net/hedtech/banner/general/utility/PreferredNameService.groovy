@@ -31,8 +31,9 @@ class PreferredNameService {
 
         Sql sql = new Sql( conn )
         try {
-            sql.call("{$Sql.VARCHAR = call gokname.f_get_name(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}",
+            sql.call("{? = call gokname.f_get_name(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}",
                     [
+                       Sql.VARCHAR,
                        params.pidm,
                        params.usage,
                        params.productname,
