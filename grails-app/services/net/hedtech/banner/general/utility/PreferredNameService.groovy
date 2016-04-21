@@ -6,6 +6,7 @@ package net.hedtech.banner.general.utility
 
 import grails.util.Holders
 import groovy.sql.Sql
+import net.hedtech.banner.exceptions.ApplicationException
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import javax.sql.DataSource
@@ -60,6 +61,9 @@ class PreferredNameService {
          } catch(SQLException e){
             log.info " Info SQLException Preferred Name Script doesn't exists in the DB "
          }
+        if(preferredName?.contains("*ERROR*"))  {
+            throw new ApplicationException("", "net.hedtech.banner.preferredname.invalid.pidm")
+        }
         Sql.LOG.level = level
         return preferredName
     }

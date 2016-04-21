@@ -6,6 +6,9 @@ package net.hedtech.banner.general.utility
 
 import grails.spring.BeanBuilder
 import grails.util.Holders  as CH
+import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.i18n.MessageHelper
+import net.hedtech.banner.query.DynamicFinder
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.commons.dbcp.BasicDataSource
 import org.junit.After
@@ -111,9 +114,15 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
         usage = LFMI
         pidm = 11111
         params = [pidm:pidm, usage:usage]
-        String defaultName = preferredNameService.getPreferredName(params)
-        println defaultName
-        assertEquals "*ERROR* Name with rule LFMI not found for ID: UNKNOWN", defaultName
+        String defaultName
+        shouldFail(ApplicationException) {
+            try {
+                 defaultName = preferredNameService.getPreferredName(params)
+                } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.preferredname.invalid.pidm"), ae.message
+                throw ae
+            }
+        }
     }
 
     @Test
