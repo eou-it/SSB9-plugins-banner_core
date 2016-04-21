@@ -7,6 +7,7 @@ package net.hedtech.banner.general.utility
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.i18n.MessageHelper
 import org.apache.log4j.Logger
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import javax.sql.DataSource
@@ -62,7 +63,7 @@ class PreferredNameService {
             log.trace " SQLException Preferred Name Script doesn't exists in the DB "
          }
         if(preferredName?.contains("*ERROR*"))  {
-            throw new ApplicationException("", "net.hedtech.banner.preferredname.invalid.pidm")
+            throw new ApplicationException("", MessageHelper.message("net.hedtech.banner.preferredname.invalid.pidm"))
         }
         Sql.LOG.level = level
         return preferredName
@@ -116,7 +117,6 @@ class PreferredNameService {
 
     public  String getPreferredName(Map params) {
         Connection conn = dataSource.getSsbConnection()
-        conn = conn? conn : dataSource.getUnproxiedConnection()
         String displayName
         if(conn)    {
             try {

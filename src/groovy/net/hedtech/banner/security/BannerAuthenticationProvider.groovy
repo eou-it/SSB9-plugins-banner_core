@@ -8,8 +8,6 @@ import grails.util.Holders  as CH
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-
 import java.sql.SQLException
 import javax.sql.DataSource
 import org.apache.log4j.Logger

@@ -119,9 +119,9 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
             try {
                  defaultName = preferredNameService.getPreferredName(params)
                 } catch (ApplicationException ae) {
-                assert MessageHelper.message("net.hedtech.banner.preferredname.invalid.pidm"), ae.message
-                throw ae
-            }
+                    assert MessageHelper.message("net.hedtech.banner.preferredname.invalid.pidm"), ae.message
+                    throw ae
+                }
         }
     }
 
