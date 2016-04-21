@@ -11,6 +11,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import javax.sql.DataSource
 import java.sql.Connection
 import java.sql.SQLException
+import java.util.logging.Level
 
 
 class PreferredNameService {
@@ -22,13 +23,13 @@ class PreferredNameService {
     def config = Holders.getConfig()
 
     public String getName(params, conn) {
-
         String preferredName = ""
-
         int pidm
         if(params.pidm instanceof Boolean)
             return preferredName
 
+        Level level = Sql.LOG.level
+        Sql.LOG.level = java.util.logging.Level.SEVERE
         Sql sql = new Sql( conn )
         try {
             sql.call("{? = call gokname.f_get_name(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}",
@@ -56,10 +57,10 @@ class PreferredNameService {
                        params.debug
                     ]
                 )  {  preferredNameOut -> preferredName = preferredNameOut }
-         } catch(SQLException e) {
-            log.warn "Preferred Name Script doesn't exists in the DB "
+         } catch(SQLException e){
+            log.info " Info SQLException Preferred Name Script doesn't exists in the DB "
          }
-        println "value of preferredName is "+preferredName
+        Sql.LOG.level = level
         return preferredName
     }
 
@@ -75,19 +76,19 @@ class PreferredNameService {
         try {
             sql.call("{$Sql.VARCHAR = call gokname.f_get_usage(${productName},${applicationName},${pageName},${sectionName})") {usageOut -> result = usageOut }
             usage = result?.substring(4);
-            return usage
         } catch (e) {
-            log.error "Error with Preferred Name Procedure gokname.f_get_usage . Exception Encountered :"
+            log.trace "Error with Preferred Name Procedure gokname.f_get_usage . Exception Encountered :"
         } finally {
             sql?.close()
         }
+        return usage
     }
 
     public  String getPreferredName(pidm,  conn){
         def params = setupPreferredNameParams(pidm)
         String displayName = getName(params,conn)
         log.trace "PreferredNameService.getPreferredName is returning $displayName"
-        displayName
+        return displayName
     }
 
     private  LinkedHashMap setupPreferredNameParams(pidm) {
@@ -111,12 +112,17 @@ class PreferredNameService {
 
     public  String getPreferredName(Map params) {
         Connection conn = dataSource.getSsbConnection()
+        conn = conn? conn : dataSource.getUnproxiedConnection()
         String displayName
-        try {
-            displayName = getName(params,conn)
-        }
-        finally{
-            conn?.close()
+        if(conn)    {
+            try {
+                displayName = getName(params,conn)
+            }
+            finally{
+                conn?.close()
+            }
+        } else {
+            log.trace "PreferredNameService Self Service Connection object is null "
         }
         return displayName
     }
