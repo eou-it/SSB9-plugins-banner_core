@@ -59,7 +59,7 @@ class PreferredNameService {
                     ]
                 )  {  preferredNameOut -> preferredName = preferredNameOut }
          } catch(SQLException e){
-            log.info " Info SQLException Preferred Name Script doesn't exists in the DB "
+            log.trace " SQLException Preferred Name Script doesn't exists in the DB "
          }
         if(preferredName?.contains("*ERROR*"))  {
             throw new ApplicationException("", "net.hedtech.banner.preferredname.invalid.pidm")

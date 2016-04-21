@@ -46,9 +46,6 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
         log.trace "BannerAuthenticationProvider.authenticate invoked"
 
-        def ctx = CH.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
-        def preferredNameService = ctx.preferredNameService
-
         try {
             def authenticationResults = defaultAuthentication( authentication )
 
@@ -61,17 +58,10 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, dataSource )
 
-            String preferredName = preferredNameService.getPreferredName(authenticationResults.pidm) as String
-
-            if(preferredName!=null && !preferredName.isEmpty() )
-                authenticationResults['fullName']=preferredName
-            else
-                authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
-
-
-
+            authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
 
             AuthenticationProviderUtility.newAuthenticationToken( this, authenticationResults )
+
         }
         catch (DisabledException de)           { throw de }
         catch (CredentialsExpiredException ce) { throw ce }
