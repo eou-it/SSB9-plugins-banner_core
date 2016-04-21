@@ -51,13 +51,13 @@ public class BannerDS implements DataSource {
 
     MultiEntityProcessingService multiEntityProcessingService
 
-    private static final Logger log = Logger.getLogger(getClass())
+    private final Logger log = Logger.getLogger(getClass())
 
     private isAnonymousUser (def user) {
         user?.authorities?.size() && user?.authorities[0]?.authority == 'ROLE_ANONYMOUS'
     }
 
-    public static callNlsUtility(sql,userLocale){
+    public callNlsUtility(sql,userLocale){
         try {
             userLocale = userLocale.toString()?.replaceAll('_','-')
             sql.call("""{call g\$_nls_utility.p_set_nls(${userLocale})}""")
@@ -66,7 +66,7 @@ public class BannerDS implements DataSource {
         }
     }
 
-    public static setLocaleInDatabase(conn) {
+    public setLocaleInDatabase(conn) {
         def sql = new Sql(conn)
         def locale = LocaleContextHolder?.getLocale()
         callNlsUtility(sql,locale)

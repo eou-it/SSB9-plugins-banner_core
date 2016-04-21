@@ -252,8 +252,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         sql.eachRow("select VALUE from v\$nls_parameters where parameter='NLS_LANGUAGE'"){row->
             assertEquals("CANADIAN FRENCH",row.value)
         }
-        if(conn) conn.close()
         if(sql) sql.close()
+        if(conn) conn.close()
+
     }
 
     @Test
@@ -265,8 +266,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         sql.eachRow("select VALUE from v\$nls_parameters where parameter='NLS_LANGUAGE'"){row->
             assertEquals("SPANISH",row.value)
         }
-        if(conn) conn.close()
         if(sql) sql.close()
+        if(conn) conn.close()
+
     }
 
     /*@Test
