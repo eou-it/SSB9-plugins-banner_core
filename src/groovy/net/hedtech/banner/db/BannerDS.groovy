@@ -145,7 +145,8 @@ public class BannerDS implements DataSource {
 
         if (user instanceof BannerUser){
             setLocaleInDatabase(bannerConnection.underlyingConnection)
-        }
+			return bannerConnection
+		}
         else{
             setLocaleInDatabase(conn)
             return new BannerConnection(conn, user?.username, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
