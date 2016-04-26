@@ -8,7 +8,6 @@ import grails.spring.BeanBuilder
 import grails.util.Holders  as CH
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.i18n.MessageHelper
-import net.hedtech.banner.query.DynamicFinder
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.commons.dbcp.BasicDataSource
 import org.junit.After

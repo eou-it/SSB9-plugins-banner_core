@@ -12,7 +12,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
 import java.sql.SQLException
-import net.hedtech.banner.general.utility.PreferredNameService
+
 /**
  * An authentication provider which authenticates a self service user.  Self service users
  * need not have an oracle login..

@@ -9,8 +9,6 @@ import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.i18n.MessageHelper
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import javax.sql.DataSource
 import java.sql.Connection
 import java.sql.SQLException
 import java.util.logging.Level
@@ -26,7 +24,6 @@ class PreferredNameService {
 
     public String getName(params, conn) {
         String preferredName = ""
-        int pidm
         if(params.pidm instanceof Boolean)
             return preferredName
 
@@ -89,7 +86,7 @@ class PreferredNameService {
         return usage
     }
 
-    public  String getPreferredName(pidm,  conn){
+    public  String getPreferredName(pidm, conn){
         def params = setupPreferredNameParams(pidm)
         String displayName = getName(params,conn)
         log.trace "PreferredNameService.getPreferredName is returning $displayName"
@@ -97,17 +94,16 @@ class PreferredNameService {
     }
 
     private  LinkedHashMap setupPreferredNameParams(pidm) {
-        def ctx = Holders.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
-        def preferredNameService = ctx.preferredNameService
-        def productName = Holders?.config?.productName ? Holders?.config?.productName : null
-        def applicationName = Holders?.config?.banner.applicationName ? Holders?.config?.banner.applicationName : null
+        def productName = (Holders?.config?.productName) ? (Holders?.config?.productName) : null
+        def applicationName = (Holders?.config?.banner.applicationName) ? (Holders?.config?.banner.applicationName) : null
         def params = [:]
         params.put("pidm", pidm)
         if (productName != null)
             params.put("productname", productName)
         if (applicationName != null)
             params.put("appname", applicationName)
-        params
+
+        return params
     }
 
     public  String getPreferredName(pidm) {
@@ -115,7 +111,7 @@ class PreferredNameService {
         return getPreferredName(params)
     }
 
-    public  String getPreferredName(Map params) {
+    public  String getPreferredName(Map params) throws ApplicationException{
         Connection conn = dataSource.getSsbConnection()
         String displayName
         if(conn)    {
