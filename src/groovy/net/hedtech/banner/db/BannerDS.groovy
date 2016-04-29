@@ -566,7 +566,7 @@ public class BannerDS implements DataSource {
 
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (user) {
-            if (isAdminOrOracleProxyRequired(user)) return underlyingDataSource
+            if (DBUtility.isAdminOrOracleProxyRequired(user)) return underlyingDataSource
             else return underlyingSsbDataSource
         }
         else {
