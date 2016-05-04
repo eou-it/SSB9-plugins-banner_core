@@ -586,7 +586,9 @@ public class BannerDS implements DataSource {
 
     private setMepSsb(conn) {
 
-        if (RequestContextHolder.getRequestAttributes()?.request?.session) {
+        def uri =   RequestContextHolder.getRequestAttributes()?.getRequest()?.forwardURI
+
+        if (RequestContextHolder.getRequestAttributes()?.request?.session && !uri.equals("/applicationNavigator/mep")) {
 
             def session = RequestContextHolder.currentRequestAttributes()?.request?.session
             def mepCode = session?.getAttribute("mep")
