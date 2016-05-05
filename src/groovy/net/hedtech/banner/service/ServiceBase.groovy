@@ -220,7 +220,9 @@ class ServiceBase {
     private void updateDomainProperties(domainObject, content) {
         def d = new DefaultGrailsDomainClass(getDomainClass())
         d.getPersistentProperties().each { it ->
-            domainObject[it.name] = content[it.name]
+            if(content.containsKey(it.name))   {
+                domainObject[it.name] = content[it.name]
+            }
         }
     }
 
