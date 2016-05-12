@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -8,13 +8,7 @@ import org.apache.log4j.Logger
 import java.sql.SQLException
 import java.util.regex.Pattern
 
-/**
- * Created by IntelliJ IDEA.
- * User: Vijendra.Rao
- * Date: 31/10/11
- * Time: 12:37 PM
- * To change this template use File | Settings | File Templates.
- */
+
 class ResetPasswordService {
 
     static transactional = true
