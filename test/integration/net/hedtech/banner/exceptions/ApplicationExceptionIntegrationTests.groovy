@@ -1,25 +1,23 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.exceptions
 
-import net.hedtech.banner.testing.*
+import grails.validation.ValidationException
+import groovy.sql.Sql
+import net.hedtech.banner.testing.Bar
+import net.hedtech.banner.testing.BaseIntegrationTestCase
+import net.hedtech.banner.testing.Foo
+import net.hedtech.banner.testing.TermController
 import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
-
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.dao.DataIntegrityViolationException as ConstraintException
+import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
+import org.springframework.security.core.context.SecurityContextHolder as SCH
 
 import java.sql.SQLException
-
-import grails.validation.ValidationException
-
-import groovy.sql.Sql
-
-import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
-import org.springframework.dao.DataIntegrityViolationException as ConstraintException
-
-import org.springframework.security.core.context.SecurityContextHolder as SCH
 
 /**
  * An integration test for a ApplicationException.
@@ -416,23 +414,39 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 	    assertTrue returnMap.underlyingErrorMessage ==~ /.*@@r1:runtime.you.wont.find.me:FooController:.SomeMissingAction@@.*/
     }
 
-    @Test
-    public void testBusinessLogicValidationException() {
-        def ae = new ApplicationException( this.getClass(), new BusinessLogicValidationException( "blank.message",
-                                                                                      ["S9034823","default.home.label"]
-                                                                                    ) )
-        assertTrue "toString() does not have expected content, but has: ${ae}", ae.toString().contains( "blank.message" )
 
-        def returnMap = ae.returnMap( controller.localizer )
+	@Test
+	public void testBusinessLogicValidationException() {
+		def ae = new ApplicationException(this.getClass(), new BusinessLogicValidationException("blank.message",
+				["S9034823", "default.home.label"]
+		))
+		assertTrue "toString() does not have expected content, but has: ${ae}", ae.toString().contains("blank.message")
 
-        assertEquals returnMap.headers["X-Status-Reason"] ,  'Validation failed'
-        assertEquals returnMap.message, "Property [S9034823] of class [Home] cannot be blank"
-        //assertTrue "List of errors not returned", returnMap.errors instanceof List
-        assertTrue returnMap.errors.toString(), returnMap.errors[0].message.contains( "Property [S9034823] of class [Home] cannot be blank" )
-    }
+		def returnMap = ae.returnMap(controller.localizer)
+
+		assertEquals returnMap.headers["X-Status-Reason"], 'Validation failed'
+		assertEquals returnMap.message, "Property [S9034823] of class [Home] cannot be blank"
+		//assertTrue "List of errors not returned", returnMap.errors instanceof List
+		assertTrue returnMap.errors.toString(), returnMap.errors[0].message.contains("Property [S9034823] of class [Home] cannot be blank")
+	}
 
 
-   // new ApplicationException(  new BusinessLogicValidationException(“adviseeSearch.person.deceased”, [“HOF00714”, “201410”]  )  )
+	@Test
+	public void testBusinessLogicValidationExceptionWithErrorProperties() {
+		List errorProperties = ["#/instructorRoster.instructor.id", "#/term.code"]
+		BusinessLogicValidationException businessLogicValidationException = new BusinessLogicValidationException("blank.message", ["S9034823", "default.home.label"], errorProperties)
+		def ae = new ApplicationException(this.getClass(), businessLogicValidationException)
+		assertTrue "toString() does not have expected content, but has: ${ae}", ae.toString().contains("blank.message")
+
+		def returnMap = ae.returnMap(controller.localizer)
+
+		assertEquals returnMap.headers["X-Status-Reason"], 'Validation failed'
+		assertEquals returnMap.message, "Property [S9034823] of class [Home] cannot be blank"
+		assertTrue returnMap.errors.toString(), returnMap.errors[0].message.contains("Property [S9034823] of class [Home] cannot be blank")
+		assertTrue returnMap.errors[0].errorProperties.containsAll(errorProperties)
+	}
+
+	// new ApplicationException(  new BusinessLogicValidationException(“adviseeSearch.person.deceased”, [“HOF00714”, “201410”]  )  )
 
     private Map newTestFooParams( code = "TT" ) {
         [ code: code, description: "Horizon Test - $code", addressStreetLine1: "TT", addressStreetLine2: "TT", addressStreetLine3: "TT", addressCity: "TT",

@@ -124,8 +124,18 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
     @Test
     void testGetSelfServiceUserRole () {
         login (READONLY_USER, "u_pick_it")
-        def roles
-        assertNotNull  BannerGrantedAuthorityService.getSelfServiceUserRole()
+        def roles = BannerGrantedAuthorityService.getSelfServiceUserRole()
+        assertNotNull roles
+    }
+
+    @Test
+    void testGetSelfServiceDistinctUserRole(){
+        login(READONLY_USER, "u_pick_it")
+        def success
+        def roles = BannerGrantedAuthorityService.getSelfServiceDistinctUserRole()
+        assertTrue(roles.size()<=1000)
+        Set<String> dupRoles = new HashSet<String>(roles)
+        assertTrue(dupRoles.size()==roles.size())
     }
 
 }
