@@ -77,4 +77,9 @@ class DBUtility {
         FormContext.isSelfService()
     }
 
+    public static boolean isMepAppNavEnabled() {
+        def enabled = config.seamlessMepEnabled instanceof Boolean ? config.seamlessMepEnabled : false
+        enabled
+    }
+
 }

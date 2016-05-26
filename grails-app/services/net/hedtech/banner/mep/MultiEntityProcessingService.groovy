@@ -47,8 +47,7 @@ class MultiEntityProcessingService {
                 //sql?.close()
             }
         }
-        //return mepEnabled
-        return true
+        return mepEnabled
     }
 
 

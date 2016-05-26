@@ -586,9 +586,7 @@ public class BannerDS implements DataSource {
 
     private setMepSsb(conn) {
 
-        def uri =   RequestContextHolder.getRequestAttributes()?.getRequest()?.forwardURI
-
-        if (RequestContextHolder.getRequestAttributes()?.request?.session && !uri.equals("/applicationNavigator/mep")) {
+        if (RequestContextHolder.getRequestAttributes()?.request?.session) {
 
             def session = RequestContextHolder.currentRequestAttributes()?.request?.session
             def mepCode = session?.getAttribute("mep")
@@ -598,7 +596,8 @@ public class BannerDS implements DataSource {
                 throw new MepCodeNotFoundException(mepCode: mepCode)
             }
 
-            if (getMultiEntityProcessingService().isMEP(conn)) {
+            //Checks mepEnabled only for Application Navigator
+            if (getMultiEntityProcessingService().isMEP(conn) && !DBUtility.isMepAppNavEnabled()) {
 
                 if (!mepCode) {
                     log.error "The Mep Code must be provided when running in multi institution context"
@@ -614,12 +613,17 @@ public class BannerDS implements DataSource {
                     // specified when this is wrapped in an ApplicationException
                     log.error "Mep Code is invalid, will throw MepCodeNotFoundException"
                     throw new MepCodeNotFoundException(mepCode: mepCode)
-                }
-                else {
+                } else {
                     session.setAttribute("ssbMepDesc", desc)
                     getMultiEntityProcessingService().setHomeContext(mepCode, conn)
                     getMultiEntityProcessingService().setProcessContext(mepCode, conn)
                 }
+            } else if (getMultiEntityProcessingService().isMEP(conn) && DBUtility.isMepAppNavEnabled()) {
+                if (mepCode) {
+                    getMultiEntityProcessingService().setHomeContext(mepCode, conn)
+                    getMultiEntityProcessingService().setProcessContext(mepCode, conn)
+                }
+
             }
         }
     }
