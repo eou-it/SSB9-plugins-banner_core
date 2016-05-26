@@ -6,53 +6,69 @@ package net.hedtech.banner.general.utility
 
 import grails.util.Holders
 import groovy.sql.Sql
+import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.i18n.MessageHelper
 import org.apache.log4j.Logger
-
+import java.sql.Connection
+import java.sql.SQLException
+import java.util.logging.Level
 
 
 class PreferredNameService {
 
     static transactional = true
     private final Logger log = Logger.getLogger(getClass())
-    def sessionFactory                     // injected by Spring
-    def dataSource                         // injected by Spring
+    def dataSource //injected by Spring
+
     def config = Holders.getConfig()
 
-    public String getName(params){
+    public String getName(params, conn) {
         String preferredName = ""
-        Sql sql = new Sql( dataSource.getSsbConnection() )
-        try {
-            sql.call("{$Sql.VARCHAR = call gokname.f_get_name(${params.pidm}," +
-                    "${params.usage}," +
-                    "${params.productname}," +
-                    "${params.appname}," +
-                    "${params.pagename}," +
-                    "${params.sectionname}," +
-                    "${params.maxlength}," +
-                    "${params.usedata}," +
-                    "${params.nametype}," +
-                    "${params.entity}," +
-                    "${params.id}," +
-                    "${params.nameprefix}," +
-                    "${params.firstname}," +
-                    "${params.mi}," +
-                    "${params.surnameprefix}," +
-                    "${params.lastname}," +
-                    "${params.namesuffix}," +
-                    "${params.legalname}," +
-                    "${params.prefname}," +
-                    "${params.debug})") {preferredNameOut -> preferredName = preferredNameOut }
+        if(params.pidm instanceof Boolean)
             return preferredName
-        } catch (e) {
-            log.error "Error with Preferred Name Procedure gokname.f_get_name . Exception Encountered :"
-      } finally {
-            sql?.close()
+
+        Level level = Sql.LOG.level
+        Sql.LOG.level = java.util.logging.Level.SEVERE
+        Sql sql = new Sql( conn )
+        try {
+            sql.call("{? = call gokname.f_get_name(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}",
+                    [
+                       Sql.VARCHAR,
+                       params.pidm,
+                       params.usage,
+                       params.productname,
+                       params.appname,
+                       params.pagename,
+                       params.sectionname,
+                       params.maxlength,
+                       params.usedata,
+                       params.nametype,
+                       params.entity,
+                       params.id,
+                       params.nameprefix,
+                       params.firstname,
+                       params.mi,
+                       params.surnameprefix,
+                       params.lastname,
+                       params.namesuffix,
+                       params.legalname,
+                       params.prefname,
+                       params.debug
+                    ]
+                )  {  preferredNameOut -> preferredName = preferredNameOut }
+         } catch(SQLException e){
+            log.trace " SQLException Preferred Name Script doesn't exists in the DB "
+         }
+        if(preferredName?.contains("*ERROR*"))  {
+            throw new ApplicationException("", MessageHelper.message("net.hedtech.banner.preferredname.invalid.pidm"))
         }
+        Sql.LOG.level = level
+        return preferredName
     }
 
     public String getUsage(String pageName='', String sectionName=''){
-        String productName = config?.productName ? Holders?.config?.productName:''
-        String applicationName = config?.banner.applicationName ? Holders?.config?.banner.applicationName:''
+        String productName = config?.productName ? config?.productName:''
+        String applicationName = config?.banner.applicationName ? config?.banner.applicationName:''
         return getUsage(productName, applicationName, pageName, sectionName)
     }
 
@@ -62,11 +78,52 @@ class PreferredNameService {
         try {
             sql.call("{$Sql.VARCHAR = call gokname.f_get_usage(${productName},${applicationName},${pageName},${sectionName})") {usageOut -> result = usageOut }
             usage = result?.substring(4);
-            return usage
         } catch (e) {
-            log.error "Error with Preferred Name Procedure gokname.f_get_usage . Exception Encountered :"
+            log.trace "Error with Preferred Name Procedure gokname.f_get_usage . Exception Encountered :"
         } finally {
             sql?.close()
         }
+        return usage
+    }
+
+    public  String getPreferredName(pidm, conn){
+        def params = setupPreferredNameParams(pidm)
+        String displayName = getName(params,conn)
+        log.trace "PreferredNameService.getPreferredName is returning $displayName"
+        return displayName
+    }
+
+    private  LinkedHashMap setupPreferredNameParams(pidm) {
+        def productName = (Holders?.config?.productName) ? (Holders?.config?.productName) : null
+        def applicationName = (Holders?.config?.banner.applicationName) ? (Holders?.config?.banner.applicationName) : null
+        def params = [:]
+        params.put("pidm", pidm)
+        if (productName != null)
+            params.put("productname", productName)
+        if (applicationName != null)
+            params.put("appname", applicationName)
+
+        return params
+    }
+
+    public  String getPreferredName(pidm) {
+        def params = setupPreferredNameParams(pidm)
+        return getPreferredName(params)
+    }
+
+    public  String getPreferredName(Map params) throws ApplicationException{
+        Connection conn = dataSource.getSsbConnection()
+        String displayName
+        if(conn)    {
+            try {
+                displayName = getName(params,conn)
+            }
+            finally{
+                conn?.close()
+            }
+        } else {
+            log.trace "PreferredNameService Self Service Connection object is null "
+        }
+        return displayName
     }
 }

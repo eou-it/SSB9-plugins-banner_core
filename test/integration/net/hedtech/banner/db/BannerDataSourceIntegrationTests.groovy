@@ -16,10 +16,13 @@ import org.junit.Before
 import org.junit.Test
 import grails.util.Holders
 import org.springframework.context.ApplicationContext
+import org.springframework.dao.DataAccessException
+import org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 
 import java.sql.Connection
+import java.sql.SQLException
 
 /**
  * Integration tests exercising the BannerDS (formerly named BannerDataSource) data source implementation.
@@ -238,6 +241,34 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         if (conn) conn.close()
         tearDownDataSetup()
         resetConfigAsInTheFile()
+    }
+
+    @Test
+    public void testOracleMessageTranslationForCanadianFrench(){
+        def locale = 'fr_CA'
+        def conn = (dataSource as BannerDS).getConnection()
+        def sql = new Sql(conn)
+        BannerDS.callNlsUtility(sql,locale)
+        sql.eachRow("select VALUE from v\$nls_parameters where parameter='NLS_LANGUAGE'"){row->
+            assertEquals("CANADIAN FRENCH",row.value)
+        }
+        if(sql) sql.close()
+        if(conn) conn.close()
+
+    }
+
+    @Test
+    public void testOracleMessageTranslationForSpanish(){
+        def locale = 'es'
+        def conn = (dataSource as BannerDS).getConnection()
+        def sql = new Sql(conn)
+        BannerDS.callNlsUtility(sql,locale)
+        sql.eachRow("select VALUE from v\$nls_parameters where parameter='NLS_LANGUAGE'"){row->
+            assertEquals("SPANISH",row.value)
+        }
+        if(sql) sql.close()
+        if(conn) conn.close()
+
     }
 
     /*@Test
