@@ -8,6 +8,7 @@ import net.hedtech.banner.apisupport.ApiUtils
 import net.hedtech.banner.security.BannerUser
 import net.hedtech.banner.security.FormContext
 import org.apache.log4j.Logger
+import org.springframework.security.core.context.SecurityContextHolder
 
 /**
  * Created by karthick on 7/2/2015.
@@ -16,20 +17,40 @@ class DBUtility {
 
     private final static Logger log = Logger.getLogger(getClass())
 
-    private static def  config = Holders.getConfig()
+    private static def config = Holders.getConfig()
 
-    public static boolean isNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(user)   {
-        return ( ApiUtils.isApiRequest() && isApiProxySupportDisabled()) ||
-                ( isSelfServiceRequest() &&
+    public static boolean isNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(user) {
+        return (ApiUtils.isApiRequest() && isApiProxySupportDisabled()) ||
+                (isSelfServiceRequest() &&
                         (isNotOracleUser(user) ||
                                 isAnonymousTypeUser(user))
                 )
     }
 
-    public static boolean isOracleUser(user){
+    public static boolean isOracleUser(user) {
         boolean isOracleUser = user instanceof BannerUser && user?.oracleUserName
         isOracleUser
     }
+
+
+    public static boolean isSSUser() {
+        def user = SecurityContextHolder?.context?.authentication?.principal
+        def ssRole = false
+
+        if (user instanceof BannerUser) {
+            Set authorities = user?.authorities
+            if (authorities) {
+                authorities.each {
+                    if (it.authority.contains("ROLE_SELFSERVICE")) {
+                        ssRole = true
+                    }
+                }
+            }
+        }
+
+        ssRole
+    }
+
 
     public static boolean isNotOracleUser(user)   {
         return isOracleUser(user) == false
