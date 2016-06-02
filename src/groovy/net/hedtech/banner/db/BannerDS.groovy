@@ -619,9 +619,18 @@ public class BannerDS implements DataSource {
                     getMultiEntityProcessingService().setProcessContext(mepCode, conn)
                 }
             } else if (getMultiEntityProcessingService().isMEP(conn) && DBUtility.isMepAppNavEnabled()) {
+                //MEP Code is not required as a parameter for Application Navigator
                 if (mepCode) {
-                    getMultiEntityProcessingService().setHomeContext(mepCode, conn)
-                    getMultiEntityProcessingService().setProcessContext(mepCode, conn)
+                    def appNavMepDesc = getMultiEntityProcessingService().getMepDescription(mepCode, conn)
+
+                    if (!appNavMepDesc) {
+                        conn?.close()
+                        log.error "Mep Code is invalid, will throw MepCodeNotFoundException"
+                        throw new MepCodeNotFoundException(mepCode: mepCode)
+                    }else {
+                            getMultiEntityProcessingService().setHomeContext(mepCode, conn)
+                            getMultiEntityProcessingService().setProcessContext(mepCode, conn)
+                        }
                 }
 
             }
