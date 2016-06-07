@@ -42,9 +42,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
      **/
     public Authentication authenticate( Authentication authentication ) {
 
-        def ctx = CH.servletContext.getAttribute(GA.APPLICATION_CONTEXT)
-        def preferredNameService = ctx.preferredNameService
-
         log.trace "SelfServiceBannerAuthenticationProvider asked to authenticate $authentication"
         def conn
         try {
@@ -65,7 +62,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             authenticationResults['authorities']        = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
             authenticationResults['webTimeout']         = getWebTimeOut( authenticationResults, db )
             authenticationResults['transactionTimeout'] = getTransactionTimeout()
-            String preferredName = authenticationResults.guest ? "" :ControllerUtils.getPreferredName(authenticationResults.pidm) as String
+            String preferredName = authenticationResults.guest ? "" :AuthenticationProviderUtility.getUserFullName(authenticationResults.pidm,authenticationResults.name,dataSource) as String
             if(preferredName!=null && !preferredName.isEmpty() )
                 authenticationResults['fullName']=preferredName
             else

@@ -19,6 +19,7 @@ import org.springframework.security.authentication.LockedException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
 
 import java.sql.SQLException
 
@@ -117,8 +118,18 @@ class AuthenticationProviderUtility {
     }
 
     public static getUserFullName(pidm,name,dataSource){
+        def ctx = Holders.servletContext.getAttribute(GA.APPLICATION_CONTEXT)
+        def preferredNameService = ctx.preferredNameService
         def fullName
-        String preferredName=ControllerUtils.getPreferredName(pidm) as String
+        def conn
+        if (isSsbEnabled()) {
+            conn = dataSource.getSsbConnection();
+            log.debug "AuthenticationProviderUtility.getUserFullName using banssuser ssb connection"
+        }else{
+            conn = dataSource.getConnection();
+            log.debug "AuthenticationProviderUtility.getUserFullName using banproxy connection"
+        }
+        String preferredName=preferredNameService.getPreferredName(pidm,conn) as String
         if(preferredName!=null && !preferredName.isEmpty() ) {
             fullName = preferredName
             log.debug "AuthenticationProviderUtility.getUserFullName found full name $preferredName"

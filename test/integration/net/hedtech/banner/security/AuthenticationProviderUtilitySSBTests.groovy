@@ -146,7 +146,6 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
 
         def bannerID = generateBannerId();
         def bannerPidm = generatePidm();
-        usage=null
 
         generateSpridenRecord(bannerID, bannerPidm);
         addStudentRoleToSpriden(bannerPidm);

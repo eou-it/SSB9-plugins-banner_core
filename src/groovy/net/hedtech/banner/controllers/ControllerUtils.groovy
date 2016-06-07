@@ -94,32 +94,4 @@ class ControllerUtils {
     public static boolean isGuestAuthenticationEnabled() {
         Holders.config.guestAuthenticationEnabled instanceof Boolean ? Holders.config.guestAuthenticationEnabled : false
     }
-
-    public static String getPreferredName(pidm){
-
-        def ctx = Holders.servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
-        def preferredNameService = ctx.preferredNameService
-        def productName=Holders?.config?.productName ? Holders?.config?.productName:null
-        def applicationName=Holders?.config?.banner.applicationName ? Holders?.config?.banner.applicationName:null
-        def pageName, sectionName
-        String whichUsage = preferredNameService.getUsage(productName, applicationName, pageName, sectionName)
-        def params=[:]
-
-        params.put("pidm",pidm)
-        if(whichUsage){
-            params.put("usage",whichUsage);
-            return preferredNameService.getName(params)
-        }else{
-            if(productName!=null)
-                params.put("productname",productName)
-            if(applicationName!=null)
-                params.put("appname",applicationName)
-            return preferredNameService.getName(params);
-        }
-
-
-
-
-    }
-
 }
