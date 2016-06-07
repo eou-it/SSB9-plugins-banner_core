@@ -20,7 +20,9 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
 
     def authenticationProviderUtility
     def dataSource
-
+    def usage
+    public final String DEFAULT= "DEFAULT"
+    public final String LFMI= "LFMI"
     public static final String UDC_IDENTIFIER = '99999SSB99999'
 
     @Before
@@ -32,6 +34,7 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
 
         authenticationProviderUtility = new AuthenticationProviderUtility()
+
     }
 
     @After
@@ -39,6 +42,126 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         super.tearDown();
 
 
+    }
+
+    @Test
+    void testGetUserFullNameWithDisplayNameRuleWithDefaultUsage(){
+        Holders?.config.ssbEnabled = true
+        Holders?.config.ssbOracleUsersProxied = false
+
+        Holders?.config?.productName ="testApp";
+        Holders?.config?.banner.applicationName ="testApp";
+
+        def bannerID = generateBannerId();
+        def bannerPidm = generatePidm();
+        usage=DEFAULT
+
+        insertDisplayNameRule(usage);
+        generateSpridenRecord(bannerID, bannerPidm);
+        addStudentRoleToSpriden(bannerPidm);
+        createGOBEACC(bannerPidm, bannerID);
+
+        def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
+
+        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
+
+        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm,authResults["name"],dataSource);
+
+        assertEquals "Ann Elizabeth Miller", fullName
+
+        deleteUDCIDMappingPIDM()
+        deleteSpriden(bannerPidm)
+        deleteDisplayNameRule();
+    }
+
+    @Test
+    void testGetUserFullNameWithDisplayNameRuleWithLFMIUsage(){
+        Holders?.config.ssbEnabled = true
+        Holders?.config.ssbOracleUsersProxied = false
+
+        Holders?.config?.productName ="testApp";
+        Holders?.config?.banner.applicationName ="testApp";
+
+        def bannerID = generateBannerId();
+        def bannerPidm = generatePidm();
+        usage=LFMI
+
+        insertDisplayNameRule(usage);
+        generateSpridenRecord(bannerID, bannerPidm);
+        addStudentRoleToSpriden(bannerPidm);
+        createGOBEACC(bannerPidm, bannerID);
+
+
+        def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
+
+        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
+
+        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm,authResults["name"],dataSource);
+
+
+        assertEquals "Miller, Ann E.", fullName
+
+        deleteUDCIDMappingPIDM()
+        deleteSpriden(bannerPidm)
+        deleteDisplayNameRule();
+    }
+
+    @Test
+    void testGetUserFullNameWithDisplayNameRuleWithoutUsage(){
+        Holders?.config.ssbEnabled = true
+        Holders?.config.ssbOracleUsersProxied = false
+
+        Holders?.config?.productName ="testApp";
+        Holders?.config?.banner.applicationName ="testApp";
+
+        def bannerID = generateBannerId();
+        def bannerPidm = generatePidm();
+        usage=null
+
+        insertDisplayNameRule(usage);
+        generateSpridenRecord(bannerID, bannerPidm);
+        addStudentRoleToSpriden(bannerPidm);
+        createGOBEACC(bannerPidm, bannerID);
+
+        def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
+
+        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
+
+        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm,authResults["name"],dataSource);
+
+        assertEquals "Ann Elizabeth Miller", fullName
+
+        deleteUDCIDMappingPIDM()
+        deleteSpriden(bannerPidm)
+        deleteDisplayNameRule();
+    }
+
+    @Test
+    void testGetUserFullNameWithDisplayNameRuleWithoutRule(){
+        Holders?.config.ssbEnabled = true
+        Holders?.config.ssbOracleUsersProxied = false
+
+        Holders?.config?.productName ="testApp";
+        Holders?.config?.banner.applicationName ="testApp";
+
+        def bannerID = generateBannerId();
+        def bannerPidm = generatePidm();
+        usage=null
+
+        generateSpridenRecord(bannerID, bannerPidm);
+        addStudentRoleToSpriden(bannerPidm);
+        createGOBEACC(bannerPidm, bannerID);
+
+        def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
+
+        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
+
+        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm,authResults["name"],dataSource);
+
+        assertEquals "Ann Elizabeth Miller", fullName
+
+        deleteUDCIDMappingPIDM()
+        deleteSpriden(bannerPidm)
     }
 
     @Test
@@ -172,6 +295,32 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         db.commit()
         db.close()
 
+    }
+
+    private void insertDisplayNameRule(usage){
+        def db = getDB();
+
+        if(usage!=null){
+            db.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
+                    "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,'"+usage+"','Y',2000," +
+                    "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
+                    "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
+        }else{
+            db.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
+                    "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,null,'Y',2000," +
+                    "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
+                    "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
+        }
+        db.commit();
+        db.close();
+    }
+
+    private void deleteDisplayNameRule(){
+        def db = getDB();
+
+        db.executeUpdate("DELETE GURNHIR WHERE GURNHIR_PRODUCT='testApp'");
+        db.commit();
+        db.close();
     }
 
     private def generateUDCIDMappingPIDM(pidm) {

@@ -3,14 +3,15 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.security
 
-import groovy.sql.Sql
-import org.apache.log4j.Logger
 import grails.util.Holders  as CH
+import groovy.sql.Sql
+import net.hedtech.banner.controllers.ControllerUtils
+import org.apache.log4j.Logger
 import org.springframework.security.authentication.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
+
 import java.sql.SQLException
 
 /**
@@ -64,7 +65,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             authenticationResults['authorities']        = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
             authenticationResults['webTimeout']         = getWebTimeOut( authenticationResults, db )
             authenticationResults['transactionTimeout'] = getTransactionTimeout()
-            String preferredName = authenticationResults.guest ? "" :preferredNameService.getPreferredName(authenticationResults.pidm, conn) as String
+            String preferredName = authenticationResults.guest ? "" :ControllerUtils.getPreferredName(authenticationResults.pidm) as String
             if(preferredName!=null && !preferredName.isEmpty() )
                 authenticationResults['fullName']=preferredName
             else
@@ -357,8 +358,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         log.debug "retrieveRoleBasedTimeOuts() has cached web role timeouts: ${roleBasedTimeOutsCache}"
         roleBasedTimeOutsCache // we'll return this to facilitate testing of this method
     }
-
-
 
 }
 

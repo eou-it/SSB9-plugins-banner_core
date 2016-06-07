@@ -3,18 +3,19 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
-import grails.util.Holders  as AH
-import grails.util.Holders  as CH
-
 import grails.util.GrailsNameUtils
+import grails.util.Holders  as CH
+import grails.util.Holders  as AH
 import groovy.sql.Sql
-import java.sql.SQLException
-import javax.sql.DataSource
+import net.hedtech.banner.controllers.ControllerUtils
 import org.apache.log4j.Logger
 import org.springframework.context.ApplicationContext
+import org.springframework.security.authentication.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.authentication.*
+
+import javax.sql.DataSource
+import java.sql.SQLException
 
 /**
  * An authentication provider which authenticates a user by logging into the Banner database.
@@ -56,7 +57,14 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
             authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, dataSource )
 
-            authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
+            def pidm=AuthenticationProviderUtility.getUserPidm(authenticationResults.name.toUpperCase(),dataSource);
+
+            if(pidm!=null){
+                authenticationResults['fullName']=AuthenticationProviderUtility.getUserFullName(pidm,authenticationResults.name,dataSource);
+
+            }else{
+                authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
+            }
 
             AuthenticationProviderUtility.newAuthenticationToken( this, authenticationResults )
 
@@ -123,7 +131,6 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, Sql db ) {
         return BannerGrantedAuthorityService.determineAuthorities (authenticationResults, db)
     }
-
 
     /**
      * Returns the user's full name.

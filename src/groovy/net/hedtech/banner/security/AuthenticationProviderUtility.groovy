@@ -5,6 +5,7 @@ package net.hedtech.banner.security
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
+import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.AuthorizationException
 import org.apache.log4j.Logger
 import grails.util.Holders
@@ -115,8 +116,23 @@ class AuthenticationProviderUtility {
         Holders.config.ssbEnabled instanceof Boolean ? Holders.config.ssbEnabled : false
     }
 
+    public static getUserFullName(pidm,name,dataSource){
+        def fullName
+        String preferredName=ControllerUtils.getPreferredName(pidm) as String
+        if(preferredName!=null && !preferredName.isEmpty() ) {
+            fullName = preferredName
+            log.debug "AuthenticationProviderUtility.getUserFullName found full name $preferredName"
+        }
+        else {
+            fullName = BannerAuthenticationProvider.getFullName(name.toUpperCase(), dataSource) as String
+            log.debug "AuthenticationProviderUtility.getUserFullName found full name $fullName"
+        }
+        return fullName;
+    }
+
     public static BannerAuthenticationToken createAuthenticationToken(dbUser, dataSource, provider ) {
-        def fullName = BannerAuthenticationProvider.getFullName( dbUser['name'].toUpperCase(), dataSource ) as String
+
+        def fullName=getUserFullName(dbUser.pidm,dbUser['name'],dataSource);
         log.debug "AuthenticationProviderUtility.createAuthenticationToken found full name $fullName"
 
         Collection<GrantedAuthority> authorities
@@ -253,4 +269,25 @@ class AuthenticationProviderUtility {
         return BannerGrantedAuthorityService.determineAuthorities (authenticationResults, db)
     }
 
+    /*
+   * Return's the user pidm
+   * */
+    public static getUserPidm( String name, def dataSource ) {
+        def conn = null
+        def pidm
+        name = name.toUpperCase()
+        try {
+            conn = dataSource.unproxiedConnection
+            Sql db = new Sql(conn)
+            db.eachRow( "select  spriden_pidm  from spriden where spriden_id = ? AND  spriden_change_ind is null", [name] ) {
+                row -> pidm = row.spriden_pidm
+            }
+        } catch (SQLException e) {
+            log.error "BannerAuthenticationProvider not able to getUserPidm of user $name due to exception $e.message"
+            return null
+        } finally {
+            conn?.close()
+        }
+        pidm
+    }
 }
