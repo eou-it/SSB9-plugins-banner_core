@@ -5,7 +5,6 @@ package net.hedtech.banner.controllers
 
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.util.Holders
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
