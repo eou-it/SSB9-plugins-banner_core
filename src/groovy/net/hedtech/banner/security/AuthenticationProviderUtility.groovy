@@ -135,7 +135,7 @@ class AuthenticationProviderUtility {
             log.debug "AuthenticationProviderUtility.getUserFullName found full name $preferredName"
         }
         else {
-            fullName = BannerAuthenticationProvider.getFullName(name.toUpperCase(), dataSource) as String
+            fullName = getFullName(name.toUpperCase(), dataSource) as String
             log.debug "AuthenticationProviderUtility.getUserFullName found full name $fullName"
         }
         return fullName;
@@ -143,7 +143,7 @@ class AuthenticationProviderUtility {
 
     public static BannerAuthenticationToken createAuthenticationToken(dbUser, dataSource, provider ) {
 
-        def fullName=getUserFullName(dbUser.pidm,dbUser['name'],dataSource);
+        def fullName=getUserFullName(dbUser.pidm,dbUser.name,dataSource);
         log.debug "AuthenticationProviderUtility.createAuthenticationToken found full name $fullName"
 
         Collection<GrantedAuthority> authorities
@@ -294,11 +294,53 @@ class AuthenticationProviderUtility {
                 row -> pidm = row.spriden_pidm
             }
         } catch (SQLException e) {
-            log.error "BannerAuthenticationProvider not able to getUserPidm of user $name due to exception $e.message"
+            log.error "AuthenticationProviderUtility not able to getUserPidm of user $name due to exception $e.message"
             return null
         } finally {
             conn?.close()
         }
         pidm
+    }
+
+    /**
+     * Returns the user's full name.
+     **/
+    public static getFullName( String name, def dataSource ) {
+        def conn = null
+        def fullName
+        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
+        name = name.toUpperCase()
+        try {
+            conn = dataSource.unproxiedConnection
+            Sql db = new Sql( conn )
+            db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname from spriden, gobeacc where gobeacc_username = ? AND spriden_pidm = gobeacc_pidm AND  spriden_change_ind is null", [name] ) {
+                row -> fullName = row.fullname
+            }
+            log.trace "AuthenticationProviderUtility.getFullName after checking f_formatname $fullName"
+            if (null == fullName) {
+                db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname  from gurlogn,spriden where gurlogn_user = ? and gurlogn_pidm = spriden_pidm", [name] ) { row ->
+                    fullName = row.fullname
+                }
+            }
+            log.trace "AuthenticationProviderUtility.getFullName after checking gurlogn_pidm $fullName"
+            if (null == fullName) {
+                db.eachRow( "select gurlogn_first_name|| ' '||gurlogn_last_name fullname from gurlogn where gurlogn_user = ? and gurlogn_first_name is not null and gurlogn_last_name is not null", [name] ) { row ->
+                    fullName = row.fullname
+                }
+            }
+            if (null == fullName) {
+                db.eachRow( "select f_format_name(spriden_pidm,'FMIL') fullname from spriden where spriden_id = ?", [name] ) {
+                    row -> fullName = row.fullname
+                }
+            }
+            if (null == fullName) fullName = name
+        } catch (SQLException e) {
+            log.error "AuthenticationProviderUtility not able to getFullName $name due to exception $e.message"
+            return null
+        } finally {
+            conn?.close()
+        }
+        log.trace "AuthenticationProviderUtility.getFullName is returning $fullName"
+        fullName
     }
 }

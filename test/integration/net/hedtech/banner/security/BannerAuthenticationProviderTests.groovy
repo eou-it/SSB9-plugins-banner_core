@@ -129,19 +129,6 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase{
         db.close();
     }
 
-
-    private def generateBannerId() {
-
-        def sql = getDB();
-
-        String idSql = """select gb_common.f_generate_id bannerId from dual """
-        def bannerValues = sql.firstRow(idSql)
-
-        sql?.close() // note that the test will close the connection, since it's our current session's connection
-
-        return bannerValues.bannerId
-    }
-
     private ApplicationContext createUnderlyingDataSourceBean() {
         def bb = new BeanBuilder()
         bb.beans {
