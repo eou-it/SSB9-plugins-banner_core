@@ -52,8 +52,6 @@ grails.project.dependency.resolution = {
         }
         compile 'org.grails:grails-web-databinding-spring:2.4.4'
 		compile "commons-dbcp:commons-dbcp:1.4"
-        runtime "com.oracle:xdb6:11.2.0.4"
-        test "com.oracle:ojdbc6:11.2.0.1.0"
         test 'org.easymock:easymock:3.2'
 
     }
