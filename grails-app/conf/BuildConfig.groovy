@@ -40,11 +40,9 @@ grails.project.dependency.resolution = {
         if (System.properties['PROXY_SERVER_NAME']) {
             mavenRepo "${System.properties['PROXY_SERVER_NAME']}"
         }
-        flatDir name:'banner_core_repo', dirs:'../banner_core.git/lib'
-        flatDir name:'app_banner_core_repo', dirs:'plugins/banner_core.git/lib'
         grailsCentral()
         mavenCentral()
-       // mavenRepo "https://code.lds.org/nexus/content/groups/main-repo"
+        mavenRepo "https://code.lds.org/nexus/content/groups/main-repo"
         mavenRepo "http://repository.jboss.org/maven2/"
     }
 
