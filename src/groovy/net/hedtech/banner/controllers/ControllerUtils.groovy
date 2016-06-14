@@ -3,11 +3,8 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.controllers
 
-import grails.util.Holders
 import grails.plugin.springsecurity.SpringSecurityUtils
-
-
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import grails.util.Holders
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
@@ -96,5 +93,4 @@ class ControllerUtils {
     public static boolean isGuestAuthenticationEnabled() {
         Holders.config.guestAuthenticationEnabled instanceof Boolean ? Holders.config.guestAuthenticationEnabled : false
     }
-
 }

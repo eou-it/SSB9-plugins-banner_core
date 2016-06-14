@@ -27,10 +27,13 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     def conn
     Sql sqlObj
     def testUser
+    def usage
+    public final String LFMI= "LFMI"
 
     @Before
     public void setUp() {
         Holders.config.ssbEnabled = true
+        Holders?.config.ssbOracleUsersProxied = false
 
         ApplicationContext testSpringContext = createUnderlyingSsbDataSourceBean()
         dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
@@ -48,6 +51,7 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         sqlObj.close()
         dataSource.underlyingSsbDataSource =  null;
         Holders.config.ssbEnabled = false
+        Holders?.config.ssbOracleUsersProxied = false
     }
 
     @Test
@@ -64,6 +68,9 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
 
     @Test
     void testSsbAuthentication() {
+
+        Holders.config.guestAuthenticationEnabled= true
+
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
         assertEquals  auth.name, testUser.name as String
@@ -72,7 +79,52 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertTrue    auth.webTimeout >= 30
         assertEquals auth.fullName,"Bernadette McKall"
     }
-        
+
+
+
+    @Test
+    void testSsbAuthenticationWithoutUsage() {
+
+        Holders.config.guestAuthenticationEnabled= true
+        Holders?.config?.productName ="testApp";
+        Holders?.config?.banner.applicationName ="testApp";
+        usage=null
+
+        insertDisplayNameRule(usage);
+
+        def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
+        assertTrue    auth.isAuthenticated()
+        assertEquals  auth.name, testUser.name as String
+        assertTrue    auth.details.credentialsNonExpired
+        assertEquals  auth.pidm,testUser.pidm
+        assertTrue    auth.webTimeout >= 30
+        assertEquals auth.fullName,"Bernadette McKall"
+
+        deleteDisplayNameRule()
+    }
+
+
+    @Test
+    void testSsbAuthenticationWithUsage() {
+
+        Holders.config.guestAuthenticationEnabled= true
+        Holders?.config?.productName ="testApp";
+        Holders?.config?.banner.applicationName ="testApp";
+        usage=LFMI
+
+        insertDisplayNameRule(usage);
+
+        def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
+        assertTrue    auth.isAuthenticated()
+        assertEquals  auth.name, testUser.name as String
+        assertTrue    auth.details.credentialsNonExpired
+        assertEquals  auth.pidm,testUser.pidm
+        assertTrue    auth.webTimeout >= 30
+        assertEquals auth.fullName,"McKall, Bernadette"
+
+        deleteDisplayNameRule()
+    }
+
     @Test
     void testAuthorization() {
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
@@ -177,9 +229,47 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         return testSpringContext
     }
 
+    private getDB() {
+        def configFile = new File("${System.properties['user.home']}/.grails/banner_configuration.groovy")
+        def slurper = new ConfigSlurper(grails.util.GrailsUtil.environment)
+        def config = slurper.parse(configFile.toURI().toURL())
+        def url = config.get("bannerDataSource").url
+        def db = Sql.newInstance(url,   //  db =  new Sql( connectInfo.url,
+                "baninst1",
+                "u_pick_it",
+                'oracle.jdbc.driver.OracleDriver')
+        db
+    }
+
     private void enableUser(Sql db, pidm) {
         db.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
         db.commit()
+    }
+
+    private void insertDisplayNameRule(usage){
+        def db = getDB();
+
+        if(usage!=null){
+            db.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
+                    "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,'"+usage+"','Y',2000," +
+                    "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
+                    "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
+        }else{
+            db.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
+                    "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,null,'Y',2000," +
+                    "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
+                    "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
+        }
+        db.commit();
+        db.close();
+    }
+
+    private void deleteDisplayNameRule(){
+        def db = getDB();
+
+        db.executeUpdate("DELETE GURNHIR WHERE GURNHIR_PRODUCT='testApp'");
+        db.commit();
+        db.close();
     }
 
 
