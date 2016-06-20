@@ -122,6 +122,7 @@ class AuthenticationProviderUtility {
         def preferredNameService = ctx.preferredNameService
         def fullName
         def conn
+        def preferredName
         if (isSsbEnabled()) {
             conn = dataSource.getSsbConnection();
             log.debug "AuthenticationProviderUtility.getUserFullName using banssuser ssb connection"
@@ -129,14 +130,20 @@ class AuthenticationProviderUtility {
             conn = dataSource.getConnection();
             log.debug "AuthenticationProviderUtility.getUserFullName using banproxy connection"
         }
-        String preferredName=preferredNameService.getPreferredName(pidm,conn) as String
-        if(preferredName!=null && !preferredName.isEmpty() ) {
-            fullName = preferredName
-            log.debug "AuthenticationProviderUtility.getUserFullName found full name $preferredName"
+
+        try {
+            preferredName = preferredNameService.getPreferredName(pidm,conn) as String
+            if(preferredName!=null && !preferredName.isEmpty() ) {
+                fullName = preferredName
+                log.debug "AuthenticationProviderUtility.getUserFullName found full name $preferredName"
+            }
+            else {
+                fullName = getFullName(name.toUpperCase(), dataSource) as String
+                log.debug "AuthenticationProviderUtility.getUserFullName found full name $fullName"
+            }
         }
-        else {
-            fullName = getFullName(name.toUpperCase(), dataSource) as String
-            log.debug "AuthenticationProviderUtility.getUserFullName found full name $fullName"
+        finally{
+            conn?.close()
         }
         return fullName;
     }
