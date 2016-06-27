@@ -93,7 +93,7 @@ class AuthenticationProviderUtility {
                 log.trace "AuthenticationProviderUtility.getMappedUserForUdcId query spriden_id for UDC IDENTIFIER $assertAttributeValue"
                 if(spridenId && pidm) {
                     log.trace "AuthenticationProviderUtility.getMappedUserForUdcId spridenID $spridenId and gobumap pidm $pidm found"
-                    authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: null ].withDefault { k -> false }
+                    authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: oracleUserName ].withDefault { k -> false }
                 } else {
                     log.fatal "System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user"
                     throw new BadCredentialsException("System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user")

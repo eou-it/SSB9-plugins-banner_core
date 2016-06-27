@@ -1,6 +1,6 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.security
 
 import groovy.sql.Sql
@@ -8,13 +8,7 @@ import org.apache.log4j.Logger
 import java.sql.SQLException
 import java.util.regex.Pattern
 
-/**
- * Created by IntelliJ IDEA.
- * User: Vijendra.Rao
- * Date: 31/10/11
- * Time: 12:37 PM
- * To change this template use File | Settings | File Templates.
- */
+
 class ResetPasswordService {
 
     static transactional = true
@@ -24,14 +18,14 @@ class ResetPasswordService {
     def authenticationDataSource           // injected by Spring
     static final String PIDM = "pidm"
     static final String QSTN_NO = "qstn_no"
-    static final String GET_SPRIDEN_QUERY = "SELECT GOBANSR_PIDM FROM gobansr, spriden WHERE SPRIDEN_ID = ? AND SPRIDEN_PIDM = GOBANSR_PIDM AND SPRIDEN_CHANGE_IND IS NULL"
-    static final String GET_SYSTEM_DEF_QUESTIONS_QUERY = "SELECT GOBANSR_NUM,GOBANSR_PIDM,GOBANSR_QSTN_DESC,GOBQSTN_DESC, GOBANSR_ANSR_SALT FROM gobansr, spriden, gobqstn WHERE SPRIDEN_ID = ? AND SPRIDEN_PIDM = GOBANSR_PIDM AND SPRIDEN_CHANGE_IND IS NULL AND GOBANSR_GOBQSTN_ID = GOBQSTN_ID"
-    static final String GET_USER_DEF_QUESTION_QUERY = "SELECT ga.GOBANSR_NUM,ga.GOBANSR_PIDM,ga.GOBANSR_QSTN_DESC, ga.GOBANSR_ANSR_SALT FROM gobansr ga where ga.GOBANSR_GOBQSTN_ID is NULL and ga.GOBANSR_PIDM = (select DISTINCT sp.SPRIDEN_PIDM  from spriden sp where sp.SPRIDEN_ID = ? AND sp.SPRIDEN_CHANGE_IND IS NULL) order by ga.GOBANSR_NUM"
+    static final String GET_SPRIDEN_QUERY = "SELECT GOBANSR_PIDM FROM gobansr, spriden WHERE UPPER(SPRIDEN_ID) = ? AND SPRIDEN_PIDM = GOBANSR_PIDM AND SPRIDEN_CHANGE_IND IS NULL"
+    static final String GET_SYSTEM_DEF_QUESTIONS_QUERY = "SELECT GOBANSR_NUM,GOBANSR_PIDM,GOBANSR_QSTN_DESC,GOBQSTN_DESC, GOBANSR_ANSR_SALT FROM gobansr, spriden, gobqstn WHERE UPPER(SPRIDEN_ID) = ? AND SPRIDEN_PIDM = GOBANSR_PIDM AND SPRIDEN_CHANGE_IND IS NULL AND GOBANSR_GOBQSTN_ID = GOBQSTN_ID"
+    static final String GET_USER_DEF_QUESTION_QUERY = "SELECT ga.GOBANSR_NUM,ga.GOBANSR_PIDM,ga.GOBANSR_QSTN_DESC, ga.GOBANSR_ANSR_SALT FROM gobansr ga where ga.GOBANSR_GOBQSTN_ID is NULL and ga.GOBANSR_PIDM = (select DISTINCT sp.SPRIDEN_PIDM  from spriden sp where UPPER(sp.SPRIDEN_ID) = ? AND sp.SPRIDEN_CHANGE_IND IS NULL) order by ga.GOBANSR_NUM"
     static final String GET_NO_QUESTIONS_QUERY = "SELECT GUBPPRF_NO_OF_QSTNS FROM gubpprf"
     static final String IS_ANSWERED_PROCEDURE = "{call gspcrpt.P_SALTEDHASH(?,?,?)}"
     static final String GET_ANSWER_FOR_QUESTION_NO_PIDM_QUERY = "select GOBANSR_ANSR_DESC from gobansr where GOBANSR_PIDM = ? AND GOBANSR_NUM=? "
     static final String GET_ANSWERSALT_FOR_QUESTION_NO_PIDM_QUERY = "select GOBANSR_ANSR_SALT from gobansr where GOBANSR_PIDM =? AND GOBANSR_NUM=?"
-    static final String IS_PIDM_USER_QUERY = "SELECT SPRIDEN_ID FROM spriden WHERE SPRIDEN_ID=?"
+    static final String IS_PIDM_USER_QUERY = "SELECT SPRIDEN_ID FROM spriden WHERE UPPER(SPRIDEN_ID)=?"
     static final String IS_NON_PIDM_USER_QUERY = "SELECT GPBPRXY_EMAIL_ADDRESS FROM gpbprxy WHERE UPPER(GPBPRXY_EMAIL_ADDRESS) = ?"
     static final String GENERATE_RESET_PASSWORD_URL_PROCEDURE = "{call gokauth.p_reset_guest_passwd(?,?,?,?)}"
     static final String GET_NON_PIDM_IDM_QUERY = "select gpbprxy_proxy_idm from gpbprxy where  gpbprxy_email_address = ?"
@@ -82,7 +76,7 @@ class ResetPasswordService {
 
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         try{
-            sql.eachRow(GET_SPRIDEN_QUERY,[id]){
+            sql.eachRow(GET_SPRIDEN_QUERY,[id.toUpperCase()]){
                 if(!questionAnswerMap.containsKey(id)){
                     questionAnswerMap.put(id+PIDM, it.GOBANSR_PIDM)
                 }
@@ -111,9 +105,9 @@ class ResetPasswordService {
      */
     private List getSystemDefinedQuestionsConfigForId(id,sql) throws SQLException{
         List questions = new ArrayList()
-        sql.eachRow(GET_SYSTEM_DEF_QUESTIONS_QUERY,[id]){
-                String[] question = [it.GOBANSR_NUM, it.GOBQSTN_DESC]
-                questions.add(question)
+        sql.eachRow(GET_SYSTEM_DEF_QUESTIONS_QUERY,[id.toUpperCase()]){
+            String[] question = [it.GOBANSR_NUM, it.GOBQSTN_DESC]
+            questions.add(question)
 
         }
         return questions
@@ -131,9 +125,9 @@ class ResetPasswordService {
      */
     private List getUserDefinedQuestionsConfigForId(id,sql) throws SQLException{
         List questions = new ArrayList()
-        sql.eachRow(GET_USER_DEF_QUESTION_QUERY,[id]){
-                String[] question = [it.GOBANSR_NUM, it.GOBANSR_QSTN_DESC]
-                questions.add(question)
+        sql.eachRow(GET_USER_DEF_QUESTION_QUERY,[id.toUpperCase()]){
+            String[] question = [it.GOBANSR_NUM, it.GOBANSR_QSTN_DESC]
+            questions.add(question)
 
         }
         return questions
@@ -152,7 +146,7 @@ class ResetPasswordService {
     private int getNoOfQuestionsConfigured(sql) throws SQLException{
         int noOfQuestions
         sql.eachRow(GET_NO_QUESTIONS_QUERY) {
-                noOfQuestions = it.GUBPPRF_NO_OF_QSTNS
+            noOfQuestions = it.GUBPPRF_NO_OF_QSTNS
         }
         return noOfQuestions
     }
@@ -176,7 +170,7 @@ class ResetPasswordService {
         boolean matchFlag = false
         try{
             sql.call IS_ANSWERED_PROCEDURE, [userAnswer.toLowerCase(), answerSalt, Sql.VARCHAR], { encryptedAnswer ->
-               if(encryptedAnswer == answer)
+                if(encryptedAnswer == answer)
                     matchFlag = true
             }
         }
@@ -201,7 +195,7 @@ class ResetPasswordService {
     private String getAnswerByQuestionNumberAndPidm(questionNumber, pidm, sql) throws SQLException{
         String answer
         sql.eachRow(GET_ANSWER_FOR_QUESTION_NO_PIDM_QUERY,[pidm,questionNumber]){
-              answer = it.GOBANSR_ANSR_DESC
+            answer = it.GOBANSR_ANSR_DESC
         }
         return answer
     }
@@ -221,7 +215,7 @@ class ResetPasswordService {
     private String getAnswerSaltByQyestionNumberAndPidm(questionNumber, pidm, sql) throws SQLException{
         String answerSalt
         sql.eachRow(GET_ANSWERSALT_FOR_QUESTION_NO_PIDM_QUERY,[pidm,questionNumber]){
-              answerSalt = it.GOBANSR_ANSR_SALT
+            answerSalt = it.GOBANSR_ANSR_SALT
         }
         return answerSalt
     }
@@ -263,11 +257,11 @@ class ResetPasswordService {
         boolean isPidmUser = false
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         try{
-            if(sql.rows(IS_PIDM_USER_QUERY,[pidm_id]).size() > 0){
-            isPidmUser = true
+            if(sql.rows(IS_PIDM_USER_QUERY,[pidm_id.toUpperCase()]).size() > 0){
+                isPidmUser = true
             }
         }
-         finally{
+        finally{
             sql.close()
         }
         return isPidmUser
@@ -287,7 +281,7 @@ class ResetPasswordService {
         boolean  isNonPidmUser = false
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         try{
-            if(sql.rows(IS_NON_PIDM_USER_QUERY,[userId]).size() > 0){
+            if(sql.rows(IS_NON_PIDM_USER_QUERY,[userId.toUpperCase()]).size() > 0){
                 isNonPidmUser = true
             }
         } finally {
@@ -311,21 +305,21 @@ class ResetPasswordService {
         def replyFlag
         log.debug (LOG_RESET_PASSWORD_URL_MESSAGE_1)
         try {
-        sql.call( GENERATE_RESET_PASSWORD_URL_PROCEDURE,
-            [ nonPidmId,
-              baseUrl,
-              Sql.VARCHAR,
-              Sql.VARCHAR
-            ]
+            sql.call( GENERATE_RESET_PASSWORD_URL_PROCEDURE,
+                    [ nonPidmId,
+                      baseUrl,
+                      Sql.VARCHAR,
+                      Sql.VARCHAR
+                    ]
             ) { out_success,out_reply ->
-            successFlag = out_success
-            replyFlag = out_reply
-            log.debug( LOG_RESET_PASSWORD_URL_MESSAGE_2 + successFlag + LOG_RESET_PASSWORD_URL_MESSAGE_3 + replyFlag )
-        }
+                successFlag = out_success
+                replyFlag = out_reply
+                log.debug( LOG_RESET_PASSWORD_URL_MESSAGE_2 + successFlag + LOG_RESET_PASSWORD_URL_MESSAGE_3 + replyFlag )
+            }
 
         } catch (e) {
-           log.error( LOG_RESET_PASSWORD_URL_ERROR_MESSAGE + e)
-           throw e
+            log.error( LOG_RESET_PASSWORD_URL_ERROR_MESSAGE + e)
+            throw e
         } finally {
             sql?.close()
         }
@@ -374,7 +368,7 @@ class ResetPasswordService {
                 disabledInd = it.GPBPRXY_PIN_DISABLED_IND
             }
             if(nonPidmId == null || expDate == null || disabledInd == null){
-                    errorMessage = URL_INVALID_MESSAGE
+                errorMessage = URL_INVALID_MESSAGE
                 [error:errorMessage]
             }
             else if(((Date)expDate).before(Calendar.getInstance().getTime())){
@@ -391,7 +385,7 @@ class ResetPasswordService {
             }
         }
         catch(SQLException sqle){
-             if(sqle.getErrorCode() == 1410){
+            if(sqle.getErrorCode() == 1410){
                 errorMessage = URL_INVALID_MESSAGE
             }
             else{
@@ -447,8 +441,8 @@ class ResetPasswordService {
             sql.commit()
 
         } catch (e) {
-           log.error(UPDATE_GUEST_PASSWORD_FAILED + e)
-           throw e
+            log.error(UPDATE_GUEST_PASSWORD_FAILED + e)
+            throw e
         } finally {
             sql?.close()
         }
@@ -512,8 +506,8 @@ class ResetPasswordService {
             sql.call(LOGIN_ATTEMPT_PROCEDURE,[pidm])
 
         } catch (e) {
-           log.error(LOGIN_ATTEMPT_MESSAGE + e)
-           throw e
+            log.error(LOGIN_ATTEMPT_MESSAGE + e)
+            throw e
         } finally {
             sql?.close()
         }
@@ -524,23 +518,23 @@ class ResetPasswordService {
         def errorMessage = "";
         def passwordReuseDays = 0;
         if (pidm) {
-        try{
-            sql.eachRow(PREFERENCE_REUSE_QUERY){row ->
-                passwordReuseDays = row.GUBPPRF_REUSE_DAYS
+            try{
+                sql.eachRow(PREFERENCE_REUSE_QUERY){row ->
+                    passwordReuseDays = row.GUBPPRF_REUSE_DAYS
+                }
+                sql.call( THIRD_PARTY_ACCESS_RULE_PROCEDURE,
+                        [ pidm,
+                          password,
+                          (passwordReuseDays == 0)? INDICATOR_N : INDICATOR_Y,
+                          Sql.VARCHAR
+                        ]
+                ) { error_message ->
+                    errorMessage = error_message;
+                }
             }
-            sql.call( THIRD_PARTY_ACCESS_RULE_PROCEDURE,
-            [ pidm,
-              password,
-              (passwordReuseDays == 0)? INDICATOR_N : INDICATOR_Y,
-              Sql.VARCHAR
-            ]
-            ) { error_message ->
-                errorMessage = error_message;
+            finally{
+                sql?.close();
             }
-        }
-        finally{
-            sql?.close();
-        }
         }
         (errorMessage == null || errorMessage?.toString()?.trim()?.length() == 0) ? [error: false] : [error: true, errorMessage: errorMessage];
     }

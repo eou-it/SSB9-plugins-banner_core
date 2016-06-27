@@ -8,7 +8,6 @@ import grails.util.Holders  as CH
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
-
 import java.sql.SQLException
 import javax.sql.DataSource
 import org.apache.log4j.Logger
@@ -60,6 +59,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             authenticationResults['fullName'] = getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
 
             AuthenticationProviderUtility.newAuthenticationToken( this, authenticationResults )
+
         }
         catch (DisabledException de)           { throw de }
         catch (CredentialsExpiredException ce) { throw ce }
