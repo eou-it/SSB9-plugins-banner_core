@@ -76,6 +76,18 @@ class MultiEntityProcessingService {
         }
     }
 
+    def setHomeContextSsbUser(home) {
+        Sql sql = new Sql(dataSource.getSsbConnection())
+        try {
+            sql.call("{call g\$_vpdi_security.g\$_vpdi_set_home_context(${home})}")
+        } catch (e) {
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
+        } finally {
+            sql?.close()
+        }
+    }
+
 
     def getHomeContext() {
         def homeContext
@@ -129,6 +141,19 @@ class MultiEntityProcessingService {
             throw e
         } finally {
             //sql?.close()
+        }
+    }
+
+    def setProcessContextSsbUser(process) {
+        Sql sql = new Sql(dataSource.getSsbConnection())
+        try {
+            sql.call("{call g\$_vpdi_security.g\$_vpdi_set_process_context(${process},'NEXT')}")
+
+        } catch (e) {
+            log.error("ERROR: Could not establish mif context. $e")
+            throw e
+        } finally {
+            sql?.close()
         }
     }
 
@@ -289,6 +314,16 @@ class MultiEntityProcessingService {
     def getMepDescription(mep) {
         def desc
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.eachRow("select * from gtvvpdi where gtvvpdi_code = ?", [mep]) {
+            desc = it.gtvvpdi_desc
+        }
+
+        desc
+
+    }
+    def getMepDescriptionSsbUser(mep) {
+        def desc
+        Sql sql = new Sql(dataSource.getSsbConnection())
         sql.eachRow("select * from gtvvpdi where gtvvpdi_code = ?", [mep]) {
             desc = it.gtvvpdi_desc
         }
