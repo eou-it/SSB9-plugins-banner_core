@@ -11,9 +11,8 @@
     <g:set var="target" value="${request.contextPath}${uri}"/>
 
     <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
-    <meta name="theme" content="${themeConfig.name}">
     <g:if test="${themeConfig.url}">
-        <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${!mep ? themeConfig.name : mep}&template=${themeConfig.template}&mepCode=${mep}">
+        <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${session.mep ?: themeConfig.name}&template=${themeConfig.template}&mep=${session.mep}">
     </g:if>
 </head>
 
