@@ -20,6 +20,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
+import org.springframework.web.context.request.RequestContextHolder
 
 import java.sql.SQLException
 
@@ -32,6 +33,11 @@ class AuthenticationProviderUtility {
     // note: using 'getClass()' here doesn't work -- we'll just use a String
     private static final Logger log = Logger.getLogger( "net.hedtech.banner.security.AuthenticationProviderUtility" )
     private static def applicationContext // set lazily via 'getApplicationContext()'
+    private static roleBasedTimeOutsCache = [:]
+
+    // a cached map of web roles to their configured timeout values, that is populated on first need
+
+    private static Integer defaultWebSessionTimeout // will be read from configuration
 
     public static def getMappedUserForUdcId(assertAttributeValue, dataSource ) {
         log.trace "AuthenticationProviderUtility.getMappedUserForUdcId doing external authentication"
@@ -179,6 +185,8 @@ class AuthenticationProviderUtility {
         }
         dbUser['authorities'] = authorities
         dbUser['fullName'] = fullName
+        dbUser['webTimeout'] = getWebTimeOut( dbUser,dataSource)
+        setWebSessionTimeout( dbUser['webTimeout'] )
         BannerAuthenticationToken bannerAuthenticationToken = newAuthenticationToken( provider, dbUser )
 
         log.debug "AuthenticationProviderUtility.createAuthenticationToken BannerAuthenticationToken created $bannerAuthenticationToken"
@@ -350,4 +358,52 @@ class AuthenticationProviderUtility {
         log.trace "AuthenticationProviderUtility.getFullName is returning $fullName"
         fullName
     }
+    public static setWebSessionTimeout( Integer timeoutSeconds ) {
+        RequestContextHolder.currentRequestAttributes().session.setAttribute("maxInactiveInterval",timeoutSeconds);
+    }
+
+
+    public static int getDefaultWebSessionTimeout() {
+
+        if (!defaultWebSessionTimeout) {
+            def configuredTimeout = Holders.config.defaultWebSessionTimeout
+            defaultWebSessionTimeout = configuredTimeout instanceof Map ? 1500 : configuredTimeout
+        }
+        defaultWebSessionTimeout
+    }
+
+
+    public static getWebTimeOut( authenticationResults,dataSource) {
+        if (roleBasedTimeOutsCache.size() == 0) {retrieveRoleBasedTimeOuts(dataSource)}
+        def timeoutsForUser = [ getDefaultWebSessionTimeout() ]
+        authenticationResults['authorities']?.each { authority ->
+            def objectNameSplit
+            def timeout
+            if (authority.objectName.contains('-')) {
+                objectNameSplit = authority.objectName.split('-')
+                timeout = roleBasedTimeOutsCache.get("${objectNameSplit[1]}")
+                if (timeout) timeoutsForUser << timeout.intValue()* 60 // Convert minutes to seconds....
+            }
+        }
+        timeoutsForUser.max()
+
+    }
+
+
+    public static retrieveRoleBasedTimeOuts(dataSource) {
+        def conn
+        try {
+            conn = dataSource.getSsbConnection()
+            Sql db = new Sql(conn)
+            def rows = db.rows("select twtvrole_code, twtvrole_time_out from twtvrole")
+            rows?.each { row ->
+                roleBasedTimeOutsCache.put("${row.TWTVROLE_CODE}", row.TWTVROLE_TIME_OUT);
+            }
+            log.debug "retrieveRoleBasedTimeOuts() has cached web role timeouts: ${roleBasedTimeOutsCache}"
+            roleBasedTimeOutsCache
+        }finally {
+            conn?.close()
+        }
+    }
+
 }
