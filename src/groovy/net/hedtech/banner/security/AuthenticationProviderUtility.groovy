@@ -5,6 +5,7 @@ package net.hedtech.banner.security
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
+import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.AuthorizationException
 import org.apache.log4j.Logger
 import grails.util.Holders
@@ -18,6 +19,7 @@ import org.springframework.security.authentication.LockedException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
 
 import java.sql.SQLException
 
@@ -115,8 +117,33 @@ class AuthenticationProviderUtility {
         Holders.config.ssbEnabled instanceof Boolean ? Holders.config.ssbEnabled : false
     }
 
+    public static getUserFullName(pidm,name,dataSource){
+        def ctx = Holders.servletContext.getAttribute(GA.APPLICATION_CONTEXT)
+        def preferredNameService = ctx.preferredNameService
+        def fullName
+        def conn
+        if (isSsbEnabled()) {
+            conn = dataSource.getSsbConnection();
+            log.debug "AuthenticationProviderUtility.getUserFullName using banssuser ssb connection"
+        }else{
+            conn = dataSource.getConnection();
+            log.debug "AuthenticationProviderUtility.getUserFullName using banproxy connection"
+        }
+        String preferredName=preferredNameService.getPreferredName(pidm,conn) as String
+        if(preferredName!=null && !preferredName.isEmpty() ) {
+            fullName = preferredName
+            log.debug "AuthenticationProviderUtility.getUserFullName found full name $preferredName"
+        }
+        else {
+            fullName = getFullName(name.toUpperCase(), dataSource) as String
+            log.debug "AuthenticationProviderUtility.getUserFullName found full name $fullName"
+        }
+        return fullName;
+    }
+
     public static BannerAuthenticationToken createAuthenticationToken(dbUser, dataSource, provider ) {
-        def fullName = BannerAuthenticationProvider.getFullName( dbUser['name'].toUpperCase(), dataSource ) as String
+
+        def fullName=getUserFullName(dbUser.pidm,dbUser.name,dataSource);
         log.debug "AuthenticationProviderUtility.createAuthenticationToken found full name $fullName"
 
         Collection<GrantedAuthority> authorities
@@ -253,4 +280,67 @@ class AuthenticationProviderUtility {
         return BannerGrantedAuthorityService.determineAuthorities (authenticationResults, db)
     }
 
+    /*
+   * Return's the user pidm
+   * */
+    public static getUserPidm( String name, def dataSource ) {
+        def conn = null
+        def pidm
+        name = name.toUpperCase()
+        try {
+            conn = dataSource.unproxiedConnection
+            Sql db = new Sql(conn)
+            db.eachRow( "select  spriden_pidm  from spriden where spriden_id = ? AND  spriden_change_ind is null", [name] ) {
+                row -> pidm = row.spriden_pidm
+            }
+        } catch (SQLException e) {
+            log.error "AuthenticationProviderUtility not able to getUserPidm of user $name due to exception $e.message"
+            return null
+        } finally {
+            conn?.close()
+        }
+        pidm
+    }
+
+    /**
+     * Returns the user's full name.
+     **/
+    public static getFullName( String name, def dataSource ) {
+        def conn = null
+        def fullName
+        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
+        name = name.toUpperCase()
+        try {
+            conn = dataSource.unproxiedConnection
+            Sql db = new Sql( conn )
+            db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname from spriden, gobeacc where gobeacc_username = ? AND spriden_pidm = gobeacc_pidm AND  spriden_change_ind is null", [name] ) {
+                row -> fullName = row.fullname
+            }
+            log.trace "AuthenticationProviderUtility.getFullName after checking f_formatname $fullName"
+            if (null == fullName) {
+                db.eachRow( "select  f_format_name(spriden_pidm,'FL') fullname  from gurlogn,spriden where gurlogn_user = ? and gurlogn_pidm = spriden_pidm", [name] ) { row ->
+                    fullName = row.fullname
+                }
+            }
+            log.trace "AuthenticationProviderUtility.getFullName after checking gurlogn_pidm $fullName"
+            if (null == fullName) {
+                db.eachRow( "select gurlogn_first_name|| ' '||gurlogn_last_name fullname from gurlogn where gurlogn_user = ? and gurlogn_first_name is not null and gurlogn_last_name is not null", [name] ) { row ->
+                    fullName = row.fullname
+                }
+            }
+            if (null == fullName) {
+                db.eachRow( "select f_format_name(spriden_pidm,'FMIL') fullname from spriden where spriden_id = ?", [name] ) {
+                    row -> fullName = row.fullname
+                }
+            }
+            if (null == fullName) fullName = name
+        } catch (SQLException e) {
+            log.error "AuthenticationProviderUtility not able to getFullName $name due to exception $e.message"
+            return null
+        } finally {
+            conn?.close()
+        }
+        log.trace "AuthenticationProviderUtility.getFullName is returning $fullName"
+        fullName
+    }
 }
