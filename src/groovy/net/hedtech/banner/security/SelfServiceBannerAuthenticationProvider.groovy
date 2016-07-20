@@ -25,9 +25,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     def dataSource	// injected by Spring
     def preferredNameService
 
-    // a cached map of web roles to their configured timeout values, that is populated on first need
-    private static roleBasedTimeOutsCache = [:]
-    private static Integer defaultWebSessionTimeout // will be read from configuration
 
     public boolean supports( Class clazz ) {
         log.trace "SelfServiceBannerAuthenticationProvider.supports( $clazz ) will return ${clazz == UsernamePasswordAuthenticationToken && isSsbEnabled()}"
@@ -60,7 +57,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             AuthenticationProviderUtility.verifyAuthenticationResults this, authentication, authenticationResults
 
             authenticationResults['authorities']        = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
-            authenticationResults['webTimeout']         = getWebTimeOut( authenticationResults, db )
+            authenticationResults['webTimeout']         = AuthenticationProviderUtility.getWebTimeOut(authenticationResults,dataSource)
             authenticationResults['transactionTimeout'] = getTransactionTimeout()
             String preferredName = authenticationResults.guest ? "" :AuthenticationProviderUtility.getUserFullName(authenticationResults.pidm,authenticationResults.name,dataSource) as String
             if(preferredName!=null && !preferredName.isEmpty() )
@@ -68,7 +65,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             else
                 authenticationResults['fullName']= getFullName( authenticationResults, dataSource ) as String
 
-            setWebSessionTimeout(  authenticationResults['webTimeout'] )
+            AuthenticationProviderUtility.setWebSessionTimeout(  authenticationResults['webTimeout'] )
             setTransactionTimeout( authenticationResults['transactionTimeout'] )
 
             newAuthenticationToken( authenticationResults )
@@ -301,13 +298,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
        authorities
     }
 
-
-    public setWebSessionTimeout( Integer timeoutSeconds ) {
-        RequestContextHolder.currentRequestAttributes().session.setMaxInactiveInterval( timeoutSeconds )
-    }
-
-
-
     public setTransactionTimeout( timeoutSeconds ) {
         RequestContextHolder.currentRequestAttributes().session.transactionTimeout = timeoutSeconds
     }
@@ -315,45 +305,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
     def getTransactionTimeout() {
         def timeoutSeconds = CH.config.banner?.transactionTimeout instanceof Integer ? CH.config.banner?.transactionTimeout : 30
         timeoutSeconds
-    }
-
-    public int getDefaultWebSessionTimeout() {
-
-        if (!defaultWebSessionTimeout) {
-            def configuredTimeout = CH.config.defaultWebSessionTimeout
-            defaultWebSessionTimeout = configuredTimeout instanceof Map ? 1500 : configuredTimeout
-        }
-        defaultWebSessionTimeout
-    }
-
-
-    def getWebTimeOut( authenticationResults, db ) {
-
-        if (roleBasedTimeOutsCache.size() == 0) retrieveRoleBasedTimeOuts( db )
-
-        // Grrrr... the 'findResults' method isn't available until Groovy 1.8.1
-        // def timeoutsForUser = authenticationResults['authorities']?.findResults { authority ->
-        //     roleBasedTimeOutsCache[authority.roleName]
-        // }
-        // So, we'll have to do this using each...
-
-        def timeoutsForUser = [ getDefaultWebSessionTimeout() ]
-        authenticationResults['authorities']?.each { authority ->
-            def timeout = roleBasedTimeOutsCache[authority.roleName]
-            if (timeout) timeoutsForUser << timeout * 60 // Convert minutes to seconds....
-        }
-        timeoutsForUser.max()
-    }
-
-
-    def retrieveRoleBasedTimeOuts( db ) {
-
-        def rows = db.rows( "select twtvrole_code, twtvrole_time_out from twtvrole" )
-        rows?.each { row ->
-            roleBasedTimeOutsCache << [ "${row.TWTVROLE_CODE}": row.TWTVROLE_TIME_OUT ]
-        }
-        log.debug "retrieveRoleBasedTimeOuts() has cached web role timeouts: ${roleBasedTimeOutsCache}"
-        roleBasedTimeOutsCache // we'll return this to facilitate testing of this method
     }
 
 }

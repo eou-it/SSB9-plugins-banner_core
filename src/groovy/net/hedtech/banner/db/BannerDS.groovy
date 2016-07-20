@@ -607,6 +607,8 @@ public class BannerDS implements DataSource {
 
     private setMepSsb(conn) {
 
+        def desc
+
         if (RequestContextHolder.getRequestAttributes()?.request?.session) {
 
             def session = RequestContextHolder.currentRequestAttributes()?.request?.session
@@ -617,7 +619,8 @@ public class BannerDS implements DataSource {
                 throw new MepCodeNotFoundException(mepCode: mepCode)
             }
 
-            if (getMultiEntityProcessingService().isMEP(conn)) {
+            //Checks mepEnabled only for Application Navigator
+            if (getMultiEntityProcessingService().isMEP(conn) && !DBUtility.isMepEnabled()) {
 
                 if (!mepCode) {
                     log.error "The Mep Code must be provided when running in multi institution context"
@@ -625,7 +628,7 @@ public class BannerDS implements DataSource {
                     throw new MepCodeNotFoundException(mepCode: "NO_MEP_CODE_PROVIDED")
                 }
 
-                def desc = getMultiEntityProcessingService().getMepDescription(mepCode, conn)
+                desc = getMultiEntityProcessingService().getMepDescription(mepCode, conn)
 
                 if (!desc) {
                     conn?.close()
@@ -633,12 +636,26 @@ public class BannerDS implements DataSource {
                     // specified when this is wrapped in an ApplicationException
                     log.error "Mep Code is invalid, will throw MepCodeNotFoundException"
                     throw new MepCodeNotFoundException(mepCode: mepCode)
-                }
-                else {
+                } else {
                     session.setAttribute("ssbMepDesc", desc)
                     getMultiEntityProcessingService().setHomeContext(mepCode, conn)
                     getMultiEntityProcessingService().setProcessContext(mepCode, conn)
                 }
+            } else if (getMultiEntityProcessingService().isMEP(conn) && DBUtility.isMepEnabled()) {
+                //MEP Code is not required as a parameter for Application Navigator
+                if (mepCode) {
+                    desc = getMultiEntityProcessingService().getMepDescription(mepCode, conn)
+
+                    if (!desc) {
+                        conn?.close()
+                        log.error "Mep Code is invalid, will throw MepCodeNotFoundException"
+                        throw new MepCodeNotFoundException(mepCode: mepCode)
+                    }else {
+                            getMultiEntityProcessingService().setHomeContext(mepCode, conn)
+                            getMultiEntityProcessingService().setProcessContext(mepCode, conn)
+                        }
+                }
+
             }
         }
     }
