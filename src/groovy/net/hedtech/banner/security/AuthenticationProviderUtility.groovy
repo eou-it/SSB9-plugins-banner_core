@@ -195,14 +195,12 @@ class AuthenticationProviderUtility {
         dbUser['fullName'] = fullName
         if(isSsbRoleBasedTimeoutEnabled()){
             dbUser['webTimeout'] = getWebTimeOut( dbUser,dataSource)
-            setWebSessionTimeout( dbUser['webTimeout'] )
         }
         else{
             dbUser['webTimeout'] = getDefaultWebSessionTimeout()
-            setWebSessionTimeout( dbUser['webTimeout'] )
         }
 
-
+        setWebSessionTimeout( dbUser['webTimeout'] )
         BannerAuthenticationToken bannerAuthenticationToken = newAuthenticationToken( provider, dbUser )
 
         log.debug "AuthenticationProviderUtility.createAuthenticationToken BannerAuthenticationToken created $bannerAuthenticationToken"

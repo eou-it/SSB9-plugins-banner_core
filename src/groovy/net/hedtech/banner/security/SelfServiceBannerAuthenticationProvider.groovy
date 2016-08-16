@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.security
 
 import grails.util.Holders  as CH
@@ -59,12 +59,12 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             authenticationResults['authorities']        = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
             if(AuthenticationProviderUtility.isSsbRoleBasedTimeoutEnabled()){
                 authenticationResults['webTimeout']         = AuthenticationProviderUtility.getWebTimeOut(authenticationResults,dataSource)
-                AuthenticationProviderUtility.setWebSessionTimeout(  authenticationResults['webTimeout'] )
             }
             else{
                 authenticationResults['webTimeout'] = AuthenticationProviderUtility.getDefaultWebSessionTimeout()
-                AuthenticationProviderUtility.setWebSessionTimeout(authenticationResults['webTimeout'])
             }
+
+            AuthenticationProviderUtility.setWebSessionTimeout(  authenticationResults['webTimeout'] )
             authenticationResults['transactionTimeout'] = getTransactionTimeout()
             String preferredName = authenticationResults.guest ? "" :AuthenticationProviderUtility.getUserFullName(authenticationResults.pidm,authenticationResults.name,dataSource) as String
             if(preferredName!=null && !preferredName.isEmpty() )
