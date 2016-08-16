@@ -61,6 +61,10 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                 authenticationResults['webTimeout']         = AuthenticationProviderUtility.getWebTimeOut(authenticationResults,dataSource)
                 AuthenticationProviderUtility.setWebSessionTimeout(  authenticationResults['webTimeout'] )
             }
+            else{
+                authenticationResults['webTimeout'] = AuthenticationProviderUtility.getDefaultWebSessionTimeout()
+                AuthenticationProviderUtility.setWebSessionTimeout(authenticationResults['webTimeout'])
+            }
             authenticationResults['transactionTimeout'] = getTransactionTimeout()
             String preferredName = authenticationResults.guest ? "" :AuthenticationProviderUtility.getUserFullName(authenticationResults.pidm,authenticationResults.name,dataSource) as String
             if(preferredName!=null && !preferredName.isEmpty() )

@@ -197,6 +197,10 @@ class AuthenticationProviderUtility {
             dbUser['webTimeout'] = getWebTimeOut( dbUser,dataSource)
             setWebSessionTimeout( dbUser['webTimeout'] )
         }
+        else{
+            dbUser['webTimeout'] = getDefaultWebSessionTimeout()
+            setWebSessionTimeout( dbUser['webTimeout'] )
+        }
 
 
         BannerAuthenticationToken bannerAuthenticationToken = newAuthenticationToken( provider, dbUser )
