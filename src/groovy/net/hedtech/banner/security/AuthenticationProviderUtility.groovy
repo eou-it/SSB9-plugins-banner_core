@@ -381,7 +381,9 @@ class AuthenticationProviderUtility {
 
         if (!defaultWebSessionTimeout) {
             def configuredTimeout = Holders.config.defaultWebSessionTimeout
-            defaultWebSessionTimeout = configuredTimeout instanceof Map ? 1800 : configuredTimeout
+            defaultWebSessionTimeout = configuredTimeout instanceof Map ? RequestContextHolder.currentRequestAttributes().session.getMaxInactiveInterval() : configuredTimeout
+
+
         }
         defaultWebSessionTimeout
     }
