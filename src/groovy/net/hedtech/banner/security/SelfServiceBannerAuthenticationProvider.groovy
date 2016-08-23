@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.security
 
 import grails.util.Holders  as CH
@@ -57,7 +57,14 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             AuthenticationProviderUtility.verifyAuthenticationResults this, authentication, authenticationResults
 
             authenticationResults['authorities']        = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
-            authenticationResults['webTimeout']         = AuthenticationProviderUtility.getWebTimeOut(authenticationResults,dataSource)
+            if(AuthenticationProviderUtility.isSsbRoleBasedTimeoutEnabled()){
+                authenticationResults['webTimeout']         = AuthenticationProviderUtility.getWebTimeOut(authenticationResults,dataSource)
+            }
+            else{
+                authenticationResults['webTimeout'] = AuthenticationProviderUtility.getDefaultWebSessionTimeout()
+            }
+
+            AuthenticationProviderUtility.setWebSessionTimeout(  authenticationResults['webTimeout'] )
             authenticationResults['transactionTimeout'] = getTransactionTimeout()
             String preferredName = authenticationResults.guest ? "" :AuthenticationProviderUtility.getUserFullName(authenticationResults.pidm,authenticationResults.name,dataSource) as String
             if(preferredName!=null && !preferredName.isEmpty() )
@@ -65,7 +72,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             else
                 authenticationResults['fullName']= getFullName( authenticationResults, dataSource ) as String
 
-            AuthenticationProviderUtility.setWebSessionTimeout(  authenticationResults['webTimeout'] )
             setTransactionTimeout( authenticationResults['transactionTimeout'] )
 
             newAuthenticationToken( authenticationResults )
