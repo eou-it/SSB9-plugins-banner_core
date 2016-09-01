@@ -123,13 +123,6 @@ class AuthenticationProviderUtility {
         Holders.config.ssbEnabled instanceof Boolean ? Holders.config.ssbEnabled : false
     }
 
-    public static Boolean isSsbRoleBasedTimeoutEnabled() {
-        boolean ssbRoleBasedTimeoutEnabled = false
-        if(isSsbEnabled()){
-            ssbRoleBasedTimeoutEnabled = Holders.config.ssbRoleBasedTimeoutEnabled instanceof Boolean ? Holders.config.ssbRoleBasedTimeoutEnabled : false
-        }
-        return ssbRoleBasedTimeoutEnabled
-    }
 
     public static getUserFullName(pidm,name,dataSource){
         def ctx = Holders.servletContext.getAttribute(GA.APPLICATION_CONTEXT)
