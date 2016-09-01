@@ -15,6 +15,8 @@ import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.core.Authentication
+import org.springframework.web.context.request.RequestContextHolder
+
 
 /**
  * Integration test for the self service Banner authentication provider.  
@@ -55,12 +57,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     }
 
     @Test
-    void testRetrievalOfRoleBasedTimeouts() {
-        def timeouts = provider.retrieveRoleBasedTimeOuts( sqlObj )
-        assertTrue timeouts.size() > 0
-    }
-
-    @Test
     void testGetPidm() {  
         def pidm = provider.getPidm( new TestAuthenticationRequest( testUser ), sqlObj )
         assertEquals testUser.pidm, pidm
@@ -70,6 +66,9 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     void testSsbAuthentication() {
 
         Holders.config.guestAuthenticationEnabled= true
+
+        def session = RequestContextHolder.currentRequestAttributes().getSession()
+        session.setMaxInactiveInterval(1800)
 
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()

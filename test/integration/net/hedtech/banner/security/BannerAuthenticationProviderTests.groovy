@@ -53,16 +53,16 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase{
         Holders?.config?.banner.applicationName ="testApp";
         usage=LFMI
 
-        deleteDisplayNameRule(usage);
         insertDisplayNameRule(usage);
 
-        def existingUser = [ name: "grails_user",pin:"u_pick_it"]
+        def existingUser = [ name: "CSZKARAD",pin:"u_pick_it"]
 
         def auth = provider.authenticate( new TestAuthenticationRequest( existingUser ) )
 
-        assertEquals "GRAILS_USER" , auth.fullName
+        assertEquals "Szkaradnik, Cindy" , auth.fullName
 
         deleteDisplayNameRule();
+
     }
 
     @Test
@@ -72,14 +72,13 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase{
         Holders?.config?.banner.applicationName ="testApp";
         usage=DEFAULT
 
-        deleteDisplayNameRule(usage);
         insertDisplayNameRule(usage);
 
-        def existingUser = [ name: "grails_user",pin:"u_pick_it"]
+        def existingUser = [ name: "CSZKARAD",pin:"u_pick_it"]
 
         def auth = provider.authenticate( new TestAuthenticationRequest( existingUser ) )
 
-        assertEquals "GRAILS_USER" , auth.fullName
+        assertEquals "Cindy Szkaradnik" , auth.fullName
 
         deleteDisplayNameRule();
 
@@ -92,33 +91,16 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase{
         Holders?.config?.banner.applicationName ="testApp";
         usage=null
 
-        deleteDisplayNameRule(usage);
         insertDisplayNameRule(usage);
 
-        def existingUser = [ name: "grails_user",pin:"u_pick_it"]
+        def existingUser = [ name: "CSZKARAD",pin:"u_pick_it"]
 
         def auth = provider.authenticate( new TestAuthenticationRequest( existingUser ) )
 
-        assertEquals "GRAILS_USER" , auth.fullName
+        assertEquals "Cindy Szkaradnik" , auth.fullName
 
         deleteDisplayNameRule();
 
-    }
-
-    private void deleteDisplayNameRule(usage){
-        def db = getDB();
-        def result
-        def deleteQueryWithoutUsage = "DELETE FROM GURNHIR WHERE GURNHIR_PRODUCT = 'testApp' AND GURNHIR_APPLICATION = 'testApp'"
-        if(usage != null){
-            result = db.executeUpdate(deleteQueryWithoutUsage + " AND GURNHIR_USAGE = '"+usage+"'");
-        }else{
-            db.executeUpdate(deleteQueryWithoutUsage);
-        }
-        if (result == 0) {
-            db.executeUpdate(deleteQueryWithoutUsage);
-        }
-        db.commit();
-        db.close();
     }
 
     private void insertDisplayNameRule(usage){

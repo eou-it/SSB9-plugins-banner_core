@@ -22,12 +22,18 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     def preferredNameService
     public final String LF30= "LF30"
     public final String L30= "L30"
+    public final String L60= "L60"
     public final String FL30= "FL30"
     public final String FL= "FL"
     public final String FMIL= "FMIL"
+    public final String FML= "FML"
+    public final String LF= "LF"
     public final String LFMI= "LFMI"
+    public final String LFM= "LFM"
+    public final String LFIMI30= "LFIMI30"
     public final String DEFAULT= "DEFAULT"
-    public final int PIDM = 273
+    public final String LEGAL= "LEGAL"
+    public final int PIDM = 30689
 
     @Before
     public void setUp() {
@@ -51,7 +57,7 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     public void getPreferredNameDefaultUsage(){
         params = [pidm:pidm, usage:usage]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "Dr. Gerald Goodhart", defaultName
+        assertEquals "Jerryone L Lewis", defaultName
     }
 
     @Test
@@ -59,7 +65,7 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
         usage = FL
         params = [pidm:pidm, usage:usage]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "Gerald Goodhart", defaultName
+        assertEquals "Jerryone Lewis", defaultName
     }
 
     @Test
@@ -67,7 +73,7 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
         usage = LF30
         params = [pidm:pidm, usage:usage]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "Goodhart, Gerald", defaultName
+        assertEquals "Lewis, Jerryone", defaultName
     }
 
     @Test
@@ -75,7 +81,7 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
         usage = L30
         params = [pidm:pidm, usage:usage]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "Goodhart", defaultName
+        assertEquals "Lewis", defaultName
     }
 
     @Test
@@ -83,15 +89,15 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
         usage = FL30
         params = [pidm:pidm, usage:usage]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "Gerald Goodhart", defaultName
+        assertEquals "Jerryone Lewis", defaultName
     }
 
     @Test
     public void getPreferredNameFMILUsage(){
         usage = FMIL
-        params = [usage:usage, firstname:"JERRYONE", mi:"MIDDLE", lastname:"LEWIS", usedata:"Y"]
+        params = [pidm:pidm, usage:usage]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "JERRYONE M. LEWIS", defaultName
+        assertEquals "Jerryone L. Lewis", defaultName
     }
 
     @Test
@@ -99,7 +105,7 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
         usage = LFMI
         params = [pidm:pidm, usage:usage]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "Goodhart, Gerald", defaultName
+        assertEquals "Lewis, Jerryone L.", defaultName
     }
 
     @Test
@@ -123,14 +129,14 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
         usage = "junk"
         params = [pidm:pidm, usage:usage]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "Dr. Gerald Goodhart", defaultName
+        assertEquals "Jerryone L Lewis", defaultName
     }
 
     @Test
     public void getPreferredNameNoUsage(){
         params = [pidm:pidm]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "Dr. Gerald Goodhart", defaultName
+        assertEquals "Jerryone L Lewis", defaultName
     }
     @Test
     public void getPreferredNameWithNameParams(){
@@ -161,7 +167,7 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
         usage = DEFAULT
         params = [pidm:pidm,usage:usage, usedata:"N"]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "Dr. Gerald Goodhart", defaultName
+        assertEquals "Jerryone L Lewis", defaultName
     }
 
     @Test
@@ -177,14 +183,14 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
 
         params = [firstname:"VARUN", mi:"S", lastname:"SANKAR",productname:"Payroll",appname:"Taxes",pagename:"W%",usedata:"Y"]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "VARUN S SANKAR", defaultName
+        assertEquals "SANKAR, VARUN S.", defaultName
     }
     @Test
     public void getPreferredNameWithpidmsWithUseDataParams(){
 
         params = [pidm:pidm,productname:"Payroll",appname:"Taxes",pagename:"W%",usedata:"N"]
         String defaultName = preferredNameService.getPreferredName(params)
-        assertEquals "Dr. Gerald Goodhart", defaultName
+        assertEquals "Lewis, Jerryone L.", defaultName
     }
 
     @Test
@@ -198,13 +204,13 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     @Test
     public void getUsageDefault(){
         String defaultName = preferredNameService.getUsage("Payroll","Taxes","W2","Body")
-        assertEquals DEFAULT, defaultName
+        assertEquals FL30, defaultName
     }
 
     @Test
     public void getUsageDefaultWithNoParams(){
         String defaultName = preferredNameService.getUsage()
-        assertEquals DEFAULT, defaultName
+        assertEquals LFMI, defaultName
     }
 
     private ApplicationContext createUnderlyingSsbDataSourceBean() {
