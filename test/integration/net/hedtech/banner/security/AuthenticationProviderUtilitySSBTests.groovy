@@ -62,6 +62,7 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         def bannerPidm = generatePidm();
         usage=DEFAULT
 
+        deleteDisplayNameRule(usage);
         insertDisplayNameRule(usage);
         generateSpridenRecord(bannerID, bannerPidm);
         addStudentRoleToSpriden(bannerPidm);
@@ -270,6 +271,8 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
          test_rowid varchar2(30);
          begin
 
+         DELETE FROM spriden WHERE spriden_id = ${bannerId};
+
          gb_identification.p_create(
          P_ID_INOUT => ${bannerId},
          P_LAST_NAME => 'Miller',
@@ -300,6 +303,22 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         db.commit()
         db.close()
 
+    }
+
+    private void deleteDisplayNameRule(usage){
+            def db = getDB();
+            def result
+            def deleteQueryWithoutUsage = "DELETE FROM GURNHIR WHERE GURNHIR_PRODUCT = 'testApp' AND GURNHIR_APPLICATION = 'testApp'"
+            if(usage != null){
+                result = db.executeUpdate(deleteQueryWithoutUsage + " AND GURNHIR_USAGE = '"+usage+"'");
+            }else{
+                db.executeUpdate(deleteQueryWithoutUsage);
+            }
+            if (result == 0) {
+                db.executeUpdate(deleteQueryWithoutUsage);
+            }
+            db.commit();
+            db.close();
     }
 
     private void insertDisplayNameRule(usage){
@@ -336,6 +355,8 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
          declare
          test_rowid varchar2(30);
          begin
+
+         DELETE FROM GOBUMAP WHERE GOBUMAP_UDC_ID=${UDC_IDENTIFIER};
 
          gb_gobumap.p_create(
          p_udc_id => ${UDC_IDENTIFIER},
