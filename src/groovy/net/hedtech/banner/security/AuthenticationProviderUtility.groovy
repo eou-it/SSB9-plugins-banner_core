@@ -123,13 +123,6 @@ class AuthenticationProviderUtility {
         Holders.config.ssbEnabled instanceof Boolean ? Holders.config.ssbEnabled : false
     }
 
-    public static Boolean isSsbRoleBasedTimeoutEnabled() {
-        boolean ssbRoleBasedTimeoutEnabled = false
-        if(isSsbEnabled()){
-            ssbRoleBasedTimeoutEnabled = Holders.config.ssbRoleBasedTimeoutEnabled instanceof Boolean ? Holders.config.ssbRoleBasedTimeoutEnabled : false
-        }
-        return ssbRoleBasedTimeoutEnabled
-    }
 
     public static getUserFullName(pidm,name,dataSource){
         def ctx = Holders.servletContext.getAttribute(GA.APPLICATION_CONTEXT)
@@ -193,7 +186,7 @@ class AuthenticationProviderUtility {
         }
         dbUser['authorities'] = authorities
         dbUser['fullName'] = fullName
-        if(isSsbRoleBasedTimeoutEnabled()){
+        if(isSsbEnabled()){
             dbUser['webTimeout'] = getWebTimeOut( dbUser,dataSource)
         }
         else{
@@ -382,8 +375,6 @@ class AuthenticationProviderUtility {
         if (!defaultWebSessionTimeout) {
             def configuredTimeout = Holders.config.defaultWebSessionTimeout
             defaultWebSessionTimeout = configuredTimeout instanceof Map ? RequestContextHolder.currentRequestAttributes().session.getMaxInactiveInterval() : configuredTimeout
-
-
         }
         defaultWebSessionTimeout
     }
