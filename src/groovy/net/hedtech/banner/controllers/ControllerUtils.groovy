@@ -93,4 +93,9 @@ class ControllerUtils {
     public static boolean isGuestAuthenticationEnabled() {
         Holders.config.guestAuthenticationEnabled instanceof Boolean ? Holders.config.guestAuthenticationEnabled : false
     }
+
+    public static def aboutServiceUrl() {
+        return Holders?.config.banner.about.serviceUrl
+    }
+
 }
