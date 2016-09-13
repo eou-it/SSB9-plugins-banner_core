@@ -325,7 +325,7 @@ class ResetPasswordController {
                 passwordValidated = true
             }
         } catch (CredentialsExpiredException ce) {
-            log.warn "Credenitials are valid but expired.Changing Password.."
+            log.warn "Credentials are valid but expired.Changing Password.."
             passwordValidated = true
         } catch (DisabledException de) {
             log.warn "User account is Disabled"
@@ -343,7 +343,7 @@ class ResetPasswordController {
             String view = 'changeexpiredpassword'
             render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl]
         } else if (oldPassword.trim().length() == 0 || password.trim().length() == 0 || confirmPassword.trim().length() == 0) {
-            flash.message = message(code: "net.hedtech.banner.resetpassword.password.required.error")
+            flash.message = message(code: "changeExpiredPassword.password.required.error")
             String view = 'changeexpiredpassword'
             render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl]
         } else if (validateResult.get("error") == true) {
@@ -351,14 +351,14 @@ class ResetPasswordController {
             String view = 'changeexpiredpassword'
             render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl]
         } else if (!passwordValidated) {
-            flash.message = message(code: "net.hedtech.banner.changepassword.oldpassword.error")
+            flash.message = message(code: "changeExpiredPassword.old.password.error")
             String view = 'changeexpiredpassword'
-            render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl]
+            render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl,params: params]
         } else {
             try {
                 resetPasswordService.changeUserPassword(pidm, password)
                 session.invalidate()
-                flash.reloginMessage = message(code: "net.hedtech.banner.changeExpiredPassword.success.message")
+                flash.reloginMessage = message(code: "changeExpiredPassword.success.message")
                 redirect(controller: "login", action: "auth")
             }
             catch (SQLException sqle) {
