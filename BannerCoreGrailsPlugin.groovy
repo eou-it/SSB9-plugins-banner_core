@@ -42,7 +42,7 @@ import java.util.concurrent.Executors
  * */
 class BannerCoreGrailsPlugin {
 
-    String version = "9.18.1"
+    String version = "9.19"
     private static final Logger staticLogger = Logger.getLogger(BannerCoreGrailsPlugin.class)
 
     // the version or versions of Grails the plugin is designed for
@@ -168,7 +168,7 @@ class BannerCoreGrailsPlugin {
         }
 
 
-        bannerMepCodeFilter(BannerMepCodeFilter) 
+        bannerMepCodeFilter(BannerMepCodeFilter)
 
         basicAuthenticationEntryPoint(BasicAuthenticationEntryPoint) {
             realmName = 'Banner REST API Realm'

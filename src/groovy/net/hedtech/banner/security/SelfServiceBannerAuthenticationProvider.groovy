@@ -57,7 +57,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             AuthenticationProviderUtility.verifyAuthenticationResults this, authentication, authenticationResults
 
             authenticationResults['authorities']        = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
-            if(AuthenticationProviderUtility.isSsbRoleBasedTimeoutEnabled()){
+            if(AuthenticationProviderUtility.isSsbEnabled()){
                 authenticationResults['webTimeout']         = AuthenticationProviderUtility.getWebTimeOut(authenticationResults,dataSource)
             }
             else{
