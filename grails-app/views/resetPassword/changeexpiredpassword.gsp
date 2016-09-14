@@ -21,12 +21,6 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
         var cancelUrl='${cancelUrl}';
         var flashMessage="${flash.message}";
 
-        document.getElementsByName('headerAttributes')[0].content = JSON.stringify({
-                    "breadcrumb": {
-                        "<g:message code="changeExpiredPassword.title" />": ""
-
-                    }
-                });
     </script>
 </head>
 

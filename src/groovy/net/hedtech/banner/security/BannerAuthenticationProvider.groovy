@@ -60,6 +60,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             def pidm=AuthenticationProviderUtility.getUserPidm(authenticationResults.name.toUpperCase(),dataSource);
 
             if(pidm!=null){
+                authenticationResults['pidm']=pidm;
                 authenticationResults['fullName']=AuthenticationProviderUtility.getUserFullName(pidm,authenticationResults.name,dataSource);
 
             }else{
