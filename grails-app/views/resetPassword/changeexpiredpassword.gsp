@@ -16,10 +16,17 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
     <g:else>
         <r:require modules="changePasswordLTR"/>
     </g:else>
-
+    <meta name="headerAttributes" content=""/>
     <script type="application/javascript">
         var cancelUrl='${cancelUrl}';
         var flashMessage="${flash.message}";
+
+        document.getElementsByName('headerAttributes')[0].content = JSON.stringify({
+                    "breadcrumb": {
+                        "<g:message code="changeExpiredPassword.title" />": ""
+
+                    }
+                });
     </script>
 </head>
 
@@ -39,7 +46,7 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
                             <table cellpadding="5" cellspacing="10" class="input-table">
                                     <tr>
                                         <td class="tabletext">
-                                            <g:message code="changeExpiredPassword.old.password"/>:
+                                           <label for="oldpassword"> <g:message code="changeExpiredPassword.old.password"/>:</label>
                                         </td>
                                         <td class="tabledata">
                                             <input type="password" id="oldpassword" name="oldpassword" class="input-text default-state" autocomplete="off"/>
@@ -47,7 +54,7 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
                                     </tr>
                                     <tr>
                                         <td class="tabletext">
-                                            <g:message code="net.hedtech.banner.resetpassword.newpassword"/>:
+                                            <label for="password"><g:message code="net.hedtech.banner.resetpassword.newpassword"/>:</label>
                                         </td>
                                         <td class="tabledata">
                                             <input type="password" id="password" name="password" class="input-text default-state" autocomplete="off"/>
@@ -55,7 +62,7 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
                                     </tr>
                                     <tr>
                                         <td class="tabletext">
-                                            <g:message code="changeExpiredPassword.re.password"/> :
+                                            <label for="repassword"><g:message code="changeExpiredPassword.re.password"/> :</label>
                                         </td>
                                         <td class="tabledata">
                                             <input type="password" id="repassword" name="repassword" class="input-text default-state" autocomplete="off"/>
