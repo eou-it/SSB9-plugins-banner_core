@@ -319,6 +319,8 @@ class ResetPasswordController {
         Authentication auth
         def validateResult = resetPasswordService.validatePassword(pidm, password)
         boolean passwordValidated = false
+        boolean pinDisabled=false
+        boolean accountLocked=false
         try {
             auth = selfServiceBannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(id, oldPassword))
             if (auth != null) {
@@ -328,8 +330,10 @@ class ResetPasswordController {
             log.warn "Credentials are valid but expired.Changing Password.."
             passwordValidated = true
         } catch (DisabledException de) {
+            pinDisabled=true
             log.warn "User account is Disabled"
         } catch (LockedException le) {
+            accountLocked=true
             log.warn "User account is Locked"
         }
 
@@ -350,6 +354,14 @@ class ResetPasswordController {
             flash.message = validateResult.get("errorMessage")
             String view = 'changeexpiredpassword'
             render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl]
+        } else if(pinDisabled) {
+            flash.message = message(code:"net.hedtech.banner.errors.login.disabled")
+            String view = 'changeexpiredpassword'
+            render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl,params: params]
+        } else if(accountLocked) {
+            flash.message = message(code:"net.hedtech.banner.errors.login.locked")
+            String view = 'changeexpiredpassword'
+            render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl,params: params]
         } else if (!passwordValidated) {
             flash.message = message(code: "changeExpiredPassword.old.password.error")
             String view = 'changeexpiredpassword'
