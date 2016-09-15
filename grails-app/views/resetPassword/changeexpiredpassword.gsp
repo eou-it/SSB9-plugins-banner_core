@@ -66,12 +66,8 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 
                             <div class="button-bar-container">
                                 <div class="button-bar">
-                                    <button id="cancelChangePasswordButton" class="secondary-button">
-                                        <g:message code="net.hedtech.banner.resetpassword.button.cancel"/>
-                                    </button>
-                                    <button id="changePasswordButton" class="primary-button" type="submit">
-                                        <g:message code="net.hedtech.banner.resetpassword.button.submit"/>
-                                    </button>
+                                    <input type="button" id="cancelChangePasswordButton" class="secondary-button" value='${message(code: 'net.hedtech.banner.resetpassword.button.cancel')}'  />
+                                    <input type="submit" id="changePasswordButton" class="primary-button" value='${message(code: 'net.hedtech.banner.resetpassword.button.submit')}' />
                                 </div>
                             </div>
 
