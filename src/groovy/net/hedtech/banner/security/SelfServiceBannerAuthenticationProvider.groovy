@@ -77,12 +77,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             newAuthenticationToken( authenticationResults )
         }
         catch (DisabledException de)           { throw de }
-        catch (CredentialsExpiredException ce) {
-            def usersPidm=AuthenticationProviderUtility.getUserPidm(authentication.principal, dataSource )
-            RequestContextHolder.currentRequestAttributes().session.setAttribute("usersName",authentication.principal)
-            RequestContextHolder.currentRequestAttributes().session.setAttribute("usersPidm",usersPidm)
-            throw ce
-        }
+        catch (CredentialsExpiredException ce) { throw ce }
         catch (LockedException le)             { throw le }
         catch (BadCredentialsException be) {
             log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, but another provider may be able to..."
@@ -153,6 +148,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             case -20901:
                 log.debug "SelfServiceAuthenticationProvider failed on expired pin"
                 authenticationResults.expired = true
+                AuthenticationProviderUtility.setUserDetails(authenticationResults.pidm,authenticationResults.name)
                 break
             case -20903:
                 log.debug "SelfServiceAuthenticationProvider failed on ldap authentication"
