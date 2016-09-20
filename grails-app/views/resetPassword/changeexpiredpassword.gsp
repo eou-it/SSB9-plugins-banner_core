@@ -48,7 +48,7 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
                                     </tr>
                                     <tr>
                                         <td class="tabletext">
-                                            <label for="password"><g:message code="net.hedtech.banner.resetpassword.newpassword"/>:</label>
+                                            <label for="password"><g:message code="changeExpiredPassword.new.password"/>:</label>
                                         </td>
                                         <td class="tabledata">
                                             <input type="password" id="password" name="password" class="input-text default-state" autocomplete="off"/>
@@ -66,8 +66,8 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 
                             <div class="button-bar-container">
                                 <div class="button-bar">
-                                    <input type="button" id="cancelChangePasswordButton" class="secondary-button" value='${message(code: 'net.hedtech.banner.resetpassword.button.cancel')}'  />
-                                    <input type="submit" id="changePasswordButton" class="primary-button" value='${message(code: 'net.hedtech.banner.resetpassword.button.submit')}' />
+                                    <input type="button" id="cancelChangePasswordButton" class="secondary-button" value='${message(code: 'changeExpiredPassword.button.cancel')}'  />
+                                    <input type="submit" id="changePasswordButton" class="primary-button" value='${message(code: 'changeExpiredPassword.button.submit')}' />
                                 </div>
                             </div>
 

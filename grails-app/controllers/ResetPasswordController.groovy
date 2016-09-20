@@ -340,10 +340,10 @@ class ResetPasswordController {
 
         if (session.getAttribute("requestPage") != "changeexpiredpassword") {
             session.invalidate()
-            flash.message = message(code: "net.hedtech.banner.resetpassword.request.invalid.message")
+            flash.message = message(code: "changeExpiredPassword.request.invalid.message")
             redirect(uri: "/resetPassword/auth")
         } else if (password != confirmPassword) {
-            flash.message = message(code: "net.hedtech.banner.resetpassword.password.match.error")
+            flash.message = message(code: "changeExpiredPassword.password.match.error")
             String view = 'changeexpiredpassword'
             render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl]
         } else if (oldPassword.trim().length() == 0 || password.trim().length() == 0 || confirmPassword.trim().length() == 0) {
@@ -375,7 +375,7 @@ class ResetPasswordController {
             }
             catch (SQLException sqle) {
                 if (20100 == sqle.getErrorCode()) {
-                    flash.message = message(code: "net.hedtech.banner.resetpassword.resetpin.password.length.error")
+                    flash.message = message(code: "changeExpiredPassword.password.length.error")
                 } else {
                     flash.message = message(code: sqle.getMessage())
                 }

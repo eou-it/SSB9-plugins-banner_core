@@ -21,7 +21,7 @@ $(document).ready(function () {
     function validateForm(element) {
         var validatedForm = true;
         var emptyErrorMessage = $.i18n.prop("changeExpiredPassword.password.required.error");
-        var passwordMatchError = $.i18n.prop("net.hedtech.banner.resetpassword.password.match.error");
+        var passwordMatchError = $.i18n.prop("changeExpiredPassword.password.match.error");
         if (element.val().trim() != "" && element.hasClass("error-state")) {
             element.removeClass("error-state");
             element.addClass("default-state");
