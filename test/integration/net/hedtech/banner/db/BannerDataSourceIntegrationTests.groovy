@@ -141,7 +141,6 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     public void tearDownDataSetup(){
-        dataSource.underlyingSsbDataSource = null
         logout()
         super.tearDown()
     }

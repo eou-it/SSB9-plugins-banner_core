@@ -21,6 +21,9 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     def params
     int pidm
     def usage
+    def dataSource
+    def sqlObj
+    def conn
     def preferredNameService
     public final String LF30= "LF30"
     public final String L30= "L30"
@@ -28,31 +31,28 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     public final String FL30= "FL30"
     public final String FL= "FL"
     public final String FMIL= "FMIL"
-    public final String FML= "FML"
-    public final String LF= "LF"
+
     public final String LFMI= "LFMI"
-    public final String LFM= "LFM"
-    public final String LFIMI30= "LFIMI30"
     public final String DEFAULT= "DEFAULT"
     public final String LEGAL= "LEGAL"
 
 
     @Before
     public void setUp() {
-        def PIDM = getPidmBySpridenId('SJGRIM')
-        ApplicationContext testSpringContext = createUnderlyingSsbDataSourceBean()
-        dataSource.underlyingDataSource = testSpringContext.getBean('underlyingDataSource')
-        dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
+        conn = dataSource.getSsbConnection()
+        sqlObj = new Sql( conn )
         formContext = ['GUAGMNU']
         def config = CH.getConfig()
         config.ssbEnabled = true
-        super.setUp()
-        pidm = PIDM
+        pidm =  getPidmBySpridenId('SJGRIM')
         usage = DEFAULT
+        super.setUp()
     }
 
     @After
     public void tearDown() {
+        sqlObj.close()
+        conn.close()
         super.tearDown()
     }
 
@@ -244,22 +244,10 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     }
 
     private def getPidmBySpridenId(def spridenId) {
-        def sql = getDB()
         def query = "SELECT SPRIDEN_PIDM pidm FROM SPRIDEN WHERE SPRIDEN_ID=$spridenId"
-        def pidmValue = sql?.firstRow(query)?.pidm
-        sql.close()
+        def pidmValue = sqlObj?.firstRow(query)?.pidm
         pidmValue
     }
 
-    private def getDB() {
-        def configFile = new File("${System.properties['user.home']}/.grails/banner_configuration.groovy")
-        def slurper = new ConfigSlurper(Environment.getCurrent().getName())
-        def config = slurper.parse(configFile.toURI().toURL())
-        def url = config.get("bannerDataSource").url
-        def db = Sql.newInstance(url,   //  db =  new Sql( connectInfo.url,
-                "baninst1",
-                "u_pick_it",
-                'oracle.jdbc.driver.OracleDriver')
-        db
-    }
+
 }

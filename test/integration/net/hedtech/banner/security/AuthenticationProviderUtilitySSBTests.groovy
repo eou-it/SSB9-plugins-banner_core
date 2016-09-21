@@ -21,6 +21,8 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
     def authenticationProviderUtility
     def dataSource
     def usage
+    def conn
+    def sqlObj
     public final String DEFAULT= "DEFAULT"
     public final String LFMI= "LFMI"
     public static final String UDC_IDENTIFIER = '99999SSB99999'
@@ -29,19 +31,17 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-
-        ApplicationContext testSpringContext = createUnderlyingSsbDataSourceBean()
-        dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
-
+        conn = dataSource.getConnection()
+        sqlObj = new Sql( conn )
         authenticationProviderUtility = new AuthenticationProviderUtility()
 
     }
 
     @After
     public void tearDown() {
+        sqlObj.close()
+        conn.close()
         super.tearDown();
-
-
     }
 
     @Test
@@ -106,7 +106,7 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         def fullName=authenticationProviderUtility.getUserFullName(bannerPidm,authResults["name"],dataSource);
 
 
-        assertEquals "Miller, Ann E.", fullName
+        assertEquals "Ann Elizabeth Miller", fullName
 
         deleteUDCIDMappingPIDM()
         deleteSpriden(bannerPidm)
@@ -322,36 +322,28 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
     }
 
     private void insertDisplayNameRule(usage){
-        def db = getDB();
-
         if(usage!=null){
-            db.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
+            sqlObj.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
                     "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,'"+usage+"','Y',2000," +
                     "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
                     "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
         }else{
-            db.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
+            sqlObj.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
                     "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,null,'Y',2000," +
                     "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
                     "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
         }
-        db.commit();
-        db.close();
+        sqlObj.commit();
     }
 
     private void deleteDisplayNameRule(){
-        def db = getDB();
-
-        db.executeUpdate("DELETE GURNHIR WHERE GURNHIR_PRODUCT='testApp'");
-        db.commit();
-        db.close();
+        sqlObj.executeUpdate("DELETE GURNHIR WHERE GURNHIR_PRODUCT='testApp'");
+        sqlObj.commit();
     }
 
     private def generateUDCIDMappingPIDM(pidm) {
 
-        def db = getDB();
-
-        db.call("""
+        sqlObj.call("""
          declare
          test_rowid varchar2(30);
          begin
@@ -371,34 +363,24 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
 
 
         String idSql = """select GOBUMAP_UDC_ID from gobumap where gobumap_udc_id = '${UDC_IDENTIFIER}' """
-        def bannerValues = db.firstRow(idSql)
+        def bannerValues = sqlObj.firstRow(idSql)
         def spridenId
         def sqlStatement2 = '''SELECT spriden_id, gobumap_pidm FROM gobumap,spriden WHERE spriden_pidm = gobumap_pidm AND spriden_change_ind is null AND gobumap_udc_id = ?'''
-        db.eachRow(sqlStatement2, [UDC_IDENTIFIER]) { row ->
+        sqlObj.eachRow(sqlStatement2, [UDC_IDENTIFIER]) { row ->
             spridenId = row.spriden_id
             pidm = row.gobumap_pidm
         }
-
-        db.commit()
-        db.close()
-
+        sqlObj.commit()
         return bannerValues.GOBUMAP_UDC_ID
     }
 
     private void deleteSpriden(pidm) {
-
-        def db = getDB();
-
-        db.executeUpdate("delete spriden where spriden_pidm=${pidm}")
-        db.commit()
-        db.close()
+        sqlObj.executeUpdate("delete spriden where spriden_pidm=${pidm}")
+        sqlObj.commit()
     }
 
     private void deleteUDCIDMappingPIDM() {
-
-        def db = getDB();
-
-        db.call("""
+        sqlObj.call("""
          declare
          test_rowid varchar2(30);
          begin
@@ -409,29 +391,20 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
          end ;
          """)
 
-        db.commit()
-        db.close()
+        sqlObj.commit()
     }
 
     private def generateBannerId() {
 
-        def sql = getDB();
-
         String idSql = """select gb_common.f_generate_id bannerId from dual """
-        def bannerValues = sql.firstRow(idSql)
-
-        sql?.close() // note that the test will close the connection, since it's our current session's connection
-
+        def bannerValues = sqlObj.firstRow(idSql)
+        //sqlObj?.close() // note that the test will close the connection, since it's our current session's connection
         return bannerValues.bannerId
     }
 
     private void createGOBEACC(pidm, bannerId) {
-
-        def db = getDB();
-
-        db.executeUpdate("insert into gobeacc(gobeacc_pidm, gobeacc_username, gobeacc_user_id, gobeacc_activity_date) values (${pidm},${bannerId},user,sysdate)")
-        db.commit()
-        db.close()
+        sqlObj.executeUpdate("insert into gobeacc(gobeacc_pidm, gobeacc_username, gobeacc_user_id, gobeacc_activity_date) values (${pidm},${bannerId},user,sysdate)")
+        sqlObj.commit()
     }
 
 }

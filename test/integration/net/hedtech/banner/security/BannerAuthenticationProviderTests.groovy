@@ -16,9 +16,9 @@ import org.springframework.context.ApplicationContext
  */
 class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
 
-    public static final String PERSON_HOSWEB002 = 'HOSWEB002'
     private BannerAuthenticationProvider provider
     def conn
+    Sql sqlObj
     def usage
     public final String LFMI = "LFMI"
     public final String DEFAULT = "DEFAULT"
@@ -27,13 +27,17 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
 
     @Before
     public void setUp() {
-        provider = Holders.applicationContext.getBean("bannerAuthenticationProvider")
+        formContext = ['GUAGMNU']
         conn = dataSource.getConnection()
+        sqlObj = new Sql( conn )
+        super.setUp()
     }
 
     @After
     public void tearDown() {
+        sqlObj.close()
         conn.close()
+        super.tearDown();
     }
 
     @Test
@@ -97,56 +101,38 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
     }
 
     private void insertDisplayNameRule(usage) {
-        def db = getDB();
 
         if (usage != null) {
-            db.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
+            sqlObj.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
                     "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,'" + usage + "','Y',2000," +
                     "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
                     "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
         } else {
-            db.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
+            sqlObj.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
                     "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,null,'Y',2000," +
                     "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
                     "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
         }
-        db.commit();
-        db.close();
+        sqlObj.commit();
     }
 
     private void deleteDisplayNameRule() {
-        def db = getDB();
-
-        db.executeUpdate("DELETE GURNHIR WHERE GURNHIR_PRODUCT='testApp'");
-        db.commit();
-        db.close();
+        sqlObj.executeUpdate("DELETE GURNHIR WHERE GURNHIR_PRODUCT='testApp'");
+        sqlObj.commit();
     }
 
     private void deleteDisplayNameRule(usage) {
-        def db = getDB();
         def result
         def deleteQueryWithoutUsage = "DELETE FROM GURNHIR WHERE GURNHIR_PRODUCT = 'testApp' AND GURNHIR_APPLICATION = 'testApp'"
         if (usage != null) {
-            result = db.executeUpdate(deleteQueryWithoutUsage + " AND GURNHIR_USAGE = '" + usage + "'");
+            result = sqlObj.executeUpdate(deleteQueryWithoutUsage + " AND GURNHIR_USAGE = '" + usage + "'");
         } else {
-            db.executeUpdate(deleteQueryWithoutUsage);
+            sqlObj.executeUpdate(deleteQueryWithoutUsage);
         }
         if (result && result == 0) {
-            db.executeUpdate(deleteQueryWithoutUsage);
+            sqlObj.executeUpdate(deleteQueryWithoutUsage);
         }
-        db.commit();
-        db.close();
     }
 
-    private static getDB() {
-        def configFile = new File("${System.properties['user.home']}/.grails/banner_configuration.groovy")
-        def slurper = new ConfigSlurper(Environment.getCurrent().getName())
-        def config = slurper.parse(configFile.toURI().toURL())
-        def url = config.get("bannerDataSource").url
-        def db = Sql.newInstance(url,   //  db =  new Sql( connectInfo.url,
-                "baninst1",
-                "u_pick_it",
-                'oracle.jdbc.driver.OracleDriver')
-        db
-    }
+
 }
