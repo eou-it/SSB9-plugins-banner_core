@@ -17,6 +17,8 @@ import org.junit.Before
 import org.junit.Test
 import org.springframework.context.ApplicationContext
 
+import javax.sql.DataSource
+
 class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     def params
     int pidm
@@ -35,6 +37,8 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     public final String LFMI= "LFMI"
     public final String DEFAULT= "DEFAULT"
     public final String LEGAL= "LEGAL"
+    DataSource underlyingDataSource
+    DataSource underlyingSsbDataSource
 
 
     @Before
