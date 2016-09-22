@@ -16,7 +16,7 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 </head>
 
 <body class="pageBg">
-
+<g:analytics/>
 <div class="splashBg">
     <div class="ie-warning" id="ieWarningMessage">
         <div>
