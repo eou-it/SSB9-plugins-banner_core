@@ -24,9 +24,9 @@ import java.sql.SQLException
 class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
 
     def resetPasswordService;
-    def sql        // set in setUp
+    def sql
     private SelfServiceBannerAuthenticationProvider provider
-    def conn          // set in setUp
+    def conn
     Authentication auth
     public static final String PERSON_HOSWEB002 = 'HOSWEB002'
     def PERSON_HOSWEB002_PIDM = 32530
@@ -34,8 +34,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
     int minLength
     int maxLength
     String pinResetFormat
-    static
-    final String GUBPPRF_QUERY = "select GUBPPRF_MIN_LENGTH,GUBPPRF_MAX_LENGTH,GUBPPRF_NUM_IND,GUBPPRF_CHAR_IND from GUBPPRF"
+    static final String GUBPPRF_QUERY = "select GUBPPRF_MIN_LENGTH,GUBPPRF_MAX_LENGTH,GUBPPRF_NUM_IND,GUBPPRF_CHAR_IND from GUBPPRF"
 
     @Before
     public void setUp() {
@@ -152,7 +151,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
 
         def user = PERSON_HOSWEB002
         def newPassword = 555555
-        def pidm = 49702
+        def pidm = PERSON_HOSWEB002_PIDM
         def pinExpDays = 7
         try {
             sql.call("{call gb_third_party_access.p_update(p_pidm=>${pidm}, p_pin=>${newPassword},p_pin_exp_date=>sysdate + ${pinExpDays} )}")
