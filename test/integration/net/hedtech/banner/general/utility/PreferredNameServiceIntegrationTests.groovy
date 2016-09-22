@@ -6,6 +6,7 @@ package net.hedtech.banner.general.utility
 
 import grails.spring.BeanBuilder
 import grails.util.Environment
+import grails.util.Holders
 import grails.util.Holders  as CH
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
@@ -43,6 +44,7 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
 
     @Before
     public void setUp() {
+        Holders?.config.ssbEnabled = true
         conn = dataSource.getSsbConnection()
         sqlObj = new Sql( conn )
         formContext = ['GUAGMNU']
