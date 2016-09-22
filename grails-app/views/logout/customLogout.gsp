@@ -21,6 +21,7 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
 </head>
 
 <body>
+<g:analytics/>
 <div class="header">
     <div class="institutionalBranding"></div>
 </div>

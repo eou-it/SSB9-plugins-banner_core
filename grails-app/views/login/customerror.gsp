@@ -17,6 +17,7 @@
 </head>
 
 <body>
+<g:analytics/>
 <div class="header">
     <div class="institutionalBranding"></div>
 </div>
