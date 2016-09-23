@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <!--
 /*******************************************************************************
-Copyright 2014 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <html>
