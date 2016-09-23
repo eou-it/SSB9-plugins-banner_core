@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 
@@ -37,7 +37,7 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
                         <span class="tabletext"><g:message code="changeExpiredPassword.expired.password"/></span>
 
                         <form action="${postBackUrl}" method="post" id="changePasswordForm">
-                            <table cellpadding="5" cellspacing="10" class="input-table">
+                            <table class="input-table">
                                     <tr>
                                         <td class="tabletext">
                                            <label for="oldpassword"> <g:message code="changeExpiredPassword.old.password"/>:</label>
