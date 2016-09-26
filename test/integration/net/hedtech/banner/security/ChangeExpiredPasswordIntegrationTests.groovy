@@ -28,25 +28,23 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
     def selfServiceBannerAuthenticationProvider
     def conn
     Authentication auth
-    public static final String PERSON_HOSWEB002 = 'HOSWEB002'
-    def PERSON_HOSWEB002_PIDM = 32530
+    public static final String PERSON = 'HOSWEB002'
+    def PERSON_PIDM
     GroovyRowResult row
     int minLength
     int maxLength
     String pinResetFormat
     def dataSource
-    DataSource underlyingDataSource
-    DataSource underlyingSsbDataSource
     static final String GUBPPRF_QUERY = "select GUBPPRF_MIN_LENGTH,GUBPPRF_MAX_LENGTH,GUBPPRF_NUM_IND,GUBPPRF_CHAR_IND from GUBPPRF"
 
     @Before
     public void setUp() {
-
         Holders.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
         conn = dataSource.getSsbConnection()
         sql = new Sql(conn)
         row = sql.firstRow(GUBPPRF_QUERY)
+        PERSON_PIDM =  getPidmBySpridenId(PERSON)
         formContext = ['GUAGMNU']
         super.setUp()
     }
@@ -59,7 +57,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testOldPasswordSuccess() {
-        def user = PERSON_HOSWEB002
+        def user = PERSON
         def oldPassword = 111111
         auth = selfServiceBannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(user, oldPassword))
         assertNotEquals(auth, null)
@@ -67,7 +65,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testOldPasswordFailure() {
-        def user = PERSON_HOSWEB002
+        def user = PERSON
         def oldPassword = 11111
         auth = selfServiceBannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(user, oldPassword))
         assertEquals(auth, null)
@@ -79,7 +77,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
         maxLength = row?.GUBPPRF_MAX_LENGTH
         def newPassword = '555555555'
         def invalidNewPassword = newPassword.substring(0, minLength - 2)
-        def pidm = PERSON_HOSWEB002_PIDM
+        def pidm = PERSON_PIDM
         def validateResult = resetPasswordService.validatePassword(pidm, invalidNewPassword)
         if (validateResult.get("error") == true) {
             assertTrue(true)
@@ -95,7 +93,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
         while (invalidNewPassword.length() <= maxLength) {
             invalidNewPassword = invalidNewPassword.concat(invalidNewPassword)
         }
-        def pidm = PERSON_HOSWEB002_PIDM
+        def pidm = PERSON_PIDM
         def validateResult = resetPasswordService.validatePassword(pidm, invalidNewPassword)
         if (validateResult.get("error") == true) {
             assertTrue(true)
@@ -115,7 +113,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
         pinResetFormat = row?.GUBPPRF_CHAR_IND
         minLength = row?.GUBPPRF_MIN_LENGTH
         maxLength = row?.GUBPPRF_MAX_LENGTH
-        def pidm = PERSON_HOSWEB002_PIDM
+        def pidm = PERSON_PIDM
         if (pinResetFormat.equalsIgnoreCase("Y")) {
             invalidNewPassword = "545434"
             if (invalidNewPassword.length() >= minLength && invalidNewPassword.length() <= maxLength) {
@@ -134,7 +132,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
         pinResetFormat = row?.GUBPPRF_NUM_IND
         minLength = row?.GUBPPRF_MIN_LENGTH
         maxLength = row?.GUBPPRF_MAX_LENGTH
-        def pidm = PERSON_HOSWEB002_PIDM
+        def pidm = PERSON_PIDM
         if (pinResetFormat.equalsIgnoreCase("Y")) {
             invalidNewPassword = "aaaaaa"
             if (invalidNewPassword.length() >= minLength && invalidNewPassword.length() <= maxLength) {
@@ -151,7 +149,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
     void testChangeExpiredPassword() {
 
         def newPassword = 555555
-        def pidm = PERSON_HOSWEB002_PIDM
+        def pidm = PERSON_PIDM
         def pinExpDays = 7
         try {
             sql.call("{call gb_third_party_access.p_update(p_pidm=>${pidm}, p_pin=>${newPassword},p_pin_exp_date=>sysdate + ${pinExpDays} )}")
@@ -159,6 +157,11 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
         } catch (SQLException sq) {
             assertFalse(false)
         }
+    }
+    private def getPidmBySpridenId(def spridenId) {
+        def query = "SELECT SPRIDEN_PIDM pidm FROM SPRIDEN WHERE SPRIDEN_ID=$spridenId"
+        def pidmValue = sql?.firstRow(query)?.pidm
+        pidmValue
     }
 }
 
