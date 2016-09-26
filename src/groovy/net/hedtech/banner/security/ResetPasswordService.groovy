@@ -549,7 +549,7 @@ class ResetPasswordService {
         Pattern.matches(CHARACTER_PATTERN, inputString)
     }
 
-    public String getPinExpDays() throws SQLException {
+    private String getPinExpDays() throws SQLException {
         def connection
         Sql sql
         try {
@@ -564,7 +564,7 @@ class ResetPasswordService {
     }
 
     public void changeUserPassword(pidm, newPassword) throws SQLException {
-        Sql sql = new Sql(dataSource.getUnproxiedConnection())
+        Sql sql = new Sql(dataSource.getSsbConnection())
         try {
             String pinExpDays = getPinExpDays()
             sql.call("{call gb_third_party_access.p_update(p_pidm=>${pidm}, p_pin=>${newPassword},p_pin_exp_date=>sysdate + ${pinExpDays} )}")
