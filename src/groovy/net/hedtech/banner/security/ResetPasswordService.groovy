@@ -558,7 +558,8 @@ class ResetPasswordService {
             GroovyRowResult row = sql.firstRow(Pin_EXP_DAYS_QUERY)
             return row?.TWGBWRUL_PIN_EXP_DAYS
         } finally {
-            connection.close()
+            sql?.close()
+            connection?.close()
         }
     }
 
