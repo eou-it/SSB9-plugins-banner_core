@@ -35,12 +35,14 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
     int maxLength
     String pinResetFormat
     def dataSource
+    def grailsApplication
     static final String GUBPPRF_QUERY = "select GUBPPRF_MIN_LENGTH,GUBPPRF_MAX_LENGTH,GUBPPRF_NUM_IND,GUBPPRF_CHAR_IND from GUBPPRF"
 
     @Before
     public void setUp() {
-        Holders.config.ssbEnabled = true
-        Holders?.config.ssbOracleUsersProxied = false
+        grailsApplication.config.ssbEnabled = true
+        grailsApplication.config.ssbOracleUsersProxied = false
+        grailsApplication.config.banner.sso.authenticationProvider = "default"
         conn = dataSource.getSsbConnection()
         sql = new Sql(conn)
         row = sql.firstRow(GUBPPRF_QUERY)
