@@ -3,12 +3,10 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
-import grails.util.Holders
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 
-import javax.sql.DataSource
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
