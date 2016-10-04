@@ -50,6 +50,7 @@ $(document).ready(function () {
             notifications.remove(notifications.get("password"));
             notifications.remove(notifications.get("repassword"));
             if ($("#password").val() != $("#repassword").val()) {
+                notifications.remove(notifications.get("match"));
                 var errorNotification = new Notification({
                     message: passwordMatchError,
                     type: "error",
