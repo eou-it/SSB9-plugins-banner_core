@@ -55,30 +55,30 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
 
-        Holders?.config?.productName ="testApp";
-        Holders?.config?.banner.applicationName ="testApp";
+        Holders?.config?.productName ="testApp_DEFAULT";
+        Holders?.config?.banner.applicationName ="testApp_DEFAULT";
 
-        def bannerID = generateBannerId();
+        /*def bannerID = generateBannerId();
         def bannerPidm = generatePidm();
-        usage=DEFAULT
 
         deleteDisplayNameRule(usage);
         insertDisplayNameRule(usage);
         generateSpridenRecord(bannerID, bannerPidm);
         addStudentRoleToSpriden(bannerPidm);
-        createGOBEACC(bannerPidm, bannerID);
+        createGOBEACC(bannerPidm, bannerID);*/
 
-        def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
+        // def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
 
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
+        def authResults = authenticationProviderUtility.getMappedUserForUdcId("DSTERLIN", dataSource );
+        def  bannerPidm1 =49444;
+        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource);
 
-        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm,authResults["name"],dataSource);
+        assertEquals "Kishen Ray", fullName
 
-        assertEquals "Ann Elizabeth Miller", fullName
-
-        deleteUDCIDMappingPIDM()
+        /* deleteUDCIDMappingPIDM()
         deleteSpriden(bannerPidm)
         deleteDisplayNameRule();
+        */
     }
 
     @Test
@@ -86,31 +86,34 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
 
-        Holders?.config?.productName ="testApp";
-        Holders?.config?.banner.applicationName ="testApp";
+        Holders?.config?.productName ="testApp_LFMI";
+        Holders?.config?.banner.applicationName ="testApp_LFMI";
 
-        def bannerID = generateBannerId();
-        def bannerPidm = generatePidm();
-        usage=LFMI
+        /* def bannerID = generateBannerId();
+         def bannerPidm = generatePidm();
+         usage=LFMI
 
-        insertDisplayNameRule(usage);
-        generateSpridenRecord(bannerID, bannerPidm);
-        addStudentRoleToSpriden(bannerPidm);
-        createGOBEACC(bannerPidm, bannerID);
+         insertDisplayNameRule(usage);
+         generateSpridenRecord(bannerID, bannerPidm);
+         addStudentRoleToSpriden(bannerPidm);
+         createGOBEACC(bannerPidm, bannerID);
+
+         def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm) */
+
+        def authResults = authenticationProviderUtility.getMappedUserForUdcId("DSTERLIN", dataSource )
+        def bannerPidm1 =49444;
+        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource);
+
+        /* def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
+
+         def fullName=authenticationProviderUtility.getUserFullName(bannerPidm,authResults["name"],dataSource);*/
 
 
-        def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
+        assertEquals "Ray, Kishen", fullName
 
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
-
-        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm,authResults["name"],dataSource);
-
-
-        assertEquals "Ann Elizabeth Miller", fullName
-
-        deleteUDCIDMappingPIDM()
-        deleteSpriden(bannerPidm)
-        deleteDisplayNameRule();
+        /* deleteUDCIDMappingPIDM()
+         deleteSpriden(bannerPidm)
+         deleteDisplayNameRule();*/
     }
 
     @Test
@@ -121,26 +124,23 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config?.productName ="testApp";
         Holders?.config?.banner.applicationName ="testApp";
 
-        def bannerID = generateBannerId();
-        def bannerPidm = generatePidm();
-        usage=null
+        /* def bannerID = generateBannerId();
+         def bannerPidm = generatePidm();
+         usage=null
+         insertDisplayNameRule(usage);
+         generateSpridenRecord(bannerID, bannerPidm);
+         addStudentRoleToSpriden(bannerPidm);
+         createGOBEACC(bannerPidm, bannerID);*/
 
-        insertDisplayNameRule(usage);
-        generateSpridenRecord(bannerID, bannerPidm);
-        addStudentRoleToSpriden(bannerPidm);
-        createGOBEACC(bannerPidm, bannerID);
+        def authResults = authenticationProviderUtility.getMappedUserForUdcId("DSTERLIN", dataSource )
+        def bannerPidm1 =49444;
+        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource);
 
-        def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
+        assertEquals "Kishen Ray", fullName
 
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
-
-        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm,authResults["name"],dataSource);
-
-        assertEquals "Ann Elizabeth Miller", fullName
-
-        deleteUDCIDMappingPIDM()
+        /*deleteUDCIDMappingPIDM()
         deleteSpriden(bannerPidm)
-        deleteDisplayNameRule();
+        deleteDisplayNameRule();*/
     }
 
     @Test
@@ -151,23 +151,22 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config?.productName ="testApp";
         Holders?.config?.banner.applicationName ="testApp";
 
-        def bannerID = generateBannerId();
-        def bannerPidm = generatePidm();
+        /*  def bannerID = generateBannerId();
+          def bannerPidm = generatePidm();
+          generateSpridenRecord(bannerID, bannerPidm);
+          addStudentRoleToSpriden(bannerPidm);
+          createGOBEACC(bannerPidm, bannerID);
 
-        generateSpridenRecord(bannerID, bannerPidm);
-        addStudentRoleToSpriden(bannerPidm);
-        createGOBEACC(bannerPidm, bannerID);
+          def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)*/
+        def bannerUDCID1 = "DSTERLIN"
+        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID1, dataSource )
+        def bannerPidm1 =50199;
+        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource);
 
-        def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
+        assertEquals "Mr. Steve A Jorden", fullName
 
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
-
-        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm,authResults["name"],dataSource);
-
-        assertEquals "Ann Elizabeth Miller", fullName
-
-        deleteUDCIDMappingPIDM()
-        deleteSpriden(bannerPidm)
+        /* deleteUDCIDMappingPIDM()
+         deleteSpriden(bannerPidm)*/
     }
 
     @Test
@@ -175,21 +174,23 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
 
-        def bannerPidm = generatePidm()
-        def bannerId = "SSSTNDT"
+        /* def bannerPidm = generatePidm()
+         def bannerId = "SSSTNDT"
 
-        generateSpridenRecord(bannerId, bannerPidm)
-        addStudentRoleToSpriden(bannerPidm)
+         generateSpridenRecord(bannerId, bannerPidm)
+         addStudentRoleToSpriden(bannerPidm)*/
+        //Need Banner PIDM whose role is student
 
-        def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
+        //def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
+        def bannerUDCID1 = "DSTERLIN";
 
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
+        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID1, dataSource )
 
         assertNotNull(authResults)
         assertNull(authResults["oracleUserName"])
 
-        deleteUDCIDMappingPIDM()
-        deleteSpriden(bannerPidm)
+        /*deleteUDCIDMappingPIDM()
+        deleteSpriden(bannerPidm)*/
     }
 
     @Test
@@ -197,22 +198,25 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
 
-        def bannerID = generateBannerId()
-        def bannerPidm = generatePidm()
+        /* def bannerID = generateBannerId()
+         def bannerPidm = generatePidm()
 
-        generateSpridenRecord(bannerID, bannerPidm)
-        addStudentRoleToSpriden(bannerPidm)
-        createGOBEACC(bannerPidm, bannerID)
+         generateSpridenRecord(bannerID, bannerPidm)
+         addStudentRoleToSpriden(bannerPidm)
+         createGOBEACC(bannerPidm, bannerID)
 
-        def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
+         def bannerUDCID = generateUDCIDMappingPIDM(bannerPidm)
 
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
+         def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID, dataSource )
+ */
+        def bannerUDCID1 = "271";
+        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID1, dataSource )
 
         assertNotNull(authResults)
         assertNotNull(authResults["oracleUserName"])
 
-        deleteUDCIDMappingPIDM()
-        deleteSpriden(bannerPidm)
+        /* deleteUDCIDMappingPIDM()
+         deleteSpriden(bannerPidm)*/
     }
 
     private ApplicationContext createUnderlyingSsbDataSourceBean() {
@@ -306,19 +310,19 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
     }
 
     private void deleteDisplayNameRule(usage){
-            def db = getDB();
-            def result
-            def deleteQueryWithoutUsage = "DELETE FROM GURNHIR WHERE GURNHIR_PRODUCT = 'testApp' AND GURNHIR_APPLICATION = 'testApp'"
-            if(usage != null){
-                result = db.executeUpdate(deleteQueryWithoutUsage + " AND GURNHIR_USAGE = '"+usage+"'");
-            }else{
-                db.executeUpdate(deleteQueryWithoutUsage);
-            }
-            if (result == 0) {
-                db.executeUpdate(deleteQueryWithoutUsage);
-            }
-            db.commit();
-            db.close();
+        def db = getDB();
+        def result
+        def deleteQueryWithoutUsage = "DELETE FROM GURNHIR WHERE GURNHIR_PRODUCT = 'testApp' AND GURNHIR_APPLICATION = 'testApp'"
+        if(usage != null){
+            result = db.executeUpdate(deleteQueryWithoutUsage + " AND GURNHIR_USAGE = '"+usage+"'");
+        }else{
+            db.executeUpdate(deleteQueryWithoutUsage);
+        }
+        if (result == 0) {
+            db.executeUpdate(deleteQueryWithoutUsage);
+        }
+        db.commit();
+        db.close();
     }
 
     private void insertDisplayNameRule(usage){
