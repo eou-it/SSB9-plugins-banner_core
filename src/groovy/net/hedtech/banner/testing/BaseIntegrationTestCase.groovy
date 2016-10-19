@@ -128,9 +128,9 @@ class BaseIntegrationTestCase extends Assert {
      * Convenience method to login a user if not already logged in. You may pass in a username and password,
      * or omit and accept the default 'grails_user' and 'u_pick_it' for admin and 'HOSWEB002' and '111111' for ssb
      **/
-    protected void loginIfNecessary(username,password) {
+    protected void loginIfNecessary(String username,password) {
        if (!SecurityContextHolder.getContext().getAuthentication()) {
-           if(username != null && username.isEmpty() || (password != null && password.Empty())){
+           if(username != null && username.empty || (password != null && password.Empty())){
                username = "grails_user"
                password = "u_pick_it"
            }
@@ -187,6 +187,10 @@ class BaseIntegrationTestCase extends Assert {
      * Usage: validate( myEntityInstance )
      **/
     protected Closure validate = { domainObject, failOnError = true ->
+        if (!domainObject) {
+            def returnObj = domainObject.validate()
+
+        }
         assertNotNull domainObject
         domainObject.validate()
 
@@ -215,7 +219,7 @@ class BaseIntegrationTestCase extends Assert {
     protected Date removeFractionalSecondsFrom( Date date ) {
         Calendar cal = Calendar.getInstance()
         cal.setTime( date )
-        cal.set( Calendar.MILLISECOND, 0 ) // truncate fractional seconds, so that we can compare dates to those retrieved from the database   
+        cal.set( Calendar.MILLISECOND, 0 ) // truncate fractional seconds, so that we can compare dates to those retrieved from the database
         new Date( cal.getTime().getTime() )
     }
 

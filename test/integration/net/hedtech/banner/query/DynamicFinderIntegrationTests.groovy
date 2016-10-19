@@ -4,6 +4,7 @@
 package net.hedtech.banner.query
 
 import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.query.criteria.CriteriaParam
 import net.hedtech.banner.testing.CommonMatchingSourceRuleForTesting
 import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -13,6 +14,7 @@ import org.codehaus.groovy.grails.exceptions.InvalidPropertyException
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.context.ApplicationContext
 import org.springframework.core.convert.ConversionFailedException
 
 /**
@@ -55,6 +57,9 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def result = dynamicFinder.find(filterData,pagingAndSortParams) ;
         assert result.size() > 0
         assertNotNull result?.find { it.city == "Broomall test" }?.city
+
+        assertNotNull(dynamicFinder.count(filterData))
+
     }
 
     @Test
@@ -395,4 +400,20 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
             }
         }
     }
+
+    @Test
+    public void testGetCriteriaParamsFromParams () {
+        def query = """FROM  ZipForTesting a WHERE (a.code = :zipcode and a.city = :city) """
+        def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
+        filterData.params = ["zipcode":"%19%"]
+        assertNotNull (dynamicFinder.getCriteriaParamsFromParams(filterData))
+    }
+
+    @Test
+    public void testGetApplicationContext () {
+        def query = """FROM  ZipForTesting a WHERE (a.code = :zipcode and a.city = :city) """
+        def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
+        assertTrue(dynamicFinder.getApplicationContext() instanceof ApplicationContext)
+    }
+
 }

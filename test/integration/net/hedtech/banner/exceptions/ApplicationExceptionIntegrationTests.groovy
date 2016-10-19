@@ -194,6 +194,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 		def ae = new ApplicationException( Foo, e )
 	    assertNotNull ae.toString()
 		assertEquals 'NotFoundException', ae.getType()
+		assertNotNull (e.toString())
 
 		def returnMap = ae.returnMap( controller.localizer )
 		assertFalse returnMap.success
@@ -201,6 +202,29 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 	    assertNull returnMap.errors
 	    assertTrue returnMap.underlyingErrorMessage ==~ /.*NotFoundException:\[id=-666666, entityClassName=Foo\].*/
     }
+
+	@Test
+	void testWrappedAthorizationException() {
+		def authorizationEx = new AuthorizationException("Test")
+		assertNotNull(authorizationEx)
+		authorizationEx = new AuthorizationException("Test", new Object())
+		assertNotNull(authorizationEx)
+		authorizationEx = new AuthorizationException("Test", new Throwable())
+		assertNotNull(authorizationEx)
+	}
+
+	@Test
+	void testMepCodeNotFoundException() {
+		def mepCodeNotFoundException = new MepCodeNotFoundException()
+		assertNotNull(mepCodeNotFoundException.getMessage())
+		assertNotNull(mepCodeNotFoundException.toString())
+		mepCodeNotFoundException.mepCode = "test"
+		assertNotNull(mepCodeNotFoundException.getMessage())
+		assertNotNull(mepCodeNotFoundException.toString())
+		mepCodeNotFoundException.mepCode = mepCodeNotFoundException.MESSAGE_KEY_MEPCODE_NOT_FOUND
+		assertNotNull(mepCodeNotFoundException.getMessage())
+		assertNotNull(mepCodeNotFoundException.toString())
+	}
 
 
     // Tests our ability to handle a constraint exception programmatically created, that has no underlying SQLException
@@ -210,6 +234,9 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 		def ae = new ApplicationException( Foo, e )
 	    assertNotNull ae.toString()
 		assertEquals 'ConstraintException', ae.getType()
+
+		ae = new ApplicationException( "Test", e )
+		assertNotNull ae.toString()
 
 		def returnMap = ae.returnMap( controller.localizer )
 		assertFalse returnMap.success

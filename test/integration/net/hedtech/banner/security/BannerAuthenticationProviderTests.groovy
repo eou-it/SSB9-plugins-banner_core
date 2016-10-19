@@ -10,6 +10,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.context.ApplicationContext
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 
 /**
  * Intergration test cases for banner authentication provider
@@ -30,6 +31,7 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
         formContext = ['GUAGMNU']
         conn = dataSource.getConnection()
         sqlObj = new Sql( conn )
+        provider = new BannerAuthenticationProvider()
         super.setUp()
     }
 
@@ -98,6 +100,19 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
 
         deleteDisplayNameRule();
 
+    }
+
+    @Test
+    public void testSupports () {
+        assertTrue(provider.supports(UsernamePasswordAuthenticationToken.class))
+        Holders.config.administrativeBannerEnabled = true
+        assertTrue(provider.supports(UsernamePasswordAuthenticationToken.class))
+    }
+
+    @Test
+    public void testGetFullName () {
+        assertNotNull(provider.getFullName("HOP510001", dataSource))
+        assertNotNull(provider.getFullName("ADVISOR1", dataSource))
     }
 
     private void insertDisplayNameRule(usage) {

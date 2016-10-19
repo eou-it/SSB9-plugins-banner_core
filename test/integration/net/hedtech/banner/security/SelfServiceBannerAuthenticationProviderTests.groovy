@@ -14,6 +14,7 @@ import org.junit.Test
 import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -176,6 +177,21 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
             provider.authenticate( new TestAuthenticationRequest( user ) )
         }
         enableUser (sqlObj, testUser.pidm)
+    }
+
+    @Test
+    public void testSupports () {
+        assertTrue(provider.supports(UsernamePasswordAuthenticationToken.class))
+        Holders.config.ssbEnabled = true
+        assertTrue(provider.supports(UsernamePasswordAuthenticationToken.class))
+    }
+
+    @Test
+    public void testIsSsbEnabled () {
+        Holders.config.ssbEnabled = true
+        assertTrue(provider.isSsbEnabled())
+        Holders.config.ssbEnabled = false
+        assertFalse(provider.isSsbEnabled())
     }
 
     //----------------------------- Helper Methods ------------------------------
