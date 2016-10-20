@@ -39,7 +39,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
 
     boolean supports( ConfigAttribute configAttribute ) {
         log.debug "BannerAccessDecisionVoter.supports(ConfigAttribute) invoked with $configAttribute and will return ${configAttribute.attribute.startsWith( ROLE_PREFIX )}"
-        configAttribute.attribute.startsWith( ROLE_PREFIX )
+        configAttribute.attribute?.startsWith( ROLE_PREFIX )
     }
 
 
@@ -56,7 +56,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
         log.debug "BannerAccessDecisionVoter.vote() will vote on $url"
 
         // Despite having a supports(Class) method that is called, we're still getting asked to handle non-ROLE attributes.  So, we'll check ourselves...
-        if (!configAttributes?.any { it.attribute.startsWith( ROLE_PREFIX ) } )  {
+        if (!configAttributes?.any { it.attribute?.startsWith( ROLE_PREFIX ) } )  {
             log.debug "BannerAccessDecisionVoter.vote() did not find any ROLE_ attributes, so will ABSTAIN"
             return AccessDecisionVoter.ACCESS_ABSTAIN
         }

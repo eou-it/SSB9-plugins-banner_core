@@ -11,6 +11,11 @@ Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
     <g:set var="actionLabel" value="${g.message(code: 'net.hedtech.banner.logout.timeout.dialog.action')}"/>
     <g:set var="target" value="${request.contextPath}${uri}"/>
     <link rel="shortcut icon" href="${resource(plugin: 'bannerCore', dir: 'images', file: 'favicon.ico')}" type="image/x-icon"/>
+
+    <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
+    <g:if test="${themeConfig.url}">
+        <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${session.mep ?: themeConfig.name}&template=${themeConfig.template}&mep=${session.mep}">
+    </g:if>
 </head>
 
 <body>
