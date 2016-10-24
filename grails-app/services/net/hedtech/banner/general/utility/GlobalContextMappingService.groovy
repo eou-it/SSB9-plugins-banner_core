@@ -19,9 +19,11 @@ class GlobalContextMappingService {
 
 
     def getGlobalNameByContext(def contextName) {
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        def globalName
+        Sql sql
         try {
+            sql = new Sql(sessionFactory.getCurrentSession().connection())
+            def globalName
+
             sql.call("{$Sql.VARCHAR = call gokgtrn.f_get_banner9_global_name(${contextName})") {globalNameOut -> globalName = globalNameOut }
             globalName
         } catch (e) {
@@ -33,9 +35,11 @@ class GlobalContextMappingService {
 
 
     def getContextByGlobalName(def globalName) {
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
-        def context
+        Sql sql
         try {
+            sql = new Sql(sessionFactory.getCurrentSession().connection())
+            def context
+
             sql.call("{$Sql.VARCHAR = call gokgtrn.f_get_cntx_name_by_global9(${globalName})") {contextOut -> context = contextOut }
             context
         } catch (e) {

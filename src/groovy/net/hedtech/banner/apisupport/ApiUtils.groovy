@@ -37,7 +37,7 @@ class ApiUtils {
         if (!isWebRequest) return false
 
         // and then only if the web request is not one configured to avoid sessions
-        def forwardUri = RequestContextHolder.getRequestAttributes().getRequest().forwardURI
+        def forwardUri = RequestContextHolder.getRequestAttributes()?.getRequest().forwardURI
 
         // First, we'll cache the configured url parts that identify requests
         // that should not use HTTP sessions.
