@@ -118,8 +118,9 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
 
     @Test
     void testGetMepDescriptionSsbUser() {
-        def desc = multiEntityProcessingService.getMepDescriptionSsbUser(cccCollege)
-        assertEquals "ccc college",  desc
+        def bannerCollege = 'Banner College'
+        def desc = multiEntityProcessingService.getMepDescriptionSsbUser(bannerCollege)
+        assertEquals "Banner College",  desc
     }
 
     @Test

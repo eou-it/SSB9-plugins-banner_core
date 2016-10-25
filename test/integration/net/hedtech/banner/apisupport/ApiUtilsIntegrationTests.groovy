@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2015-20126 Ellucian Company L.P. and its affiliates.
+Copyright 2015-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.apisupport
 
@@ -42,7 +42,7 @@ class ApiUtilsIntegrationTests extends BaseIntegrationTestCase {
         assertTrue(ApiUtils.shouldCacheConnection())
 
         RequestContextHolder.getRequestAttributes().getRequest().forwardURI = null
-        Holders.config.avoidSessionsFor = []
+        Holders.config.avoidSessionsFor = ""
         assertTrue(ApiUtils.shouldCacheConnection())
 
         RequestContextHolder.getRequestAttributes().getRequest().forwardURI = ""
