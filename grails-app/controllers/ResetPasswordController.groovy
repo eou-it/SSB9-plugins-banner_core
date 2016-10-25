@@ -6,7 +6,13 @@ import net.hedtech.banner.security.ResetPasswordService
 import org.apache.commons.codec.binary.Base64
 import grails.util.Holders  as CH
 import grails.plugin.springsecurity.SpringSecurityUtils
-
+import org.apache.log4j.Logger
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.CredentialsExpiredException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.LockedException
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
 import javax.servlet.http.HttpSession
 import java.sql.SQLException
 
@@ -23,6 +29,10 @@ class ResetPasswordController {
     def springSecurityService
 
     ResetPasswordService resetPasswordService
+
+    def selfServiceBannerAuthenticationProvider
+
+    private static final Logger log = Logger.getLogger( "controllers.ResetPasswordController" )
 
     def questans ={
         def config = SpringSecurityUtils.securityConfig
@@ -282,4 +292,97 @@ class ResetPasswordController {
             }
         }
     }
+    def changePassword={
+        response.setHeader("Cache-Control", "no-cache")
+        response.setHeader("Cache-Control", "no-store")
+        response.setDateHeader("Expires", 0)
+        response.setHeader("Pragma", "no-cache")
+        def cancelUrl = "${request.contextPath}/resetPassword/auth"
+        session.setAttribute("requestPage", "changeexpiredpassword")
+        String view = 'changeexpiredpassword'
+        String postBackUrl= "${request.contextPath}/resetPassword/changeExpiredPassword"
+        render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
+    }
+    def changeExpiredPassword = {
+
+        response.setHeader("Cache-Control", "no-cache")
+        response.setHeader("Cache-Control", "no-store")
+        response.setDateHeader("Expires", 0)
+        response.setHeader("Pragma", "no-cache")
+        String id = session.getAttribute("usersName")
+        String oldPassword = request.getParameter("oldpassword")
+        String password = request.getParameter("password")
+        String confirmPassword = request.getParameter("repassword")
+        String pidm = session.getAttribute("usersPidm")
+        String postBackUrl = "${request.contextPath}/resetPassword/changeExpiredPassword"
+        def cancelUrl = "${request.contextPath}/resetPassword/auth"
+        Authentication auth
+        def validateResult = resetPasswordService.validatePassword(pidm, password)
+        boolean passwordValidated = false
+        boolean pinDisabled=false
+        boolean accountLocked=false
+        try {
+            auth = selfServiceBannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(id, oldPassword))
+            if (auth != null) {
+                passwordValidated = true
+            }
+        } catch (CredentialsExpiredException ce) {
+            log.warn "Credentials are valid but expired.Changing Password.."
+            passwordValidated = true
+        } catch (DisabledException de) {
+            pinDisabled=true
+            log.warn "User account is Disabled"
+        } catch (LockedException le) {
+            accountLocked=true
+            log.warn "User account is Locked"
+        }
+
+
+        if (session.getAttribute("requestPage") != "changeexpiredpassword") {
+            session.invalidate()
+            flash.message = message(code: "changeExpiredPassword.request.invalid.message")
+            redirect(uri: "/resetPassword/auth")
+        } else if (password != confirmPassword) {
+            flash.message = message(code: "changeExpiredPassword.password.match.error")
+            String view = 'changeexpiredpassword'
+            render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl]
+        } else if (oldPassword.trim().length() == 0 || password.trim().length() == 0 || confirmPassword.trim().length() == 0) {
+            flash.message = message(code: "changeExpiredPassword.password.required.error")
+            String view = 'changeexpiredpassword'
+            render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl]
+        } else if (validateResult.get("error") == true) {
+            flash.message = validateResult.get("errorMessage")
+            String view = 'changeexpiredpassword'
+            render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl]
+        } else if(pinDisabled) {
+            flash.message = message(code:"net.hedtech.banner.errors.login.disabled")
+            String view = 'changeexpiredpassword'
+            render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl,params: params]
+        } else if(accountLocked) {
+            flash.message = message(code:"net.hedtech.banner.errors.login.locked")
+            String view = 'changeexpiredpassword'
+            render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl,params: params]
+        } else if (!passwordValidated) {
+            flash.message = message(code: "changeExpiredPassword.old.password.error")
+            String view = 'changeexpiredpassword'
+            render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl,params: params]
+        } else {
+            try {
+                resetPasswordService.changeUserPassword(pidm, password)
+                session.invalidate()
+                flash.reloginMessage = message(code: "changeExpiredPassword.success.message")
+                redirect(controller: "login", action: "auth")
+            }
+            catch (SQLException sqle) {
+                if (20100 == sqle.getErrorCode()) {
+                    flash.message = message(code: "changeExpiredPassword.password.length.error")
+                } else {
+                    flash.message = message(code: sqle.getMessage())
+                }
+                String view = 'changeexpiredpassword'
+                render view: view, model: [postBackUrl: postBackUrl, cancelUrl: cancelUrl]
+            }
+        }
+    }
+
 }

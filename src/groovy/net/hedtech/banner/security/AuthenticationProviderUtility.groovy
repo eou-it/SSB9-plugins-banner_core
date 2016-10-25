@@ -412,5 +412,9 @@ class AuthenticationProviderUtility {
             conn?.close()
         }
     }
+    public static setUserDetails(pidm,name){
+        RequestContextHolder.currentRequestAttributes().session.setAttribute("usersName",name)
+        RequestContextHolder.currentRequestAttributes().session.setAttribute("usersPidm",pidm)
+   }
 
 }
