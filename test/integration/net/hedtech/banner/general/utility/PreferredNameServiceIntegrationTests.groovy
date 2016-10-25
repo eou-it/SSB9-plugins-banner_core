@@ -57,8 +57,8 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
 
     @After
     public void tearDown() {
-        sqlObj.close()
-        conn.close()
+        if (sqlObj) sqlObj.close()
+        if (conn) conn.close()
         super.tearDown()
     }
 
