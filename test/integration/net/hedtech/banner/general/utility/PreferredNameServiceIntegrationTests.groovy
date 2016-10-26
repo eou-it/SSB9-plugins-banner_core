@@ -44,8 +44,7 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
 
     @Before
     public void setUp() {
-        Holders.config.ssbEnabled = true
-        Holders?.config.ssbOracleUsersProxied = false
+        Holders?.config.ssbEnabled = true
         conn = dataSource.getSsbConnection()
         sqlObj = new Sql( conn )
         formContext = ['GUAGMNU']
@@ -58,12 +57,8 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
 
     @After
     public void tearDown() {
-        if (sqlObj != null) {
-            sqlObj.close()
-        }
-        if (conn != null) {
-            conn.close()
-        }
+        sqlObj.close()
+        conn.close()
         super.tearDown()
     }
 
@@ -225,6 +220,33 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     public void getUsageDefaultWithNoParams(){
         String defaultName = preferredNameService.getUsage()
         assertEquals DEFAULT, defaultName
+    }
+
+    private ApplicationContext createUnderlyingSsbDataSourceBean() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            underlyingSsbDataSource(BasicDataSource) {
+                maxActive = 5
+                maxIdle = 2
+                defaultAutoCommit = "false"
+                driverClassName = "${CH.config.bannerSsbDataSource.driver}"
+                url = "${CH.config.bannerSsbDataSource.url}"
+                password = "${CH.config.bannerSsbDataSource.password}"
+                username = "${CH.config.bannerSsbDataSource.username}"
+            }
+
+            underlyingDataSource(BasicDataSource) {
+                maxActive = 5
+                maxIdle = 2
+                defaultAutoCommit = "false"
+                driverClassName = "${CH.config.bannerDataSource.driver}"
+                url = "${CH.config.bannerDataSource.url}"
+                password = "${CH.config.bannerDataSource.password}"
+                username = "${CH.config.bannerDataSource.username}"
+            }
+        }
+        ApplicationContext testSpringContext = bb.createApplicationContext()
+        return testSpringContext
     }
 
     private def getPidmBySpridenId(def spridenId) {
