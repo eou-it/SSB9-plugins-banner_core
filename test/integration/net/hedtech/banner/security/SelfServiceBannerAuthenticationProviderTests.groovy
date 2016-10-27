@@ -85,7 +85,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         Holders.config.guestAuthenticationEnabled= true
         Holders?.config?.productName ="testApp";
         Holders?.config?.banner.applicationName ="testApp";
-        usage=null
 
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
@@ -104,7 +103,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         Holders.config.guestAuthenticationEnabled= true
         Holders?.config?.productName ="testApp_LFMI";
         Holders?.config?.banner.applicationName ="testApp_LFMI";
-        usage=LFMI
 
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
@@ -127,7 +125,7 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
 
     @Test
     void testExpiredPin() {
-        expireUser(testUser.pidm)
+       expireUser(testUser.pidm)
 
         shouldFail( CredentialsExpiredException ) {
             provider.authenticate( new TestAuthenticationRequest( testUser ) )
