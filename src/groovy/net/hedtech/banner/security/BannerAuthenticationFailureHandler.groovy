@@ -29,10 +29,8 @@ class BannerAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureH
         def authName = request.session.getAttribute("auth_name")
 
         Holders.getApplicationContext().publishEvent(new BannerAuthenticationEvent( authName, false, msg, module, new Date(), 1 ))
-
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
+        request.session.removeAttribute("msg")
+        request.session.removeAttribute("module")
+        request.session.removeAttribute("auth_name")
     }
 }
