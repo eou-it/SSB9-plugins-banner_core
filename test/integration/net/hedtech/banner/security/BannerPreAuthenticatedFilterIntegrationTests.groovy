@@ -27,6 +27,7 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
 
     @Before
     public void setUp() {
+        formContext = ['GUAGMNU']
         clearGOBEACC()
         createPerson()
 
