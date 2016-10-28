@@ -5,10 +5,8 @@ package net.hedtech.banner.security
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
-import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.AuthorizationException
 import org.apache.log4j.Logger
-import grails.util.Holders
 import grails.util.Holders
 import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.AuthenticationProvider
@@ -282,9 +280,24 @@ class AuthenticationProviderUtility {
     private static handleFailure( provider, authentication, authenticationResults, exception ) {
 
         log.warn "${provider.class.simpleName} was not able to authenticate user $authentication.name due to exception ${exception.class.simpleName}: ${exception.message} "
-        def msg = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( exception.class.simpleName, "Exception" ) )
-        def module = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( provider.class.simpleName, "AuthenticationProvider" ) )
-        getApplicationContext().publishEvent( new BannerAuthenticationEvent( authentication.name, false, msg, module, new Date(), 1 ) )
+
+        def tmp
+        def sessionObj = RequestContextHolder.currentRequestAttributes().request.session
+        sessionObj.setAttribute("auth_name", authentication.name)
+        if(sessionObj.getAttribute("msg")) {
+            tmp = sessionObj.getAttribute("msg") + ", " + GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception"))
+            sessionObj.setAttribute("msg", tmp)
+        }
+        else
+            sessionObj.setAttribute("msg", GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception")))
+
+        if(sessionObj.getAttribute("module")) {
+            tmp = sessionObj.getAttribute("module") + ", " + GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider"))
+            sessionObj.setAttribute("module", tmp)
+        }
+        else
+            sessionObj.setAttribute("module", GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider")))
+
         throw exception
     }
 
