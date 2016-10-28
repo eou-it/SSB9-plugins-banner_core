@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <!--
 /*******************************************************************************
-Copyright 2014 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <html>
@@ -9,6 +9,7 @@ Copyright 2014 Ellucian Company L.P. and its affiliates.
       <title><g:message code="net.hedtech.banner.logoutpage.title"/></title>
     </head>
     <body>
+    <g:analytics/>
         <div>
             <div>
                 <p><g:message code="net.hedtech.banner.logoutpage.message"/></p>

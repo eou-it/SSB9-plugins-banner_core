@@ -1,5 +1,5 @@
 <%--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  Copyright 2014 Ellucian Company L.P. and its affiliates.
+  Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~--%>
 
 <%@ page contentType="text/html;charset=UTF-8" defaultCodec="none" %>
@@ -17,6 +17,7 @@
 </head>
 
 <body>
+<g:analytics/>
 <div class="header">
     <div class="institutionalBranding"></div>
 </div>
