@@ -333,10 +333,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         try {
             setUpValidSSBTypeUser()
             loginSSB(username, password)
-            connection = bannerDS.getConnection()
+            connection = bannerDS.getSsbConnection()
             assertNotNull(connection)
         } finally {
-            dataSource.removeConnection(connection)
             if (connection) connection.close()
             tearDownDataSetup()
             resetConfigAsInTheFile()
