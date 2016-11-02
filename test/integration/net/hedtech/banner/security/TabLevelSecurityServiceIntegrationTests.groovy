@@ -46,10 +46,6 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
         final PASSWORD = "u_pick_it"
 
         try {
-            sql = Sql.newInstance(url,
-                    "bansecr",
-                    PASSWORD,
-                    'oracle.jdbc.driver.OracleDriver')
             logout()
             login(EDITABLE_USER_NAME, PASSWORD)
             def s = tabLevelSecurityService.getTabSecurityRestrictions(EDITABLE_FORM_NAME)
@@ -62,7 +58,6 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
         } catch (e) {
             println e
         } finally {
-            sql?.close()
         }
     }
 
@@ -95,10 +90,6 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
         final PASSWORD = "u_pick_it"
 
         try {
-            sql = Sql.newInstance(url,
-                    "bansecr",
-                    PASSWORD,
-                    'oracle.jdbc.driver.OracleDriver')
             logout()
             login(READONLY_USER_NAME, PASSWORD)
             def s1 = tabLevelSecurityService.getTabSecurityRestrictions(READONLY_FORM_NAME)
@@ -111,7 +102,6 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
         } catch (e) {
             println e
         } finally {
-            sql?.close() // note that the test will close the connection, since it's our current session's connection
         }
 
     }
