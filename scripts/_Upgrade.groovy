@@ -1,6 +1,3 @@
-/*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
 //
 // This script is executed by Grails during application upgrade ('grails upgrade'
 // command). This script is a Gant script so you can use all special variables
