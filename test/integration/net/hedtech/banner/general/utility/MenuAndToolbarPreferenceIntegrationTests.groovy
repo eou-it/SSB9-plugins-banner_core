@@ -27,18 +27,47 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
 	void testCreateMenuAndToolbarPreference() {
-		def menuAndToolbarPreference = newMenuAndToolbarPreference()
+		MenuAndToolbarPreference menuAndToolbarPreference = newMenuAndToolbarPreference()
 		save menuAndToolbarPreference
 		//Test if the generated entity now has an id assigned
         assertNotNull menuAndToolbarPreference.id
 
-        def copyMenuAndToolbarPref = newMenuAndToolbarPreference()
+		MenuAndToolbarPreference copyMenuAndToolbarPref = newMenuAndToolbarPreference()
         assertFalse(copyMenuAndToolbarPref.equals(menuAndToolbarPreference))
 
         copyMenuAndToolbarPref = copyMenuAndToolbarPref.get(menuAndToolbarPreference.id)
         assertTrue(copyMenuAndToolbarPref == menuAndToolbarPreference)
 
-        assertFalse(menuAndToolbarPreference.equals(null))
+		MenuAndToolbarPreference copy = getNewenuAndToolbarPreference()
+		assertFalse(copy == menuAndToolbarPreference)
+
+		assertNotNull (menuAndToolbarPreference.toString())
+		assertNotNull (menuAndToolbarPreference.hashCode())
+
+		def test = new String()
+		assertFalse(menuAndToolbarPreference.equals(test))
+        assertFalse(menuAndToolbarPreference == null)
+
+		copy.setId(menuAndToolbarPreference.id)
+		copy.setLastModifiedBy(menuAndToolbarPreference.lastModifiedBy)
+		copy.setTlbBtn(menuAndToolbarPreference.tlbBtn)
+		copy.setDisplayHtCb(menuAndToolbarPreference.getDisplayHtCb())
+		copy.setDisplayVtCb(menuAndToolbarPreference.displayVtCb)
+		copy.setDisplayHint(menuAndToolbarPreference.displayHint)
+		copy.setFormnameCb(menuAndToolbarPreference.formnameCb)
+		copy.setReleaseCb(menuAndToolbarPreference.releaseCb)
+		copy.setDbaseInstitutionCb(menuAndToolbarPreference.dbaseInstitutionCb)
+		copy.setDateTimeCb(menuAndToolbarPreference.dateTimeCb)
+		copy.setRequiredItemCb(menuAndToolbarPreference.requiredItemCb)
+		copy.setLinescrnXPosition(menuAndToolbarPreference.linescrnXPosition)
+		copy.setLinebtnXPosition(menuAndToolbarPreference.linebtnXPosition)
+		copy.setFormnameDisplayIndicator(menuAndToolbarPreference.formnameDisplayIndicator)
+		copy.setVersion(menuAndToolbarPreference.version)
+		copy.setDataOrigin(menuAndToolbarPreference.dataOrigin)
+		assertFalse(copy == menuAndToolbarPreference)
+
+		copy.setLastModified(menuAndToolbarPreference.lastModified)
+		assertTrue(copy == menuAndToolbarPreference)
 	}
 
     @Test
@@ -205,5 +234,26 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
         )
         return menuAndToolbarPreference
     }
+
+	private def getNewenuAndToolbarPreference() {
+		def menuAndToolbarPreference = new MenuAndToolbarPreference(
+			tlbBtn: "",
+			displayHtCb: "T1",
+			displayVtCb: "T1",
+			displayHint: "T1",
+			formnameCb: "T1",
+			releaseCb: "T1",
+			dbaseInstitutionCb: "T1",
+			dateTimeCb: "T1",
+			requiredItemCb: "T1",
+			linescrnXPosition: 11,
+			linebtnXPosition: 11,
+			formnameDisplayIndicator:"N",
+			lastModified: new Date() - 1,
+			lastModifiedBy: "test1",
+			dataOrigin: "Banner1"
+		)
+		return menuAndToolbarPreference
+	}
 
 }
