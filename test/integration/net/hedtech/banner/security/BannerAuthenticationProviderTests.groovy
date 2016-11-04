@@ -54,7 +54,7 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
 
         def auth = bannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken( "GRAILS_USER", "u_pick_it" ) )
 
-        assertEquals "GRAILS_USER", auth.fullName
+        assertEquals "WATSON JOHN", auth.fullName
 
     }
 
@@ -68,7 +68,7 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
 
         def auth = bannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken( "GRAILS_USER", "u_pick_it" ) )
 
-        assertEquals "GRAILS_USER", auth.fullName
+        assertEquals "WATSON JOHN", auth.fullName
 
     }
 
@@ -82,7 +82,7 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
 
         def auth = bannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken( "GRAILS_USER", "u_pick_it" ) )
 
-        assertEquals "GRAILS_USER", auth.fullName
+        assertEquals "WATSON JOHN", auth.fullName
 
     }
 
