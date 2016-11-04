@@ -1,6 +1,6 @@
 
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 package net.hedtech.banner.general.utility
@@ -13,8 +13,6 @@ import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
 
 class PersonalPreferenceIntegrationTests extends BaseIntegrationTestCase {
-
-	def personalPreferenceService
 
 	@Before
     public void setUp() {
@@ -33,6 +31,36 @@ class PersonalPreferenceIntegrationTests extends BaseIntegrationTestCase {
 		save personalPreference
 		//Test if the generated entity now has an id assigned
         assertNotNull personalPreference.id
+
+        def copyPersonalPref = newPersonalPreference()
+        assertFalse(copyPersonalPref.equals(personalPreference))
+
+        copyPersonalPref = copyPersonalPref.get(personalPreference.id)
+        assertTrue(copyPersonalPref == personalPreference)
+
+        def copy = getnewPersonalPreference()
+        assertFalse(copy == personalPreference)
+
+        assertNotNull (personalPreference.toString())
+        assertNotNull (personalPreference.hashCode())
+
+        def test = new String()
+        assertFalse(personalPreference.equals(test))
+        assertFalse(personalPreference == null)
+
+        copy.setId(personalPreference.id)
+        copy.setLastModifiedBy(personalPreference.lastModifiedBy)
+        copy.setGroup(personalPreference.group)
+        copy.setKey(personalPreference.key)
+        copy.setString(personalPreference.string)
+        copy.setValue(personalPreference.value)
+        copy.setSystemRequiredIndicator(personalPreference.systemRequiredIndicator)
+        copy.setVersion(personalPreference.version)
+        copy.setDataOrigin(personalPreference.dataOrigin)
+        assertFalse(copy.equals(personalPreference))
+
+        copy.setLastModified(personalPreference.lastModified)
+        assertTrue(copy.equals(personalPreference))
 	}
 
     @Test
@@ -165,6 +193,20 @@ class PersonalPreferenceIntegrationTests extends BaseIntegrationTestCase {
         return personalPreference
     }
 
+
+    private def getnewPersonalPreference() {
+        def personalPreference = new PersonalPreference(
+                group: "TTTTT1",
+                key: "TTTTT1",
+                string: "TTTTT1",
+                value: "TTTTT1",
+                systemRequiredIndicator: false,
+                lastModified: new Date(),
+                lastModifiedBy: "test1",
+                dataOrigin: "Banner"
+        )
+        return personalPreference
+    }
    /**
      * Please put all the custom tests in this protected section to protect the code
      * from being overwritten on re-generation
