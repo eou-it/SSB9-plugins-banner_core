@@ -1,22 +1,21 @@
+/*******************************************************************************
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.utility
 
-import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import net.hedtech.banner.utility.DateUtility
 
 /**
- * Created by eshaank on 11/4/2016.
+ * Integration test file for DateUtility class.
  */
 class DateUtilityIntegrationTests extends BaseIntegrationTestCase {
-    def dateUtility
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
-        dateUtility = new DateUtility()
         super.setUp()
     }
 
@@ -28,7 +27,7 @@ class DateUtilityIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testGetTodayDate(){
         def outcome
-        outcome=dateUtility.getTodayDate()
+        outcome=DateUtility.getTodayDate()
         assertNotNull(outcome)
     }
 }
