@@ -1,3 +1,6 @@
+/*******************************************************************************
+Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/ 
 //
 // This script is executed by Grails after plugin was installed to project.
 // This script is a Gant script so you can use all special variables provided
