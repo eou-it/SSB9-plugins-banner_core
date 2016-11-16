@@ -47,7 +47,6 @@ class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void isLocalLogoutEnabledTest() {
         outcome = ControllerUtils.isLocalLogoutEnabled()
-        assertNotNull(outcome)
         assertFalse(outcome)
     }
 
