@@ -36,6 +36,8 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
 
     @Before
     public void setUp() {
+        formContext = ['GUAGMNU']
+        super.setUp()
         Holders.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
         conn = dataSource.getSsbConnection()
@@ -52,6 +54,7 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         conn.close()
         Holders.config.ssbEnabled = false
         Holders?.config.ssbOracleUsersProxied = false
+        super.tearDown()
     }
 
     @Test
