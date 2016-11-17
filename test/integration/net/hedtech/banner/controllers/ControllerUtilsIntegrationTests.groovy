@@ -15,6 +15,9 @@ import org.springframework.web.context.request.RequestContextHolder
  */
 class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
     def outcome
+    private static final def SAML = 'saml'
+    private static final def EXTERNAL = 'external'
+    private static final def MEP='mep'
 
     @Before
     public void setUp() {
@@ -39,7 +42,6 @@ class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
         def oldlocalLogoutValue = Holders?.config.banner?.sso?.authentication.saml.localLogout
         Holders?.config.banner?.sso?.authentication.saml.localLogout = 'true'
         outcome = ControllerUtils.isLocalLogoutEnabled()
-        assertNotNull(outcome)
         assertTrue(outcome)
         Holders?.config.banner?.sso?.authentication.saml.localLogout = oldlocalLogoutValue
     }
@@ -52,7 +54,7 @@ class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void isCasEnabledTest() {
-        Holders?.config.banner.sso.authenticationProvider = 'external'
+        Holders?.config.banner.sso.authenticationProvider = EXTERNAL
         outcome = ControllerUtils.isCasEnabled();
         assertFalse(outcome);
     }
@@ -66,7 +68,7 @@ class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void isSamlEnabledTest() {
-        Holders?.config.banner.sso.authenticationProvider = 'saml'
+        Holders?.config.banner.sso.authenticationProvider = SAML
         outcome = ControllerUtils.isSamlEnabled();
         assertNotNull(outcome);
     }
@@ -99,10 +101,10 @@ class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void buildLogoutRedirectURIMepNullTest() {
-        def oldLocalvalue = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
-        RequestContextHolder?.currentRequestAttributes()?.request?.session?.putAt("mep", 'test');
+        def oldLocalvalue = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute(MEP)
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.putAt(MEP, 'test');
         outcome = ControllerUtils.buildLogoutRedirectURI();
-        RequestContextHolder?.currentRequestAttributes()?.request?.session?.putAt("mep", null);
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.putAt(MEP, oldLocalvalue);
         assertNotNull(outcome);
     }
 
@@ -114,7 +116,7 @@ class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void buildLogoutRedirectURIWithSamlEnabledTest() {
-        Holders?.config.banner.sso.authenticationProvider = 'saml'
+        Holders?.config.banner.sso.authenticationProvider = SAML
         outcome = ControllerUtils.buildLogoutRedirectURI();
         assertNotNull(outcome);
     }
