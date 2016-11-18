@@ -41,8 +41,8 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
 
         formContext = ['GUAGMNU']
-        assert fooService != null
         super.setUp()
+        assert fooService != null
         tearDownTestFoo( true ) // tearDown should take care of this -- will really only be effective once we stop managing
                                 // transactions within the test framework (that is, for a specific framework test of transactions)
                                 // but instead rely on declarative transactions.
@@ -52,8 +52,9 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @After
     public void tearDown() {
-        fooService.testKeyBlock = null // Grails 2.x retains session bound to thread across tests
         super.tearDown()
+        fooService.testKeyBlock = null // Grails 2.x retains session bound to thread across tests
+
     }
 
     @Test

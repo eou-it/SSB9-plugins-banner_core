@@ -30,6 +30,7 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
+        super.setUp()
         ApplicationContext testSpringContext = createUnderlyingSsbDataSourceBean()
         dataSource.underlyingSsbDataSource = testSpringContext.getBean("underlyingSsbDataSource")
         conn = dataSource.getSsbConnection()
@@ -38,10 +39,8 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
 
     @After
     public void tearDown() {
-        if (conn) {
-            conn?.close()
-        }
-        logout()
+        super.tearDown()
+        conn?.close()
     }
 
     @Test

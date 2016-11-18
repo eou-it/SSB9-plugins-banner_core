@@ -33,10 +33,10 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
+        super.setUp()
         conn = dataSource.getConnection()
         sqlObj = new Sql( conn )
         provider = new BannerAuthenticationProvider()
-        super.setUp()
     }
 
     @After

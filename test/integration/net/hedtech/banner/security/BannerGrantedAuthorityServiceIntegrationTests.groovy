@@ -23,13 +23,12 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
-        FormContext.set( formContext )
+        super.setUp()
     }
-	
+
 	@After
     public void tearDown() {
-        logout()
-        FormContext.clear()
+        super.tearDown()
     }
 
     @Test

@@ -18,11 +18,14 @@ class DBUtilityIntegrationTestsSpec extends BaseIntegrationTestCase {
 
     @Before
     public void setUp() {
+        formContext = ['GUAGMNU']
+        super.setUp()
         dbUtility = new DBUtility()
     }
 
     @After
     public void tearDown() {
+        super.tearDown()
         logout()
     }
 

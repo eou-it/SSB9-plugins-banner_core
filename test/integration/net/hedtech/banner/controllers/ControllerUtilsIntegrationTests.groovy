@@ -22,7 +22,6 @@ class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
-
         super.setUp()
     }
 

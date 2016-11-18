@@ -49,12 +49,11 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
 
     @After
     public void tearDown() {
-        testUser = existingUser(PERSON_HOSWEB002, 111111)
+        super.tearDown()
         sqlObj.close()
         conn.close()
         Holders.config.ssbEnabled = false
         Holders?.config.ssbOracleUsersProxied = false
-        super.tearDown()
     }
 
     @Test

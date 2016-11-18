@@ -24,7 +24,7 @@ class HelpFunctionalTests extends BaseFunctionalTestCase {
 
     @After
     public void tearDown() {
-        FormContext.clear()
+        super.tearDown()
     }
     // -------------------------------- Test JSON Representations ---------------------------------
 

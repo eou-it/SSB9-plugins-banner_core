@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.testing
 
 import groovy.sql.Sql
@@ -31,7 +31,7 @@ class AdminAuthenticationFunctionalTests extends BaseFunctionalTestCase {
 
     @After
     public void tearDown() {
-        FormContext.clear()
+        super.tearDown()
         grailsApplication.config.ssbEnabled = envSsbEnabledValue
     }
 

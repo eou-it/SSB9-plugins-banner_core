@@ -28,6 +28,7 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
+        super.setUp()
         Holders.config.ssbEnabled = false
         Holders?.config.banner.sso.authenticationAssertionAttribute = "UDC_IDENTIFIER"
         Holders?.config.banner.sso.authenticationProvider = "external"
@@ -37,10 +38,8 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
 
     @After
     public void tearDown() {
-        if (conn) {
-            conn?.close()
-        }
-        logout()
+        super.tearDown();
+        conn?.close()
     }
 
     @Test
