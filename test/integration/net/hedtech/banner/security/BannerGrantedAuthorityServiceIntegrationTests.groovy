@@ -28,6 +28,7 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
 
 	@After
     public void tearDown() {
+        logout()
         super.tearDown()
     }
 

@@ -28,18 +28,19 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
-        super.setUp()
+        //super.setUp()
         Holders.config.ssbEnabled = false
         Holders?.config.banner.sso.authenticationAssertionAttribute = "UDC_IDENTIFIER"
         Holders?.config.banner.sso.authenticationProvider = "external"
-        conn = dataSource.getConnection()
+        conn = dataSource.getUnproxiedConnection()
         bannerPIDM = getBannerPIDM()
     }
 
     @After
     public void tearDown() {
-        super.tearDown();
         conn?.close()
+        logout()
+        super.tearDown()
     }
 
     @Test
