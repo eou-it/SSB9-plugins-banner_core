@@ -25,3 +25,4 @@ plugin.xml
 **-rtl.css
 messages_ar_SA.properties
 lib/bannerTransform.jar
+cobertura.ser

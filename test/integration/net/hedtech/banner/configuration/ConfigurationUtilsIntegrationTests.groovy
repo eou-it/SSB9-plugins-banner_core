@@ -31,16 +31,20 @@ class ConfigurationUtilsIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void configurationExists(){
-        def outcome = ConfigurationUtils.getConfiguration();
+        def outcome = ConfigurationUtils.getConfiguration()
         assertNotNull(outcome);
     }
 
     @Test
     void configurationIsNull(){
-        def oldConfigCH= CH.config;
-        CH.config=null;
-        def outcome = ConfigurationUtils.getConfiguration();
-        assertNotNull(outcome);
-        CH.config=oldConfigCH;
+        def oldConfigCH = CH.config.clone()
+        CH.config = null
+        try{
+            def outcome = ConfigurationUtils.getConfiguration()
+            assertNotNull(outcome)
+        }
+        finally {
+            CH.config = oldConfigCH
+        }
     }
 }
