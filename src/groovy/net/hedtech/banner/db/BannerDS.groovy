@@ -482,7 +482,7 @@ public class BannerDS implements DataSource {
         return BannerGrantedAuthorityService.filterAuthorities(user)
     }
 
-    private setRoleSSB(Connection conn) {
+    /*private setRoleSSB(Connection conn) {
         def rolePassword
         def roleName = "BAN_DEFAULT_M"
         Sql sql = new Sql(conn)
@@ -494,7 +494,7 @@ public class BannerDS implements DataSource {
         catch (e) {
             log.error("Error retreieiving role password for ssb connection $e")
         }
-    }
+    }*/
 
 
     private setRoles(OracleConnection oconn, user, applicableAuthorities) {
