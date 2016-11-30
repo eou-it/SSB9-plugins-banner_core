@@ -199,9 +199,10 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             Logger.getRootLogger().setLevel(Level.OFF)
             dataSource.removeConnection(conn)
             if (conn) conn.close()
+            tearDownDataSetup()
+            resetConfigAsInTheFile()
         }
-        tearDownDataSetup()
-        resetConfigAsInTheFile()
+
     }
 
 
@@ -298,9 +299,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             Logger.getRootLogger().setLevel(Level.OFF)
             dataSource.removeConnection(conn)
             if (conn) conn.close()
+            tearDownDataSetup()
+            resetConfigAsInTheFile()
         }
-        tearDownDataSetup()
-        resetConfigAsInTheFile()
     }
 
     @Test
@@ -322,9 +323,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             config.ssbEnabled = oldSbbValue
             dataSource.removeConnection(conn)
             if (conn) conn.close()
+            tearDownDataSetup()
+            resetConfigAsInTheFile()
         }
-        tearDownDataSetup()
-        resetConfigAsInTheFile()
     }
 
 
