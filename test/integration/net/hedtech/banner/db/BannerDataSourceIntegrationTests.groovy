@@ -188,16 +188,18 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     public void testSetDBMSApplicationInfo() {
-        //Eshaan
         backupConfigFileConfigurations();
         setupAPIWithNoProxy()
-        def conn = bannerDS.getConnection();
-        Logger.getRootLogger().setLevel(Level.TRACE);
-        bannerDS.setDbmsApplicationInfo(conn, null, null);
-        Logger.getRootLogger().setLevel(Level.OFF);
-        assertNotNull(conn)
-        dataSource.removeConnection(conn)
-        if (conn) conn.close()
+        def conn = bannerDS.getConnection()
+        try {
+            assertNotNull(conn)
+            Logger.getRootLogger().setLevel(Level.TRACE)
+            bannerDS.setDbmsApplicationInfo(conn, null, null)
+        } finally {
+            Logger.getRootLogger().setLevel(Level.OFF)
+            dataSource.removeConnection(conn)
+            if (conn) conn.close()
+        }
         tearDownDataSetup()
         resetConfigAsInTheFile()
     }
@@ -282,79 +284,49 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         tearDownDataSetup()
         resetConfigAsInTheFile()
     }
+
     @Test
-    public void testClearDmsApplicationInfo(){
+    public void testClearDmsApplicationInfo() {
         backupConfigFileConfigurations()
         setupAPIWithNoProxy()
         def conn = bannerDS.getConnection()
-        assertNotNull(conn)
-        Logger.getRootLogger().setLevel(Level.TRACE)
-        bannerDS.clearDbmsApplicationInfo(conn)
-        Logger.getRootLogger().setLevel(Level.OFF)
-        dataSource.removeConnection(conn)
-        if (conn) conn.close()
+        try {
+            assertNotNull(conn)
+            Logger.getRootLogger().setLevel(Level.TRACE)
+            bannerDS.clearDbmsApplicationInfo(conn)
+        } finally {
+            Logger.getRootLogger().setLevel(Level.OFF)
+            dataSource.removeConnection(conn)
+            if (conn) conn.close()
+        }
         tearDownDataSetup()
         resetConfigAsInTheFile()
     }
 
     @Test
-    public void testMebSSBMethod(){
+    public void testMebSSBMethod() {
         backupConfigFileConfigurations()
         setupAPIWithNoProxy()
-        def  oldMepValue = RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
-        def oldSbbValue= config.ssbEnabled
-        config.ssbEnabled=true
-        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled',true)
-        def conn = bannerDS.getConnection()
-        assertNotNull(conn)
-        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled',oldMepValue)
-        config.ssbEnabled=oldSbbValue
-        dataSource.removeConnection(conn)
-        if (conn) conn.close()
+        def conn
+        def oldSbbValue
+        def oldMepValue
+        try {
+            oldMepValue = RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
+            oldSbbValue = config.ssbEnabled
+            config.ssbEnabled = true
+            RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', true)
+            conn = bannerDS.getConnection()
+        } finally {
+            assertNotNull(conn)
+            RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', oldMepValue)
+            config.ssbEnabled = oldSbbValue
+            dataSource.removeConnection(conn)
+            if (conn) conn.close()
+        }
         tearDownDataSetup()
         resetConfigAsInTheFile()
     }
 
-
-  /*  @Test
-    public void testMebSSBMethod1(){
-        backupConfigFileConfigurations()
-        setupAPIWithNoProxy()
-        setupSSBData()
-        def oldMepValue = RequestContextHolder.currentRequestAttributes()?.request?.session?.servletContext?.getAttribute('mepEnabled')
-        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', true)
-        def oldMepCodeValue = RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mep')
-        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mep', 'FORCE_MEPCODENOTFOUND')
-        def conn = bannerDS.getConnection()
-        assertNotNull(conn)
-        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mep', oldMepCodeValue)
-        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', oldMepValue)
-        dataSource.removeConnection(conn)
-        if (conn) conn.close()
-        tearDownDataSetup()
-        resetConfigAsInTheFile()
-    }*/
-
-   /* @Test
-    public void testMebSSBMethod2(){
-        backupConfigFileConfigurations()
-        setupAPIWithNoProxy()
-        def oldConfigVal = config.mepEnabled
-        config.mepEnabled = false
-        def oldSbbValue= config.ssbEnabled
-        config.ssbEnabled=true
-        def  oldMepValue = RequestContextHolder.currentRequestAttributes()?.request?.session?.servletContext?.getAttribute('mepEnabled')
-        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled',true)
-        def conn = bannerDS.getConnection()
-        assertNotNull(conn)
-        config.mepEnabled = oldConfigVal
-        config.ssbEnabled=oldSbbValue
-        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled',oldMepValue)
-        dataSource.removeConnection(conn)
-        if (conn) conn.close()
-        tearDownDataSetup()
-        resetConfigAsInTheFile()
-    }*/
 
     @Test
     public void testSetIdentifier() {
@@ -385,11 +357,16 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     public void testNullPrincipal() {
-        def backup = SecurityContextHolder?.context?.authentication?.principal
-        SecurityContextHolder?.context?.authentication?.principal = null
-        def conn = bannerDS.getConnection()
-        assertNotNull(conn)
-        SecurityContextHolder?.context?.authentication?.principal = backup
+        def backup
+        def conn
+        try {
+            backup = SecurityContextHolder?.context?.authentication?.principal
+            SecurityContextHolder?.context?.authentication?.principal = null
+            conn = bannerDS.getConnection()
+            assertNotNull(conn)
+        } finally {
+            SecurityContextHolder?.context?.authentication?.principal = backup
+        }
     }
 
     @Test
@@ -402,7 +379,6 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             banConn = (bannerDS.getConnection() as BannerConnection)
             conn = bannerDS.proxyAndSetRolesFor(banConn, username, password)
             assertNotNull(conn)
-
             conn = bannerDS.proxyAndSetRolesFor(banConn, null, null)
             assertNull(connen)
         } catch (e) {
