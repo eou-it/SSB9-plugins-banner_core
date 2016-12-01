@@ -36,9 +36,6 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     private String SSB_VALID_USERNAME = "HOSH00002"
     private String SSB_VALID_PASSWORD = "111111"
 
-    private String ADMIN_VALID_USERNAME = "grails_user"
-    private String ADMIN_VALID_PASSWORD = "u_pick_it"
-
     private String PROXY_USERNAME = "HOSH00070"
     private String PROXY_PASSWORD = "111111"
 
@@ -53,6 +50,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
+        super.setUp()
         config = Holders.getConfig()
         bannerDS = (dataSource as BannerDS)
     }
