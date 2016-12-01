@@ -174,7 +174,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     public void testOracleMessageTranslationForSpanish() {
-        def locale = 'es'
+        def locale = 'es_MX'
         def conn = bannerDS.getConnection()
         def sql = new Sql(conn)
         BannerDS.callNlsUtility(sql, locale)
