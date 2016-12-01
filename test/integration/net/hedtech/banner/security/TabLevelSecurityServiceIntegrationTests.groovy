@@ -16,7 +16,7 @@ import java.sql.SQLException
 /**
  * Integration test for the self service Banner authentication provider.
  **/
-
+// This TabLevelSecurityService is used in ZK Admin apps and its no longer supported . In near future this feature will be removed
 class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
 
     public static final String FORM_READONLY_ACCESS_ROLE = "BAN_DEFAULT_Q"
@@ -38,7 +38,6 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
         super.tearDown()
     }
 
-    @Ignore // Ignoring for now as some Roles are missing in October 2016 Vagrant template
     @Test
     void testUserWithReadwritePermissionForTheForm() {
         Sql sql
@@ -82,7 +81,6 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
     /**
      * No Gurutab records, So no tab level security.
      */
-    @Ignore // Ignoring for now as some Roles are missing in October 2016 Vagrant template
     @Test
     void testUserWithReadonlyPermissionForTheForm() {
 
@@ -100,8 +98,8 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
             verifyTabLevelSecurityIndicators(s1,
                     ['tabScheduleRestrictionsDept', 'tabScheduleRestrictionsMajor', 'tabScheduleRestrictionsClass', 'tabScheduleRestrictionsDegree', 'tabScheduleRestrictionsCampus', 'tabScheduleRestrictionsAttr'],
                     [TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.HIDDEN,
-                     TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.READONLY,
-                     TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.READONLY])
+                     TabLevelSecurityEndUserAccess.FULL, TabLevelSecurityEndUserAccess.FULL,
+                     TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.FULL])
             logout()
         } catch (e) {
             println e
