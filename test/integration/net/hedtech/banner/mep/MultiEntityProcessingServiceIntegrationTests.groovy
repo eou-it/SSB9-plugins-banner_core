@@ -87,15 +87,6 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
     }
 
     @Test
-    void testMep() {
-        def mep = multiEntityProcessingService.hasMep("collegeAndDepartmentText")
-        assertTrue "Mep is not set up correctly",  mep
-
-        assertFalse (multiEntityProcessingService.hasMep(null))
-    }
-
-
-    @Test
     void testGetMepDescription() {
         def desc = multiEntityProcessingService.getMepDescription(cccCollege)
         assertEquals "Banner College Test3",  desc
