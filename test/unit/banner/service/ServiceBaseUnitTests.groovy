@@ -183,10 +183,14 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
     void testUpdateUsingParamsMap() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
+        def oldDescriptionValue = existingModel.description
+        existingModel.description = "Updated"
         def updatedDomain = svc.update( [ id: existingModel.id, name: existingModel.name,
                                           description: "Updated", version: existingModel.version ] )
         assertEquals existingModel.id, updatedDomain.id
         assertEquals "Updated", updatedDomain.description
+        existingModel.description = oldDescriptionValue
+
     }
 
     @Test
@@ -229,7 +233,10 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
         def existingModels = MyMock.list()
         def existingProperties = []
-        existingModels.eachWithIndex { model, i -> existingProperties << (model.properties + [ id: model.id, version: model.version, description: "Updated_$i" ]) }
+        existingModels.eachWithIndex { model, i ->
+            model.description = "Updated_$i"
+            existingProperties << [id: model.id, name: model.name, version: model.version]
+        }
 
         def createdDomains = svc.update( existingProperties )
         assertEquals 5, createdDomains.size()
@@ -242,8 +249,12 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
         def existingModels = MyMock.list()
         def existingParams = []
-        existingModels.eachWithIndex { model, i -> existingParams << [ id: model.id, name: model.name,
-                                                                       description: "Updated_$i", version: model.version ] }
+
+        existingModels.eachWithIndex { model, i ->
+            model.description = "Updated_$i"
+            existingParams << [id: model.id, name: model.name, version: model.version]
+        }
+
         def createdDomains = svc.update( existingParams )
         assertEquals 5, createdDomains.size()
         assertTrue  createdDomains.every { it.id }
@@ -319,16 +330,22 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
     void testBatchCreateOrUpdateUsingParamsMap() {
 
         def requestList = []
-        (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
+        (0..4).each { requestList << new MyMock(name: "Mock_$it", description: "MockDesc_$it") }
 
         def existingModels = MyMock.list()
-        existingModels.eachWithIndex { model, i -> requestList << [ id: model.id, name: model.name,
-                                                                       description: "Updated_$i", version: model.version ] }
+        /*existingModels.eachWithIndex { model, i ->
+            requestList << [id         : model.id, name: model.name,
+                            description: "Updated_$i", version: model.version]
+        }*/
 
-        def result = svc.createOrUpdate( requestList )
+        existingModels.eachWithIndex { model, i ->
+            model.description = "Updated_$i"
+            requestList << [id: model.id, name: model.name, description: "Updated_$i", version: model.version]
+        }
+        def result = svc.createOrUpdate(requestList)
         assertEquals 10, result.size()
-        assertTrue  result.every { it.id }
-        assertEquals 5, result.findAll { it.description.contains( "Updated" ) }.size()
+        assertTrue result.every { it.id }
+        assertEquals 5, result.findAll { it.description.contains("Updated") }.size()
     }
 
     @Test
@@ -592,12 +609,14 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
         def testService = new OverridingDeleteTestService()
 
         def entity = testService.create( newMyMockParams() )
+        def oldEntityValue =entity?.name
+        entity?.name = "Update Me"
         assertTrue entity.id > 0  // this tests that the create method was injected
         assertNotNull MyMock.get( entity.id )
 
         testService.update( newMyMockParams() + [ id: entity.id, version: entity.version, name: "Update Me" ] )
         assertEquals "Update Me", entity.name // this tests that the update method was injected
-
+        entity?.name = oldEntityValue
         assertFalse testService.deleteInvoked
         testService.delete( entity.id )
         assertTrue testService.deleteInvoked  // this tests that the delete method was 'not' injected
