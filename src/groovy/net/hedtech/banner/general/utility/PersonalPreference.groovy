@@ -3,8 +3,16 @@
  Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.utility
-
-import javax.persistence.*
+import javax.persistence.Entity
+import javax.persistence.Table
+import javax.persistence.Id
+import javax.persistence.Column
+import javax.persistence.GenerationType
+import javax.persistence.GeneratedValue
+import javax.persistence.NamedQueries
+import javax.persistence.NamedQuery
+import javax.persistence.Version
+import javax.persistence.SequenceGenerator
 import org.hibernate.annotations.Type;
 
 /**

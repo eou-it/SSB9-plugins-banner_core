@@ -16,7 +16,7 @@ import net.hedtech.banner.exceptions.ApplicationException
  *
  */
 class DynamicFinder {
-    static def log = Logger.getLogger( 'net.hedtech.banner.query.DynamicFinder' )
+    private static final def log = Logger.getLogger( 'net.hedtech.banner.query.DynamicFinder' )
 
     def domainClass
     def query

@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse
 
 class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFilter {
 
-    private final Logger log = Logger.getLogger(getClass())
+    private static final Logger log = Logger.getLogger(getClass())
 
     def dataSource // injected by Spring
 

@@ -3,16 +3,10 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
-import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import grails.util.Holders
 import org.junit.After
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
-
-import java.sql.SQLException
-
 /**
  * Integration test for the self service Banner authentication provider.
  **/
@@ -40,9 +34,6 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testUserWithReadwritePermissionForTheForm() {
-        Sql sql
-        def url = Holders.config.bannerDataSource.url
-
         final EDITABLE_FORM_NAME = "SSARRES"
         final EDITABLE_USER_NAME = "GRAILS_USER"
         final PASSWORD = "u_pick_it"
@@ -58,8 +49,7 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
                      TabLevelSecurityEndUserAccess.FULL, TabLevelSecurityEndUserAccess.FULL])
             logout()
         } catch (e) {
-            println e
-        } finally {
+            throw e
         }
     }
 
@@ -83,10 +73,6 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
      */
     @Test
     void testUserWithReadonlyPermissionForTheForm() {
-
-        Sql sql
-        def url = Holders.config.bannerDataSource.url
-
         final READONLY_FORM_NAME = "SCACLBD"
         final READONLY_USER_NAME = "GRAILS_USER_READONLY"
         final PASSWORD = "u_pick_it"
@@ -102,8 +88,7 @@ class TabLevelSecurityServiceIntegrationTests extends BaseIntegrationTestCase {
                      TabLevelSecurityEndUserAccess.READONLY, TabLevelSecurityEndUserAccess.FULL])
             logout()
         } catch (e) {
-            println e
-        } finally {
+            throw e
         }
 
     }

@@ -4,7 +4,6 @@
 
 package net.hedtech.banner.general.utility
 
-import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.i18n.MessageHelper

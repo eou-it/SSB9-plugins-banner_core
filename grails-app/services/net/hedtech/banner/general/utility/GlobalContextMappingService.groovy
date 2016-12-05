@@ -1,19 +1,15 @@
+/*******************************************************************************
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.general.utility
 
 import groovy.sql.Sql
-import org.apache.log4j.Logger
-
 /**
- * Created by IntelliJ IDEA.
- * User: mhitrik
- * Date: 1/8/13
- * Time: 3:49 PM
  * To change this template use File | Settings | File Templates.
  */
 class GlobalContextMappingService {
 
     static transactional = true
-    private final Logger log = Logger.getLogger(getClass())
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
 

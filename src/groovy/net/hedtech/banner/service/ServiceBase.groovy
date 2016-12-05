@@ -9,8 +9,6 @@ import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 
 import groovy.sql.Sql
-
-import net.hedtech.banner.db.BannerConnection
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.NotFoundException
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
@@ -19,9 +17,7 @@ import net.hedtech.banner.security.FormContext
 import org.apache.log4j.Logger
 
 import grails.util.Holders
-import grails.util.Holders  as CH
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.runtime.InvokerHelper
 import org.hibernate.StaleObjectStateException
 
 import org.springframework.context.ApplicationContext
@@ -61,7 +57,7 @@ import org.springframework.transaction.support.DefaultTransactionStatus
 class ServiceBase {
 
     @Lazy // note: Lazy annotation is needed here to ensure 'this' refers to the service we're mixed into (if we're mixed in)
-    def log = Logger.getLogger( this.getClass() )
+    private static final def log = Logger.getLogger( this.getClass() )
 
     Class domainClass // if not explicitly set by a subclass, this will be determined when needed
 

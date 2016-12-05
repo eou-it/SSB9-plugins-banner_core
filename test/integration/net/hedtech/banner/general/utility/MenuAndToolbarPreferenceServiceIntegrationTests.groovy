@@ -119,7 +119,6 @@ class MenuAndToolbarPreferenceServiceIntegrationTests extends BaseIntegrationTes
    @Test
     void testMenuAndToolbarPreferenceFetch() {
       def prefs = MenuAndToolbarPreferenceService.fetchMenuAndToolbarPreference()
-      println prefs.get(0).formnameDisplayIndicator
       assertNotNull prefs
     }
   /*PROTECTED REGION END*/

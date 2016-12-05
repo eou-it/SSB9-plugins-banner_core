@@ -3,25 +3,10 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.security
 
-import net.hedtech.banner.db.BannerDS as BannerDataSource
-import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.service.KeyBlockHolder
-import net.hedtech.banner.service.ServiceBase
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import grails.util.Holders  as CH
-import org.junit.Assert
 import org.junit.Before
 import org.junit.After
 import org.junit.Test
-
-import java.sql.Connection
-
-import groovy.sql.Sql
-
-
-
-
-
 /**
  * Integration test for the self service Banner authentication provider.  
  **/

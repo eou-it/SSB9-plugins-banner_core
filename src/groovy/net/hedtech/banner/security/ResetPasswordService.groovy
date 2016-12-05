@@ -12,7 +12,7 @@ import java.util.regex.Pattern
 class ResetPasswordService {
 
     static transactional = true
-    private final Logger log = Logger.getLogger(getClass())
+    private static final Logger log = Logger.getLogger(getClass())
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
     def authenticationDataSource           // injected by Spring

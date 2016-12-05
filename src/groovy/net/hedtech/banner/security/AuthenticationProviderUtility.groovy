@@ -5,10 +5,8 @@ package net.hedtech.banner.security
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
-import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.AuthorizationException
 import org.apache.log4j.Logger
-import grails.util.Holders
 import grails.util.Holders
 import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.AuthenticationProvider
@@ -337,7 +335,6 @@ class AuthenticationProviderUtility {
     public static getFullName( String name, def dataSource ) {
         def conn = null
         def fullName
-        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
         name = name.toUpperCase()
         try {
             conn = dataSource.unproxiedConnection

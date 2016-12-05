@@ -4,16 +4,12 @@
 
 package net.hedtech.banner.security
 
-import grails.spring.BeanBuilder
-import grails.util.Environment
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import org.apache.commons.dbcp.BasicDataSource
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 
 /**

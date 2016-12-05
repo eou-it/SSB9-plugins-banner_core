@@ -35,7 +35,7 @@ class BannerAccessDecisionVoter extends RoleVoter {
     static final String ROLE_PREFIX = "ROLE_"
     static final String ROLE_DETERMINED_DYNAMICALLY = 'ROLE_DETERMINED_DYNAMICALLY'
 
-    private final Logger log = Logger.getLogger( getClass() )
+    private static final Logger log = Logger.getLogger( getClass() )
 
     boolean supports( ConfigAttribute configAttribute ) {
         log.debug "BannerAccessDecisionVoter.supports(ConfigAttribute) invoked with $configAttribute and will return ${configAttribute.attribute.startsWith( ROLE_PREFIX )}"

@@ -13,7 +13,7 @@ import org.apache.log4j.Logger
  **/
 class JsonHelper {
     
-    static def log = Logger.getLogger( JsonHelper.name )
+    private static final def log = Logger.getLogger( JsonHelper.name )
     
     /**
      * Provides a minimal workaround for Jira Grails-5585 -- once the JSON converter is 'fixed', this should be removed.

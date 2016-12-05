@@ -8,9 +8,6 @@ class DateInOperator extends InOperator {
     public String getQueryString(CriteriaData data) {
         if(ifParamsExists(data)) {
             CriteriaParam param = data.params.get(0);
-
-            List params = getParamsFromCriteriaParams(param.data)
-
             boolean timeEntered = isTimeEntered(param)
 
             DateQueryBuilder dateQueryBuilder = new DateQueryBuilder()

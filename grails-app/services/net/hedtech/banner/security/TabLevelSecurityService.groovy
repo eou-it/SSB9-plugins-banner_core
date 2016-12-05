@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -19,8 +19,7 @@ class TabLevelSecurityService {
     public static final String FULL_ACCESS_TO_END_USER = "F"
     public static final String READONLY_ACCESS_TO_END_USER = "Q"
 
-    private final Logger log = Logger.getLogger(getClass())
-    private static final Logger staticLogger = Logger.getLogger(TabLevelSecurityService.class)
+    private static final Logger log = Logger.getLogger(getClass())
 
     def sessionFactory                     // injected by Spring
 
@@ -57,9 +56,6 @@ class TabLevelSecurityService {
         if (accessPrivilegeType != AccessPrivilege.UNDEFINED) {
             dbConfiguredTabPrivilegeMap = getDBConfiguredTabSecurityRestrictions (userName, formName)
             return limitTabPrivilegesByUserAccessLevel(dbConfiguredTabPrivilegeMap, accessPrivilegeType)
-        } else {
-            // It is an impossible case. There must be an access level defined for the user to
-            // access this form at the time when this method is being invoked.
         }
         return dbConfiguredTabPrivilegeMap
     }
@@ -80,7 +76,7 @@ class TabLevelSecurityService {
                 strDbConfiguredTabPrivileges = accessString
             }
             return getTabSecurityPrivilegeMap(strDbConfiguredTabPrivileges)
-        } catch (e) {
+        } catch (Exception e) {
             log.error(". ${e.message}")
             throw e
         } finally {
@@ -100,12 +96,7 @@ class TabLevelSecurityService {
         def revisedTabPrivileges = dbConfiguredTabPrivilegeMap
         if (accessPrivilegeType == AccessPrivilege.READONLY) {
             revisedTabPrivileges = lowerFullQueryAccessToReadonlyAccess (dbConfiguredTabPrivilegeMap)
-        } else if (accessPrivilegeType == AccessPrivilege.READWRITE) {
-            // no limiting to be done here.
-        } else {
-            // An impossible case. Form should have an access level set for the user.
         }
-
         return revisedTabPrivileges
     }
 

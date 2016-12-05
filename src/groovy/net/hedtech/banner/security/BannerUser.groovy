@@ -24,7 +24,7 @@ public class BannerUser extends GrailsUser {
     public String mepProcessContext
     public String mepHomeContextDescription
 
-    private final Logger log = Logger.getLogger( getClass() )
+    private static final Logger log = Logger.getLogger( getClass() )
 
     Map rolePass = [:]      // Storing role password map as part of user to improve performance
     Map<String,GrantedAuthority> formToRoleMap = [:].withDefault { [] } // Storing roles keyed by Form context, to improve performance

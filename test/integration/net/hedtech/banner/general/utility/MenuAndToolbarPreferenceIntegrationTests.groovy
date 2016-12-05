@@ -210,7 +210,7 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
 	void testValidationMessages() {
-	    def MenuAndToolbarPreference = newMenuAndToolbarPreference()
+	    newMenuAndToolbarPreference()
 	}
 
 

@@ -6,7 +6,13 @@ package  net.hedtech.banner.testing
 
 import org.hibernate.annotations.Formula
 import org.hibernate.annotations.Type
-import javax.persistence.*
+import javax.persistence.Entity
+import javax.persistence.Table
+import javax.persistence.Id
+import javax.persistence.Column
+import javax.persistence.Temporal
+import javax.persistence.TemporalType
+import javax.persistence.Version
 
 @Entity
 @Table(name = "SVQ_SIVASGQ")

@@ -3,8 +3,6 @@ Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.help
 
-import grails.util.Holders
-import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.testing.BaseFunctionalTestCase
 import org.junit.After
 import org.junit.Before

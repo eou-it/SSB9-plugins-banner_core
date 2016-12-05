@@ -4,14 +4,13 @@ Copyright 2013 Ellucian Company L.P. and its affiliates.
 
 package net.hedtech.banner.service
 
-import org.springframework.web.context.request.RequestContextHolder
 import org.apache.log4j.Logger
 import javax.servlet.http.HttpSession
 import java.sql.Connection
 
 class HttpSessionService {
     def dataSource     // injected by Spring
-    private final Logger log = Logger.getLogger( getClass() )
+    private static final Logger log = Logger.getLogger( getClass() )
 
     def sessionCreated(HttpSession session) {
         log.trace("Session created: " + session.id)
@@ -31,7 +30,7 @@ class HttpSessionService {
                 dataSource.removeConnection(conn)
         }
         catch (e) {
-           //Ignore this exception
+            log.trace(e)
         }
     }
 }

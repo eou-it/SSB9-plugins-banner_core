@@ -4,8 +4,6 @@
 package net.hedtech.banner.security
 
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.GrantedAuthority
-
 /**
  * An authentication token created upon successful authentication.
  */

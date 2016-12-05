@@ -8,7 +8,19 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 package net.hedtech.banner.testing
 
 import org.hibernate.annotations.Type
-import javax.persistence.*
+import javax.persistence.Entity
+import javax.persistence.Table
+import javax.persistence.Id
+import javax.persistence.Column
+import javax.persistence.ManyToOne
+import javax.persistence.GenerationType
+import javax.persistence.JoinColumn
+import javax.persistence.JoinColumns
+import javax.persistence.GeneratedValue
+import javax.persistence.Version
+import javax.persistence.SequenceGenerator
+import javax.persistence.NamedQueries
+import javax.persistence.NamedQuery
 
 /**
  * Term Code Validation Table

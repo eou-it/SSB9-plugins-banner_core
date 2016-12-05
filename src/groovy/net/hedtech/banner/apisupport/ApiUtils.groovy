@@ -1,14 +1,12 @@
 /* *****************************************************************************
- Copyright 2013 Ellucian Company L.P. and its affiliates.
+ Copyright 2016 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.apisupport
 
 import org.apache.log4j.Logger
 
-import grails.util.Holders
 import grails.util.Holders  as CH
 
-import org.springframework.context.ApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
 class ApiUtils {

@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package banner.service
 
@@ -92,13 +92,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
     @Test
     void testCreateUsingModelInstanceAndNotFlushingSession() {
-        // actually, can't really test that via mocking, but we'll at least test signatures here and
-        // implement 'real' testing to the FooServiceIntegrationTests. The below is more or less, documentation.
-        def createdDomains = [ svc.create( new MyMock( newMyMockParams() ), false ), // yup, looks like we can pass a boolean
-                               svc.create( new MyMock( newMyMockParams() ), false ), // without getting a methodMissing exception
-                               svc.create( new MyMock( newMyMockParams() ), false ) ]
-        // since the mocking library won't delegate to the session (as it isn't even mocked normally),
-        // all we'll really be able to do here is ensure we don't get a method missing exception...
         // Ideally, the mocking will become more sophisticated to handle flush: true.
         svc.flush()
     }
