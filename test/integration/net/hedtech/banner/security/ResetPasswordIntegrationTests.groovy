@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.security
 
@@ -13,7 +13,7 @@ import org.junit.Test
 class ResetPasswordIntegrationTests extends BaseIntegrationTestCase{
 
 
-  //  def resetPasswordService;
+    def resetPasswordService;
  //   def dataSource  // injected by Spring
    // def conn        // set in setUp
    // def db          // set in setUp
@@ -33,6 +33,20 @@ class ResetPasswordIntegrationTests extends BaseIntegrationTestCase{
 
     @Test
     void testDummy() {
+
+    }
+    @Test
+    void testContainsNumber() {
+        assertTrue(resetPasswordService.containsNumber("123123"))
+    }
+
+    @Test
+    void testContainsCharacters() {
+        assertTrue(resetPasswordService.containsCharacters("TESTHOSH123"))
+    }
+    @Test
+    void testInjection() {
+        assertNotNull resetPasswordService
 
     }
 /*
