@@ -6,6 +6,7 @@ package net.hedtech.banner.configuration
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 
 
@@ -42,6 +43,7 @@ class ApplicationConfigurationUtilsIntegrationTests extends BaseIntegrationTestC
         assertNotNull(ApplicationConfigurationUtils.getFilePath(filePath))
     }
 
+    @Ignore
     @Test
     public void getFilePathFromEnvVariable() {
         def filePath = System.getenv("BANNER_APP_CONFIG")
