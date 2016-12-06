@@ -57,8 +57,8 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
     @Test
     public void testBannerAuthentiationWithDefaultUsage() {
         Holders.config.ssbEnabled = false
-        Holders?.config?.productName = "testApp_DEFAULT";
-        Holders?.config?.banner?.applicationName = "testApp_DEFAULT";
+        Holders?.config?.productName = "Student";
+        Holders?.config?.banner?.applicationName = "testApp";
 
         def existingUser = [name: "GRAILS_USER", pin: "u_pick_it"]
 

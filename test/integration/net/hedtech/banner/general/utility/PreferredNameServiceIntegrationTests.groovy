@@ -4,6 +4,7 @@
 
 package net.hedtech.banner.general.utility
 
+import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.i18n.MessageHelper
@@ -175,14 +176,14 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     @Test
     public void getPreferredNameWithNameParamsWithUseDataParams(){
 
-        params = [firstname:"VARUN", mi:"S", lastname:"SANKAR",productname:"Payroll",appname:"Taxes",pagename:"W%",usedata:"Y"]
+        params = [firstname:"VARUN", mi:"S", lastname:"SANKAR",productname:"Student",appname:"testApp",pagename:"testPage",usedata:"Y"]
         String defaultName = preferredNameService.getPreferredName(params)
         assertEquals "VARUN S SANKAR", defaultName
     }
     @Test
     public void getPreferredNameWithpidmsWithUseDataParams(){
 
-        params = [pidm:pidm,productname:"Payroll",appname:"Taxes",pagename:"W%",usedata:"N"]
+        params = [pidm:pidm,productname:"Student",appname:"testApp",pagename:"testPage",usedata:"N"]
         String defaultName = preferredNameService.getPreferredName(params)
         assertEquals "Warren Zevon Grim", defaultName
     }
@@ -197,12 +198,14 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
 
     @Test
     public void getUsageDefault(){
-        String defaultName = preferredNameService.getUsage("Payroll","Taxes","W2","Body")
+        String defaultName = preferredNameService.getUsage("Student","testApp","testPage","testSection")
         assertEquals DEFAULT, defaultName
     }
 
     @Test
-    public void getUsageDefaultWithNoParams(){
+    public void getUsageDefaultWithProductNameAndAppName(){
+        Holders?.config?.productName = "Student";
+        Holders?.config?.banner?.applicationName = "testApp";
         String defaultName = preferredNameService.getUsage()
         assertEquals DEFAULT, defaultName
     }
