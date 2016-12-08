@@ -25,7 +25,7 @@ class JsonHelperIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     public void replaceJSONObjectNULLSuccess() {
-        org.codehaus.groovy.grails.web.json.JSONObject jsonObject = new JSONObject().put("Entity", org.codehaus.groovy.grails.web.json.JSONObject.NULL);
+        def jsonObject = new JSONObject().put("Entity", JSONObject.NULL);
         jsonObject.put("Name", "Value")
         try {
             JsonHelper.replaceJSONObjectNULL(jsonObject)
