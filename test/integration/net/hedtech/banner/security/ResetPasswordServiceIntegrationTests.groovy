@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.security
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -8,9 +8,9 @@ import org.junit.Before
 import org.junit.After
 import org.junit.Test
 /**
- * Integration test for the self service Banner authentication provider.  
+ * Integration test for the self service Banner authentication provider.
  **/
-class ResetPasswordIntegrationTests extends BaseIntegrationTestCase{
+class ResetPasswordServiceIntegrationTests extends BaseIntegrationTestCase{
 
 
     def resetPasswordService;
@@ -25,7 +25,7 @@ class ResetPasswordIntegrationTests extends BaseIntegrationTestCase{
       //  dataSetup()
       //super.setUp()
     }
-	
+
 	@After
     public void tearDown() {
         //super.tearDown()
@@ -199,7 +199,7 @@ class ResetPasswordIntegrationTests extends BaseIntegrationTestCase{
         db.executeUpdate("update gpbprxy set gpbprxy_email_address=? where gpbprxy_proxy_idm=?", [guestEmailAddress, guestUserId])
     }
 
-    
+
 }
 
 
