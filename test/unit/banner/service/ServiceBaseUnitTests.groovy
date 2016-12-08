@@ -326,11 +326,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
         (0..4).each { requestList << new MyMock(name: "Mock_$it", description: "MockDesc_$it") }
 
         def existingModels = MyMock.list()
-        /*existingModels.eachWithIndex { model, i ->
-            requestList << [id         : model.id, name: model.name,
-                            description: "Updated_$i", version: model.version]
-        }*/
-
         existingModels.eachWithIndex { model, i ->
             model.description = "Updated_$i"
             requestList << [id: model.id, name: model.name, description: "Updated_$i", version: model.version]
