@@ -107,14 +107,18 @@ class LoginController {
         def username = session[UsernamePasswordAuthenticationFilter.SPRING_SECURITY_LAST_USERNAME_KEY]
         def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
 
-        String msg = getMessageFor( exception )
-
-        if (springSecurityService.isAjax( request )) {
-            render( [error: msg] as JSON )
+        if(exception instanceof CredentialsExpiredException){
+            forward controller : "resetPassword", action: "changePassword", params : params
         }
         else {
-            flash.message = msg
-            forward action: "auth", params: params
+            String msg = getMessageFor(exception)
+
+            if (springSecurityService.isAjax(request)) {
+                render([error: msg] as JSON)
+            } else {
+                flash.message = msg
+                forward action: "auth", params: params
+            }
         }
     }
 

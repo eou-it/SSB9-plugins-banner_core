@@ -148,6 +148,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             case -20901:
                 log.debug "SelfServiceAuthenticationProvider failed on expired pin"
                 authenticationResults.expired = true
+                AuthenticationProviderUtility.setUserDetails(authenticationResults.pidm,authenticationResults.name)
                 break
             case -20903:
                 log.debug "SelfServiceAuthenticationProvider failed on ldap authentication"

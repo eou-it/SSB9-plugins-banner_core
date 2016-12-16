@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
+import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import org.apache.log4j.Logger
 import java.sql.SQLException
@@ -52,6 +53,7 @@ class ResetPasswordService {
     static final String LOG_RESET_PASSWORD_URL_MESSAGE_2 = "generateResetPasswordURL Success:"
     static final String LOG_RESET_PASSWORD_URL_MESSAGE_3 = " Reply"
     static final String LOG_RESET_PASSWORD_URL_ERROR_MESSAGE = "ERROR: Generate reset password URL"
+    static final String Pin_EXP_DAYS_QUERY="select TWGBWRUL_PIN_EXP_DAYS from TWGBWRUL"
 
     /**
      *
@@ -545,6 +547,33 @@ class ResetPasswordService {
 
     def containsCharacters(inputString){
         Pattern.matches(CHARACTER_PATTERN, inputString)
+    }
+
+    private String getPinExpDays() throws SQLException {
+        def connection
+        Sql sql
+        try {
+            connection = dataSource.getSsbConnection()
+            sql = new Sql(connection)
+            GroovyRowResult row = sql.firstRow(Pin_EXP_DAYS_QUERY)
+            return row?.TWGBWRUL_PIN_EXP_DAYS
+        } finally {
+            sql?.close()
+            connection?.close()
+        }
+    }
+
+    public void changeUserPassword(pidm, newPassword) throws SQLException {
+        Sql sql = new Sql(dataSource.getSsbConnection())
+        try {
+            String pinExpDays = getPinExpDays()
+            sql.call("{call gb_third_party_access.p_update(p_pidm=>${pidm}, p_pin=>${newPassword},p_pin_exp_date=>sysdate + ${pinExpDays} )}")
+            sql.commit()
+        }
+        finally {
+            sql.close()
+        }
+
     }
 
 }

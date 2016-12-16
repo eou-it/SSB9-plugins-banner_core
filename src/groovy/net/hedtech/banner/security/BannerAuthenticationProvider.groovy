@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -50,7 +50,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
             // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
             // Note that when we execute this inside a try-catch block, we need to re-throw exceptions we want caught by the filter
-            verifyAuthenticationResults this, authentication, authenticationResults
+            AuthenticationProviderUtility.verifyAuthenticationResults this, authentication, authenticationResults
 
             loadDefault( getApplicationContext(), authenticationResults['oracleUserName'] )
             getApplicationContext().publishEvent( new BannerAuthenticationEvent( authenticationResults['oracleUserName'], true, '', '', new Date(), '' ) )
@@ -87,35 +87,6 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         }
         applicationContext
     }
-
-
-    /**
-     * Throws appropriate Spring Security exceptions for disabled accounts, locked accounts, expired pin,
-     * @throws DisabledException if account is disabled
-     * @throws CredentialsExpiredException if credential is expired
-     * @throws LockedException if the user account has been locked
-     * @throws RuntimeException if the pin was invalid or the id was incorrect (i.e., the default error)
-     **/
-    public static verifyAuthenticationResults( AuthenticationProvider provider, Authentication authentication, Map authenticationResults ) {
-
-        def report = BannerAuthenticationProvider.&handleFailure.curry( provider, authentication, authenticationResults )
-
-        if (authenticationResults.disabled) report( new DisabledException('') )
-        if (authenticationResults.expired)  report( new CredentialsExpiredException('') )
-        if (authenticationResults.locked)   report( new LockedException('') )
-        if (!authenticationResults.valid)   report( new BadCredentialsException('') )
-    }
-
-
-    private static handleFailure( provider, authentication, authenticationResults, exception ) {
-
-        log.warn "${provider.class.simpleName} was not able to authenticate user $authentication.name due to exception ${exception.class.simpleName}: ${exception.message} "
-        def msg = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( exception.class.simpleName, "Exception" ) )
-        def module = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( provider.class.simpleName, "AuthenticationProvider" ) )
-        getApplicationContext().publishEvent( new BannerAuthenticationEvent( authentication.name, false, msg, module, new Date(), 1 ) )
-        throw exception
-    }
-
 
     /**
      * Returns the authorities granted for the identified user.

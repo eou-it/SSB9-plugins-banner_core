@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <%@ page contentType="text/html;charset=UTF-8" defaultCodec="none" %>
@@ -15,6 +15,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
         <link rel="shortcut icon" href="${resource(plugin: 'bannerCore', dir: 'images', file: 'favicon.ico')}" type="image/x-icon"/>
     </head>
     <body>
+    <g:analytics/>
         <div class="error">
             <div class="errorBox">
               <div class="errorMessage"><b><g:message code="net.hedtech.banner.errors.serverError.message"/> </b><br>
