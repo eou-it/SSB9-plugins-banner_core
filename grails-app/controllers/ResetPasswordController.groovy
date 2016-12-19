@@ -2,17 +2,18 @@
  Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
+
+import grails.util.Holders  as CH
 import net.hedtech.banner.security.ResetPasswordService
 import org.apache.commons.codec.binary.Base64
-import grails.util.Holders  as CH
-import grails.plugin.springsecurity.SpringSecurityUtils
 import org.apache.log4j.Logger
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.LockedException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authenticationimport javax.servlet.http.HttpSession
+import org.springframework.security.core.Authentication
+
+import javax.servlet.http.HttpSession
 import java.sql.SQLException
 
 class ResetPasswordController {
