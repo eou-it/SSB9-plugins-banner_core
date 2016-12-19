@@ -233,6 +233,14 @@ class MultiEntityProcessingService {
             }
         }
 
+        def foundDefault = mepHomes.find {
+            it.default == true
+
+        }
+        if(foundDefault!=null){
+            mepHomes.remove(foundDefault)
+            mepHomes=mepHomes.plus(0,foundDefault);
+        }
         return mepHomes
 
     }

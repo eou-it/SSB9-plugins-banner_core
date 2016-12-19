@@ -121,13 +121,6 @@ class AuthenticationProviderUtility {
         Holders.config.ssbEnabled instanceof Boolean ? Holders.config.ssbEnabled : false
     }
 
-    public static Boolean isSsbRoleBasedTimeoutEnabled() {
-        boolean ssbRoleBasedTimeoutEnabled = false
-        if(isSsbEnabled()){
-            ssbRoleBasedTimeoutEnabled = Holders.config.ssbRoleBasedTimeoutEnabled instanceof Boolean ? Holders.config.ssbRoleBasedTimeoutEnabled : false
-        }
-        return ssbRoleBasedTimeoutEnabled
-    }
 
     public static getUserFullName(pidm,name,dataSource){
         def ctx = Holders.servletContext.getAttribute(GA.APPLICATION_CONTEXT)
@@ -191,7 +184,7 @@ class AuthenticationProviderUtility {
         }
         dbUser['authorities'] = authorities
         dbUser['fullName'] = fullName
-        if(isSsbRoleBasedTimeoutEnabled()){
+        if(isSsbEnabled()){
             dbUser['webTimeout'] = getWebTimeOut( dbUser,dataSource)
         }
         else{
@@ -287,9 +280,24 @@ class AuthenticationProviderUtility {
     private static handleFailure( provider, authentication, authenticationResults, exception ) {
 
         log.warn "${provider.class.simpleName} was not able to authenticate user $authentication.name due to exception ${exception.class.simpleName}: ${exception.message} "
-        def msg = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( exception.class.simpleName, "Exception" ) )
-        def module = GrailsNameUtils.getNaturalName( GrailsNameUtils.getLogicalName( provider.class.simpleName, "AuthenticationProvider" ) )
-        getApplicationContext().publishEvent( new BannerAuthenticationEvent( authentication.name, false, msg, module, new Date(), 1 ) )
+
+        def tmp
+        def sessionObj = RequestContextHolder.currentRequestAttributes().request.session
+        sessionObj.setAttribute("auth_name", authentication.name)
+        if(sessionObj.getAttribute("msg")) {
+            tmp = sessionObj.getAttribute("msg") + ", " + GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception"))
+            sessionObj.setAttribute("msg", tmp)
+        }
+        else
+            sessionObj.setAttribute("msg", GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception")))
+
+        if(sessionObj.getAttribute("module")) {
+            tmp = sessionObj.getAttribute("module") + ", " + GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider"))
+            sessionObj.setAttribute("module", tmp)
+        }
+        else
+            sessionObj.setAttribute("module", GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider")))
+
         throw exception
     }
 
@@ -379,8 +387,6 @@ class AuthenticationProviderUtility {
         if (!defaultWebSessionTimeout) {
             def configuredTimeout = Holders.config.defaultWebSessionTimeout
             defaultWebSessionTimeout = configuredTimeout instanceof Map ? RequestContextHolder.currentRequestAttributes().session.getMaxInactiveInterval() : configuredTimeout
-
-
         }
         defaultWebSessionTimeout
     }
@@ -418,5 +424,9 @@ class AuthenticationProviderUtility {
             conn?.close()
         }
     }
+    public static setUserDetails(pidm,name){
+        RequestContextHolder.currentRequestAttributes().session.setAttribute("usersName",name)
+        RequestContextHolder.currentRequestAttributes().session.setAttribute("usersPidm",pidm)
+   }
 
 }

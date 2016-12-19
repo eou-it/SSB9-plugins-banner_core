@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.controllers
 
@@ -93,4 +93,9 @@ class ControllerUtils {
     public static boolean isGuestAuthenticationEnabled() {
         Holders.config.guestAuthenticationEnabled instanceof Boolean ? Holders.config.guestAuthenticationEnabled : false
     }
+
+    public static def aboutServiceUrl() {
+        return Holders?.config.banner.about.serviceUrl
+    }
+
 }

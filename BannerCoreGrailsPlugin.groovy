@@ -33,6 +33,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher
+import net.hedtech.banner.security.BannerAuthenticationFailureHandler
 
 import javax.servlet.Filter
 import java.util.concurrent.Executors
@@ -42,7 +43,7 @@ import java.util.concurrent.Executors
  * */
 class BannerCoreGrailsPlugin {
 
-    String version = "9.18.1"
+    String version = "9.20"
     private static final Logger staticLogger = Logger.getLogger(BannerCoreGrailsPlugin.class)
 
     // the version or versions of Grails the plugin is designed for
@@ -136,6 +137,10 @@ class BannerCoreGrailsPlugin {
             bean.initMethod = 'init'
         }
 
+        bannerAuthenticationFailureHandler(BannerAuthenticationFailureHandler){ bean ->
+            defaultFailureUrl = SpringSecurityUtils.securityConfig.failureHandler.defaultFailureUrl
+        }
+
         roleVoter(BannerAccessDecisionVoter)
 
         httpSessionService(HttpSessionService) {
@@ -168,7 +173,7 @@ class BannerCoreGrailsPlugin {
         }
 
 
-        bannerMepCodeFilter(BannerMepCodeFilter) 
+        bannerMepCodeFilter(BannerMepCodeFilter)
 
         basicAuthenticationEntryPoint(BasicAuthenticationEntryPoint) {
             realmName = 'Banner REST API Realm'
@@ -399,8 +404,3 @@ class BannerCoreGrailsPlugin {
     private createBeanList(names, ctx) { names.collect { name -> ctx.getBean(name) } }
 
 }
-
-
-
-
-

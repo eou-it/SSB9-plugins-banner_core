@@ -62,7 +62,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             AuthenticationProviderUtility.verifyAuthenticationResults this, authentication, authenticationResults
 
             authenticationResults['authorities']        = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, db )
-            if(AuthenticationProviderUtility.isSsbRoleBasedTimeoutEnabled()){
+            if(AuthenticationProviderUtility.isSsbEnabled()){
                 authenticationResults['webTimeout']         = AuthenticationProviderUtility.getWebTimeOut(authenticationResults,dataSource)
             }
             else{
@@ -153,6 +153,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             case -20901:
                 log.debug "SelfServiceAuthenticationProvider failed on expired pin"
                 authenticationResults.expired = true
+                AuthenticationProviderUtility.setUserDetails(authenticationResults.pidm,authenticationResults.name)
                 break
             case -20903:
                 log.debug "SelfServiceAuthenticationProvider failed on ldap authentication"
