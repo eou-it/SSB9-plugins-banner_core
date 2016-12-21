@@ -102,7 +102,7 @@ class AuthenticationProviderUtility {
                     authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: oracleUserName ].withDefault { k -> false }
                 } else {
                     log.fatal "System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user"
-                    throw new BadCredentialsException("System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user")
+                    //throw new BadCredentialsException("System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user")
 
                 }
             }
@@ -271,10 +271,10 @@ class AuthenticationProviderUtility {
 
         def report = AuthenticationProviderUtility.&handleFailure.curry( provider, authentication, authenticationResults )
 
-        if (authenticationResults.disabled) report( new DisabledException('') )
-        if (authenticationResults.expired)  report( new CredentialsExpiredException('') )
-        if (authenticationResults.locked)   report( new LockedException('') )
-        if (!authenticationResults.valid)   report( new BadCredentialsException('') )
+        if (authenticationResults?.disabled) report( new DisabledException('') )
+        if (authenticationResults?.expired)  report( new CredentialsExpiredException('') )
+        if (authenticationResults?.locked)   report( new LockedException('') )
+        if (!authenticationResults?.valid)   report( new BadCredentialsException('') )
     }
 
     private static handleFailure( provider, authentication, authenticationResults, exception ) {
