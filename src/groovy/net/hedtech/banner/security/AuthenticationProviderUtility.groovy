@@ -283,20 +283,23 @@ class AuthenticationProviderUtility {
 
         def tmp
         def sessionObj = RequestContextHolder.currentRequestAttributes().request.session
-        sessionObj.setAttribute("auth_name", authentication.name)
+        def msg = GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception"))
+        def module = GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider"))
+        if(module=="Banner"||module=="Self Service Banner")
+            sessionObj.setAttribute("auth_name", authentication.name)
         if(sessionObj.getAttribute("msg")) {
-            tmp = sessionObj.getAttribute("msg") + ", " + GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception"))
+            tmp = sessionObj.getAttribute("msg") + ", " + msg
             sessionObj.setAttribute("msg", tmp)
         }
         else
-            sessionObj.setAttribute("msg", GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception")))
+            sessionObj.setAttribute("msg", msg)
 
         if(sessionObj.getAttribute("module")) {
-            tmp = sessionObj.getAttribute("module") + ", " + GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider"))
+            tmp = sessionObj.getAttribute("module") + ", " + module
             sessionObj.setAttribute("module", tmp)
         }
         else
-            sessionObj.setAttribute("module", GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider")))
+            sessionObj.setAttribute("module", module)
 
         throw exception
     }
@@ -428,6 +431,6 @@ class AuthenticationProviderUtility {
     public static setUserDetails(pidm,name){
         RequestContextHolder.currentRequestAttributes().session.setAttribute("usersName",name)
         RequestContextHolder.currentRequestAttributes().session.setAttribute("usersPidm",pidm)
-   }
+    }
 
 }
