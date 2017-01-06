@@ -11,7 +11,7 @@ import net.hedtech.banner.service.ServiceBase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-
+import org.springframework.web.context.request.RequestContextHolder
 
 import java.sql.Connection
 
@@ -363,6 +363,14 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
                 assertEquals 'testSettingDbmsApplicationInfo()', action
             }
         }
+    }
+
+    @Test
+    public void testGet () {
+        def foo = new Foo( newTestFooParams() )
+        save foo
+        def savedFoo = fooService.get(foo.id)
+        assertEquals ("TT", savedFoo.code)
     }
 
 

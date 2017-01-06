@@ -14,8 +14,10 @@ import net.hedtech.banner.security.BannerGrantedAuthority
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.security.BannerUser
 import net.hedtech.banner.security.FormContext
+import net.sourceforge.cobertura.CoverageIgnore
 import oracle.jdbc.OracleConnection
 import org.apache.log4j.Logger
+import org.junit.Ignore
 import org.springframework.context.ApplicationContext
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -51,13 +53,9 @@ public class BannerDS implements DataSource {
 
     MultiEntityProcessingService multiEntityProcessingService
 
-    private final Logger log = Logger.getLogger(getClass())
+    private final static Logger log = Logger.getLogger(getClass())
 
-    private isAnonymousUser (def user) {
-        user?.authorities?.size() && user?.authorities[0]?.authority == 'ROLE_ANONYMOUS'
-    }
-
-    public callNlsUtility(sql,userLocale){
+    public static callNlsUtility(sql,userLocale){
         try {
             userLocale = userLocale.toString()?.replaceAll('_','-')
             sql.call("""{call g\$_nls_utility.p_set_nls(${userLocale})}""")
@@ -113,7 +111,7 @@ public class BannerDS implements DataSource {
                 setRoles(oconn, user, applicableAuthorities)
 
                 if (ApiUtils.isApiRequest() || DBUtility.isSSBProxySupportEnabled()){ // APIs handle MEP like SSB
-                    setMepSsb(conn) 
+                    setMepSsb(conn)
                 }
                 else {
                     setMep(conn, user)
@@ -140,6 +138,7 @@ public class BannerDS implements DataSource {
         else {
             conn = underlyingDataSource.getConnection()
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
+            bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
         }
 
@@ -161,21 +160,6 @@ public class BannerDS implements DataSource {
             db.call("{call gokfgac.p_object_excluded (?) }", [form])
         }
         // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
-    }
-
-
-    // Note: This method is used for Integration Tests.
-    public Connection proxyAndSetRolesFor(BannerConnection bconn, userName, password) {
-
-        def user
-        if (SecurityContextHolder?.context?.authentication) {
-            user = SecurityContextHolder.context.authentication.principal
-            if (user?.username && user?.password) {
-                List applicableAuthorities = extractApplicableAuthorities(user?.authorities)
-                proxyConnection(bconn, userName)
-                setRoles(bconn.extractOracleConnection(), user, applicableAuthorities)
-            }
-        }
     }
 
 
@@ -228,6 +212,9 @@ public class BannerDS implements DataSource {
         bannerConnection
     }
 
+    public def userRoles(user, applicableAuthorities) {
+       return getUserRoles(user, applicableAuthorities)
+    }
 
     private getUserRoles(user, applicableAuthorities) {
         Map unlockedRoles = [:]
@@ -435,12 +422,12 @@ public class BannerDS implements DataSource {
         log.trace 'getLoginTimeout'
         getUnderlyingDataSource().getLoginTimeout()
     }
-	
+
 	/*
-     * Added for java7 support 
+     * Added for java7 support
      * don't use 	@Override annotation so as to  have backward compatibility (JDK 6)
 	 * This method returns java.util.logging.Logger used by Data Source,
-	 * Since this class uses different logger i.e. org.apache.log4j.Logger method will rethrow back 
+	 * Since this class uses different logger i.e. org.apache.log4j.Logger method will rethrow back
 	 * SQLFeatureNotSupportedException
 	 * @return java.util.logging.Logger
      **/
@@ -478,21 +465,6 @@ public class BannerDS implements DataSource {
     private List<GrantedAuthority> extractApplicableAuthorities(BannerUser user) {
         return BannerGrantedAuthorityService.filterAuthorities(user)
     }
-
-    private setRoleSSB(Connection conn) {
-        def rolePassword
-        def roleName = "BAN_DEFAULT_M"
-        Sql sql = new Sql(conn)
-        try {
-            sql.call("{$Sql.VARCHAR = call g\$_security.G\$_GET_ROLE_PASSWORD_FNC('BAN_DEFAULT_M','SELFSERVICE')}") {pwd -> rolePassword = pwd }
-            String stmt = "set role \"$roleName\" identified by \"$rolePassword\"" as String
-            sql.execute(stmt)
-        }
-        catch (e) {
-            log.error("Error retreieiving role password for ssb connection $e")
-        }
-    }
-
 
     private setRoles(OracleConnection oconn, user, applicableAuthorities) {
         log.debug "BannerDS will set applicable role(s): ${applicableAuthorities*.authority}"
@@ -566,8 +538,10 @@ public class BannerDS implements DataSource {
 
         def user = SecurityContextHolder?.context?.authentication?.principal
         if (user) {
-            if (DBUtility.isAdminOrOracleProxyRequired(user)) return underlyingDataSource
-            else return underlyingSsbDataSource
+            if (DBUtility.isAdminOrOracleProxyRequired(user))
+                return underlyingDataSource
+            else
+                return underlyingSsbDataSource
         }
         else {
             underlyingDataSource // we'll return the INB datasource if no user is authenticated

@@ -64,6 +64,8 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
 
         def processContextChanged = multiEntityProcessingService.getProcessContext()
         assertEquals aaaCollege, processContextChanged
+
+        multiEntityProcessingService.resetUserProcessContext(cccCollege)
     }
 
     @Test
@@ -98,12 +100,25 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
     void testMep() {
         def mep = multiEntityProcessingService.hasMep("collegeAndDepartmentText")
         assertTrue "Mep is not set up correctly",  mep
+
+        assertFalse (multiEntityProcessingService.hasMep(null))
     }
 
 
     @Test
     void testGetMepDescription() {
         def desc = multiEntityProcessingService.getMepDescription(cccCollege)
+        assertEquals "ccc college",  desc
+
+        def con = sessionFactory.getCurrentSession().connection()
+        desc = multiEntityProcessingService.getMepDescription(cccCollege, con)
+        assertEquals "ccc college",  desc
+        if (con) con.close()
+    }
+
+    @Test
+    void testGetMepDescriptionSsbUser() {
+        def desc = multiEntityProcessingService.getMepDescriptionSsbUser(cccCollege)
         assertEquals "ccc college",  desc
     }
 
@@ -125,6 +140,12 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         assertTrue "MEP is not setup", multiEntityProcessingService.isMEP()
         //remove the mepEnabled indicator from the session
         RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
+
+        try {
+            multiEntityProcessingService.isMEP(sessionFactory.getCurrentSession().connection())
+        } catch (Exception e) {
+            fail()
+        }
     }
 
 
@@ -202,15 +223,49 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         def homeContext
         homeContext = multiEntityProcessingService.getHomeContext()
         assertEquals aaaCollege, homeContext
+
+        multiEntityProcessingService.setHomeContext(null)
+        homeContext = multiEntityProcessingService.getHomeContext()
+        assertNull(homeContext)
+
+        def con = sessionFactory.getCurrentSession().connection()
+        multiEntityProcessingService.setHomeContext(aaaCollege, con)
+        homeContext = multiEntityProcessingService.getHomeContext(con)
+        assertEquals aaaCollege, homeContext
+        if (con) con.close()
+    }
+
+    @Test
+    public void testSetHomeContextSsbUser () {
+        multiEntityProcessingService.setHomeContextSsbUser(aaaCollege)
+
+        def homeContext
+        homeContext = multiEntityProcessingService.getHomeContext()
+        assertEquals aaaCollege, homeContext
     }
 
     @Test
     void testSetProcessContext() {
-        multiEntityProcessingService.setProcessContext(bbbCollege)
+        multiEntityProcessingService.setProcessContext(aaaCollege)
 
         def processContext
         processContext = multiEntityProcessingService.getProcessContext()
-        assertEquals bbbCollege, processContext
+        assertEquals aaaCollege, processContext
+
+        def con = sessionFactory.getCurrentSession().connection()
+        multiEntityProcessingService.setProcessContext(aaaCollege, con)
+        processContext = multiEntityProcessingService.getProcessContext()
+        assertEquals aaaCollege, processContext
+        if (con) con.close()
+
+    }
+
+    @Test
+    public void testProcessContextSsbUser () {
+        multiEntityProcessingService.setProcessContextSsbUser(aaaCollege)
+        def processContext
+        processContext = multiEntityProcessingService.getProcessContext()
+        assertEquals aaaCollege, processContext
     }
 
 
@@ -224,6 +279,12 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
 
         def processContext = multiEntityProcessingService.getProcessContext()
         assertEquals bbbCollege, processContext
+
+        def con = sessionFactory.getCurrentSession().connection()
+        multiEntityProcessingService.setMepOnAccess("GRAILS_USER", con)
+        homeContext = multiEntityProcessingService.getHomeContext()
+        assertEquals bbbCollege, homeContext
+        if (con) con.close()
     }
 
     private setMepLogon(String mepCode) {
