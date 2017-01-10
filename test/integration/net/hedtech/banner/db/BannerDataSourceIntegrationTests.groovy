@@ -4,9 +4,9 @@
 
 package net.hedtech.banner.db
 
+import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.db.BannerDS as BannerDataSource
-import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import oracle.jdbc.OracleConnection
 import org.apache.commons.dbcp.BasicDataSource
@@ -14,15 +14,12 @@ import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import grails.util.Holders
 import org.springframework.context.ApplicationContext
-import org.springframework.dao.DataAccessException
-import org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 
 import java.sql.Connection
-import java.sql.SQLException
 
 /**
  * Integration tests exercising the BannerDS (formerly named BannerDataSource) data source implementation.
@@ -44,6 +41,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     def apiOracleUsersProxiedInFile
     def apiUrlPrefixesInFile
     def ssbEnabledInFile
+    BannerDS bannerDS
 
     // NOTE: Please also see 'FooServiceIntegrationTests', as that test also includes framework tests pertaining to connections.
 
@@ -51,6 +49,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     public void setUp(){
         formContext = ['GUAGMNU']
         config = Holders.getConfig()
+        bannerDS = (dataSource as BannerDS)
     }
 
     @After
@@ -72,8 +71,8 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     public void setupAPIData(){
-        username = SSB_VALID_USERNAME
-        password = SSB_VALID_PASSWORD
+        username = ""
+        password = ""
         config.apiUrlPrefixes=["api","qapi"]
         GrailsMockHttpServletRequest request = new GrailsMockHttpServletRequest()
         request.setForwardURI("api")
@@ -141,7 +140,6 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     public void tearDownDataSetup(){
-        dataSource.underlyingSsbDataSource = null
         logout()
         super.tearDown()
     }
@@ -271,13 +269,145 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
     }
 
-    /*@Test
-    public void testAPITypeRequestWithProxy(){
-        setupAPIWithProxy()
-        def conn = (dataSource as BannerDS).getConnection()
-        assertTrue "Expected BannerConnection but have ${conn?.class}", conn instanceof BannerConnection
+    @Test
+    public void testSetDBMSApplicationInfo() {
+        def conn = bannerDS.getConnection()
+        assertNotNull(conn)
+    }
 
+    @Test
+    public void testUnderlyingDataSourceAdminUser() {
+        setUpValidAdminUserId()
+        login(username, password)
+        def underlyingDS = bannerDS.getUnderlyingDataSource()
+        assertNotNull(underlyingDS)
+        logout()
+    }
+
+    @Test
+    public void testUnderlyingDataSourceSSBUser() {
+        setUpValidSSBTypeUser()
+        loginSSB(username, password)
+        def underlyingDS = bannerDS.getUnderlyingDataSource()
+        assertNotNull(underlyingDS)
+        logout()
+    }
+
+    @Test
+    public void testGetUserRoles () {
+        setUpValidAdminUserId()
+        login(username, password)
+        def user = SecurityContextHolder?.context?.authentication?.principal
+        Map unlockedRoles = bannerDS.userRoles(user, user?.authorities)
+        assert (!unlockedRoles.isEmpty())
+
+        assertTrue(unlockedRoles.find {key, value -> key.equals('BAN_DEFAULT_M')}.value)
+        logout()
+    }
+
+    @Test
+    public void testCallNLSUtilityFail() {
+        try {
+            bannerDS.callNlsUtility(null, 'es')
+        } catch (Exception e) {
+            fail(e.getMessage())
+        }
+    }
+
+    @Test
+    public void testGetConnection() {
+        setUpValidAdminUserId()
+        login(username, password)
+        def connection = bannerDS.getConnection()
+        assertNotNull(connection)
+        dataSource.removeConnection(connection)
+        if (connection) connection.close()
         tearDownDataSetup()
-    }*/
+        resetConfigAsInTheFile()
+        logout()
+    }
+
+    @Test
+    public void testGetConnectionWithSelfServiceRequest() {
+        def connection
+        try {
+            setUpValidSSBTypeUser()
+            loginSSB(username, password)
+            connection = bannerDS.getConnection()
+            assertNotNull(connection)
+        } finally {
+            dataSource.removeConnection(connection)
+            if (connection) connection.close()
+            tearDownDataSetup()
+            resetConfigAsInTheFile()
+            logout()
+        }
+    }
+
+    @Test
+    public void testGetCachedConnection () {
+        backupConfigFileConfigurations();
+        setupAPIWithNoProxy()
+        def conn = bannerDS.getConnection()
+        assertNotNull(conn)
+        dataSource.removeConnection(conn)
+        if (conn) conn.close()
+        tearDownDataSetup()
+        resetConfigAsInTheFile()
+    }
+
+    @Test
+    public void testSetIdentifier () {
+        if (log.isTraceEnabled()) {
+            def conn = bannerDS.getConnection()
+            def identifier = "Banner_Core_Integration_Tests"
+            bannerDS.setIdentifier(conn, identifier)
+
+            def sql = new Sql( conn )
+            def row = sql.firstRow( "select sys_context( 'USERENV', 'CLIENT_IDENTIFIER' ) FROM DUAL" )
+            assertEquals "Banner_Core_Integration_Tests", row."SYS_CONTEXT('USERENV','CLIENT_IDENTIFIER')"
+
+            bannerDS.clearIdentifer(conn)
+            dataSource.removeConnection(conn)
+            if (conn) conn.close()
+            tearDownDataSetup()
+            resetConfigAsInTheFile()
+        }
+    }
+
+    public void setUpValidSSBTypeUser(){
+        setUpFormContext()
+        def config = Holders.getConfig()
+        config.ssbEnabled = true
+        username = "HOSH00002"
+        password = "111111"
+        def bb = new grails.spring.BeanBuilder()
+        bb.beans {
+            underlyingSsbDataSource(BasicDataSource) {
+                maxActive = 5
+                maxIdle = 2
+                defaultAutoCommit = "false"
+                driverClassName = "${config.bannerSsbDataSource.driver}"
+                url = "${config.bannerSsbDataSource.url}"
+                password = "${config.bannerSsbDataSource.password}"
+                username = "${config.bannerSsbDataSource.username}"
+            }
+        }
+
+        ApplicationContext testSpringContext = bb.createApplicationContext()
+        dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
+    }
+
+    public void setUpFormContext(){
+        formContext = ['GUAGMNU']
+    }
+
+    public void setUpValidAdminUserId(){
+        setUpFormContext()
+        username = "grails_user"
+        password = "u_pick_it"
+    }
+
+
 
 }

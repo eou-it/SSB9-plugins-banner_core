@@ -21,7 +21,7 @@ class AreaLibraryIntegrationTests extends BaseIntegrationTestCase {
 		formContext = ['GUAGMNU'] // Since we are not testing a controller, we need to explicitly set this
 		super.setUp()
 	}
-	
+
 	@After
     public void tearDown() {
         super.tearDown()
@@ -34,6 +34,7 @@ class AreaLibraryIntegrationTests extends BaseIntegrationTestCase {
     void testExceptionCapture() {
         def entity = newAreaLibrary()
         assertTrue "Entity did not validate", entity.validate()
+        assertNotNull(entity.toString())
         try {
             entity.save(flush: true)
             fail "AreaLibrary should not have been successfully saved, due to and expected 'invalid hex number' error"

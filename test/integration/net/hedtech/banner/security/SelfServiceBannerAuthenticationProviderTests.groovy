@@ -1,6 +1,6 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.security
 
 import grails.spring.BeanBuilder
@@ -14,10 +14,13 @@ import org.junit.Test
 import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
+import org.springframework.web.context.request.RequestContextHolder
+
 
 /**
- * Integration test for the self service Banner authentication provider.  
+ * Integration test for the self service Banner authentication provider.
  **/
 class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCase{
 
@@ -29,18 +32,15 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     def testUser
     def usage
     public final String LFMI= "LFMI"
+    def dataSource
 
     @Before
     public void setUp() {
         Holders.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
-
-        ApplicationContext testSpringContext = createUnderlyingSsbDataSourceBean()
-        dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
-
-        provider = Holders.applicationContext.getBean("selfServiceBannerAuthenticationProvider")
         conn = dataSource.getSsbConnection()
         sqlObj = new Sql( conn )
+        provider = Holders.applicationContext.getBean("selfServiceBannerAuthenticationProvider")
         testUser = existingUser(PERSON_HOSWEB002, 123456)
         enableUser (sqlObj, testUser.pidm)
     }
@@ -49,19 +49,13 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     public void tearDown() {
         testUser = existingUser(PERSON_HOSWEB002, 111111)
         sqlObj.close()
-        dataSource.underlyingSsbDataSource =  null;
+        conn.close()
         Holders.config.ssbEnabled = false
         Holders?.config.ssbOracleUsersProxied = false
     }
 
     @Test
-    void testRetrievalOfRoleBasedTimeouts() {
-        def timeouts = provider.retrieveRoleBasedTimeOuts( sqlObj )
-        assertTrue timeouts.size() > 0
-    }
-
-    @Test
-    void testGetPidm() {  
+    void testGetPidm() {
         def pidm = provider.getPidm( new TestAuthenticationRequest( testUser ), sqlObj )
         assertEquals testUser.pidm, pidm
     }
@@ -70,6 +64,9 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     void testSsbAuthentication() {
 
         Holders.config.guestAuthenticationEnabled= true
+
+        def session = RequestContextHolder.currentRequestAttributes().getSession()
+        session.setMaxInactiveInterval(1800)
 
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
@@ -133,7 +130,7 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M" }
         assertEquals  2, auth.authorities.size()
     }
-    
+
     @Test
     void testExpiredPin() {
         expireUser(testUser.pidm)
@@ -147,7 +144,7 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
 
     @Test
     void testInvalidAccount() {
-           
+
         def invalidUser = testUser.clone()
         invalidUser['pin'] = invalidUser.pin + '1'
 
@@ -155,8 +152,8 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
 
         resetInvalidLoginAttemptCount()
     }
-        
-    
+
+
     @Test // TODO: Renable after a single PL/SQL 'authenticate' API is provided. The twbkslib.f_fetchpidm function does not return a PIDM if the ssn is used.
     void testAuthenticateWithSocialSecurity() {
         sqlObj.executeUpdate "update twgbparm set twgbparm_param_value = 'Y' where twgbparm_param_name = 'ALLOWSSNLOGIN'"
@@ -180,6 +177,21 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
             provider.authenticate( new TestAuthenticationRequest( user ) )
         }
         enableUser (sqlObj, testUser.pidm)
+    }
+
+    @Test
+    public void testSupports () {
+        assertTrue(provider.supports(UsernamePasswordAuthenticationToken.class))
+        Holders.config.ssbEnabled = true
+        assertTrue(provider.supports(UsernamePasswordAuthenticationToken.class))
+    }
+
+    @Test
+    public void testIsSsbEnabled () {
+        Holders.config.ssbEnabled = true
+        assertTrue(provider.isSsbEnabled())
+        Holders.config.ssbEnabled = false
+        assertFalse(provider.isSsbEnabled())
     }
 
     //----------------------------- Helper Methods ------------------------------
@@ -229,17 +241,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         return testSpringContext
     }
 
-    private getDB() {
-        def configFile = new File("${System.properties['user.home']}/.grails/banner_configuration.groovy")
-        def slurper = new ConfigSlurper(grails.util.GrailsUtil.environment)
-        def config = slurper.parse(configFile.toURI().toURL())
-        def url = config.get("bannerDataSource").url
-        def db = Sql.newInstance(url,   //  db =  new Sql( connectInfo.url,
-                "baninst1",
-                "u_pick_it",
-                'oracle.jdbc.driver.OracleDriver')
-        db
-    }
 
     private void enableUser(Sql db, pidm) {
         db.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
@@ -247,29 +248,24 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     }
 
     private void insertDisplayNameRule(usage){
-        def db = getDB();
 
         if(usage!=null){
-            db.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
+            sqlObj.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
                     "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,'"+usage+"','Y',2000," +
                     "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
                     "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
         }else{
-            db.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
+            sqlObj.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
                     "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,null,'Y',2000," +
                     "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
                     "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
         }
-        db.commit();
-        db.close();
+        sqlObj.commit();
     }
 
     private void deleteDisplayNameRule(){
-        def db = getDB();
-
-        db.executeUpdate("DELETE GURNHIR WHERE GURNHIR_PRODUCT='testApp'");
-        db.commit();
-        db.close();
+        sqlObj.executeUpdate("DELETE GURNHIR WHERE GURNHIR_PRODUCT='testApp'");
+        sqlObj.commit();
     }
 
 
