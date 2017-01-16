@@ -326,19 +326,6 @@ class BannerCoreGrailsPlugin {
     }
 
     def doWithWebDescriptor = { xml ->
-
-        String authenticationProvider = CH?.config?.banner.sso.authenticationProvider?.toLowerCase()
-        switch (authenticationProvider) {
-            case 'cas':
-                SpringSecurityUtils.securityConfig.cas.active=true
-                SpringSecurityUtils.securityConfig.saml.active=false
-                break
-            case 'saml':
-                SpringSecurityUtils.securityConfig.saml.active=true
-                SpringSecurityUtils.securityConfig.cas.active=false
-                break
-        }
-
         def listenerElements = xml.'listener'[0]
         listenerElements + {
             'listener' {
