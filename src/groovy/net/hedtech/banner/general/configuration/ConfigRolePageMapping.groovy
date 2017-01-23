@@ -12,7 +12,7 @@ import javax.persistence.*
 @Entity
 @Table(name = 'GURAPPR', schema = 'GENERAL')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigRolePageMapping.findAll', query = '''SELECT g FROM ConfigRolePageMapping g''')
+        @NamedQuery(name = 'ConfigRolePageMapping.findAll', query = '''SELECT crpm FROM ConfigRolePageMapping crpm''')
 ])
 public class ConfigRolePageMapping implements Serializable {
     private static final long serialVersionUID = 1L
@@ -45,7 +45,7 @@ public class ConfigRolePageMapping implements Serializable {
     Long pageId
 
     @Column(name = 'TWTVROLE_CODE', nullable = false, length = 30)
-    String code
+    String roleCode
 
     public ConfigRolePageMapping() {
     }
@@ -58,7 +58,7 @@ public class ConfigRolePageMapping implements Serializable {
 
         if (activityDate != gurappr.activityDate) return false
         if (gubapplAppId != gurappr.gubapplAppId) return false
-        if (code != gurappr.code) return false
+        if (roleCode != gurappr.roleCode) return false
         if (dataOrigin != gurappr.dataOrigin) return false
         if (id != gurappr.id) return false
         if (pageId != gurappr.pageId) return false
@@ -79,7 +79,7 @@ public class ConfigRolePageMapping implements Serializable {
         result = 31 * result + (version != null ? version.hashCode() : 0)
         result = 31 * result + (vpdiCode != null ? vpdiCode.hashCode() : 0)
         result = 31 * result + (pageId != null ? pageId.hashCode() : 0)
-        result = 31 * result + (code != null ? code.hashCode() : 0)
+        result = 31 * result + (roleCode != null ? roleCode.hashCode() : 0)
         return result
     }
 
@@ -96,7 +96,7 @@ public class ConfigRolePageMapping implements Serializable {
                 version=$version,
                 vpdiCode='$vpdiCode',
                 pageId=$pageId,
-                code='$code'
+                code='$roleCode'
             }"""
     }
 
@@ -106,7 +106,7 @@ public class ConfigRolePageMapping implements Serializable {
      */
     public static def findAll() {
         def configRolePageMapping
-        ConfigRolePageMapping.withSession { session ->
+        configRolePageMapping = ConfigRolePageMapping.withSession { session ->
             configRolePageMapping = session.getNamedQuery('ConfigRolePageMapping.findAll').list()
         }
         return configRolePageMapping

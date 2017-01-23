@@ -11,7 +11,10 @@ import javax.persistence.*
  */
 @Entity
 @Table(name = 'GURUCFG', schema = 'GENERAL')
-@NamedQuery(name = 'ConfigUserPreference.findAll', query = '''SELECT g FROM ConfigUserPreference g''')
+@NamedQueries(value = [
+    @NamedQuery(name = 'ConfigUserPreference.findAll',
+                query = '''FROM ConfigUserPreference configUsrPref''')
+])
 public class ConfigUserPreference implements Serializable {
     private static final long serialVersionUID = 1L
 
@@ -109,5 +112,17 @@ public class ConfigUserPreference implements Serializable {
                 version=$version,
                 vpdiCode='$vpdiCode'
             }"""
+    }
+
+    /**
+     * Named query to fetch all data from this domain without any criteria.
+     * @return List
+     */
+    public static def findAll() {
+        def configUserPreference
+        configUserPreference = ConfigUserPreference.withSession { session ->
+            configUserPreference = session.getNamedQuery('ConfigUserPreference.findAll').list()
+        }
+        return configUserPreference
     }
 }

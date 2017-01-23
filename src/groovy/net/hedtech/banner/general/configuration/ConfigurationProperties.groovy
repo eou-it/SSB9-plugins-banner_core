@@ -12,7 +12,13 @@ import javax.persistence.*
 @Entity
 @Table(name = 'GUROCFG', schema = 'GENERAL')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigurationProperties.findAll', query = '''SELECT g FROM ConfigurationProperties g''')
+        @NamedQuery(name = 'ConfigurationProperties.findAll',
+                query = '''FROM ConfigurationProperties cp'''),
+        @NamedQuery(name = 'ConfigurationProperties.findByAppName',
+                query = '''FROM ConfigurationProperties cp
+                                WHERE cp.gubapplAppId = (SELECT capp.appId
+                                                            FROM ConfigApplication capp
+                                                            WHERE capp.appName = :appName)''')
 ])
 public class ConfigurationProperties implements Serializable {
     private static final long serialVersionUID = 1L
@@ -113,8 +119,20 @@ public class ConfigurationProperties implements Serializable {
      */
     public static def findAll() {
         def configurationProperties
-        ConfigurationProperties.withSession { session ->
+        configurationProperties = ConfigurationProperties.withSession { session ->
             configurationProperties = session.getNamedQuery('ConfigurationProperties.findAll').list()
+        }
+        return configurationProperties
+    }
+
+    /**
+     * Named query to fetch all data from this domain by app name.
+     * @return List
+     */
+    public static def findByAppName(def appName) {
+        def configurationProperties
+        configurationProperties = ConfigurationProperties.withSession { session ->
+            configurationProperties = session.getNamedQuery('ConfigurationProperties.findByAppName').list()
         }
         return configurationProperties
     }

@@ -12,7 +12,16 @@ import javax.persistence.*
 @Entity
 @Table(name = 'GURCTLEPP', schema = 'GENERAL')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigControllerEndpointPage.findAll', query = '''SELECT g FROM ConfigControllerEndpointPage g''')
+        @NamedQuery(name = 'ConfigControllerEndpointPage.findAll',
+                    query = '''SELECT ccep FROM ConfigControllerEndpointPage ccep'''),
+        @NamedQuery(name = 'ConfigControllerEndpointPage.getAllConfigByAppName',
+                    query = '''SELECT new net.hedtech.banner.general.configuration.RequestURLMap(ccep.pageName, crpm.roleCode, capp.appName,
+                                    ccep.displaySequence, ccep.pageId, ccep.gubapplAppId, ccep.version)
+                                FROM ConfigControllerEndpointPage ccep, ConfigRolePageMapping crpm,
+                                   ConfigApplication capp
+                                WHERE (ccep.gubapplAppId = crpm.gubapplAppId AND ccep.pageId = crpm.pageId)
+                                AND (ccep.gubapplAppId = capp.appId)
+                                AND capp.appName = :appName''')
 ])
 public class ConfigControllerEndpointPage implements Serializable {
     private static final long serialVersionUID = 1L
@@ -125,6 +134,19 @@ public class ConfigControllerEndpointPage implements Serializable {
         def configRolePageMapping
         ConfigControllerEndpointPage.withSession { session ->
             configRolePageMapping = session.getNamedQuery('ConfigControllerEndpointPage.findAll').list()
+        }
+        return configRolePageMapping
+    }
+
+    /**
+     * Named query to fetch all data from this domain by appName.
+     * @param appName String
+     * @return list of RequestURLMap.
+     */
+    public static def getAllConfigByAppName(def appName) {
+        def configRolePageMapping
+        configRolePageMapping = ConfigControllerEndpointPage.withSession { session ->
+            configRolePageMapping = session.getNamedQuery('ConfigControllerEndpointPage.getAllConfigByAppName').setString('appName', appName).list()
         }
         return configRolePageMapping
     }

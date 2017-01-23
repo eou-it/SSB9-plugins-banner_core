@@ -12,8 +12,7 @@ import javax.persistence.*
 @Entity
 @Table(name = 'GUBAIR', schema = 'GENERAL')
 @NamedQueries(value = [
-        @NamedQuery(name = 'ConfigInstance.findAll', query = '''SELECT g FROM ConfigInstance g''')
-])
+        @NamedQuery(name = 'ConfigInstance.findAll', query = '''FROM ConfigInstance configInstance''')])
 public class ConfigInstance implements Serializable {
     private static final long serialVersionUID = 1L
 
@@ -106,7 +105,7 @@ public class ConfigInstance implements Serializable {
      */
     public static def findAll() {
         def configInstance
-        ConfigInstance.withSession { session ->
+        configInstance = ConfigInstance.withSession { session ->
             configInstance = session.getNamedQuery('ConfigInstance.findAll').list()
         }
         return configInstance
