@@ -80,15 +80,15 @@ class ConfigControllerEndpointPageIntegrationTest extends BaseIntegrationTestCas
     }
 
     /**
-     * The intention behind this method is to have this test method
-     * is : In POC 2 implementation it was native SQL query and we have used
+     * The intention behind to have this test method is :
+     * In POC 2 implementation it was native SQL query and we have used
      * LISTAGG to get comma seperated string from the DB for multiple roles and other values
      * for same URL, so here we have managed it in a server side, this method implementation
      * will represent the same.
      *
      * And this will use getHibernateSession() to get the hibernate session in the way
      * where the POC 2 is doing, because when spring invoking RequestmapFilterInvocationDefinition
-     * we have to load this hibernate manually.
+     * we have to load the hibernate manually.
      */
     @Test
     public void testGetAllConfigByAppNameWithHibernateSession() {
