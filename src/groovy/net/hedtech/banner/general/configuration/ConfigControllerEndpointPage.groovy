@@ -14,7 +14,7 @@ import javax.persistence.*
 @NamedQueries(value = [
         @NamedQuery(name = 'ConfigControllerEndpointPage.findAll',
                     query = '''SELECT ccep FROM ConfigControllerEndpointPage ccep'''),
-        @NamedQuery(name = 'ConfigControllerEndpointPage.getAllConfigByAppName',
+        @NamedQuery(name = ConfigControllerEndpointPage.GET_ALL_CONFIG_BY_APP_NAME,
                     query = '''SELECT new net.hedtech.banner.general.configuration.RequestURLMap(ccep.pageName, crpm.roleCode, capp.appName,
                                     ccep.displaySequence, ccep.pageId, ccep.gubapplAppId, ccep.version)
                                 FROM ConfigControllerEndpointPage ccep, ConfigRolePageMapping crpm,
@@ -25,6 +25,8 @@ import javax.persistence.*
 ])
 public class ConfigControllerEndpointPage implements Serializable {
     private static final long serialVersionUID = 1L
+
+    public static final String GET_ALL_CONFIG_BY_APP_NAME = 'ConfigControllerEndpointPage.getAllConfigByAppName'
 
     @Id
     @Column(name = 'GURCTLEPP_SURROGATE_ID', precision = 19)
@@ -147,7 +149,7 @@ public class ConfigControllerEndpointPage implements Serializable {
     public static def getAllConfigByAppName(def appName) {
         def configRolePageMapping
         configRolePageMapping = ConfigControllerEndpointPage.withSession { session ->
-            configRolePageMapping = session.getNamedQuery('ConfigControllerEndpointPage.getAllConfigByAppName').setString('appName', appName).list()
+            configRolePageMapping = session.getNamedQuery(GET_ALL_CONFIG_BY_APP_NAME).setString('appName', appName).list()
         }
         return configRolePageMapping
     }
