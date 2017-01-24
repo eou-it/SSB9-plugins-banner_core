@@ -20,7 +20,7 @@ public class ConfigUserPreference implements Serializable {
 
     @Id
     @Column(name = 'GURUCFG_SURROGATE_ID', precision = 19)
-    BigDecimal id
+    Long id
 
     @Column(name = 'CONFIG_NAME', length = 50)
     String configName
@@ -40,17 +40,17 @@ public class ConfigUserPreference implements Serializable {
     String dataOrigin
 
     @Column(name = 'GURUCFG_GUBAPPL_APP_ID', nullable = false, precision = 19)
-    BigDecimal gubapplAppId
+    Long gubapplAppId
 
     @Column(name = 'GURUCFG_PIDM', precision = 19)
-    BigDecimal pidm
+    Long pidm
 
     @Column(name = 'GURUCFG_USER_ID', length = 30)
     String userId
 
     @Version
     @Column(name = 'GURUCFG_VERSION', precision = 19)
-    BigDecimal version
+    Long version
 
     @Column(name = 'GURUCFG_VPDI_CODE', length = 6)
     String vpdiCode
