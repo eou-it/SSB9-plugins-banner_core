@@ -52,10 +52,10 @@ public class ConfigControllerEndpointPage implements Serializable {
     @Column(name = 'GURCTLEPP_PAGE_NAME', length = 256)
     String pageName
 
-    @Version
     @Column(name = 'GURCTLEPP_USER_ID', length = 30)
     String userId
 
+    @Version
     @Column(name = 'GURCTLEPP_VERSION', precision = 19)
     Long version
 
