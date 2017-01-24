@@ -132,7 +132,8 @@ public class ConfigurationProperties implements Serializable {
     public static def findByAppName(def appName) {
         def configurationProperties
         configurationProperties = ConfigurationProperties.withSession { session ->
-            configurationProperties = session.getNamedQuery('ConfigurationProperties.findByAppName').list()
+            configurationProperties = session.getNamedQuery('ConfigurationProperties.findByAppName')
+                    .setString('appName', appName).list()
         }
         return configurationProperties
     }
