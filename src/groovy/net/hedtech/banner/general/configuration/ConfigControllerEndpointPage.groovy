@@ -26,6 +26,7 @@ import javax.persistence.*
 public class ConfigControllerEndpointPage implements Serializable {
     private static final long serialVersionUID = 1L
 
+    @Id
     @Column(name = 'GURCTLEPP_SURROGATE_ID', precision = 19)
     Long id
 
