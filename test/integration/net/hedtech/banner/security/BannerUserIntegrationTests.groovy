@@ -9,25 +9,26 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.springframework.security.core.Authentication
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.util.SerializationUtils
 
 class BannerUserIntegrationTests extends BaseIntegrationTestCase {
 
     def selfServiceBannerAuthenticationProvider
     def conn
-    def grailsApplication
     public static final String PERSON = 'HOSWEB002'
-    def testUser
     Sql sqlObj
+    def PERSON_PIDM
+    def PERSON_PASSWORD= 111111
 
     @Before
     public void setUp() {
         conn = dataSource.getSsbConnection()
         sqlObj = new Sql(conn)
-        selfServiceBannerAuthenticationProvider = Holders.applicationContext.getBean("selfServiceBannerAuthenticationProvider")
-        testUser = existingUser(PERSON, 123456)
-        enableUser (sqlObj, testUser.pidm)
+        PERSON_PIDM =  getPidmBySpridenId(PERSON)
+        existingUser(PERSON_PIDM,PERSON_PASSWORD)
+        enableUser (PERSON_PIDM)
+        formContext = ['GUAGMNU']
     }
 
     @After
@@ -38,42 +39,25 @@ class BannerUserIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testSerializationForBannerUser() {
-        BannerUser bannerUser= selfServiceBannerAuthenticationProvider.authenticate( new TestBannerUserAuthenticationRequest( testUser ) ).principal
+        BannerUser bannerUser= selfServiceBannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken(PERSON, PERSON_PASSWORD) ).principal
         SerializationUtils.serialize(bannerUser)
     }
 
-    private def existingUser (userId, newPin) {
-        def existingUser = [ name: userId]
-
-        def testAuthenticationRequest = new TestBannerUserAuthenticationRequest(existingUser)
-        existingUser['pidm'] = selfServiceBannerAuthenticationProvider.getPidm(testAuthenticationRequest, sqlObj )
+    private def existingUser (pidm, newPin) {
+        sqlObj.call ("{call gb_third_party_access.p_update(p_pidm=>${pidm}, p_pin=>${newPin})}")
         sqlObj.commit()
-        sqlObj.call ("{call gb_third_party_access.p_update(p_pidm=>${existingUser.pidm}, p_pin=>${newPin})}")
-        sqlObj.commit()
-        existingUser.pin = newPin
-        return existingUser
     }
-    private void enableUser(Sql db, pidm) {
-           db.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
-           db.commit()
+
+    private void enableUser(pidm) {
+        sqlObj.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
+        sqlObj.commit()
+    }
+
+    private def getPidmBySpridenId(def spridenId) {
+        def query = "SELECT SPRIDEN_PIDM pidm FROM SPRIDEN WHERE SPRIDEN_ID=$spridenId"
+        def pidmValue = sqlObj?.firstRow(query)?.pidm
+        pidmValue
     }
 
 }
-class TestBannerUserAuthenticationRequest implements Authentication {
 
-    def user
-
-    public TestBannerUserAuthenticationRequest( user ) {
-        this.user = user
-    }
-
-    public Collection getAuthorities() { [] }
-    public Object getCredentials() { user.pin }
-    public Object getDetails() { user }
-    public Object getPrincipal() { user }
-    public boolean isAuthenticated() { false }
-    public void setAuthenticated( boolean b ) { }
-    public String getName() { user.name }
-    public Object getPidm() { user.pidm }
-    public Object getOracleUserName() { user.oracleUserName }
-}
