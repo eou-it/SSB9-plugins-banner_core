@@ -29,6 +29,7 @@ class BannerUserIntegrationTests extends BaseIntegrationTestCase {
         existingUser(PERSON_PIDM,PERSON_PASSWORD)
         enableUser (PERSON_PIDM)
         formContext = ['GUAGMNU']
+        super.setUp()
     }
 
     @After
