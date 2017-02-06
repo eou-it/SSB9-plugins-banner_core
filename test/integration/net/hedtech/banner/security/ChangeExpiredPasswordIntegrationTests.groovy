@@ -26,7 +26,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
     def selfServiceBannerAuthenticationProvider
     def conn
     Authentication auth
-    public static final String PERSON = 'HOSWEB002'
+    public static final String PERSON = 'HOSFE0002'
     def PERSON_PIDM
     GroovyRowResult row
     int minLength
