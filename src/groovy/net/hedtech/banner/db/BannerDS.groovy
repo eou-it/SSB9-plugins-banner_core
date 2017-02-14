@@ -340,7 +340,6 @@ public class BannerDS implements DataSource {
      * @param action the 'action' to set, which will be NULL if not provided
      * */
     public void setDbmsApplicationInfo(conn, module = null, action = null) {
-        log.trace "BannerConnection.setDbmsApplicationInfo would call Oracle 'dbms_application_info.set_module' using module = '$mod' and action = '$action' for '$conn'"
         if (log.isTraceEnabled()) {
             String mod = module ?: (FormContext.get() ? FormContext.get()[0] : null) // FormContext returns a list, but we'll just use the first entry
             log.trace "BannerConnection.setDbmsApplicationInfo will call Oracle 'dbms_application_info.set_module' using module = '$mod' and action = '$action' for '$conn'"
