@@ -18,7 +18,7 @@ class BannerGrantedAuthorityService {
 
     static transactional = false
 
-    private final Logger log = Logger.getLogger(getClass())
+    private final Logger log = Logger.getLogger(BannerGrantedAuthorityService.class)
     private static final Logger staticLogger = Logger.getLogger(BannerGrantedAuthorityService.class)
     private static final String WEB_USER = "WEBUSER"
     private static final String ANONYMOUS_USER = "anonymousUser"

@@ -38,7 +38,7 @@ class BannerConnection {
     def oracleConnection // the native connection
     boolean isCached
 
-    private final Logger log = Logger.getLogger(getClass())
+    private final Logger log = Logger.getLogger(BannerConnection.class )
 
     BannerConnection(Connection conn, DataSource bannerDataSource) {
         assert conn

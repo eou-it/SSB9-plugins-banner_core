@@ -17,7 +17,7 @@ import java.util.logging.Level
 class PreferredNameService {
 
     static transactional = true
-    private final Logger log = Logger.getLogger(getClass())
+    private final Logger log = Logger.getLogger(PreferredNameService.class)
     def dataSource //injected by Spring
 
     def config = Holders.getConfig()

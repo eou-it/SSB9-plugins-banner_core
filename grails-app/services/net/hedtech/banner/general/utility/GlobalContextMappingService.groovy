@@ -13,7 +13,7 @@ import org.apache.log4j.Logger
 class GlobalContextMappingService {
 
     static transactional = true
-    private final Logger log = Logger.getLogger(getClass())
+    private final Logger log = Logger.getLogger(GlobalContextMappingService.class)
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
 
