@@ -1,179 +1,74 @@
-body {
-    margin: 0px;
-    padding: 0px;
-}
+/*******************************************************************************
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 
-.dialog {
-    background-color: #FDF5B3;
-    background-image: url(../images/icon-warning-32x32.png);
-    background-position: 20px 20px;
-    background-repeat: no-repeat;
-    border-color: #E4C71F;
-    border-style: solid;
-    border-width: 1px;
-    font-family: Arial;
-    font-size: 12px;
-    color: #333;
-    padding: 20px 20px 20px 62px;
-    width: 304px;
-    position: absolute;
-    margin: -75px 0 0 -152px;
-    top: 50%;
-    left: 50%;
-    line-height: 18px;
-}
-
-.dialog .title {
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.dialog a:visited {
-    color: #176A94
-}
-
-.header {
-    background: url("../images/header-bg.png") repeat-x scroll left bottom #999999;
-    height: 75px;
-}
-
-.header .institutionalBranding {
-    background: url("../images/ellucian-university-logo-sm.png") no-repeat scroll 0 0 transparent;
-    float: left;
-    height: 19px;
-    left: 10px;
-    position: relative;
-    top: 11px;
-    width: 179px;
-}
-
-.header .buttonBar {
-    left: 10px;
-    position: absolute;
-    right: 10px;
-    top: 42px;
-}
-
-.header .home {
-    background: url("../images/btn-header-sprite.png") no-repeat scroll 0 -29px transparent;
-    display: block;
-    height: 24px;
-    width: 26px;
-}
-
-.header .menuArrow {
-    background: url("../images/header-composite-button-sprites.png") no-repeat scroll right 0 transparent;
-    display: block;
-    height: 24px;
-    left: 30px;
-    position: absolute;
-    top: 0;
-    width: 26px;
-}
-
-.header .fauxBar {
-    background: url("../images/header-button-sprites.png") repeat-x scroll 0 -24px transparent;
-    display: block;
-    height: 24px;
-    left: 56px;
-    position: absolute;
-    top: 0;
-    right: 8px;
-}
-
-.header .fauxBarEndCap {
-    background: url("../images/header-button-sprites.png") no-repeat scroll right 0 transparent;
-    height: 24px;
-    margin-right: 0;
-    padding-left: 4px;
-    padding-right: 4px;
-    position: absolute;
-    right: 0;
-    top: 0;
-}
-
-.footer {
-    background: url("../images/footer-background.png") repeat-x scroll left top transparent;
-    bottom: -1px;
-    height: 30px;
-    margin: 0;
-    padding: 0;
-    position: absolute;
+.dialog-mask {
     width: 100%;
+    height: 90%;
+    display: table;
 }
-
-.footer .logo {
-    background: url("../images/footer-logo-wht.png") no-repeat scroll center center transparent;
+.dialog-wrapper {
+    display: table-cell;
+    vertical-align: middle;
+    color: #4F585F;
+    font-size: .875em
+}
+.dialog {
+    background: #FFFEEA url("../images/info-CO.png") no-repeat 1em 1em;
+}
+.custom-logout-dialog {
+    background: #FFFEEA url("../images/check-mark-sm.svg") no-repeat 1em 1em;
+}
+.dialog,
+.custom-logout-dialog {
+    position: relative;
+    margin-left: 1em;
+    margin-right: 1em;
+    background-size: 2em;
+}
+.dialog-content,
+.dialog-content-no-action {
+    padding: 1em;
+    border: 1px solid #E0D397;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+}
+.dialog-content-no-action {
+    border-bottom: 1px solid #E0D397;
+    border-radius: 5px 5px 5px 5px;
+}
+.dialog-sign {
+    text-align: center;
+}
+.title {
+    font-family: "OpenSans-bold";
+    padding-left: 3em;
+    padding-bottom: 1em;
+}
+.message {
+    font-family: "OpenSans-Regular";
+    padding-left: 3em;
+}
+.common-button-primary {
+    font-size: .875em;
+    font-family: "OpenSans-Semibold";
+    background-color: #FFFEEA;
+    border: 1px solid #E0D397;
+    color: #4F585F;
     cursor: pointer;
-    float: right;
-    height: 12px;
-    padding: 9px 14px;
-    width: 63px;
+    text-transform: none;
+    overflow: visible;
+    margin: 0 auto;
+    height: 100%;
+    width: 100%;
+    padding-top: .75em;
+    padding-bottom: .75em;
+    border-radius: 0 0 5px 5px;
 }
-
-.error {
-    background: transparent; /* Old browsers */
-    background: -moz-linear-gradient(top, #fef4b0 0%, #fef5b1 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #fef4b0), color-stop(100%, #fef5b1)); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, #fef4b0 0%, #fef5b1 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, #fef4b0 0%, #fef5b1 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, #fef4b0 0%, #fef5b1 100%); /* IE10+ */
-    background: linear-gradient(top, #fef4b0 0%, #fef5b1 100%); /* W3C */
-    border-color: #FFF0CF;
-    border-style: solid;
-    border-width: 1px;
-    color: #333333;
-    font-family: Arial;
-    font-size: 12px;
-    min-width: 603px;
-    min-height: 300px;
-    margin-left: 200px;
-    margin-right: 200px;
-}
-
-.errorBox {
-    background-color:#fef4b0;
-    background-image: url(../images/bkgd_gradient.png);
-    background-position: 0px 0px;
-    background-repeat: repeat;
-    border-color: #bcb586;
-    border-style: solid;
-    border-width: 1px;
-    font-family: Arial;
-    font-size: 12px;
-    color: #333;
-    position: relative;
-    margin-bottom: 25px;
-    margin-right: 25px;
-	margin-left: 25px;
-    margin-top: 25px;
-    min-width: 500px;
-    min-height: 220px;
-    top: 0%;
-    left: 0%;
-    line-height: 18px;
-    border-radius: 4px;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-}
-
-.errorMessage {
-    background-image: url(../images/icon-warning-48x48.png);
-    background-repeat: no-repeat;
-    background-position: 40px;
-    margin: 50px 10px 10px 10px;
-    padding-right: 40px;
-    padding-left: 110px;
-    font: 11px verdana, arial, helvetica, sans-serif;
-    font-size: 14px;
-    color: #666;
-    border-color:#d6c039;
-}
-
-.errorBackButton {
-    float: right;
-    position: relative;
-    top: -17px;
-    padding-right: 25px;
-    height: 30px;
+@media only screen and (min-width: 1024px) {
+    .dialog,
+    .custom-logout-dialog {
+        width: 40em;
+        margin: auto;
+    }
 }
