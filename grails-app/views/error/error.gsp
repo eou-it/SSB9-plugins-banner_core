@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2017 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <%@ page contentType="text/html;charset=UTF-8" defaultCodec="none" %>
@@ -15,7 +15,10 @@ Copyright 2017 Ellucian Company L.P. and its affiliates.
             <div class="dialog-wrapper">
                 <div class="dialog" role="main">
                     <div class="dialog-content">
-                        <div class="title"><g:message code="net.hedtech.banner.errors.serverError.message"/><br>
+                        <div class="title">
+                            <g:message code="net.hedtech.banner.errors.serverError.message"/>
+                        </div>
+                        <div class="title">
                             <g:message code="net.hedtech.banner.errors.serverError.error"/>
                         </div>
                         <div class="message">

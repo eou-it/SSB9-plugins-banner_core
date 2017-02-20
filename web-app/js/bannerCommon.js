@@ -3,7 +3,6 @@
  **********************************************************************************/
 
 var path = document.querySelector('meta[name=menuBaseURL]').content || document.location.href;
-var origin = document.location.origin || (document.location.protocol + '//' + document.location.host);
 var appUrl = path.substring(0, path.indexOf('/ssb'));
 document.getElementById("branding").setAttribute('href', appUrl);
 // define a handler
