@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2010-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.db
@@ -196,9 +196,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
             conn = (dataSource as BannerDataSource).proxyConnection( conn, "grails_user" ) as BannerConnection
 
-            String stmt = "set role ${row.govurol_role} identified by \"${row.govurol_role_pswd}\""
+            String role_stmt = "${row.govurol_role} identified by \"${row.govurol_role_pswd}\""
             sql = new Sql( conn.extractOracleConnection() )
-            sql.execute( stmt )
+            sql.call("{call dbms_session.set_role(?)}", [role_stmt])
         } finally {
             if(conn) {
                 dataSource.removeConnection(conn);

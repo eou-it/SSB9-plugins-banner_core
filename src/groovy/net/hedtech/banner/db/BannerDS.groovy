@@ -1,5 +1,5 @@
 /* *****************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2010-2017 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db
 
@@ -51,7 +51,7 @@ public class BannerDS implements DataSource {
 
     MultiEntityProcessingService multiEntityProcessingService
 
-    private final Logger log = Logger.getLogger(getClass())
+    private final static Logger log = Logger.getLogger("net.hedtech.banner.db.BannerDS")
 
     private isAnonymousUser (def user) {
         user?.authorities?.size() && user?.authorities[0]?.authority == 'ROLE_ANONYMOUS'
@@ -546,11 +546,11 @@ public class BannerDS implements DataSource {
         }
 
         // still here? We will now try to set the role...
-        String stmt = "set role \"${bannerAuth.roleName}\" identified by \"${bannerAuth.bannerPassword}\"" as String
+        String role_stmt = "\"${bannerAuth.roleName}\" identified by \"${bannerAuth.bannerPassword}\"" as String
         log.trace "BannerDS.unlockRole will set role '${bannerAuth.roleName}' for connection $conn"
 
         Sql db = new Sql(conn)
-        db.execute(stmt) // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
+        db.call("{call dbms_session.set_role(?)}", [role_stmt]) // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
     }
 
     /**
