@@ -13,12 +13,12 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
     <body>
         <div class="dialog-mask">
             <div class="dialog-wrapper">
-                <div class="dialog" role="main">
-                    <div class="dialog-content">
+                <div class="dialog">
+                    <div class="dialog-content" role="dialog" id="dialog-message">
                         <div class="message"><g:message code="net.hedtech.banner.access.denied.message"/></div>
                     </div>
                     <div class="dialog-sign">
-                        <button class="common-button-primary" onclick=location.href="${target}">${actionLabel}</button>
+                        <button class="common-button-primary" aria-describedby="dialog-message" autofocus onclick=location.href="${target}">${actionLabel}</button>
                     </div>
                 </div>
             </div>
