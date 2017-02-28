@@ -43,7 +43,7 @@ import java.util.concurrent.Executors
  * */
 class BannerCoreGrailsPlugin {
 
-    String version = "9.20"
+    String version = "9.20.1.1"
     private static final Logger staticLogger = Logger.getLogger(BannerCoreGrailsPlugin.class)
 
     // the version or versions of Grails the plugin is designed for
