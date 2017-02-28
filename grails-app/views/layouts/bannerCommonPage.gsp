@@ -29,6 +29,7 @@ Copyright 2017 Ellucian Company L.P. and its affiliates.
     <link rel="shortcut icon" href="${resource(plugin: 'banner-core', dir:'images',file:'favicon.ico')}" type="image/x-icon"/>
     <r:layoutResources/>
     <g:layoutHead/>
+    <g:customStylesheetIncludes/>
 </head>
 
 <body>
@@ -47,6 +48,6 @@ Copyright 2017 Ellucian Company L.P. and its affiliates.
 
     <g:layoutBody/>
     <r:layoutResources/>
-
+    <g:customJavaScriptIncludes/>
 </body>
 </html>
