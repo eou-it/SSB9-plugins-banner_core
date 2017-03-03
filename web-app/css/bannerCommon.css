@@ -72,7 +72,7 @@ body,html {
 .institutionalBranding {
     background: url("../images/logo.svg") left center no-repeat;
     height: inherit;
-    width: 4.875em;
+    width: 15em;
     float: left;
     margin-left: 1em;
     margin-right: 0;
@@ -84,7 +84,7 @@ body,html {
 }
 @media only screen and (min-width: 1024px) {
     .institutionalBranding {
-        width: 8.125em;
+        width: 20em;
     }
     #banner-header-main-section {
         height: 6.510416666666667%;
