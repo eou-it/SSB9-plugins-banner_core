@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.db
@@ -31,9 +31,6 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     private  String SSB_VALID_USERNAME = "HOSH00002"
     private  String SSB_VALID_PASSWORD = "111111"
 
-    private String ADMIN_VALID_USERNAME="grails_user"
-    private String ADMIN_VALID_PASSWORD="u_pick_it"
-
     private String PROXY_USERNAME="HOSH00070"
     private String PROXY_PASSWORD="111111"
 
@@ -48,12 +45,14 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     @Before
     public void setUp(){
         formContext = ['GUAGMNU']
+        super.setUp()
         config = Holders.getConfig()
         bannerDS = (dataSource as BannerDS)
     }
 
     @After
     public void tearDown(){
+        super.tearDown()
     }
 
     public void backupConfigFileConfigurations(){
@@ -256,13 +255,13 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testOracleMessageTranslationForSpanish(){
-        def locale = 'es'
+    public void testOracleMessageTranslationForMexicanSpanish(){
+        def locale = 'es_MX'
         def conn = (dataSource as BannerDS).getConnection()
         def sql = new Sql(conn)
         BannerDS.callNlsUtility(sql,locale)
         sql.eachRow("select VALUE from v\$nls_parameters where parameter='NLS_LANGUAGE'"){row->
-            assertEquals("SPANISH",row.value)
+            assertEquals("MEXICAN SPANISH",row.value)
         }
         if(sql) sql.close()
         if(conn) conn.close()
@@ -333,10 +332,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         try {
             setUpValidSSBTypeUser()
             loginSSB(username, password)
-            connection = bannerDS.getConnection()
+            connection = bannerDS.getSsbConnection()
             assertNotNull(connection)
         } finally {
-            dataSource.removeConnection(connection)
             if (connection) connection.close()
             tearDownDataSetup()
             resetConfigAsInTheFile()
@@ -407,7 +405,4 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         username = "grails_user"
         password = "u_pick_it"
     }
-
-
-
 }

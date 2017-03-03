@@ -52,8 +52,8 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
 
-        Holders?.config?.productName ="testApp_DEFAULT";
-        Holders?.config?.banner.applicationName ="testApp_DEFAULT";
+        Holders?.config?.productName ="Student";
+        Holders?.config?.banner.applicationName ="testApp";
 
         def authResults = authenticationProviderUtility.getMappedUserForUdcId("DSTERLIN", dataSource );
         def  bannerPidm1 =49444;

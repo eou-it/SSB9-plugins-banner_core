@@ -1,14 +1,12 @@
 /* *****************************************************************************
- Copyright 2013 Ellucian Company L.P. and its affiliates.
+ Copyright 2016 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.apisupport
 
 import org.apache.log4j.Logger
 
-import grails.util.Holders
 import grails.util.Holders  as CH
 
-import org.springframework.context.ApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
 class ApiUtils {
@@ -37,7 +35,7 @@ class ApiUtils {
         if (!isWebRequest) return false
 
         // and then only if the web request is not one configured to avoid sessions
-        def forwardUri = RequestContextHolder.getRequestAttributes().getRequest().forwardURI
+        def forwardUri = RequestContextHolder.getRequestAttributes()?.getRequest().forwardURI
 
         // First, we'll cache the configured url parts that identify requests
         // that should not use HTTP sessions.

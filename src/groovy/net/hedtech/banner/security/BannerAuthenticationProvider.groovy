@@ -5,12 +5,15 @@ package net.hedtech.banner.security
 
 import grails.util.GrailsNameUtils
 import grails.util.Holders  as CH
-import grails.util.Holders  as AH
 import groovy.sql.Sql
-import net.hedtech.banner.controllers.ControllerUtils
 import org.apache.log4j.Logger
 import org.springframework.context.ApplicationContext
-import org.springframework.security.authentication.*
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.CredentialsExpiredException
+import org.springframework.security.authentication.LockedException
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 
@@ -83,7 +86,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     public static def getApplicationContext() {
         if (!applicationContext) {
-            applicationContext = (ApplicationContext) AH.grailsApplication.getMainContext()
+            applicationContext = (ApplicationContext) CH.grailsApplication.getMainContext()
         }
         applicationContext
     }

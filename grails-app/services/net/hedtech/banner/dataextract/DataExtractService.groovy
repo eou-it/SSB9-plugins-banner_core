@@ -1,17 +1,13 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.dataextract
 
-import org.apache.log4j.Logger
 import groovy.sql.Sql
-import org.springframework.security.core.context.SecurityContextHolder as SCH
-
 
 class DataExtractService {
 
     static transactional = true
-    private final Logger log = Logger.getLogger(getClass())
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
 

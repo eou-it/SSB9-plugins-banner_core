@@ -1,16 +1,19 @@
 /*******************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 import grails.converters.JSON
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.AuthorizationException
 import grails.plugin.springsecurity.SpringSecurityUtils
-import org.springframework.security.authentication.*
+import org.springframework.security.authentication.AccountExpiredException
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.CredentialsExpiredException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.LockedException
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.context.request.RequestContextHolder
 
 class LoginController {
@@ -104,7 +107,6 @@ class LoginController {
      */
     def authfail = {
 
-        def username = session[UsernamePasswordAuthenticationFilter.SPRING_SECURITY_LAST_USERNAME_KEY]
         def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
 
         if(exception instanceof CredentialsExpiredException){

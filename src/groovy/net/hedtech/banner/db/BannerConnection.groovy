@@ -1,14 +1,8 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 
 package net.hedtech.banner.db
-
-import net.hedtech.banner.security.FormContext
-import net.hedtech.banner.security.BannerGrantedAuthority
-
-import groovy.sql.Sql
-import org.springframework.web.context.request.RequestContextHolder
 
 import javax.sql.DataSource
 import java.sql.Connection
@@ -19,11 +13,6 @@ import oracle.jdbc.OracleConnection
 import grails.util.Environment
 
 import org.apache.log4j.Logger
-
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.web.context.request.RequestContextHolder
-
 /**
  * A dataSource that proxies connections, sets roles needed for the current request,
  * and invokes p_commit and p_rollback.
@@ -38,7 +27,7 @@ class BannerConnection {
     def oracleConnection // the native connection
     boolean isCached
 
-    private final Logger log = Logger.getLogger(getClass())
+    private static final Logger log = Logger.getLogger(getClass())
 
     BannerConnection(Connection conn, DataSource bannerDataSource) {
         assert conn

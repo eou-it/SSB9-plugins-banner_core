@@ -343,7 +343,6 @@ class AuthenticationProviderUtility {
     public static getFullName( String name, def dataSource ) {
         def conn = null
         def fullName
-        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
         name = name.toUpperCase()
         try {
             conn = dataSource.unproxiedConnection

@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.controllers
 
@@ -74,14 +74,8 @@ class ParamsUtils {
                 use(InvokerHelper){
                     domain.setProperties(propertyMap)
                 }
-                if (propertyMap.version && domain.hasProperty( "version" )) {
-// TODO:  This is absolutely wrong and needs to be resolved.  For some reason I'm unable to set the version in certain undetermined scenarios
-//                    domain.version = propertyMap.version
-                }
-
                 list << domain
             } catch (e) {
-                println "An error has occurred during marshalling.  ${e.message}"
                 throw e
             }
 
