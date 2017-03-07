@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 
 package net.hedtech.banner.general.utility
 
@@ -67,7 +67,7 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertFalse "GTVZIPC_CODE", classMetadata.attributes.city.nullable
         assertEquals 30, classMetadata.attributes.code.maxSize
         assertEquals 50, classMetadata.attributes.city.maxSize
-        assertEquals 11, classMetadata.attributes.lastModified.maxSize , 1e-8
+        assertEquals 9, classMetadata.attributes.lastModified.maxSize , 1e-8
         assertEquals "String", classMetadata.attributes.city.propertyType
 
         // CourseLaborDistribution
@@ -93,7 +93,7 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertEquals "AcademicYearForTesting", classMetadata?.attributes?.academicYear?.propertyType
 
         assertEquals "STVTERM_ACTIVITY_DATE", classMetadata.attributes.lastModified.columnName
-        assertEquals 11, classMetadata?.attributes?.lastModified?.maxSize, 1e-8
+        assertEquals 9, classMetadata?.attributes?.lastModified?.maxSize, 1e-8
         assertEquals "Date", classMetadata?.attributes?.lastModified?.propertyType
 
         assertEquals "STVTERM_FA_END_PERIOD", classMetadata.attributes.financialEndPeriod?.columnName
@@ -156,4 +156,4 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertNull classMetadata
 
     }
-}  
+}

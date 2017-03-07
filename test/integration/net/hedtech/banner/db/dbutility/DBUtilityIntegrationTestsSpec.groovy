@@ -3,7 +3,6 @@ package net.hedtech.banner.db.dbutility
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.commons.dbcp.BasicDataSource
-import grails.util.Holders  as CH
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -12,10 +11,11 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.context.SecurityContextHolder
 
 class DBUtilityIntegrationTestsSpec extends BaseIntegrationTestCase {
-
+    DBUtility dbUtility
 
     @Before
     public void setUp() {
+        dbUtility = new DBUtility()
     }
 
     @After
@@ -102,8 +102,47 @@ class DBUtilityIntegrationTestsSpec extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testTest(){
-        assertTrue(true)
+    public void testIsNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(){
+        setUpValidSSBTypeUser()
+        loginSSB(username, password)
+        def user = SecurityContextHolder?.context?.authentication?.principal
+        def result = dbUtility.isNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(user)
+        assertTrue(!result)
+    }
+
+    @Test
+    public void testIsSSUserFailCase() {
+        setUpValidSSBTypeUser()
+        loginSSB("grails_user","u_pick_it")
+        def user = SecurityContextHolder?.context?.authentication?.principal
+        assertTrue(!dbUtility.isSSUser())
+    }
+
+    @Test
+    public void testIsNotAnonymousTypeUser() {
+        setUpValidSSBTypeUser()
+        loginSSB(username, password)
+        def user = SecurityContextHolder?.context?.authentication?.principal
+        assertFalse(DBUtility.isAnonymousTypeUser(user))
+    }
+
+    @Test
+    public void testIsAnonymousTypeUser() {
+        String user = "anonymousUser"
+        assertTrue(DBUtility.isAnonymousTypeUser(user))
+
+        user = ""
+        assertFalse(DBUtility.isAnonymousTypeUser(user))
+    }
+
+    @Test
+    public void testIsApiProxySupportDisabled () {
+        assertTrue(DBUtility.isApiProxySupportDisabled())
+    }
+
+    @Test
+    public void testIsMepEnabled() {
+        assertTrue(!DBUtility.isMepEnabled())
     }
 
 }

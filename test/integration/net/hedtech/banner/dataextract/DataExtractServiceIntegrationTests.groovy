@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.dataextract
 
 import groovy.sql.Sql
@@ -19,7 +19,7 @@ class DataExtractServiceIntegrationTests extends BaseIntegrationTestCase {
         super.setUp()
         updateGUBOBJSTable()
     }
-	
+
 	@After
     public void tearDown() {
         super.tearDown()
@@ -70,5 +70,11 @@ class DataExtractServiceIntegrationTests extends BaseIntegrationTestCase {
         finally {
             sql?.close()  // note that the test will close the connection, since it's our current session's connection
         }
+    }
+
+    @Test
+    void testDataExtractNullId() {
+        def dataExtractScheduleEvaluation = dataExtractService.hasDataExtract(null)
+        assertTrue !dataExtractScheduleEvaluation
     }
 }

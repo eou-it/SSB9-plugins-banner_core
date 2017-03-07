@@ -43,7 +43,7 @@ import java.util.concurrent.Executors
  * */
 class BannerCoreGrailsPlugin {
 
-    String version = "9.20"
+    String version = "9.21"
     private static final Logger staticLogger = Logger.getLogger(BannerCoreGrailsPlugin.class)
 
     // the version or versions of Grails the plugin is designed for
@@ -326,6 +326,19 @@ class BannerCoreGrailsPlugin {
     }
 
     def doWithWebDescriptor = { xml ->
+
+        String authenticationProvider = CH?.config?.banner.sso.authenticationProvider?.toLowerCase()
+        switch (authenticationProvider) {
+            case 'cas':
+                SpringSecurityUtils.securityConfig.cas.active=true
+                SpringSecurityUtils.securityConfig.saml.active=false
+                break
+            case 'saml':
+                SpringSecurityUtils.securityConfig.saml.active=true
+                SpringSecurityUtils.securityConfig.cas.active=false
+                break
+        }
+
         def listenerElements = xml.'listener'[0]
         listenerElements + {
             'listener' {

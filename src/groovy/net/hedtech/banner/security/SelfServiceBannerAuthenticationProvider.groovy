@@ -43,7 +43,8 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         def conn
         try {
             if ( !isGuestAuthenticationEnabled() ) {
-                if ('cas'.equalsIgnoreCase( CH?.config.banner.sso.authenticationProvider )) {
+                def provider = CH?.config.banner.sso.authenticationProvider
+                if (provider && 'cas'.equalsIgnoreCase( provider )) {
                     log.trace "SelfServiceBannerAuthenticationProvider will not authenticate user since CAS is enabled"
                     return null
                 }

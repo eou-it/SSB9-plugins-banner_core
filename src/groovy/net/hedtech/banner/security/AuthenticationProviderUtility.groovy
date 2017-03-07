@@ -102,8 +102,6 @@ class AuthenticationProviderUtility {
                     authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: oracleUserName ].withDefault { k -> false }
                 } else {
                     log.fatal "System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user"
-                    throw new BadCredentialsException("System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user")
-
                 }
             }
 
@@ -271,32 +269,34 @@ class AuthenticationProviderUtility {
 
         def report = AuthenticationProviderUtility.&handleFailure.curry( provider, authentication, authenticationResults )
 
-        if (authenticationResults.disabled) report( new DisabledException('') )
-        if (authenticationResults.expired)  report( new CredentialsExpiredException('') )
-        if (authenticationResults.locked)   report( new LockedException('') )
-        if (!authenticationResults.valid)   report( new BadCredentialsException('') )
+        if (authenticationResults?.disabled) report( new DisabledException('') )
+        if (authenticationResults?.expired)  report( new CredentialsExpiredException('') )
+        if (authenticationResults?.locked)   report( new LockedException('') )
+        if (!authenticationResults?.valid)   report( new BadCredentialsException('') )
     }
 
     private static handleFailure( provider, authentication, authenticationResults, exception ) {
 
         log.warn "${provider.class.simpleName} was not able to authenticate user $authentication.name due to exception ${exception.class.simpleName}: ${exception.message} "
 
-        def tmp
+        applicationContext = getApplicationContext()
+        def firstAuthProvider = applicationContext.authenticationManager.providers[0]
+        def shortName = "SSB"
         def sessionObj = RequestContextHolder.currentRequestAttributes().request.session
-        sessionObj.setAttribute("auth_name", authentication.name)
-        if(sessionObj.getAttribute("msg")) {
-            tmp = sessionObj.getAttribute("msg") + ", " + GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception"))
-            sessionObj.setAttribute("msg", tmp)
-        }
-        else
-            sessionObj.setAttribute("msg", GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception")))
+        def msg = GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception"))
+        def module = GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider"))
+        def sessionModule = sessionObj.getAttribute("module")
+        def sessionMsg = sessionObj.getAttribute("msg")
 
-        if(sessionObj.getAttribute("module")) {
-            tmp = sessionObj.getAttribute("module") + ", " + GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider"))
-            sessionObj.setAttribute("module", tmp)
-        }
+        if( firstAuthProvider instanceof SelfServiceBannerAuthenticationProvider || firstAuthProvider instanceof BannerAuthenticationProvider)
+            sessionObj.setAttribute("auth_name", authentication.name)
+
+        if(module=="Self Service Banner")
+            sessionObj.setAttribute("module", sessionModule? sessionModule + ", " + shortName : shortName)
         else
-            sessionObj.setAttribute("module", GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider")))
+            sessionObj.setAttribute("module", sessionModule? sessionModule + ", " + module : module)
+
+        sessionObj.setAttribute("msg", sessionMsg? sessionMsg + ", " + msg : msg)
 
         throw exception
     }
@@ -428,6 +428,6 @@ class AuthenticationProviderUtility {
     public static setUserDetails(pidm,name){
         RequestContextHolder.currentRequestAttributes().session.setAttribute("usersName",name)
         RequestContextHolder.currentRequestAttributes().session.setAttribute("usersPidm",pidm)
-   }
+    }
 
 }
