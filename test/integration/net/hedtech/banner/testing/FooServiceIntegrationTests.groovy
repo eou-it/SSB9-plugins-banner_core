@@ -1,25 +1,17 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.testing
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.service.KeyBlockHolder
-import net.hedtech.banner.service.ServiceBase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.springframework.web.context.request.RequestContextHolder
-
-import java.sql.Connection
-
 import groovy.sql.Sql
-
 import grails.util.Holders
 import org.springframework.security.core.context.SecurityContextHolder
-
 import org.junit.Ignore
 import org.apache.log4j.Logger
 
@@ -34,15 +26,15 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     def fooService                     // injected by Spring
     def supplementalDataService        // injected by Spring
     def sessionContext                 // injected by Spring
-    private final Logger log = Logger.getLogger(getClass())
+    private static final Logger log = Logger.getLogger(getClass())
 
 
     @Before
     public void setUp() {
 
         formContext = ['GUAGMNU']
-        assert fooService != null
         super.setUp()
+        assert fooService != null
         tearDownTestFoo( true ) // tearDown should take care of this -- will really only be effective once we stop managing
                                 // transactions within the test framework (that is, for a specific framework test of transactions)
                                 // but instead rely on declarative transactions.
@@ -52,8 +44,9 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 
     @After
     public void tearDown() {
-        fooService.testKeyBlock = null // Grails 2.x retains session bound to thread across tests
         super.tearDown()
+        fooService.testKeyBlock = null // Grails 2.x retains session bound to thread across tests
+
     }
 
     @Test
@@ -237,7 +230,6 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
     // pending creates in a different transaction.
     @Test
     void testTransactionIsolation() {
-        Connection conn = null
         def found
         def otherThread
 
@@ -294,8 +286,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         foo.description = "Updated"
 
         assertNull fooService.testKeyBlock
-
-        def updatedFoo = fooService.update( [ foo: foo, keyBlock: [ kb: 'Dummy KeyBlock' ] ] )
+        fooService.update( [ foo: foo, keyBlock: [ kb: 'Dummy KeyBlock' ] ] )
         assertEquals "Dummy KeyBlock", fooService.getTestKeyBlock()?.kb
     }
 
@@ -306,8 +297,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 
         assertNull fooService.testKeyBlock
         KeyBlockHolder.set( [ kb: 'Dummy KeyBlock' ] )
-
-        def updatedFoo = fooService.update( foo )
+        fooService.update( foo )
         assertEquals "Dummy KeyBlock", fooService.getTestKeyBlock()?.kb
     }
 

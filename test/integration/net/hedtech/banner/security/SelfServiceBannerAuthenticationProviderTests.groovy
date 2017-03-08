@@ -36,6 +36,8 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
 
     @Before
     public void setUp() {
+        formContext = ['GUAGMNU']
+        super.setUp()
         Holders.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
         conn = dataSource.getSsbConnection()
@@ -47,7 +49,7 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
 
     @After
     public void tearDown() {
-        testUser = existingUser(PERSON_HOSWEB002, 111111)
+        super.tearDown()
         sqlObj.close()
         conn.close()
         Holders.config.ssbEnabled = false
@@ -74,7 +76,7 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertTrue    auth.details.credentialsNonExpired
         assertEquals  auth.pidm,testUser.pidm
         assertTrue    auth.webTimeout >= 30
-        assertEquals auth.fullName,"Bernadette McKall"
+        assertEquals auth.fullName,"McKall, Bernadette"
     }
 
 
@@ -85,9 +87,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         Holders.config.guestAuthenticationEnabled= true
         Holders?.config?.productName ="testApp";
         Holders?.config?.banner.applicationName ="testApp";
-        usage=null
-
-        insertDisplayNameRule(usage);
 
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
@@ -97,7 +96,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertTrue    auth.webTimeout >= 30
         assertEquals auth.fullName,"Bernadette McKall"
 
-        deleteDisplayNameRule()
     }
 
 
@@ -105,11 +103,8 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     void testSsbAuthenticationWithUsage() {
 
         Holders.config.guestAuthenticationEnabled= true
-        Holders?.config?.productName ="testApp";
-        Holders?.config?.banner.applicationName ="testApp";
-        usage=LFMI
-
-        insertDisplayNameRule(usage);
+        Holders?.config?.productName ="testApp_LFMI";
+        Holders?.config?.banner.applicationName ="testApp_LFMI";
 
         def auth = provider.authenticate( new TestAuthenticationRequest( testUser ) )
         assertTrue    auth.isAuthenticated()
@@ -119,7 +114,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertTrue    auth.webTimeout >= 30
         assertEquals auth.fullName,"McKall, Bernadette"
 
-        deleteDisplayNameRule()
     }
 
     @Test
@@ -128,12 +122,12 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertTrue    auth.isAuthenticated()
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-ALLROLES_BAN_DEFAULT_M" }
         assertNotNull auth.authorities.find { it.toString() == "ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M" }
-        assertEquals  2, auth.authorities.size()
+        assertTrue  (auth.authorities.size() > 0)
     }
 
     @Test
     void testExpiredPin() {
-        expireUser(testUser.pidm)
+       expireUser(testUser.pidm)
 
         shouldFail( CredentialsExpiredException ) {
             provider.authenticate( new TestAuthenticationRequest( testUser ) )
@@ -246,28 +240,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         db.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
         db.commit()
     }
-
-    private void insertDisplayNameRule(usage){
-
-        if(usage!=null){
-            sqlObj.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
-                    "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,'"+usage+"','Y',2000," +
-                    "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
-                    "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
-        }else{
-            sqlObj.executeUpdate("INSERT INTO GURNHIR(GURNHIR_PRODUCT,GURNHIR_APPLICATION,GURNHIR_PAGE,GURNHIR_SECTION,GURNHIR_USAGE,GURNHIR_ACTIVE_IND," +
-                    "GURNHIR_MAX_LENGTH,GURNHIR_ACTIVITY_DATE,GURNHIR_USER_ID,GURNHIR_DATA_ORIGIN)SELECT 'testApp','testApp',null,null,null,'Y',2000," +
-                    "SYSDATE,'BASELINE','BANNER' FROM dual where not exists (select 'x' from gurnhir where gurnhir_product='testApp' and " +
-                    "gurnhir_application is null and gurnhir_page is null and gurnhir_section is null)");
-        }
-        sqlObj.commit();
-    }
-
-    private void deleteDisplayNameRule(){
-        sqlObj.executeUpdate("DELETE GURNHIR WHERE GURNHIR_PRODUCT='testApp'");
-        sqlObj.commit();
-    }
-
 
 }
 

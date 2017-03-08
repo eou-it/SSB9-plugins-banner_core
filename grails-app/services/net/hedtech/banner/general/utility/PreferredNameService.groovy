@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2015 -2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.general.utility
@@ -17,7 +17,7 @@ import java.util.logging.Level
 class PreferredNameService {
 
     static transactional = true
-    private final Logger log = Logger.getLogger(getClass())
+    private static final Logger log = Logger.getLogger(getClass())
     def dataSource //injected by Spring
 
     def config = Holders.getConfig()

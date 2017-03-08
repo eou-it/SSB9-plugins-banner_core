@@ -4,13 +4,11 @@
 package net.hedtech.banner.query
 
 import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.query.criteria.CriteriaParam
 import net.hedtech.banner.testing.CommonMatchingSourceRuleForTesting
 import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.testing.TermForTesting
 import net.hedtech.banner.testing.ZipForTesting
-import org.codehaus.groovy.grails.exceptions.InvalidPropertyException
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -196,7 +194,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         ]]
         shouldFail(ApplicationException) {
             try {
-                def dynamicFinder = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+                DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
             } catch (ApplicationException ae) {
                 assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
                 throw ae
@@ -212,7 +210,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         ]]
         shouldFail(ApplicationException) {
             try {
-                def dynamicFinder = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+                DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
             } catch (ApplicationException ae) {
                 assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
                 throw ae
@@ -229,7 +227,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         ]]
         shouldFail(ApplicationException) {
             try {
-                def dynamicFinder = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+                DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
             } catch (ApplicationException ae) {
                 assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
                 throw ae
@@ -246,7 +244,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         ]]
         shouldFail(ApplicationException) {
             try {
-                def dynamicFinder = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+                DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
             } catch (ApplicationException ae) {
                 assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
                 throw ae
@@ -263,7 +261,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         ]]
         shouldFail(ApplicationException) {
             try {
-                def dynamicFinder = DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
+                DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
             } catch (ApplicationException ae) {
                 assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
                 throw ae
@@ -308,7 +306,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
         shouldFail(ApplicationException) {
             try {
-                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+               dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ApplicationException ae) {
                 assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
                 throw ae
@@ -325,7 +323,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
         shouldFail(ApplicationException) {
             try {
-                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+                dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ApplicationException ae) {
                 assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
                 throw ae
@@ -342,7 +340,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
         shouldFail(ApplicationException) {
             try {
-                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+                dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ApplicationException ae) {
                 assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
                 throw ae
@@ -359,7 +357,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
         shouldFail(ConversionFailedException) {
             try {
-                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+                dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ConversionFailedException ae) {
                 assert "For input string: \"hjghjj\"", ae.message
                 throw ae
@@ -376,7 +374,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
         shouldFail(ConversionFailedException) {
             try {
-                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+                dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ConversionFailedException ae) {
                 assert "For input string: \"hjghjj\"", ae.message
                 throw ae
@@ -393,7 +391,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
         shouldFail(ApplicationException) {
             try {
-                def result = dynamicFinder.find(filterData, pagingAndSortParams);
+                dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ApplicationException ae) {
                 assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
                 throw ae

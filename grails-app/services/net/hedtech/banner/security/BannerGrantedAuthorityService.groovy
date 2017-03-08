@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.security
 
@@ -18,7 +18,6 @@ class BannerGrantedAuthorityService {
 
     static transactional = false
 
-    private final Logger log = Logger.getLogger(getClass())
     private static final Logger staticLogger = Logger.getLogger(BannerGrantedAuthorityService.class)
     private static final String WEB_USER = "WEBUSER"
     private static final String ANONYMOUS_USER = "anonymousUser"

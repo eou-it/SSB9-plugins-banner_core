@@ -1,10 +1,18 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.testing
 
 import net.hedtech.banner.service.DatabaseModifiesState
-import javax.persistence.*
+import javax.persistence.Entity
+import javax.persistence.Table
+import javax.persistence.Id
+import javax.persistence.Column
+import javax.persistence.Transient
+import javax.persistence.GenerationType
+import javax.persistence.GeneratedValue
+import javax.persistence.Version
+import javax.persistence.SequenceGenerator
 
 /**
  * A model used for testing the Banner framework.
@@ -12,9 +20,9 @@ import javax.persistence.*
 @Entity
 @Table( name="STVCOLL" )
 // The 'DatabaseModifiesState' annotation is 'normally' used to indicate that the database modifies the object after it is saved.
-// This annotation is used by ServiceBase to indicate models that must be refreshed after saving. In this case, Foo (aka College) 
+// This annotation is used by ServiceBase to indicate models that must be refreshed after saving. In this case, Foo (aka College)
 // is not really  modified in the database, but we use the annotation here to force testing of this ServiceBase functionality.
-@DatabaseModifiesState 
+@DatabaseModifiesState
 class Foo implements Serializable { // based on 'College'
 
 	@Id

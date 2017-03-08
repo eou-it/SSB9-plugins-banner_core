@@ -23,13 +23,13 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
-        FormContext.set( formContext )
+        super.setUp()
     }
-	
+
 	@After
     public void tearDown() {
         logout()
-        FormContext.clear()
+        super.tearDown()
     }
 
     @Test
@@ -86,7 +86,7 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
     void testGetAuthorityForFormNameAndPatternList () {
         login (EDITABLE_USER, "u_pick_it")
 
-        def s = BannerGrantedAuthorityService.getAuthority('SCACRSE', [(AccessPrivilege.READONLY),(AccessPrivilege.READWRITE)])
+        def s = BannerGrantedAuthorityService.getAuthority('GUAGMNU', [(AccessPrivilege.READONLY),(AccessPrivilege.READWRITE)])
         assertNotNull(s)
     }
 
@@ -94,7 +94,7 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
     void testGetAuthorityForFormNameAndPattern () {
         login (EDITABLE_USER, "u_pick_it")
 
-        def s = BannerGrantedAuthorityService.getAuthority('SCACRSE', AccessPrivilege.READWRITE)
+        def s = BannerGrantedAuthorityService.getAuthority('GUAGMNU', AccessPrivilege.READWRITE)
         assertNotNull(s)
     }
 
@@ -102,22 +102,23 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
     void testGetAuthorityForAnyPattern1 () {
         login (EDITABLE_USER, "u_pick_it")
 
-        def authority = BannerGrantedAuthorityService.getAuthorityForAnyAccessPrivilegeType('SCACRSE')
+        def authority = BannerGrantedAuthorityService.getAuthorityForAnyAccessPrivilegeType('GUAGMNU')
         assertNotNull authority
     }
 
+    @Ignore
     @Test
     void testIsReadonlyPattern () {
         login (READONLY_USER, "u_pick_it")
 
-        assertEquals true, BannerGrantedAuthorityService.isFormReadonly('SCACRSE')
+        assertEquals true, BannerGrantedAuthorityService.isFormReadonly('STVMAJR')
     }
 
     @Test
     void testIsReadWritePattern() {
         login (EDITABLE_USER, "u_pick_it")
 
-        assertEquals true, BannerGrantedAuthorityService.isFormEditable('SCACRSE')
+        assertEquals true, BannerGrantedAuthorityService.isFormEditable('GUAGMNU')
     }
 
 

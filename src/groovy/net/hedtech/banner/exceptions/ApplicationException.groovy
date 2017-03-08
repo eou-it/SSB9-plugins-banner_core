@@ -1,5 +1,5 @@
 /* ****************************************************************************
-Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.exceptions
 
@@ -17,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.validation.FieldError
 import java.text.DecimalFormat
 import net.hedtech.banner.i18n.DateConverterService
-import org.springframework.context.MessageSourceResolvable
 
 /**
  * A runtime exception thrown from services (and other artifacts as necessary).
@@ -42,7 +41,7 @@ class ApplicationException extends RuntimeException {
     String       entityClassName        // the fully qualified class name for the associated domain model
     def          id                     // optional, the id of the model if applicable
 
-    def log = Logger.getLogger( ApplicationException.name )
+    private static final def log = Logger.getLogger( ApplicationException.name )
 
 
     /**

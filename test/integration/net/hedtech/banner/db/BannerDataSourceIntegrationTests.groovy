@@ -52,12 +52,14 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     @Before
     public void setUp(){
         formContext = ['GUAGMNU']
+        super.setUp()
         config = Holders.getConfig()
         bannerDS = (dataSource as BannerDS)
     }
 
     @After
     public void tearDown(){
+        super.tearDown()
     }
 
     public void backupConfigFileConfigurations(){
@@ -354,13 +356,13 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testOracleMessageTranslationForSpanish(){
-        def locale = 'es'
+    public void testOracleMessageTranslationForMexicanSpanish(){
+        def locale = 'es_MX'
         def conn = (dataSource as BannerDS).getConnection()
         def sql = new Sql(conn)
         BannerDS.callNlsUtility(sql,locale)
         sql.eachRow("select VALUE from v\$nls_parameters where parameter='NLS_LANGUAGE'"){row->
-            assertEquals("SPANISH",row.value)
+            assertEquals("MEXICAN SPANISH",row.value)
         }
         if(sql) sql.close()
         if(conn) conn.close()
@@ -431,10 +433,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         try {
             setUpValidSSBTypeUser()
             loginSSB(username, password)
-            connection = bannerDS.getConnection()
+            connection = bannerDS.getSsbConnection()
             assertNotNull(connection)
         } finally {
-            dataSource.removeConnection(connection)
             if (connection) connection.close()
             tearDownDataSetup()
             resetConfigAsInTheFile()
@@ -505,7 +506,4 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         username = "grails_user"
         password = "u_pick_it"
     }
-
-
-
 }

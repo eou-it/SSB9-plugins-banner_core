@@ -60,7 +60,6 @@ class MultiEntityProcessingService {
             log.error("ERROR: Could not establish mif context. $e")
             throw e
         } finally {
-            sql?.getConnection()?.close()
             sql?.close()
         }
     }
@@ -85,7 +84,6 @@ class MultiEntityProcessingService {
             log.error("ERROR: Could not establish mif context. $e")
             throw e
         } finally {
-            sql?.getConnection()?.close()
             sql?.close()
         }
     }
@@ -101,7 +99,6 @@ class MultiEntityProcessingService {
             log.error("ERROR: Could not establish mif context. $e")
             throw e
         } finally {
-            sql?.getConnection()?.close()
             sql?.close()
         }
     }
@@ -130,7 +127,6 @@ class MultiEntityProcessingService {
             log.error("ERROR: Could not establish mif context. $e")
             throw e
         } finally {
-            sql?.getConnection()?.close()
             sql?.close()
         }
     }
@@ -157,7 +153,6 @@ class MultiEntityProcessingService {
             log.error("ERROR: Could not establish mif context. $e")
             throw e
         } finally {
-            sql?.getConnection()?.close()
             sql?.close()
         }
     }
