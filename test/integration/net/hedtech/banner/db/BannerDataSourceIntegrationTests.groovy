@@ -20,6 +20,11 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 
 import java.sql.Connection
+import java.sql.SQLSyntaxErrorException
+import java.util.logging.Handler
+import java.util.logging.Logger
+import java.util.logging.SimpleFormatter
+import java.util.logging.StreamHandler
 
 /**
  * Integration tests exercising the BannerDS (formerly named BannerDataSource) data source implementation.
@@ -28,11 +33,10 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
     def config
 
+    final Logger sqlLog = Logger.getLogger(Sql.class.getName())
+
     private  String SSB_VALID_USERNAME = "HOSH00002"
     private  String SSB_VALID_PASSWORD = "111111"
-
-    private String ADMIN_VALID_USERNAME="grails_user"
-    private String ADMIN_VALID_PASSWORD="u_pick_it"
 
     private String PROXY_USERNAME="HOSH00070"
     private String PROXY_PASSWORD="111111"
@@ -182,9 +186,15 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         }
     }
 
+
     @Test
-    public void testSettingOracleRole() {
+    public void testSettingValidOracleRoleAndPassword() {
         BannerConnection conn
+        java.util.logging.Formatter formatter = new SimpleFormatter()
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        Handler handler = new StreamHandler(out, formatter)
+        sqlLog.addHandler(handler)
+
         Sql sql
         try {
             conn = (dataSource as BannerDataSource).getUnproxiedConnection() as BannerConnection
@@ -193,17 +203,105 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             def row = sql.firstRow( "select * from govurol where govurol_object = 'STVINTS' and govurol_userid = 'GRAILS_USER' " )
 
             conn = (dataSource as BannerDataSource).proxyConnection( conn, "grails_user" ) as BannerConnection
-
-            String role_stmt = "${row.govurol_role} identified by \"${row.govurol_role_pswd}\""
             sql = new Sql( conn.extractOracleConnection() )
-            sql.call("{call dbms_session.set_role(?)}", [role_stmt])
+
+            String stmt = "${row.govurol_role} identified by \"${row.govurol_role_pswd}\""
+            sql = new Sql( conn.extractOracleConnection() )
+            sql.call("{call dbms_session.set_role(?)}", [stmt])
+
         } finally {
+            handler.flush();
+            String logMsg = out.toString();
+            assertFalse(logMsg.toLowerCase().contains("identified by"))
             if(conn) {
                 dataSource.removeConnection(conn);
             }
             sql?.close()
+            sqlLog.removeHandler(handler)
         }
     }
+
+
+    @Test
+    public void testSettingOracleRoleWithInValidPassword() {
+        BannerConnection conn
+        java.util.logging.Formatter formatter = new SimpleFormatter()
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        Handler handler = new StreamHandler(out, formatter)
+        sqlLog.addHandler(handler)
+
+        Sql sql
+        try {
+            conn = (dataSource as BannerDataSource).getUnproxiedConnection() as BannerConnection
+            sql = new Sql( conn.extractOracleConnection() )
+            // Retrieve the database role name and password for object STVINTS
+            def row = sql.firstRow( "select * from govurol where govurol_object = 'STVINTS' and govurol_userid = 'GRAILS_USER' " )
+
+            conn = (dataSource as BannerDataSource).proxyConnection( conn, "grails_user" ) as BannerConnection
+            sql = new Sql( conn.extractOracleConnection() )
+
+            String stmt = "${row.govurol_role} identified by 111"                   // ORA-01979: missing or invalid password for role 'BAN_DEFAULT_M'
+            sql = new Sql( conn.extractOracleConnection() )
+            sql.call("{call dbms_session.set_role(?)}", [stmt])
+
+        }
+        catch (SQLSyntaxErrorException sqlex) {
+            //do nothing  we will assert in Finally
+        }
+        finally {
+            handler.flush()
+            String logMsg = out.toString()
+            assertFalse(logMsg.toLowerCase().contains("identified by"))
+            assertTrue(logMsg.toLowerCase().contains("ora-01979: missing or invalid password for role 'ban_default_m'"))
+            if(conn) {
+                dataSource.removeConnection(conn);
+            }
+            sql?.close()
+            sqlLog.removeHandler(handler)
+        }
+    }
+
+
+
+    @Test
+    public void testSettingInValidOracleRole() {
+        BannerConnection conn
+        java.util.logging.Formatter formatter = new SimpleFormatter()
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        Handler handler = new StreamHandler(out, formatter)
+        sqlLog.addHandler(handler)
+
+        Sql sql
+        try {
+            conn = (dataSource as BannerDataSource).getUnproxiedConnection() as BannerConnection
+            sql = new Sql( conn.extractOracleConnection() )
+            // Retrieve the database role name and password for object STVINTS
+            def row = sql.firstRow( "select * from govurol where govurol_object = 'STVINTS' and govurol_userid = 'GRAILS_USER' " )
+
+            conn = (dataSource as BannerDataSource).proxyConnection( conn, "grails_user" ) as BannerConnection
+            sql = new Sql( conn.extractOracleConnection() )
+
+            String stmt = "Junk identified by \"${row.govurol_role_pswd}\""        //ORA-01924: role 'JUNK' not granted or does not exist
+            sql = new Sql( conn.extractOracleConnection() )
+            sql.call("{call dbms_session.set_role(?)}", [stmt])
+
+        }
+        catch (SQLSyntaxErrorException sqlex) {
+            //do nothing  we will assert in Finally
+        }
+        finally {
+            handler.flush();
+            String logMsg = out.toString();
+            assertFalse(logMsg.toLowerCase().contains("identified by"));
+            assertTrue(logMsg.toLowerCase().contains("ora-01924: role 'junk' not granted or does not exist"));
+            if(conn) {
+                dataSource.removeConnection(conn);
+            }
+            sql?.close()
+            sqlLog.removeHandler(handler)
+        }
+    }
+
 
     @Test
     public void testSSBTypeRequestWithNoProxy(){
