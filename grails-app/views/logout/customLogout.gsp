@@ -1,54 +1,41 @@
 <!--
 /*******************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <%@ page contentType="text/html;charset=UTF-8" defaultCodec="none" %>
 <html>
 <head>
-    <title><g:message code="net.hedtech.banner.productTitle"/></title>
-    <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'logout.css')}"/>
-    <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
-        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'logout-rtl.css')}"/>
-    </g:if>
+    <meta name="layout" content="bannerCommonPage"/>
     <g:set var="targetHome" value="${uri}"/>
     <g:set var="targetLogout" value="${logoutUri}"/>
-
-    <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
-    <g:if test="${themeConfig.url}">
-        <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${session.mep ?: themeConfig.name}&template=${themeConfig.template}&mep=${session.mep}">
-    </g:if>
 </head>
 
 <body>
-<g:analytics/>
-<div class="header">
-    <div class="institutionalBranding"></div>
-</div>
-<div class="dialog">
-    <g:if test="${show}">
-        <div class="LogoutSuccessImage"></div>
-        <div class="message"><g:message code="net.hedtech.banner.logout.message"/></div>
-        <div class="button-div">
-            <input type="button" value="${g.message(code:'net.hedtech.banner.logout.backToHomeButton')}" class="btn-primary" autofocus="true" onclick='location.href="${targetHome}"'/>
+    <div class="dialog-mask">
+        <div class="dialog-wrapper">
+            <div class="custom-logout-dialog" role="dialog" id="dialog-message">
+                <g:if test="${show}">
+                    <div class="dialog-content"><div class="message"><g:message code="net.hedtech.banner.logout.message"/></div></div>
+                    <div class="dialog-sign">
+                        <input type="button" aria-describedby="dialog-message" autofocus value="${g.message(code:'net.hedtech.banner.logout.backToHomeButton')}" class="common-button-primary" onclick='location.href="${targetHome}"'/>
+                    </div>
+                </g:if>
+                <g:if test="${logoutUri != null}">
+                    <div class="dialog-content"><div class="message"><g:message code="net.hedtech.banner.logout.options.message"/></div></div>
+                    <div class="dialog-sign">
+                        <input type="button" aria-describedby="dialog-message" autofocus value="${g.message(code:'net.hedtech.banner.logout.action')}" class="common-button-primary" onclick='location.href="${targetLogout}"'/>
+                        <input type="button" value="${g.message(code:'net.hedtech.banner.logout.backToHomeButton')}" class="common-button-primary" onclick='location.href="${targetHome}"' />
+                    </div>
+                </g:if>
+                <g:if test="${logoutUri == null && !show}">
+                    <div class="dialog-content"><div class="message"><g:message code="net.hedtech.banner.logout.returnMessage"/></div></div>
+                    <div class="dialog-sign">
+                        <input type="button"  aria-describedby="dialog-message" autofocus value="${g.message(code:'net.hedtech.banner.logout.backToHomeButton')}" class="common-button-primary" onclick='location.href="${targetHome}"'/>
+                    </div>
+                </g:if>
+            </div>
         </div>
-    </g:if>
-    <g:if test="${logoutUri != null}">
-        <div class="message"><g:message code="net.hedtech.banner.logout.options.message"/></div>
-        <div class="button-div">
-            <input type="button" value="${g.message(code:'net.hedtech.banner.logout.action')}" class="btn-primary" autofocus="true" onclick='location.href="${targetLogout}"'/>
-            <input type="button" value="${g.message(code:'net.hedtech.banner.logout.backToHomeButton')}" class="btn-default" onclick='location.href="${targetHome}"' />
-        </div>
-    </g:if>
-    <g:if test="${logoutUri == null && !show}">
-        <div class="message"><g:message code="net.hedtech.banner.logout.returnMessage"/></div>
-        <div class="button-div">
-            <input type="button" value="${g.message(code:'net.hedtech.banner.logout.backToHomeButton')}" class="btn-primary" autofocus="true" onclick='location.href="${targetHome}"'/>
-        </div>
-    </g:if>
-</div>
-<div class="footer">
-    <span class="logo"></span>
-</div>
+    </div>
 </body>
 </html>

@@ -1,20 +1,23 @@
-<%@ page contentType="text/html;charset=UTF-8" %>
 <!--
 /*******************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
+<%@ page contentType="text/html;charset=UTF-8" %>
 <html>
     <head>
-      <title><g:message code="net.hedtech.banner.logoutpage.title"/></title>
+      <meta name="layout" content="bannerCommonPage"/>
     </head>
     <body>
-    <g:analytics/>
-        <div>
-            <div>
-                <p><g:message code="net.hedtech.banner.logoutpage.message"/></p>
-                <p><b>&copy; <g:message code="net.hedtech.banner.logoutpage.copyright1"/></b></p>
-                <p><b><g:message code="net.hedtech.banner.logoutpage.copyright2"/></b></p>
+        <div class="dialog-mask">
+            <div class="dialog-wrapper">
+                <div class="dialog" role="dialog">
+                    <div class="dialog-content-no-action">
+                        <div>
+                            <div class="title" tabindex="0"><g:message code="net.hedtech.banner.logoutpage.message"/></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </body>
