@@ -43,7 +43,7 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
     @After
     public void tearDown() {
         conn?.close()
-        logout()
+        //logout()
         super.tearDown()
     }
 
