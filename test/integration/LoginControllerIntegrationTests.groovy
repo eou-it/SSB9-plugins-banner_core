@@ -1,18 +1,16 @@
 /*******************************************************************************
- Copyright 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.AuthorizationException
 import net.hedtech.banner.i18n.MessageHelper
-import net.hedtech.banner.security.SelfServiceBannerAuthenticationProvider
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.security.authentication.*
-import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.context.request.RequestContextHolder
@@ -20,14 +18,14 @@ import org.springframework.web.context.request.RequestContextHolder
 class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
 
     def controller
+
     def msg
-    private SelfServiceBannerAuthenticationProvider provider
-    def conn
-    Sql sqlObj
-    def dataSource
-    def testUser
-    public static final String PERSON_HOSWEB002 = 'HOSWEB002'
-    def auth
+
+    def selfServiceBannerAuthenticationProvider
+
+    private static final String PERSON_HOSWEB001 = 'HOSWEB001'
+
+    private static final def HOSWEB001_PWD = 111111
 
 
     @Before
@@ -37,24 +35,19 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         controller = new LoginController()
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("mep", "BANNER")
         Holders.config.ssbEnabled = true
-        Holders?.config.ssbOracleUsersProxied = false
-        conn = dataSource.getSsbConnection()
-        sqlObj = new Sql(conn)
-        provider = Holders.applicationContext.getBean("selfServiceBannerAuthenticationProvider")
-        testUser = existingUser(PERSON_HOSWEB002, 123456)
-        enableUser(sqlObj, testUser.pidm)
+        Holders.config.ssbOracleUsersProxied = false
 
     }
+
 
     @After
     public void tearDown() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("mep")
         super.tearDown()
-        sqlObj.close()
-        conn.close()
         Holders.config.ssbEnabled = false
-        Holders?.config.ssbOracleUsersProxied = false
+        Holders.config.ssbOracleUsersProxied = false
     }
+
 
     @Test
     void testGetMessageForAccountExpired() {
@@ -63,12 +56,14 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals([:], msg)
     }
 
+
     @Test
     void testGetMessageForCredentialsExpired() {
         CredentialsExpiredException ce = new CredentialsExpiredException('');
         msg = controller.getMessageFor(ce)
         assertEquals(MessageHelper.message("net.hedtech.banner.errors.login.expired"), msg)
     }
+
 
     @Test
     void testGetMessageForDisabled() {
@@ -77,12 +72,14 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(MessageHelper.message("net.hedtech.banner.errors.login.disabled"), msg)
     }
 
+
     @Test
     void testGetMessageForLocked() {
         LockedException le = new LockedException('');
         msg = controller.getMessageFor(le)
         assertEquals(MessageHelper.message("net.hedtech.banner.errors.login.locked"), msg)
     }
+
 
     @Test
     void testGetMessageForAuthorization() {
@@ -91,12 +88,14 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(MessageHelper.message("net.hedtech.banner.access.denied.message"), msg)
     }
 
+
     @Test
     void testGetMessageForBadCredentials() {
         BadCredentialsException be = new BadCredentialsException('');
         msg = controller.getMessageFor(be)
         assertEquals(MessageHelper.message("net.hedtech.banner.errors.login.fail"), msg)
     }
+
 
     @Test
     void testGetMessageForUsernameNotFound() {
@@ -105,6 +104,7 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(MessageHelper.message("net.hedtech.banner.errors.login.credentialnotfound"), msg)
     }
 
+
     @Test
     void testGetMessageForOtherException() {
         Exception e = new Exception('');
@@ -112,11 +112,13 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(MessageHelper.message("net.hedtech.banner.errors.login.fail"), msg)
     }
 
+
     @Test
     void testGetMessageForNoException() {
         msg = controller.getMessageFor()
         assertEquals("", msg)
     }
+
 
     @Test
     void testBuildLogoutSuccess() {
@@ -126,6 +128,7 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(expectedUri, actualUri)
     }
 
+
     @Test
     void testBuildLogoutFailure() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("mep")
@@ -134,19 +137,23 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(expectedUri, actualUri)
     }
 
+
     @Test
     void testIndexSuccess() {
-        auth = provider.authenticate(new TestAuthenticationRequest(testUser))
+        def auth = selfServiceBannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(PERSON_HOSWEB001, HOSWEB001_PWD))
         controller.index()
         assertEquals(302, controller.response.status)
     }
+
 
     @Test
     void testIndexFail() {
         SCH.context.authentication = null
         controller.index()
         assertEquals(302, controller.response.status)
+        assertEquals "/login/auth", controller.response.redirectedUrl
     }
+
 
     @Test
     void testAuthSuccess() {
@@ -155,12 +162,15 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(200, controller.response.status)
     }
 
+
     @Test
     void testAuthSuccessWithLoggedIn() {
-        auth = provider.authenticate(new TestAuthenticationRequest(testUser))
+        def auth = selfServiceBannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(PERSON_HOSWEB001, HOSWEB001_PWD))
         controller.auth()
         assertEquals(302, controller.response.status)
+        assertEquals('/', controller.response.redirectedUrl)
     }
+
 
     @Test
     void testAuthAjax() {
@@ -169,12 +179,14 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(200, controller.response.status)
     }
 
+
     @Test
     void testAuthAjaxWithLoggedIn() {
-        auth = provider.authenticate(new TestAuthenticationRequest(testUser))
+        def auth = selfServiceBannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(PERSON_HOSWEB001, HOSWEB001_PWD))
         controller.authAjax()
         assertEquals(302, controller.response.status)
     }
+
 
     @Test
     void testDenied() {
@@ -183,12 +195,14 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(200, controller.response.status)
     }
 
+
     @Test
     void testDeniedWithLoggedIn() {
-        auth = provider.authenticate(new TestAuthenticationRequest(testUser))
+        def auth = selfServiceBannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(PERSON_HOSWEB001, HOSWEB001_PWD))
         controller.denied()
         assertEquals(200, controller.response.status)
     }
+
 
     @Test
     void testFull() {
@@ -197,12 +211,14 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(200, controller.response.status)
     }
 
+
     @Test
     void testAjaxSuccess() {
-        auth = provider.authenticate(new TestAuthenticationRequest(testUser))
+        def auth = selfServiceBannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(PERSON_HOSWEB001, HOSWEB001_PWD))
         controller.ajaxSuccess()
         assertEquals(200, controller.response.status)
     }
+
 
     @Test
     void testAjaxDenied() {
@@ -211,12 +227,14 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(200, controller.response.status)
     }
 
+
     @Test
     void testError() {
         SCH.context.authentication = null
         controller.error()
         assertEquals(200, controller.response.status)
     }
+
 
     @Test
     void testForgotPassword() {
@@ -225,6 +243,7 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(200, controller.response.status)
     }
 
+
     @Test
     void testForgotPasswordUserNameEmpty() {
         controller.request.setParameter("j_username", "  ")
@@ -232,11 +251,13 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(200, controller.response.status)
     }
 
+
     @Test
     void testForgotPasswordNoUser() {
         controller.forgotpassword()
         assertEquals(200, controller.response.status)
     }
+
 
     @Test
     void testAuthFail() {
@@ -244,55 +265,11 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(200, controller.response.status)
     }
 
+
     @Test
     void testAuthFailElse() {
         controller.request.setParameter("ajax", "true")
         controller.authfail()
         assertEquals(200, controller.response.status)
     }
-
-
-    private def existingUser(userId, newPin) {
-        def existingUser = [name: userId]
-
-        def testAuthenticationRequest = new TestAuthenticationRequest(existingUser)
-        existingUser['pidm'] = provider.getPidm(testAuthenticationRequest, sqlObj)
-        sqlObj.commit()
-        sqlObj.call("{call gb_third_party_access.p_update(p_pidm=>${existingUser.pidm}, p_pin=>${newPin})}")
-        sqlObj.commit()
-        existingUser.pin = newPin
-        return existingUser
-    }
-
-    private void enableUser(Sql db, pidm) {
-        db.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
-        db.commit()
-    }
-}
-
-class TestAuthenticationRequest implements Authentication {
-
-    def user
-
-    public TestAuthenticationRequest(user) {
-        this.user = user
-    }
-
-    public Collection getAuthorities() { [] }
-
-    public Object getCredentials() { user.pin }
-
-    public Object getDetails() { user }
-
-    public Object getPrincipal() { user }
-
-    public boolean isAuthenticated() { false }
-
-    public void setAuthenticated(boolean b) {}
-
-    public String getName() { user.name }
-
-    public Object getPidm() { user.pidm }
-
-    public Object getOracleUserName() { user.oracleUserName }
-}
+ }

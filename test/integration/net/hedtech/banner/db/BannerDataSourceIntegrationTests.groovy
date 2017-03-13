@@ -213,12 +213,11 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
         } finally {
             handler.flush();
-            String logMsg = out.toString();
+            String logMsg = out.toString()
+            println logMsg
             assertFalse(logMsg.toLowerCase().contains("identified by"))
-            if(conn) {
-                dataSource.removeConnection(conn);
-            }
-            sql?.close()
+            conn.close()
+            sql.close()
             sqlLog.removeHandler(handler)
         }
     }
@@ -253,12 +252,11 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         finally {
             handler.flush()
             String logMsg = out.toString()
+            println logMsg
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             assertTrue(logMsg.toLowerCase().contains("ora-01979: missing or invalid password for role 'ban_default_m'"))
-            if(conn) {
-                dataSource.removeConnection(conn);
-            }
-            sql?.close()
+            conn.close()
+            sql.close()
             sqlLog.removeHandler(handler)
         }
     }
@@ -292,14 +290,13 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             //do nothing  we will assert in Finally
         }
         finally {
-            handler.flush();
-            String logMsg = out.toString();
-            assertFalse(logMsg.toLowerCase().contains("identified by"));
-            assertTrue(logMsg.toLowerCase().contains("ora-01924: role 'junk' not granted or does not exist"));
-            if(conn) {
-                dataSource.removeConnection(conn);
-            }
-            sql?.close()
+            handler.flush()
+            String logMsg = out.toString()
+            println logMsg
+            assertFalse(logMsg.toLowerCase().contains("identified by"))
+            assertTrue(logMsg.toLowerCase().contains("ora-01924: role 'junk' not granted or does not exist"))
+            conn.close()
+            sql.close()
             sqlLog.removeHandler(handler)
         }
     }
@@ -309,7 +306,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     public void testSSBTypeRequestWithNoProxy(){
         backupConfigFileConfigurations();
         setupSSBWithNoProxy()
-        def conn = (dataSource as BannerDS).getConnection()
+        def conn = dataSource.getConnection()
         assertTrue "Expected BannerConnection but have ${conn?.class}", conn instanceof BannerConnection
         dataSource.removeConnection(conn)
         if (conn) conn.close()
