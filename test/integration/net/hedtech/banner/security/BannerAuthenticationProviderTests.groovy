@@ -16,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 /**
  * Intergration test cases for banner authentication provider
  */
+@Ignore("Ignoing to debug the hanging issue")
 class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
 
     private BannerAuthenticationProvider provider
@@ -43,7 +44,7 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
         super.tearDown();
     }
 
-    @Ignore
+
     @Test
     public void testBannerAuthentiationWithSpecificUsage() {
         Holders.config.ssbEnabled = false
