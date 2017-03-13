@@ -33,7 +33,7 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
         super.setUp()
         conn = dataSource.getConnection()
         sqlObj = new Sql( conn )
-        provider = new BannerAuthenticationProvider()
+        provider = Holders.applicationContext.getBean("bannerAuthenticationProvider")
     }
 
     @After
