@@ -9,6 +9,7 @@ import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 
@@ -42,6 +43,7 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
         super.tearDown();
     }
 
+    @Ignore
     @Test
     public void testBannerAuthentiationWithSpecificUsage() {
         Holders.config.ssbEnabled = false
