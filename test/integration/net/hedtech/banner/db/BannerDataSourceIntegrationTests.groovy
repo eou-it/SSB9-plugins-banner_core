@@ -214,6 +214,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         } finally {
             handler.flush();
             String logMsg = out.toString()
+            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
             println logMsg
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             conn.close()
@@ -252,6 +253,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         finally {
             handler.flush()
             String logMsg = out.toString()
+            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
             println logMsg
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             assertTrue(logMsg.toLowerCase().contains("ora-01979: missing or invalid password for role 'ban_default_m'"))
@@ -292,6 +294,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         finally {
             handler.flush()
             String logMsg = out.toString()
+            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
             println logMsg
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             assertTrue(logMsg.toLowerCase().contains("ora-01924: role 'junk' not granted or does not exist"))

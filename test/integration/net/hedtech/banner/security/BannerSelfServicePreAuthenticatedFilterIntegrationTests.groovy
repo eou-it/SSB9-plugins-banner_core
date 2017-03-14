@@ -44,11 +44,11 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
     @After
     public void tearDown() {
         conn?.close()
-        //logout()
+        logout()
         super.tearDown()
     }
 
-    @Ignore
+
     @Test
     void testSelfServiceDoFilter() {
         Holders.config.ssbEnabled = true
