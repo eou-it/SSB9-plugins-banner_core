@@ -22,6 +22,7 @@ import org.springframework.web.context.request.ServletRequestAttributes
 import java.sql.Connection
 import java.sql.SQLSyntaxErrorException
 import java.util.logging.Handler
+import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.SimpleFormatter
 import java.util.logging.StreamHandler
@@ -55,10 +56,12 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         super.setUp()
         config = Holders.getConfig()
         bannerDS = (dataSource as BannerDS)
+        sqlLog.setLevel(Level.WARNING)
     }
 
     @After
     public void tearDown(){
+        sqlLog.setLevel(Level.OFF)
         super.tearDown()
     }
 
