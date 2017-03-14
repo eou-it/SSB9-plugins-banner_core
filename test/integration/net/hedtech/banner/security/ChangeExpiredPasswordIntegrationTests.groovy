@@ -63,7 +63,6 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
         def user = PERSON
         def oldPassword = 111111
         auth = selfServiceBannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(user, oldPassword))
-        println auth
         assertNotEquals(auth, null)
     }
 
@@ -168,7 +167,6 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
         pidmValue
     }
     private void enableUser(pidm) {
-        println "Enabling user $pidm"
         sql.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
         sql.commit()
     }

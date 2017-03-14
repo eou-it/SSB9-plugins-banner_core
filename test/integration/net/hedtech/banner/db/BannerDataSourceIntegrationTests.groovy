@@ -218,7 +218,6 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             handler.flush();
             String logMsg = out.toString()
             log.fatal ("SQLSyntaxErrorException with "+ logMsg)
-            println logMsg
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             conn.close()
             sql.close()
@@ -257,7 +256,6 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             handler.flush()
             String logMsg = out.toString()
             log.fatal ("SQLSyntaxErrorException with "+ logMsg)
-            println logMsg
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             assertTrue(logMsg.toLowerCase().contains("ora-01979: missing or invalid password for role 'ban_default_m'"))
             conn.close()
@@ -298,7 +296,6 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             handler.flush()
             String logMsg = out.toString()
             log.fatal ("SQLSyntaxErrorException with "+ logMsg)
-            println logMsg
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             assertTrue(logMsg.toLowerCase().contains("ora-01924: role 'junk' not granted or does not exist"))
             conn.close()
@@ -312,7 +309,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     public void testSSBTypeRequestWithNoProxy(){
         backupConfigFileConfigurations();
         setupSSBWithNoProxy()
-        def conn = dataSource.getConnection()
+        def conn = (dataSource as BannerDS).getConnection()
         assertTrue "Expected BannerConnection but have ${conn?.class}", conn instanceof BannerConnection
         dataSource.removeConnection(conn)
         if (conn) conn.close()
