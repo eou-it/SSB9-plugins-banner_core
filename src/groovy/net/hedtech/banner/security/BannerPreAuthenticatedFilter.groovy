@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -8,6 +8,7 @@ import grails.util.Holders  as CH
 import org.springframework.security.access.ConfigAttribute
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.web.authentication.AuthenticationFailureHandler
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler
 import org.springframework.util.AntPathMatcher
@@ -25,7 +26,7 @@ import javax.servlet.http.HttpServletResponse
 
 class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFilter {
 
-    private final Logger log = Logger.getLogger(BannerPreAuthenticatedFilter.class)
+    private static final Logger log = Logger.getLogger(getClass())
 
     def dataSource // injected by Spring
 
@@ -58,7 +59,10 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
         try {
             dbUser = AuthenticationProviderUtility.getMappedUserForUdcId( assertAttributeValue, dataSource )
             log.debug "BannerPreAuthenticatedFilter.doFilter found database user $dbUser for assertAttributeValue $assertAttributeValue"
-
+            if(dbUser == null)
+            {
+                throw new BadCredentialsException("System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user")
+            }
             // Next, we'll verify the authenticationResults (and throw appropriate exceptions for expired pin, disabled account, etc.)
             AuthenticationProviderUtility.verifyAuthenticationResults dbUser
             log.debug "BannerPreAuthenticatedFilter.doFilter verify authentication results"

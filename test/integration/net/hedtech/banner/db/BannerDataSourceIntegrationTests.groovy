@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2010-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.db
@@ -20,6 +20,11 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 
 import java.sql.Connection
+import java.sql.SQLSyntaxErrorException
+import java.util.logging.Handler
+import java.util.logging.Logger
+import java.util.logging.SimpleFormatter
+import java.util.logging.StreamHandler
 
 /**
  * Integration tests exercising the BannerDS (formerly named BannerDataSource) data source implementation.
@@ -28,11 +33,10 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
     def config
 
+    final Logger sqlLog = Logger.getLogger(Sql.class.getName())
+
     private  String SSB_VALID_USERNAME = "HOSH00002"
     private  String SSB_VALID_PASSWORD = "111111"
-
-    private String ADMIN_VALID_USERNAME="grails_user"
-    private String ADMIN_VALID_PASSWORD="u_pick_it"
 
     private String PROXY_USERNAME="HOSH00070"
     private String PROXY_PASSWORD="111111"
@@ -48,12 +52,14 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     @Before
     public void setUp(){
         formContext = ['GUAGMNU']
+        super.setUp()
         config = Holders.getConfig()
         bannerDS = (dataSource as BannerDS)
     }
 
     @After
     public void tearDown(){
+        super.tearDown()
     }
 
     public void backupConfigFileConfigurations(){
@@ -182,9 +188,15 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         }
     }
 
+
     @Test
-    public void testSettingOracleRole() {
+    public void testSettingValidOracleRoleAndPassword() {
         BannerConnection conn
+        java.util.logging.Formatter formatter = new SimpleFormatter()
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        Handler handler = new StreamHandler(out, formatter)
+        sqlLog.addHandler(handler)
+
         Sql sql
         try {
             conn = (dataSource as BannerDataSource).getUnproxiedConnection() as BannerConnection
@@ -193,17 +205,105 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             def row = sql.firstRow( "select * from govurol where govurol_object = 'STVINTS' and govurol_userid = 'GRAILS_USER' " )
 
             conn = (dataSource as BannerDataSource).proxyConnection( conn, "grails_user" ) as BannerConnection
-
-            String stmt = "set role ${row.govurol_role} identified by \"${row.govurol_role_pswd}\""
             sql = new Sql( conn.extractOracleConnection() )
-            sql.execute( stmt )
+
+            String stmt = "${row.govurol_role} identified by \"${row.govurol_role_pswd}\""
+            sql = new Sql( conn.extractOracleConnection() )
+            sql.call("{call dbms_session.set_role(?)}", [stmt])
+
         } finally {
+            handler.flush();
+            String logMsg = out.toString();
+            assertFalse(logMsg.toLowerCase().contains("identified by"))
             if(conn) {
                 dataSource.removeConnection(conn);
             }
             sql?.close()
+            sqlLog.removeHandler(handler)
         }
     }
+
+
+    @Test
+    public void testSettingOracleRoleWithInValidPassword() {
+        BannerConnection conn
+        java.util.logging.Formatter formatter = new SimpleFormatter()
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        Handler handler = new StreamHandler(out, formatter)
+        sqlLog.addHandler(handler)
+
+        Sql sql
+        try {
+            conn = (dataSource as BannerDataSource).getUnproxiedConnection() as BannerConnection
+            sql = new Sql( conn.extractOracleConnection() )
+            // Retrieve the database role name and password for object STVINTS
+            def row = sql.firstRow( "select * from govurol where govurol_object = 'STVINTS' and govurol_userid = 'GRAILS_USER' " )
+
+            conn = (dataSource as BannerDataSource).proxyConnection( conn, "grails_user" ) as BannerConnection
+            sql = new Sql( conn.extractOracleConnection() )
+
+            String stmt = "${row.govurol_role} identified by 111"                   // ORA-01979: missing or invalid password for role 'BAN_DEFAULT_M'
+            sql = new Sql( conn.extractOracleConnection() )
+            sql.call("{call dbms_session.set_role(?)}", [stmt])
+
+        }
+        catch (SQLSyntaxErrorException sqlex) {
+            //do nothing  we will assert in Finally
+        }
+        finally {
+            handler.flush()
+            String logMsg = out.toString()
+            assertFalse(logMsg.toLowerCase().contains("identified by"))
+            assertTrue(logMsg.toLowerCase().contains("ora-01979: missing or invalid password for role 'ban_default_m'"))
+            if(conn) {
+                dataSource.removeConnection(conn);
+            }
+            sql?.close()
+            sqlLog.removeHandler(handler)
+        }
+    }
+
+
+
+    @Test
+    public void testSettingInValidOracleRole() {
+        BannerConnection conn
+        java.util.logging.Formatter formatter = new SimpleFormatter()
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        Handler handler = new StreamHandler(out, formatter)
+        sqlLog.addHandler(handler)
+
+        Sql sql
+        try {
+            conn = (dataSource as BannerDataSource).getUnproxiedConnection() as BannerConnection
+            sql = new Sql( conn.extractOracleConnection() )
+            // Retrieve the database role name and password for object STVINTS
+            def row = sql.firstRow( "select * from govurol where govurol_object = 'STVINTS' and govurol_userid = 'GRAILS_USER' " )
+
+            conn = (dataSource as BannerDataSource).proxyConnection( conn, "grails_user" ) as BannerConnection
+            sql = new Sql( conn.extractOracleConnection() )
+
+            String stmt = "Junk identified by \"${row.govurol_role_pswd}\""        //ORA-01924: role 'JUNK' not granted or does not exist
+            sql = new Sql( conn.extractOracleConnection() )
+            sql.call("{call dbms_session.set_role(?)}", [stmt])
+
+        }
+        catch (SQLSyntaxErrorException sqlex) {
+            //do nothing  we will assert in Finally
+        }
+        finally {
+            handler.flush();
+            String logMsg = out.toString();
+            assertFalse(logMsg.toLowerCase().contains("identified by"));
+            assertTrue(logMsg.toLowerCase().contains("ora-01924: role 'junk' not granted or does not exist"));
+            if(conn) {
+                dataSource.removeConnection(conn);
+            }
+            sql?.close()
+            sqlLog.removeHandler(handler)
+        }
+    }
+
 
     @Test
     public void testSSBTypeRequestWithNoProxy(){
@@ -256,13 +356,13 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testOracleMessageTranslationForSpanish(){
-        def locale = 'es'
+    public void testOracleMessageTranslationForMexicanSpanish(){
+        def locale = 'es_MX'
         def conn = (dataSource as BannerDS).getConnection()
         def sql = new Sql(conn)
         BannerDS.callNlsUtility(sql,locale)
         sql.eachRow("select VALUE from v\$nls_parameters where parameter='NLS_LANGUAGE'"){row->
-            assertEquals("SPANISH",row.value)
+            assertEquals("MEXICAN SPANISH",row.value)
         }
         if(sql) sql.close()
         if(conn) conn.close()
@@ -333,10 +433,9 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         try {
             setUpValidSSBTypeUser()
             loginSSB(username, password)
-            connection = bannerDS.getConnection()
+            connection = bannerDS.getSsbConnection()
             assertNotNull(connection)
         } finally {
-            dataSource.removeConnection(connection)
             if (connection) connection.close()
             tearDownDataSetup()
             resetConfigAsInTheFile()
@@ -407,7 +506,4 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         username = "grails_user"
         password = "u_pick_it"
     }
-
-
-
 }

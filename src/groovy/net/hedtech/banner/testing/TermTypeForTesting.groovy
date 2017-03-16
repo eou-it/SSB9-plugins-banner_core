@@ -1,13 +1,20 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 /**
  Banner Automator Version: 0.1.1
  Generated: Mon Jan 03 15:56:54 CST 2011
  */
 package net.hedtech.banner.testing
 
-import javax.persistence.*
+import javax.persistence.Entity
+import javax.persistence.Table
+import javax.persistence.Id
+import javax.persistence.Column
+import javax.persistence.GenerationType
+import javax.persistence.GeneratedValue
+import javax.persistence.Version
+import javax.persistence.SequenceGenerator
 
 /**
  * Term Type Validation Table.

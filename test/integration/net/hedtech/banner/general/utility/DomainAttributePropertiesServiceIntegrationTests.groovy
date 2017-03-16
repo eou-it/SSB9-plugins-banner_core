@@ -26,6 +26,72 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
     }
 
     @Test
+    void testExtractClassWithDomainName() {
+
+        def classMetadata
+        // facultyScheduleQueryView
+        classMetadata = domainAttributePropertiesService.extractClass("facultyScheduleQueryViewForTesting")
+        assertNotNull classMetadata
+        }
+    /*@Test
+    void testExtractClassWithInvalidDomainName() {
+
+        def classMetadata
+        // facultyScheduleQueryView
+        classMetadata = domainAttributePropertiesService.extractClass("invalid testing")
+        assertNull classMetadata
+    }*/
+    @Test
+    void testExtractClassWithNullDomainName() {
+
+        def classMetadata
+        // facultyScheduleQueryView
+        classMetadata = domainAttributePropertiesService.extractClass(null)
+        assertNull classMetadata
+    }
+
+    @Test
+    void testExtractClassWithEmptyDomainName() {
+
+        def classMetadata
+        // facultyScheduleQueryView
+        classMetadata = domainAttributePropertiesService.extractClass("")
+        assertNull classMetadata
+    }
+
+    @Test
+    void testgetDataLengthForColumn() {
+
+        def classMetadata
+        // facultyScheduleQueryView
+        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("facultyScheduleQueryViewForTesting")
+
+        def classMetadata1
+        // facultyScheduleQueryView
+        classMetadata1 = domainAttributePropertiesService.getDataLengthForColumn("SVQ_SIVASGQ",classMetadata.attributes.endTime.columnName)
+        assertNotNull  classMetadata1
+
+    }
+    @Test
+    void testINvalidgetDataLengthForColumn() {
+
+        def maxSize
+        // facultyScheduleQueryView
+        maxSize = domainAttributePropertiesService.getDataLengthForColumn("test_invalid","test invalid")
+        assertNull  maxSize
+
+    }
+    @Test
+    void testEmptygetDataLengthForColumn() {
+
+        def maxSize
+        // facultyScheduleQueryView
+        maxSize = domainAttributePropertiesService.getDataLengthForColumn("","")
+        assertNull  maxSize
+
+    }
+
+    @Test
     void testGetClassMetadataByEntityNameWithoutConstraintProperties() {
 
          def classMetadata
@@ -38,6 +104,32 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
          assertEquals "String", classMetadata.attributes.endTime.propertyType
 
      }
+
+    @Test
+    void testExtractClassMetadataByNameEmptyDomainName() {
+
+        def classMetadata
+        // facultyScheduleQueryView
+        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("")
+        assertNull classMetadata
+    }
+    @Test
+    void testExtractClassMetadataByNameNullDomainName() {
+
+        def classMetadata
+        // facultyScheduleQueryView
+        classMetadata = domainAttributePropertiesService.extractClassMetadataByName(null)
+        assertNull classMetadata
+    }
+    @Test
+    void testExtractClassMetadataByNameInvalidDomainName() {
+
+        def classMetadata
+        // facultyScheduleQueryView
+        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("invalid test")
+        assertNull classMetadata
+     }
+
 
 
     @Test
@@ -52,7 +144,7 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
          assertNotNull classMetadata
          assertNotNull classMetadata.attributes.facultyContractType
          assertEquals "String", classMetadata.attributes.facultyContractType.propertyType
-     }
+         }
 
 
     @Test
@@ -77,7 +169,6 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertEquals new Integer(999), classMetadata.attributes.sequenceNumber.max
         assertEquals new Integer(-999), classMetadata.attributes.sequenceNumber.min
         assertEquals "Integer", classMetadata.attributes.sequenceNumber.propertyType
-
         assertEquals "SCRCLBD_CRSE_NUMB", classMetadata.attributes.courseNumber.columnName
         assertEquals 5, classMetadata.attributes.courseNumber.maxSize
         assertEquals "String", classMetadata.attributes.courseNumber.propertyType
@@ -101,12 +192,8 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertEquals "Integer", classMetadata?.attributes?.financialEndPeriod?.propertyType
         assertNull classMetadata.attributes.financialEndPeriod?.max
         assertNull classMetadata.attributes.financialEndPeriod?.min
-
-
-
         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("foo")
         assertNotNull classMetadata
-
         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("courseLaborDistributionForTesting")
         assertNotNull classMetadata
 
@@ -116,6 +203,25 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("studentBlock")
         assertNull classMetadata
 
+    }
+
+    @Test
+    void testExtractClassMetadataByNullId() {
+        def classMetadata
+        classMetadata = domainAttributePropertiesService.extractClassMetadataById(null)
+        assertNull classMetadata
+    }
+    @Test
+    void testExtractClassMetadataByEmptyId() {
+        def classMetadata
+        classMetadata = domainAttributePropertiesService.extractClassMetadataById("")
+        assertNull classMetadata
+    }
+    @Test
+    void testExtractClassMetadataByInvalidId() {
+        def classMetadata
+        classMetadata = domainAttributePropertiesService.extractClassMetadataById("invalid testing")
+        assertNull classMetadata
     }
 
     @Test

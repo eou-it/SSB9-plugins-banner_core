@@ -1,10 +1,9 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.testing
 
 import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.Before
 import org.junit.After
 
@@ -45,7 +44,7 @@ class AreaLibraryIntegrationTests extends BaseIntegrationTestCase {
 
             def localizer = new TermController().localizer // just using this as a quick way to get a localizer closure
             def returnMap = ae.returnMap( localizer )
-            def msg = returnMap.underlyingErrorMessage
+            returnMap.underlyingErrorMessage
             assertTrue "Underlying error message not as expected but was ${returnMap.underlyingErrorMessage}",
                         returnMap.underlyingErrorMessage.contains( "ORA-01465: invalid hex number" )
             assertTrue "Message not as expected but was ${returnMap.message}",

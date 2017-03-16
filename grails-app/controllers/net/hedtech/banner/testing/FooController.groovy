@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.testing
 
@@ -14,14 +14,6 @@ class FooController  {
 
 
     def invokedRenderCallbacks = [] // this is used for testing the framework -- it is NOT something controllers would normally have
-
-
-    // A constructor is only needed when you need to explicitly set a domainClass or serviceName (see comments below).
-    public FooRestfulController() {
-        // domainClass = "Foo"        // explicitly set only when not following normal naming conventions for your controller
-        // serviceName = "fooService" // explicitly set only when not following normal grails naming conventions
-    }
-
 
     def index = {
         redirect( action: "view", params: params )

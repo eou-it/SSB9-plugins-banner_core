@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 package net.hedtech.banner.testing
 
@@ -59,5 +59,29 @@ class Bar  {  // Based on the Banner 'Interest' model
 	        system_required_indicator column: "stvints_system_req_ind" 
 	    }  
   	}
+
+    public String toString() {
+        "Bar[id=$id,description=$description, activity_date=$activity_date, system_required_indicator=$system_required_indicator]"
+    }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (!(o instanceof Bar)) return false
+        Bar that = (Bar) o
+        if (id != that.id) return false
+        if (description != that.description) return false
+        if (activity_date != that.activity_date) return false
+        if (system_required_indicator != that.system_required_indicator) return false
+        return true
+    }
+
+    int hashCode() {
+        int result
+        result = (id != null ? id.hashCode() : 0)
+        result = 31 * result + (description != null ? description.hashCode() : 0)
+        result = 31 * result + (activity_date != null ? activity_date.hashCode() : 0)
+        result = 31 * result + (system_required_indicator != null ? system_required_indicator.hashCode() : 0)
+        return result
+    }
 	
 }

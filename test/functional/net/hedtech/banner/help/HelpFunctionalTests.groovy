@@ -1,10 +1,8 @@
 /*******************************************************************************
-Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.help
 
-import grails.util.Holders
-import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.testing.BaseFunctionalTestCase
 import org.junit.After
 import org.junit.Before
@@ -24,7 +22,7 @@ class HelpFunctionalTests extends BaseFunctionalTestCase {
 
     @After
     public void tearDown() {
-        FormContext.clear()
+        super.tearDown()
     }
     // -------------------------------- Test JSON Representations ---------------------------------
 

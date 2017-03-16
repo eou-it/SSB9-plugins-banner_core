@@ -1,0 +1,97 @@
+/*******************************************************************************
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
+
+body,html {
+    font-size: 16px;
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+}
+/* Regular */
+@font-face {
+    font-family: 'OpenSans-Regular';
+
+    src: url('fonts/OpenSans-Regular-webfont.eot');
+    src: url('fonts/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+    url('fonts/OpenSans-Regular-webfont.woff') format('woff'),
+    url('fonts/OpenSans-Regular-webfont.ttf') format('truetype'),
+    url('fonts/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: normal;
+    font-weight: 400;
+    font-style: normal;
+
+}
+/* SemiBold */
+@font-face {
+    font-family: 'OpenSans-Semibold';
+    src: url('fonts/OpenSans-Semibold-webfont.eot');
+    src: url('fonts/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+    url('fonts/OpenSans-Semibold-webfont.woff') format('woff'),
+    url('fonts/OpenSans-Semibold-webfont.ttf') format('truetype'),
+    url('fonts/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+    font-weight: 500;
+    font-style: normal;
+
+}
+/* Bold */
+@font-face {
+    font-family: 'OpenSans-bold';
+    src: url('fonts/OpenSans-Bold-webfont.eot');
+    src: url('fonts/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+    url('fonts/OpenSans-Bold-webfont.woff') format('woff'),
+    url('fonts/OpenSans-Bold-webfont.ttf') format('truetype'),
+    url('fonts/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+    font-weight: bold;
+    font-weight: 700;
+    font-style: normal;
+}
+#banner-header-main-section {
+    width: 100%;
+    background-color: #206E9F;
+    height: 5.859375%;
+    position: relative;
+    min-height: 3.4em;
+}
+#banner-header-main-section * {
+    box-sizing: content-box;
+}
+#banner-header-main-section-west-part {
+    left: 0;
+    position: absolute;
+    right: auto;
+    height: 100%;
+}
+.banner-header-theme {
+    font-size: 16px !important;
+    font-family: "OpenSans-Regular";
+}
+#banner-header-main-section-west-part , #banner-header-main-section-west-part #brandingDiv {
+    float: left;
+}
+.institutionalBranding {
+    background: url("../images/logo.svg") left center no-repeat;
+    height: inherit;
+    width: 15em;
+    float: left;
+    margin-left: 1em;
+    margin-right: 0;
+    padding-right: 1em;
+    padding-left: 0;
+}
+#brandingDiv, #branding {
+    height: inherit;
+}
+@media only screen and (min-width: 1024px) {
+    .institutionalBranding {
+        width: 20em;
+    }
+    #banner-header-main-section {
+        height: 6.510416666666667%;
+        display: inline-block;
+        min-height: 3.7em;
+    }
+    .common-button-primary {
+        font-size: 0.875em;
+   }
+}
