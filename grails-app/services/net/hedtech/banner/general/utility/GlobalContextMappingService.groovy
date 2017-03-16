@@ -10,7 +10,6 @@ import groovy.sql.Sql
 class GlobalContextMappingService {
 
     static transactional = true
-    private final Logger log = Logger.getLogger(GlobalContextMappingService.class)
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
 
