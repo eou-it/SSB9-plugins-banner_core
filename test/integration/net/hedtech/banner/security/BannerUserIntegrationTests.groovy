@@ -10,6 +10,7 @@ import org.junit.Before
 import org.junit.Test
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.util.SerializationUtils
+import org.springframework.web.context.request.RequestContextHolder
 
 class BannerUserIntegrationTests extends BaseIntegrationTestCase {
 
@@ -24,6 +25,10 @@ class BannerUserIntegrationTests extends BaseIntegrationTestCase {
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
+        println "*****************************************************************"
+        println RequestContextHolder.currentRequestAttributes().request.session
+        println RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
+        println "*****************************************************************"
         conn = dataSource.getSsbConnection()
         sqlObj = new Sql(conn)
         PERSON_PIDM =  getPidmBySpridenId(PERSON)

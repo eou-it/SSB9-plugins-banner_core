@@ -12,6 +12,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * Intergration test cases for banner authentication provider
@@ -35,6 +36,10 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
         conn = dataSource.getConnection()
         sqlObj = new Sql( conn )
         provider = Holders.applicationContext.getBean("bannerAuthenticationProvider")
+        println "*****************************************************************"
+        println RequestContextHolder.currentRequestAttributes().request.session
+        println RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
+        println "*****************************************************************"
     }
 
     @After

@@ -36,6 +36,11 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
 
     @After
     public void tearDown() {
+        println "*****************************************************************"
+        println RequestContextHolder.currentRequestAttributes().request.session
+        println RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
+        println "*****************************************************************"
+        //RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
         super.tearDown()
     }
 

@@ -17,6 +17,7 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.web.context.request.RequestContextHolder
 
 
 class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCase {
@@ -39,6 +40,10 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
         Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken('INTGRN',111111))
         SecurityContextHolder.getContext().setAuthentication( auth )
         super.setUp()
+        println "*****************************************************************"
+        println RequestContextHolder.currentRequestAttributes().request.session
+        println RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
+        println "*****************************************************************"
     }
 
     @After
