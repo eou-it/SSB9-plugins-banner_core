@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.security
@@ -25,9 +25,7 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
     def bannerPreAuthenticatedFilter
     def selfServiceBannerAuthenticationProvider
     String gobeaccUserName = 'GRAILS_USER'
-    def conn
     def bannerPIDM
-    def dataSource
 
     public static final String UDC_IDENTIFIER = 'INTEGRATION_TEST_SAML'
 
@@ -35,7 +33,6 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
     public void setUp() {
         formContext = ['GUAGMNU']
         Holders.config.ssbEnabled = true
-        conn = dataSource.getSsbConnection()
         bannerPIDM = getBannerPIDM()
         Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken('INTGRN',111111))
         SecurityContextHolder.getContext().setAuthentication( auth )
@@ -44,7 +41,6 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
 
     @After
     public void tearDown() {
-        conn?.close()
         logout()
         super.tearDown()
     }
@@ -77,12 +73,17 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
 
 
     private def getBannerPIDM() {
-        Sql sqlObj = new Sql(conn)
-        ''
-        String pidmQuery = """SELECT GOBEACC_PIDM FROM GOBEACC WHERE GOBEACC_USERNAME = ?"""
+        Sql sqlObj
         def bPIDM = 0
-        sqlObj.eachRow(pidmQuery, [gobeaccUserName]) { row ->
-            bPIDM = row.GOBEACC_PIDM
+        try {
+            sqlObj = new Sql(sessionFactory.getCurrentSession().connection())
+            String pidmQuery = """SELECT GOBEACC_PIDM FROM GOBEACC WHERE GOBEACC_USERNAME = ?"""
+
+            sqlObj.eachRow(pidmQuery, [gobeaccUserName]) { row ->
+                bPIDM = row.GOBEACC_PIDM
+            }
+        }finally {
+            sqlObj?.close()
         }
         bPIDM
     }
