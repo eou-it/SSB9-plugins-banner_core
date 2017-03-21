@@ -16,6 +16,7 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.web.context.request.RequestContextHolder
 
 class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCase {
 
@@ -28,9 +29,10 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
         Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken('INTGRN',111111))
         SecurityContextHolder.getContext().setAuthentication( auth )
-        Holders.config.ssbEnabled = false
+        Holders.config.ssbEnabled = true
         super.setUp()
         Holders?.config.banner.sso.authenticationAssertionAttribute = "UDC_IDENTIFIER"
         Holders?.config.banner.sso.authenticationProvider = "external"
