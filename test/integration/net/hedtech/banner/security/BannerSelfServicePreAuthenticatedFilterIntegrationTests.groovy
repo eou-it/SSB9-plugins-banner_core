@@ -40,10 +40,6 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
         Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken('INTGRN',111111))
         SecurityContextHolder.getContext().setAuthentication( auth )
         super.setUp()
-        println "*****************************************************************"
-        println RequestContextHolder.currentRequestAttributes().request.session
-        println RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
-        println "*****************************************************************"
     }
 
     @After

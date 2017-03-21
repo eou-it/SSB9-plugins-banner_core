@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
+import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -25,10 +26,8 @@ class BannerUserIntegrationTests extends BaseIntegrationTestCase {
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
-        println "*****************************************************************"
-        println RequestContextHolder.currentRequestAttributes().request.session
-        println RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
-        println "*****************************************************************"
+        Holders.config.ssbEnabled = true
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
         conn = dataSource.getSsbConnection()
         sqlObj = new Sql(conn)
         PERSON_PIDM =  getPidmBySpridenId(PERSON)
