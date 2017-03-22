@@ -11,24 +11,28 @@ import org.junit.Before
 import org.junit.Test
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.util.SerializationUtils
+import org.springframework.web.context.request.RequestContextHolder
 
 class BannerUserIntegrationTests extends BaseIntegrationTestCase {
 
     def selfServiceBannerAuthenticationProvider
     def conn
     public static final String PERSON = 'HOSWEB002'
-    Sql sqlObj
+    def sqlObj
     def PERSON_PIDM
     def PERSON_PASSWORD= 111111
+    def dataSource
 
     @Before
     public void setUp() {
+        formContext = ['GUAGMNU']
+        Holders.config.ssbEnabled = true
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
         conn = dataSource.getSsbConnection()
         sqlObj = new Sql(conn)
         PERSON_PIDM =  getPidmBySpridenId(PERSON)
         existingUser(PERSON_PIDM,PERSON_PASSWORD)
         enableUser (PERSON_PIDM)
-        formContext = ['GUAGMNU']
         super.setUp()
     }
 
@@ -36,6 +40,7 @@ class BannerUserIntegrationTests extends BaseIntegrationTestCase {
     public void tearDown() {
         sqlObj?.close()
         conn?.close()
+        super.tearDown()
     }
 
     @Test

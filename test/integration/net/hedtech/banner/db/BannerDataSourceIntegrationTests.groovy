@@ -22,6 +22,7 @@ import org.springframework.web.context.request.ServletRequestAttributes
 import java.sql.Connection
 import java.sql.SQLSyntaxErrorException
 import java.util.logging.Handler
+import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.SimpleFormatter
 import java.util.logging.StreamHandler
@@ -55,10 +56,12 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         super.setUp()
         config = Holders.getConfig()
         bannerDS = (dataSource as BannerDS)
+        sqlLog.setLevel(Level.WARNING)
     }
 
     @After
     public void tearDown(){
+        sqlLog.setLevel(Level.OFF)
         super.tearDown()
     }
 
@@ -213,12 +216,11 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
         } finally {
             handler.flush();
-            String logMsg = out.toString();
+            String logMsg = out.toString()
+            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
             assertFalse(logMsg.toLowerCase().contains("identified by"))
-            if(conn) {
-                dataSource.removeConnection(conn);
-            }
-            sql?.close()
+            conn.close()
+            sql.close()
             sqlLog.removeHandler(handler)
         }
     }
@@ -253,12 +255,11 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         finally {
             handler.flush()
             String logMsg = out.toString()
+            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             assertTrue(logMsg.toLowerCase().contains("ora-01979: missing or invalid password for role 'ban_default_m'"))
-            if(conn) {
-                dataSource.removeConnection(conn);
-            }
-            sql?.close()
+            conn.close()
+            sql.close()
             sqlLog.removeHandler(handler)
         }
     }
@@ -292,14 +293,13 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
             //do nothing  we will assert in Finally
         }
         finally {
-            handler.flush();
-            String logMsg = out.toString();
-            assertFalse(logMsg.toLowerCase().contains("identified by"));
-            assertTrue(logMsg.toLowerCase().contains("ora-01924: role 'junk' not granted or does not exist"));
-            if(conn) {
-                dataSource.removeConnection(conn);
-            }
-            sql?.close()
+            handler.flush()
+            String logMsg = out.toString()
+            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
+            assertFalse(logMsg.toLowerCase().contains("identified by"))
+            assertTrue(logMsg.toLowerCase().contains("ora-01924: role 'junk' not granted or does not exist"))
+            conn.close()
+            sql.close()
             sqlLog.removeHandler(handler)
         }
     }

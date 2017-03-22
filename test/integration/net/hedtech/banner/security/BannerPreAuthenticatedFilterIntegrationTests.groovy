@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.security
@@ -13,32 +13,34 @@ import org.junit.Test
 import org.springframework.mock.web.MockFilterChain
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.web.context.request.RequestContextHolder
 
 class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCase {
 
     def bannerPreAuthenticatedFilter
-    def gobeaccUserName = 'GRAILS_USER'
-    def conn
+    String gobeaccUserName = 'GRAILS_USER'
     def bannerPIDM
-    def dataSource
 
     public static final String UDC_IDENTIFIER = 'INTEGRATION_TEST_SAML'
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
-        //super.setUp()
-        Holders.config.ssbEnabled = false
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
+        Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken('INTGRN',111111))
+        SecurityContextHolder.getContext().setAuthentication( auth )
+        Holders.config.ssbEnabled = true
+        super.setUp()
         Holders?.config.banner.sso.authenticationAssertionAttribute = "UDC_IDENTIFIER"
         Holders?.config.banner.sso.authenticationProvider = "external"
-        conn = dataSource.getUnproxiedConnection()
         bannerPIDM = getBannerPIDM()
     }
 
     @After
     public void tearDown() {
-        conn?.close()
         logout()
         super.tearDown()
     }
@@ -48,14 +50,15 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
         Holders?.config.grails.plugin.springsecurity.interceptUrlMap.remove("/**")
         Holders?.config.grails.plugin.springsecurity.interceptUrlMap.put('/ssb/**', ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
 
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRequestURI("/ssb/foo");
+        MockHttpServletRequest request = new MockHttpServletRequest()
+        request.setRequestURI("/ssb/foo")
         request.addHeader("UDC_IDENTIFIER", UDC_IDENTIFIER)
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        MockFilterChain chain = new MockFilterChain();
+        MockHttpServletResponse response = new MockHttpServletResponse()
+        MockFilterChain chain = new MockFilterChain()
 
-        bannerPreAuthenticatedFilter.doFilter(request, response, chain);
+        bannerPreAuthenticatedFilter.doFilter(request, response, chain)
 
+        println "User is " + SecurityContextHolder.context.getAuthentication().user
         assertEquals SecurityContextHolder.context.getAuthentication().user.pidm, Integer.valueOf(bannerPIDM.intValue())
 
         assertNotNull(SecurityContextHolder.context.getAuthentication())
@@ -67,13 +70,13 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
         Holders?.config.grails.plugin.springsecurity.interceptUrlMap.remove("/**")
         Holders?.config.grails.plugin.springsecurity.interceptUrlMap.put('/ssb/**', ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
 
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRequestURI("/ssb/foo");
+        MockHttpServletRequest request = new MockHttpServletRequest()
+        request.setRequestURI("/ssb/foo")
         SecurityContextHolder.context?.authentication = null  //clear context
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        MockFilterChain chain = new MockFilterChain();
+        MockHttpServletResponse response = new MockHttpServletResponse()
+        MockFilterChain chain = new MockFilterChain()
 
-        bannerPreAuthenticatedFilter.doFilter(request, response, chain);
+        bannerPreAuthenticatedFilter.doFilter(request, response, chain)
 
         def msg = request.getSession()?.SPRING_SECURITY_LAST_EXCEPTION?.getMessage()
         assertEquals msg, "System is configured for external authentication and identity assertion UDC_IDENTIFIER is null"
@@ -90,7 +93,7 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
         def udc_identifier = "2"
         request.addHeader("UDC_IDENTIFIER", udc_identifier)
         SecurityContextHolder.context?.authentication = null  //clear context
-        MockHttpServletResponse response = new MockHttpServletResponse();
+        MockHttpServletResponse response = new MockHttpServletResponse()
         MockFilterChain chain = new MockFilterChain();
 
         bannerPreAuthenticatedFilter.doFilter(request, response, chain);
@@ -150,12 +153,17 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
     //----------------------------- Helper Methods ------------------------------
 
     private def getBannerPIDM() {
-        Sql sqlObj = new Sql(conn)
-        ''
-        String pidmQuery = """SELECT GOBEACC_PIDM FROM GOBEACC WHERE GOBEACC_USERNAME = ?"""
+        Sql sqlObj
         def bPIDM = 0
-        sqlObj.eachRow(pidmQuery, [gobeaccUserName]) { row ->
-            bPIDM = row.GOBEACC_PIDM
+        try {
+            sqlObj = new Sql(sessionFactory.getCurrentSession().connection())
+            String pidmQuery = """SELECT GOBEACC_PIDM FROM GOBEACC WHERE GOBEACC_USERNAME = ?"""
+            sqlObj.eachRow(pidmQuery, [gobeaccUserName]) { row ->
+                bPIDM = row.GOBEACC_PIDM
+            }
+        }
+        finally {
+            sqlObj?.close()
         }
         bPIDM
     }
