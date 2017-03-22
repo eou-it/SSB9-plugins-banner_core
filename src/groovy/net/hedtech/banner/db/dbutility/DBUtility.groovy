@@ -15,7 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder
  */
 class DBUtility {
 
-    private final static Logger log = Logger.getLogger(getClass())
+    private final static Logger log = Logger.getLogger(DBUtility.class)
 
     private static def config = Holders.getConfig()
 

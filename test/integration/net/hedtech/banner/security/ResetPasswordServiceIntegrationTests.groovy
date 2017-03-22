@@ -20,21 +20,15 @@ class ResetPasswordServiceIntegrationTests extends BaseIntegrationTestCase{
 
     @Before
     public void setUp(){
-      //  conn = dataSource.getSsbConnection()
-      //  db = new Sql( conn )
-      //  dataSetup()
-      //super.setUp()
+        formContext = ['GUAGMNU']
+        super.setUp()
     }
 
 	@After
     public void tearDown() {
-        //super.tearDown()
+        super.tearDown()
     }
 
-    @Test
-    void testDummy() {
-
-    }
     @Test
     void testContainsNumber() {
         assertTrue(resetPasswordService.containsNumber("123123"))

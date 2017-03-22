@@ -87,6 +87,10 @@ class BannerGrantedAuthorityService {
         }
 
         try {
+            def traceDS = Logger.getLogger(net.hedtech.banner.db.BannerDS.class).isTraceEnabled()
+            if (traceDS) {
+                sqlObject.call "{call dbms_application_info.set_module( 'SELFSERVICE', 'GETROLES' )}"
+            }
             String query = """
 	                select GOVUROL_OBJECT, GOVUROL_ROLE from govurol,gubobjs
 	                    where govurol_userid = ? and
@@ -98,6 +102,9 @@ class BannerGrantedAuthorityService {
                  * Set the role password as null initially as we are no longer fetching it during login.
                  */
                 authorities << BannerGrantedAuthority.create(row.GOVUROL_OBJECT, row.GOVUROL_ROLE, null)
+            }
+            if (traceDS) {
+                sqlObject.call "{call dbms_application_info.set_module( NULL, NULL )}"
             }
         } catch (SQLException e) {
             staticLogger.warn "UserAuthorityService not able to determine Authorities for user ${oracleUserName} due to exception $e.message"

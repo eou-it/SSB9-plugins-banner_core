@@ -26,7 +26,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
     def selfServiceBannerAuthenticationProvider
     def conn
     Authentication auth
-    public static final String PERSON = 'HOSFE0002'
+    public static final String PERSON = 'HOSWEB002'
     def PERSON_PIDM
     GroovyRowResult row
     int minLength
@@ -52,6 +52,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
 
     @After
     public void tearDown() {
+        logout()
         super.tearDown()
         sql.close()
         conn.close()
