@@ -51,7 +51,7 @@ public class BannerDS implements DataSource {
 
     MultiEntityProcessingService multiEntityProcessingService
 
-    private final static Logger log = Logger.getLogger("net.hedtech.banner.db.BannerDS")
+    private final static Logger log = Logger.getLogger(BannerDS.class)
 
     private isAnonymousUser (def user) {
         user?.authorities?.size() && user?.authorities[0]?.authority == 'ROLE_ANONYMOUS'
