@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.security
@@ -17,15 +17,10 @@ import org.springframework.web.context.request.RequestContextHolder
 /**
  * Intergration test cases for banner authentication provider
  */
-@Ignore("Ignoing to debug the hanging issue")
+
 class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
 
     private BannerAuthenticationProvider provider
-    def conn
-    Sql sqlObj
-    def usage
-    public final String LFMI = "LFMI"
-    public final String DEFAULT = "DEFAULT"
     def dataSource
 
 
@@ -33,28 +28,21 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        conn = dataSource.getConnection()
-        sqlObj = new Sql( conn )
         provider = Holders.applicationContext.getBean("bannerAuthenticationProvider")
-        println "*****************************************************************"
-        println RequestContextHolder.currentRequestAttributes().request.session
-        println RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
-        println "*****************************************************************"
-    }
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
+        }
 
     @After
     public void tearDown() {
-        sqlObj.close()
-        conn.close()
-        super.tearDown();
+        super.tearDown()
     }
 
 
     @Test
     public void testBannerAuthentiationWithSpecificUsage() {
         Holders.config.ssbEnabled = false
-        Holders?.config?.productName = "testApp_LFMI";
-        Holders?.config?.banner?.applicationName = "testApp_LFMI";
+        Holders?.config?.productName = "testApp_LFMI"
+        Holders?.config?.banner?.applicationName = "testApp_LFMI"
 
         def auth = bannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken( "GRAILS_USER", "u_pick_it" ) )
 
@@ -65,10 +53,8 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
     @Test
     public void testBannerAuthentiationWithDefaultUsage() {
         Holders.config.ssbEnabled = false
-        Holders?.config?.productName = "Student";
-        Holders?.config?.banner?.applicationName = "testApp";
-
-        def existingUser = [name: "GRAILS_USER", pin: "u_pick_it"]
+        Holders?.config?.productName = "Student"
+        Holders?.config?.banner?.applicationName = "testApp"
 
         def auth = bannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken( "GRAILS_USER", "u_pick_it" ) )
 
@@ -79,10 +65,8 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
     @Test
     public void testBannerAuthentiationWithOutUsage() {
         Holders.config.ssbEnabled = false
-        Holders?.config?.productName = "testApp";
-        Holders?.config?.banner?.applicationName = "testApp";
-
-        def existingUser = [name: "GRAILS_USER", pin: "u_pick_it"]
+        Holders?.config?.productName = "testApp"
+        Holders?.config?.banner?.applicationName = "testApp"
 
         def auth = bannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken( "GRAILS_USER", "u_pick_it" ) )
 
@@ -102,5 +86,4 @@ class BannerAuthenticationProviderTests extends BaseIntegrationTestCase {
         assertNotNull(provider.getFullName("HOP510001", dataSource))
         assertNotNull(provider.getFullName("ADVISOR1", dataSource))
     }
-
 }
