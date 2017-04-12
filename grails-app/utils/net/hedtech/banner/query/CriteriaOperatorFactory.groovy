@@ -9,10 +9,8 @@ import net.hedtech.banner.query.operators.NotEqualsOrIsNullOperator
 import net.hedtech.banner.query.operators.NotEqualsOperator
 import net.hedtech.banner.query.operators.GreaterThanOperator
 import net.hedtech.banner.query.operators.GreaterThanEqualsOperator
-import net.hedtech.banner.query.operators.LessThanOperator
-import net.hedtech.banner.query.operators.LessThanOrIsNullOperator
 import net.hedtech.banner.query.operators.LessThanEqualsOperator
-import net.hedtech.banner.query.operators.LessEqualsOrIsNullOperator;
+
 import net.hedtech.banner.query.operators.Operators;
 import net.hedtech.banner.query.operators.CriteriaOperator
 
@@ -52,17 +50,8 @@ class CriteriaOperatorFactory {
             case Operators.GREATER_THAN_EQUALS:
                 return new GreaterThanEqualsOperator()
                 break;
-            case Operators.LESS_THAN:
-                return new LessThanOperator()
-                break;
-            case Operators.LESS_THAN_OR_IS_NULL:
-                return new LessThanOrIsNullOperator()
-                break;
             case Operators.LESS_THAN_EQUALS:
                 return new LessThanEqualsOperator()
-                break;
-            case Operators.LESS_THAN_EQUALS_OR_IS_NULL:
-                return new LessEqualsOrIsNullOperator()
                 break;
         }
     }
