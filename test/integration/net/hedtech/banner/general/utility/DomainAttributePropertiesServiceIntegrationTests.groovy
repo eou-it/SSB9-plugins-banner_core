@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 package net.hedtech.banner.general.utility
@@ -29,18 +29,10 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
     void testExtractClassWithDomainName() {
 
         def classMetadata
-        // facultyScheduleQueryView
-        classMetadata = domainAttributePropertiesService.extractClass("facultyScheduleQueryViewForTesting")
+        classMetadata = domainAttributePropertiesService.extractClass("academicYearForTesting")
         assertNotNull classMetadata
         }
-    /*@Test
-    void testExtractClassWithInvalidDomainName() {
 
-        def classMetadata
-        // facultyScheduleQueryView
-        classMetadata = domainAttributePropertiesService.extractClass("invalid testing")
-        assertNull classMetadata
-    }*/
     @Test
     void testExtractClassWithNullDomainName() {
 
@@ -59,19 +51,7 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertNull classMetadata
     }
 
-    @Test
-    void testgetDataLengthForColumn() {
 
-        def classMetadata
-        // facultyScheduleQueryView
-        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("facultyScheduleQueryViewForTesting")
-
-        def classMetadata1
-        // facultyScheduleQueryView
-        classMetadata1 = domainAttributePropertiesService.getDataLengthForColumn("SVQ_SIVASGQ",classMetadata.attributes.endTime.columnName)
-        assertNotNull  classMetadata1
-
-    }
     @Test
     void testINvalidgetDataLengthForColumn() {
 
@@ -95,13 +75,13 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
     void testGetClassMetadataByEntityNameWithoutConstraintProperties() {
 
          def classMetadata
-         // facultyScheduleQueryView
-         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("facultyScheduleQueryViewForTesting")
+         // academicYearForTesting
+         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("academicYearForTesting")
 
          assertNotNull classMetadata
-         assertEquals "SIVASGQ_END_TIME", classMetadata.attributes.endTime.columnName
-         assertEquals 4, classMetadata.attributes.endTime.maxSize,  1e-8
-         assertEquals "String", classMetadata.attributes.endTime.propertyType
+         assertEquals "STVACYR_CODE", classMetadata.attributes.code.columnName
+         assertEquals 4, classMetadata.attributes.code.maxSize
+         assertEquals "String", classMetadata.attributes.code.propertyType
 
      }
 
