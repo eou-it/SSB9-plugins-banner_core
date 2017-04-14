@@ -5,7 +5,7 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 package net.hedtech.banner.general.utility
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import net.hedtech.banner.testing.InstructorQueryView
+import net.hedtech.banner.testing.ZipForTesting
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -116,14 +116,13 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
     void testGetClassMetadataByPojo() {
 
          def classMetadata
-         // InstructorQueryView
-         def instructorQueryView = new InstructorQueryView()
+         def zipForTesting = new ZipForTesting()
 
-         classMetadata = domainAttributePropertiesService.extractClassMetadataByPojo(instructorQueryView)
+         classMetadata = domainAttributePropertiesService.extractClassMetadataByPojo(zipForTesting)
 
          assertNotNull classMetadata
-         assertNotNull classMetadata.attributes.facultyContractType
-         assertEquals "String", classMetadata.attributes.facultyContractType.propertyType
+         assertNotNull classMetadata.attributes.code
+         assertEquals "String", classMetadata.attributes.code.propertyType
          }
 
 
