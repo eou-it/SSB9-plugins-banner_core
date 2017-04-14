@@ -2,13 +2,10 @@ package net.hedtech.banner.query
 
 import net.hedtech.banner.query.operators.EqualsOperator
 import net.hedtech.banner.query.operators.BetweenOperator
-import net.hedtech.banner.query.operators.EqualsIgnoreCaseOperator
-import net.hedtech.banner.query.operators.EqualsOrIsNullOperator
-import net.hedtech.banner.query.operators.NotEqualsIgnoreCaseOperator
-import net.hedtech.banner.query.operators.NotEqualsOrIsNullOperator
-import net.hedtech.banner.query.operators.NotEqualsOperator
+
 import net.hedtech.banner.query.operators.GreaterThanOperator
 import net.hedtech.banner.query.operators.GreaterThanEqualsOperator
+import net.hedtech.banner.query.operators.LessThanOperator
 import net.hedtech.banner.query.operators.LessThanEqualsOperator
 
 import net.hedtech.banner.query.operators.Operators;
@@ -29,26 +26,14 @@ class CriteriaOperatorFactory {
             case "numericbetween": //TODO need to remove this when numeric between is removed from all zuls
                 return new BetweenOperator();
                 break;
-            case Operators.EQUALS_IGNORE_CASE:
-                return new EqualsIgnoreCaseOperator();
-                break;
-            case Operators.EQUALS_OR_IS_NULL:
-                return new EqualsOrIsNullOperator()
-                break;
-            case Operators.NOT_EQUALS_IGNORE_CASE:
-                return new NotEqualsIgnoreCaseOperator()
-                break;
-            case Operators.NOT_EQUALS_OR_IS_NULL:
-                return new NotEqualsOrIsNullOperator()
-                break;
-            case Operators.NOT_EQUALS:
-                return new NotEqualsOperator()
-                break;
             case Operators.GREATER_THAN:
                 return new GreaterThanOperator()
                 break;
             case Operators.GREATER_THAN_EQUALS:
                 return new GreaterThanEqualsOperator()
+                break;
+            case Operators.LESS_THAN:
+                return new LessThanOperator()
                 break;
             case Operators.LESS_THAN_EQUALS:
                 return new LessThanEqualsOperator()
