@@ -24,7 +24,6 @@ import java.sql.SQLException
  **/
 class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 
-    def zipService
     private validationTagLibInstance
 
     @Before
@@ -32,7 +31,6 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
         formContext = ['GUAGMNU']
         super.setUp()
         controller = new TermController()
-        controller.zipService = zipService
     }
 
     @After
