@@ -13,6 +13,10 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login.css')}"/>
     </g:if>
+    <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
+    <g:if test="${themeConfig.url}">
+        <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${session.mep ?: themeConfig.name}&template=${themeConfig.template}&mep=${session.mep}">
+    </g:if>
 </head>
 
 <body class="pageBg">
@@ -37,6 +41,8 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
             <g:message code="net.hedtech.banner.login.prompt"/>
         </g:else>
     </div>
+
+    <div class="ellucianName" style="display:none">ellucian<span>&trade;</span></div>
 
     <div id="userNameTxt" style="display: none;">User Name</div>
 
