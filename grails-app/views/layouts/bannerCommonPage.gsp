@@ -15,13 +15,6 @@ Copyright 2017 Ellucian Company L.P. and its affiliates.
         <r:require modules="bannerCommonLTR"/>
     </g:else>
 
-
-    <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
-    <g:if test="${themeConfig.url}">
-        <link rel="stylesheet" type="text/css"
-              href="${themeConfig.url}/getTheme?name=${session.mep ?: themeConfig.name}&template=${themeConfig.template}&mep=${session.mep}">
-    </g:if>
-
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="menuBaseURL" content="${request.contextPath}/ssb"/>
     <meta charset="${message(code: 'default.character.encoding')}"/>
@@ -30,6 +23,11 @@ Copyright 2017 Ellucian Company L.P. and its affiliates.
     <r:layoutResources/>
     <g:layoutHead/>
     <g:customStylesheetIncludes/>
+
+    <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
+    <g:if test="${themeConfig.url}">
+        <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${session.mep ?: themeConfig.name}&template=${themeConfig.template}&mep=${session.mep}">
+    </g:if>
 </head>
 
 <body>
