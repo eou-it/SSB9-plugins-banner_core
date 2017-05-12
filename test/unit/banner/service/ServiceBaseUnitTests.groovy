@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package banner.service
 
@@ -92,13 +92,6 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
     @Test
     void testCreateUsingModelInstanceAndNotFlushingSession() {
-        // actually, can't really test that via mocking, but we'll at least test signatures here and
-        // implement 'real' testing to the FooServiceIntegrationTests. The below is more or less, documentation.
-        def createdDomains = [ svc.create( new MyMock( newMyMockParams() ), false ), // yup, looks like we can pass a boolean
-                               svc.create( new MyMock( newMyMockParams() ), false ), // without getting a methodMissing exception
-                               svc.create( new MyMock( newMyMockParams() ), false ) ]
-        // since the mocking library won't delegate to the session (as it isn't even mocked normally),
-        // all we'll really be able to do here is ensure we don't get a method missing exception...
         // Ideally, the mocking will become more sophisticated to handle flush: true.
         svc.flush()
     }
@@ -183,10 +176,14 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
     void testUpdateUsingParamsMap() {
         def existingModel = MyMock.findByName( 'Mocked_1' )
         def svc = new AnotherTestService()
+        def oldDescriptionValue = existingModel.description
+        existingModel.description = "Updated"
         def updatedDomain = svc.update( [ id: existingModel.id, name: existingModel.name,
                                           description: "Updated", version: existingModel.version ] )
         assertEquals existingModel.id, updatedDomain.id
         assertEquals "Updated", updatedDomain.description
+        existingModel.description = oldDescriptionValue
+
     }
 
     @Test
@@ -229,7 +226,10 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
         def existingModels = MyMock.list()
         def existingProperties = []
-        existingModels.eachWithIndex { model, i -> existingProperties << (model.properties + [ id: model.id, version: model.version, description: "Updated_$i" ]) }
+        existingModels.eachWithIndex { model, i ->
+            model.description = "Updated_$i"
+            existingProperties << [id: model.id, name: model.name, version: model.version]
+        }
 
         def createdDomains = svc.update( existingProperties )
         assertEquals 5, createdDomains.size()
@@ -242,8 +242,12 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
 
         def existingModels = MyMock.list()
         def existingParams = []
-        existingModels.eachWithIndex { model, i -> existingParams << [ id: model.id, name: model.name,
-                                                                       description: "Updated_$i", version: model.version ] }
+
+        existingModels.eachWithIndex { model, i ->
+            model.description = "Updated_$i"
+            existingParams << [id: model.id, name: model.name, version: model.version]
+        }
+
         def createdDomains = svc.update( existingParams )
         assertEquals 5, createdDomains.size()
         assertTrue  createdDomains.every { it.id }
@@ -319,16 +323,17 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
     void testBatchCreateOrUpdateUsingParamsMap() {
 
         def requestList = []
-        (0..4).each{ requestList << new MyMock( name: "Mock_$it", description: "MockDesc_$it" ) }
+        (0..4).each { requestList << new MyMock(name: "Mock_$it", description: "MockDesc_$it") }
 
         def existingModels = MyMock.list()
-        existingModels.eachWithIndex { model, i -> requestList << [ id: model.id, name: model.name,
-                                                                       description: "Updated_$i", version: model.version ] }
-
-        def result = svc.createOrUpdate( requestList )
+        existingModels.eachWithIndex { model, i ->
+            model.description = "Updated_$i"
+            requestList << [id: model.id, name: model.name, description: "Updated_$i", version: model.version]
+        }
+        def result = svc.createOrUpdate(requestList)
         assertEquals 10, result.size()
-        assertTrue  result.every { it.id }
-        assertEquals 5, result.findAll { it.description.contains( "Updated" ) }.size()
+        assertTrue result.every { it.id }
+        assertEquals 5, result.findAll { it.description.contains("Updated") }.size()
     }
 
     @Test
@@ -592,12 +597,14 @@ class ServiceBaseUnitTests extends GrailsUnitTestCase {
         def testService = new OverridingDeleteTestService()
 
         def entity = testService.create( newMyMockParams() )
+        def oldEntityValue =entity?.name
+        entity?.name = "Update Me"
         assertTrue entity.id > 0  // this tests that the create method was injected
         assertNotNull MyMock.get( entity.id )
 
         testService.update( newMyMockParams() + [ id: entity.id, version: entity.version, name: "Update Me" ] )
         assertEquals "Update Me", entity.name // this tests that the update method was injected
-
+        entity?.name = oldEntityValue
         assertFalse testService.deleteInvoked
         testService.delete( entity.id )
         assertTrue testService.deleteInvoked  // this tests that the delete method was 'not' injected

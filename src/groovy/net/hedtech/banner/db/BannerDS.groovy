@@ -1,5 +1,5 @@
 /* *****************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2010-2017 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db
 
@@ -14,10 +14,8 @@ import net.hedtech.banner.security.BannerGrantedAuthority
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.security.BannerUser
 import net.hedtech.banner.security.FormContext
-import net.sourceforge.cobertura.CoverageIgnore
 import oracle.jdbc.OracleConnection
 import org.apache.log4j.Logger
-import org.junit.Ignore
 import org.springframework.context.ApplicationContext
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -53,7 +51,11 @@ public class BannerDS implements DataSource {
 
     MultiEntityProcessingService multiEntityProcessingService
 
-    private final static Logger log = Logger.getLogger(getClass())
+    private final static Logger log = Logger.getLogger(BannerDS.class)
+
+    private isAnonymousUser (def user) {
+        user?.authorities?.size() && user?.authorities[0]?.authority == 'ROLE_ANONYMOUS'
+    }
 
     public static callNlsUtility(sql,userLocale){
         try {
@@ -138,7 +140,6 @@ public class BannerDS implements DataSource {
         else {
             conn = underlyingDataSource.getConnection()
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
-            bannerConnection = new BannerConnection(conn, null, this)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingDataSource"
         }
 
@@ -160,6 +161,21 @@ public class BannerDS implements DataSource {
             db.call("{call gokfgac.p_object_excluded (?) }", [form])
         }
         // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
+    }
+
+
+    // Note: This method is used for Integration Tests.
+    public Connection proxyAndSetRolesFor(BannerConnection bconn, userName, password) {
+
+        def user
+        if (SecurityContextHolder?.context?.authentication) {
+            user = SecurityContextHolder.context.authentication.principal
+            if (user?.username && user?.password) {
+                List applicableAuthorities = extractApplicableAuthorities(user?.authorities)
+                proxyConnection(bconn, userName)
+                setRoles(bconn.extractOracleConnection(), user, applicableAuthorities)
+            }
+        }
     }
 
 
@@ -466,6 +482,21 @@ public class BannerDS implements DataSource {
         return BannerGrantedAuthorityService.filterAuthorities(user)
     }
 
+    /*private setRoleSSB(Connection conn) {
+        def rolePassword
+        def roleName = "BAN_DEFAULT_M"
+        Sql sql = new Sql(conn)
+        try {
+            sql.call("{$Sql.VARCHAR = call g\$_security.G\$_GET_ROLE_PASSWORD_FNC('BAN_DEFAULT_M','SELFSERVICE')}") {pwd -> rolePassword = pwd }
+            String stmt = "set role \"$roleName\" identified by \"$rolePassword\"" as String
+            sql.execute(stmt)
+        }
+        catch (e) {
+            log.error("Error retreieiving role password for ssb connection $e")
+        }
+    }*/
+
+
     private setRoles(OracleConnection oconn, user, applicableAuthorities) {
         log.debug "BannerDS will set applicable role(s): ${applicableAuthorities*.authority}"
         Map unlockedRoles = [:]
@@ -518,11 +549,11 @@ public class BannerDS implements DataSource {
         }
 
         // still here? We will now try to set the role...
-        String stmt = "set role \"${bannerAuth.roleName}\" identified by \"${bannerAuth.bannerPassword}\"" as String
+        String role_stmt = "\"${bannerAuth.roleName}\" identified by \"${bannerAuth.bannerPassword}\"" as String
         log.trace "BannerDS.unlockRole will set role '${bannerAuth.roleName}' for connection $conn"
 
         Sql db = new Sql(conn)
-        db.execute(stmt) // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
+        db.call("{call dbms_session.set_role(?)}", [role_stmt]) // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
     }
 
     /**

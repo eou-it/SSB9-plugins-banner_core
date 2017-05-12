@@ -1,9 +1,7 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.security
-
-import grails.util.Holders  as CH
 
 import javax.servlet.FilterChain
 import javax.servlet.ServletException

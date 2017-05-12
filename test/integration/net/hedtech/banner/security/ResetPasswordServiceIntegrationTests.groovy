@@ -1,53 +1,46 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.security
 
-import net.hedtech.banner.db.BannerDS as BannerDataSource
-import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.service.KeyBlockHolder
-import net.hedtech.banner.service.ServiceBase
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import grails.util.Holders  as CH
-import org.junit.Assert
 import org.junit.Before
 import org.junit.After
 import org.junit.Test
-
-import java.sql.Connection
-
-import groovy.sql.Sql
-
-
-
-
-
 /**
- * Integration test for the self service Banner authentication provider.  
+ * Integration test for the self service Banner authentication provider.
  **/
-class ResetPasswordIntegrationTests extends BaseIntegrationTestCase{
+class ResetPasswordServiceIntegrationTests extends BaseIntegrationTestCase{
 
 
-  //  def resetPasswordService;
+    def resetPasswordService;
  //   def dataSource  // injected by Spring
    // def conn        // set in setUp
    // def db          // set in setUp
 
     @Before
     public void setUp(){
-      //  conn = dataSource.getSsbConnection()
-      //  db = new Sql( conn )
-      //  dataSetup()
-      //super.setUp()
+        formContext = ['GUAGMNU']
+        super.setUp()
     }
-	
+
 	@After
     public void tearDown() {
-        //super.tearDown()
+        super.tearDown()
     }
 
     @Test
-    void testDummy() {
+    void testContainsNumber() {
+        assertTrue(resetPasswordService.containsNumber("123123"))
+    }
+
+    @Test
+    void testContainsCharacters() {
+        assertTrue(resetPasswordService.containsCharacters("TESTHOSH123"))
+    }
+    @Test
+    void testInjection() {
+        assertNotNull resetPasswordService
 
     }
 /*
@@ -200,7 +193,7 @@ class ResetPasswordIntegrationTests extends BaseIntegrationTestCase{
         db.executeUpdate("update gpbprxy set gpbprxy_email_address=? where gpbprxy_proxy_idm=?", [guestEmailAddress, guestUserId])
     }
 
-    
+
 }
 
 

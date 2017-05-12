@@ -58,4 +58,10 @@ class Query {
     public String toString() {
         return query;
     }
+
+    int hashCode() {
+        int result
+        result = 31 * result + (query != null ? query.hashCode() : 0)
+        return result
+    }
 }

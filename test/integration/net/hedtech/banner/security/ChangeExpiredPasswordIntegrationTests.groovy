@@ -38,6 +38,8 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
 
     @Before
     public void setUp() {
+        formContext = ['GUAGMNU']
+        super.setUp()
         grailsApplication.config.ssbEnabled = true
         grailsApplication.config.ssbOracleUsersProxied = false
         grailsApplication.config.banner.sso.authenticationProvider = "default"
@@ -45,14 +47,15 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
         sql = new Sql(conn)
         row = sql.firstRow(GUBPPRF_QUERY)
         PERSON_PIDM =  getPidmBySpridenId(PERSON)
-        formContext = ['GUAGMNU']
-        super.setUp()
+        enableUser (PERSON_PIDM)
     }
 
     @After
     public void tearDown() {
-        sql?.rollback();
-        sql?.close()
+        logout()
+        super.tearDown()
+        sql.close()
+        conn.close()
     }
 
     @Test
@@ -162,6 +165,10 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
         def query = "SELECT SPRIDEN_PIDM pidm FROM SPRIDEN WHERE SPRIDEN_ID=$spridenId"
         def pidmValue = sql?.firstRow(query)?.pidm
         pidmValue
+    }
+    private void enableUser(pidm) {
+        sql.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
+        sql.commit()
     }
 }
 

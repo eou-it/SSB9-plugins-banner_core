@@ -1,7 +1,6 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
-
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.general.utility
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -47,11 +46,11 @@ class MenuAndToolbarPreferenceServiceIntegrationTests extends BaseIntegrationTes
 	def idbaseInstitutionCb = "X"
 	def idateTimeCb = "X"
 	def irequiredItemCb = "X"
-	def ilinescrnXPosition = 9 
-	def ilinebtnXPosition = 9 
+	def ilinescrnXPosition = 9
+	def ilinebtnXPosition = 9
 	def iformnameDisplayIndicator = "Y"
 
-    // change the values 
+    // change the values
 	MenuAndToolbarPreference.tlbBtn = itlbBtn
 	MenuAndToolbarPreference.displayHtCb = idisplayHtCb
 	MenuAndToolbarPreference.displayVtCb = idisplayVtCb
@@ -64,7 +63,7 @@ class MenuAndToolbarPreferenceServiceIntegrationTests extends BaseIntegrationTes
 	MenuAndToolbarPreference.linescrnXPosition = ilinescrnXPosition
 	MenuAndToolbarPreference.linebtnXPosition = ilinebtnXPosition
 	MenuAndToolbarPreference.formnameDisplayIndicator = iformnameDisplayIndicator
-    
+
     MenuAndToolbarPreference = MenuAndToolbarPreferenceService.update(MenuAndToolbarPreference)
     // test the values
 	//assertEquals itlbBtn, MenuAndToolbarPreference.tlbBtn
@@ -85,24 +84,24 @@ class MenuAndToolbarPreferenceServiceIntegrationTests extends BaseIntegrationTes
   void testMenuAndToolbarPreferenceDelete() {
 	 def MenuAndToolbarPreference = newMenuAndToolbarPreference()
 	 MenuAndToolbarPreference = MenuAndToolbarPreferenceService.create(MenuAndToolbarPreference)
-	 
+
 	 def id = MenuAndToolbarPreference.id
 	 MenuAndToolbarPreferenceService.delete(id)
-	 
+
 	 assertNull "MenuAndToolbarPreference should have been deleted", MenuAndToolbarPreference.get(id)
   }
 
   private def newMenuAndToolbarPreference() {
     def MenuAndToolbarPreference = new MenuAndToolbarPreference(
-    		tlbBtn: "", 
-    		displayHtCb: "T", 
-    		displayVtCb: "T", 
-    		displayHint: "T", 
-    		formnameCb: "T", 
-    		releaseCb: "T", 
-    		dbaseInstitutionCb: "T", 
-    		dateTimeCb: "T", 
-    		requiredItemCb: "T", 
+    		tlbBtn: "",
+    		displayHtCb: "T",
+    		displayVtCb: "T",
+    		displayHint: "T",
+    		formnameCb: "T",
+    		releaseCb: "T",
+    		dbaseInstitutionCb: "T",
+    		dateTimeCb: "T",
+    		requiredItemCb: "T",
     		linescrnXPosition: 1,
             linebtnXPosition: 1,
             formnameDisplayIndicator: "Y"
@@ -110,7 +109,7 @@ class MenuAndToolbarPreferenceServiceIntegrationTests extends BaseIntegrationTes
     )
     return MenuAndToolbarPreference
   }
-  
+
   /**
    * Please put all the custom service tests in this protected section to protect the code
    * from being overwritten on re-generation
@@ -119,8 +118,7 @@ class MenuAndToolbarPreferenceServiceIntegrationTests extends BaseIntegrationTes
    @Test
     void testMenuAndToolbarPreferenceFetch() {
       def prefs = MenuAndToolbarPreferenceService.fetchMenuAndToolbarPreference()
-      println prefs.get(0).formnameDisplayIndicator
       assertNotNull prefs
     }
   /*PROTECTED REGION END*/
-}  
+}

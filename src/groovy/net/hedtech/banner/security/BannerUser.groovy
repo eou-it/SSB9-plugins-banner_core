@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -24,10 +24,10 @@ public class BannerUser extends GrailsUser {
     public String mepProcessContext
     public String mepHomeContextDescription
 
-    private final Logger log = Logger.getLogger( getClass() )
+    private static final Logger log = Logger.getLogger( getClass() )
 
     Map rolePass = [:]      // Storing role password map as part of user to improve performance
-    Map<String,GrantedAuthority> formToRoleMap = [:].withDefault { [] } // Storing roles keyed by Form context, to improve performance
+    Map<String,GrantedAuthority> formToRoleMap = new HashMap<String,GrantedAuthority>() // Storing roles keyed by Form context, to improve performance
 
     public BannerUser( final String username, final String password,
                        final String oracleUserName, final boolean enabled,
@@ -85,7 +85,7 @@ public class BannerUser extends GrailsUser {
             String formName
             if (matcher.matches()) {
                 formName = matcher[0][1]
-                formToRoleMap[formName] << (GrantedAuthority) authority
+                formToRoleMap.put(formName,(GrantedAuthority) authority)
                 log.debug "BannerUser.addAuthoritiesIntoFormToRoleMap() mapping formName $formName with authority $authority"
             }
         }

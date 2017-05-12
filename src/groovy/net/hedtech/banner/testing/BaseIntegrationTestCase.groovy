@@ -3,13 +3,10 @@
  *******************************************************************************/
 package net.hedtech.banner.testing
 
+import static org.junit.Assert.*
 import grails.util.GrailsNameUtils
-import grails.util.Holder
-import grails.util.Holders
 import groovy.sql.Sql
-import net.hedtech.banner.apisupport.ApiUtils
 import net.hedtech.banner.configuration.ConfigurationUtils
-import net.hedtech.banner.db.dbutility.DBUtility
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.security.FormContext
 import org.apache.log4j.Logger
@@ -21,7 +18,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 
-import static org.junit.Assert.*
 
 /**
  * Base class for integration tests, that sets the FormContext and logs in 'GRAILS_USER' if necessary
@@ -61,7 +57,7 @@ class BaseIntegrationTestCase extends Assert {
 
     def username = ""
     def password = ""
-    def log = Logger.getLogger(this.getClass())
+    private static final def log = Logger.getLogger(this.getClass())
     /**
      * Performs a login for the standard 'grails_user' if necessary, and calls super.setUp().
      * If you need to log in another user or ensure no user is logged in,
@@ -188,7 +184,7 @@ class BaseIntegrationTestCase extends Assert {
      **/
     protected Closure validate = { domainObject, failOnError = true ->
         if (!domainObject) {
-            def returnObj = domainObject.validate()
+           domainObject.validate()
 
         }
         assertNotNull domainObject
