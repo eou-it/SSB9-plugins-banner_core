@@ -1,6 +1,6 @@
 /*******************************************************************************
-Copyright 2017 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.service
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -14,14 +14,15 @@ import javax.servlet.http.HttpSession
 class HttpSessionServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def HttpSessionService
+    def dataSource
 
-     @Before
-     public void setUp() {
+    @Before
+    public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
     }
-	
-	@After
+
+    @After
     public void tearDown() {
         super.tearDown()
     }
@@ -32,6 +33,7 @@ class HttpSessionServiceIntegrationTests extends BaseIntegrationTestCase {
         HttpSession session = request.getSession()
         HttpSessionService.sessionCreated(session)
         assertNotNull session.id
+        HttpSessionService.sessionDestroyed(session)
     }
 
     @Test
@@ -49,12 +51,12 @@ class HttpSessionServiceIntegrationTests extends BaseIntegrationTestCase {
         GrailsMockHttpServletRequest request = new GrailsMockHttpServletRequest()
         def oldCachedConnection = request.getSession().getAttribute("cachedConnection")
         HttpSession session = request.getSession()
-        session.setAttribute("cachedConnection", "true")
+        def conn = dataSource.getSsbConnection()
+        session.setAttribute("cachedConnection", conn)
         HttpSessionService.sessionCreated(session)
         assertNotNull session.id
         HttpSessionService.sessionDestroyed(session)
         request?.getSession()?.setAttribute("cachedConnection", oldCachedConnection)
     }
-
 
 }
