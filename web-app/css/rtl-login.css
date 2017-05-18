@@ -40,9 +40,12 @@ LOG IN
     float: none;
 }
 
+.splashBg .logIn .textfield-wrapper {
+    width: 480px;
+}
+
 .splashBg .logIn div {
     float: right;
-    margin-left: 8px;
 }
 
 .splashBg div span input {
@@ -60,10 +63,10 @@ LOG IN
 .splashBg .userName {
     background: url(../images/textbox-sprites-rtl.png) no-repeat left -27px;
     padding: 0px 0px 0px 20px;
-    margin-right: 0px;
+    margin-left: 10px;
+    margin-right: 0;
     height: 23px;
     width: 125px;
-    left: 290px;
 }
 
 .splashBg .userName span {
@@ -76,16 +79,17 @@ LOG IN
 .splashBg .password {
     background: url(../images/textbox-sprites-rtl.png) no-repeat left 0;
     padding: 0px 0px 0px 20px;
+    margin-left: 10px;
     margin-right: 0px;
     height: 23px;
     width: 125px;
-    left: -7px;
 }
 
 .splashBg .password span {
     display: block;
     background: url(../images/textbox-sprites-rtl.png) no-repeat right 0;
     padding-right: 10px;
+    padding-left: 0px;
     height: 23px;
 }
 
@@ -155,4 +159,127 @@ LOG IN
     top: 240px;
     left: auto;
     right: 407px;
+}
+
+
+/* Enable theming */
+.splashBg, .pageBg {
+    background-image: none;
+}
+
+.pageBg {
+  background-color: #4c8db5;
+  background-image: linear-gradient( #015d96, #4c8db5 );
+  background-repeat: repeat-x;
+  background-size: auto 674px;
+}
+
+.splashBg {
+  height: 408px;
+  width: 705px;
+  position: relative;
+  background-color: #4e8bbb; /* center section background */
+  border: 2px solid #00579a;
+  box-shadow: 0 0 30px 0px #000;
+  top: 155px;
+  margin: auto;
+  right: 0px;
+}
+
+.splashBg:before {
+  /* top section */
+  content: "";
+  position: absolute;
+  display: block;
+  top: 0px;
+  height: 156px;
+  width: 100%;
+  background-color: #70a4c4;
+  background-image: linear-gradient( to right, #70a4c4, #337dab );
+  border: 0px;
+  border-bottom: 1px solid;
+  border-image: linear-gradient( to right, #4287b1, #005c96 ) 1;
+}
+
+.splashBg .copyright {
+  /* bottom section */
+  top: 244px;
+  bottom: 0;
+  left:0;
+  right:0;
+  margin: 0;
+  padding: 24px 85px 0 35px;
+  background-image: linear-gradient( to right, #3f85b0, #0d649b ); /* bottom section */
+  border: 0px;
+  border-top: 1px solid;
+  border-image: linear-gradient( to right, #367fac, #005c96 ) 1;
+}
+
+.splashBg .appName {
+  /* Banner(R) name */
+  top:55px;
+  left:35px;
+  right:auto;
+}
+
+.splashBg .loginMsg {
+  /* instructions under banner name */
+  top: 110px;
+  left: 37px;
+  right: auto;
+}
+
+
+.splashBg .ellucianName {
+  /* Ellucian (TM) from auth.gsp patch */
+  color: #ffffff;
+  font-size: 37px;
+  position: absolute;
+  right: 62px;
+  left: auto;
+  top: 181px;
+  height: 86px;
+  text-align: right;
+}
+
+.splashBg .ellucianName .trademark {
+  font-size:4px;
+}
+
+.splashBg .logIn {
+  margin: 36px 248px 0 0;
+}
+
+.splashBg .logIn DIV  {
+  margin-top: 0;
+}
+
+.splashBg .ie-warning {
+  position: relative;
+}
+
+.ie-warning DIV {
+  color: #ffffff;
+}
+
+.splashBg .signin-button-wrapper {
+  bottom: 0;
+  top: -.15em;
+}
+
+.signin-button {
+  background: #658ea8;
+  background-image:linear-gradient(#658ea8, #194161);
+  border: 1px solid #003366;
+  text-shadow:none;
+}
+
+.signin-button:hover {
+  background: #97b2c2;
+  background-image:linear-gradient(#97b2c2, #25506b);
+}
+
+.signin-button:active {
+  background: #194a6a;
+  background-image:linear-gradient(#194a6a, #658ea8);
 }
