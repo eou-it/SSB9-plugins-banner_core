@@ -42,7 +42,7 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
         </g:else>
     </div>
 
-    <div class="ellucianName" style="display:none">ellucian<span>&trade;</span></div>
+    <div class="ellucianName">ellucian<span class="trademark">TM</span></div>
 
     <div id="userNameTxt" style="display: none;">User Name</div>
 
