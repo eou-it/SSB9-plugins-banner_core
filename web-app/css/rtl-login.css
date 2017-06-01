@@ -283,3 +283,16 @@ LOG IN
   background: #194a6a;
   background-image:linear-gradient(#194a6a, #658ea8);
 }
+
+.splashBg .forgotPasswordDiv {
+    left: 195px;
+    right: auto;
+    position: absolute;
+    top: 219px;
+}
+
+.splashBg .forgotpassword {
+    color: #ffffff !important;
+    text-decoration: underline !important;
+    font-size: 1em !important;
+}
