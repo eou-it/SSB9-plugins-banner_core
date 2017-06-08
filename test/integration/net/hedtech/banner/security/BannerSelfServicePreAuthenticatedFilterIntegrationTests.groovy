@@ -1,28 +1,30 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.security
 
-import grails.spring.BeanBuilder
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import org.apache.commons.dbcp.BasicDataSource
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
-import org.springframework.context.ApplicationContext
 import org.springframework.mock.web.MockFilterChain
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.web.context.request.RequestContextHolder
+
 
 class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCase {
 
     def bannerPreAuthenticatedFilter
-    def gobeaccUserName = 'GRAILS_USER'
-    def conn
+    def selfServiceBannerAuthenticationProvider
+    String gobeaccUserName = 'GRAILS_USER'
     def bannerPIDM
 
     public static final String UDC_IDENTIFIER = 'INTEGRATION_TEST_SAML'
@@ -30,34 +32,36 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
-        //super.setUp()
-        ApplicationContext testSpringContext = createUnderlyingSsbDataSourceBean()
-        dataSource.underlyingSsbDataSource = testSpringContext.getBean("underlyingSsbDataSource")
-        conn = dataSource.getSsbConnection()
+        Holders.config.ssbEnabled = true
         bannerPIDM = getBannerPIDM()
+        Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken('INTGRN',111111))
+        SecurityContextHolder.getContext().setAuthentication( auth )
+        super.setUp()
     }
 
     @After
     public void tearDown() {
-        conn?.close()
         logout()
-        super.tearDown();
+        super.tearDown()
     }
+
 
     @Test
     void testSelfServiceDoFilter() {
         Holders.config.ssbEnabled = true
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.remove("/**")
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.put('/ssb/**', ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Holders.config.ssbOracleUsersProxied = true
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove("/**")
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.put('/ssb/**', ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
 
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRequestURI("/ssb/foo");
+
+        MockHttpServletRequest request = new MockHttpServletRequest()
+        request.setRequestURI("/ssb/foo")
 
         request.addHeader("UDC_IDENTIFIER", UDC_IDENTIFIER)
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        MockFilterChain chain = new MockFilterChain();
+        MockHttpServletResponse response = new MockHttpServletResponse()
+        MockFilterChain chain = new MockFilterChain()
 
-        bannerPreAuthenticatedFilter.doFilter(request, response, chain);
+        bannerPreAuthenticatedFilter.doFilter(request, response, chain)
 
         assertEquals SecurityContextHolder.context.getAuthentication().user.pidm, Integer.valueOf(bannerPIDM.intValue())
 
@@ -67,30 +71,19 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
 
     //----------------------------- Helper Methods ------------------------------
 
-    private ApplicationContext createUnderlyingSsbDataSourceBean() {
-        def bb = new BeanBuilder()
-        bb.beans {
-            underlyingSsbDataSource(BasicDataSource) {
-                maxActive = 5
-                maxIdle = 2
-                defaultAutoCommit = "false"
-                driverClassName = "${Holders.config.bannerSsbDataSource.driver}"
-                url = "${Holders.config.bannerSsbDataSource.url}"
-                password = "${Holders.config.bannerSsbDataSource.password}"
-                username = "${Holders.config.bannerSsbDataSource.username}"
-            }
-        }
-        ApplicationContext testSpringContext = bb.createApplicationContext()
-        return testSpringContext
-    }
 
     private def getBannerPIDM() {
-        Sql sqlObj = new Sql(conn)
-        ''
-        String pidmQuery = """SELECT GOBEACC_PIDM FROM GOBEACC WHERE GOBEACC_USERNAME = ?"""
+        Sql sqlObj
         def bPIDM = 0
-        sqlObj.eachRow(pidmQuery, [gobeaccUserName]) { row ->
-            bPIDM = row.GOBEACC_PIDM
+        try {
+            sqlObj = new Sql(sessionFactory.getCurrentSession().connection())
+            String pidmQuery = """SELECT GOBEACC_PIDM FROM GOBEACC WHERE GOBEACC_USERNAME = ?"""
+
+            sqlObj.eachRow(pidmQuery, [gobeaccUserName]) { row ->
+                bPIDM = row.GOBEACC_PIDM
+            }
+        }finally {
+            sqlObj?.close()
         }
         bPIDM
     }
