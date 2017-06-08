@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.dataextract
 
@@ -24,23 +24,6 @@ class DataExtractServiceIntegrationTests extends BaseIntegrationTestCase {
     public void tearDown() {
         super.tearDown()
     }
-
-    @Test
-    void testDataExtract() {
-        def dataExtractScheduleEvaluation = dataExtractService.hasDataExtract("scheduleEvaluation")
-        assertNull "DataExtract is not setup", dataExtractScheduleEvaluation
-
-        def dataExtractSchedule = dataExtractService.hasDataExtract("schedule")
-        assertEquals "B", dataExtractSchedule
-
-        def dataExtractScheduleOverride = dataExtractService.hasDataExtract("scheduleOverride")
-         assertEquals "D", dataExtractScheduleOverride
-
-
-        def dataExtractPageDoesNotExist = dataExtractService.hasDataExtract("pageDoesNotExist")
-        assertNull "DataExtract is not setup", dataExtractPageDoesNotExist
-    }
-
 
     public def updateGUBOBJSTable() {
         def sql

@@ -1,18 +1,18 @@
 /*******************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
+
+import grails.util.Holders  as CH
 import net.hedtech.banner.security.ResetPasswordService
 import org.apache.commons.codec.binary.Base64
-import grails.util.Holders  as CH
-import grails.plugin.springsecurity.SpringSecurityUtils
 import org.apache.log4j.Logger
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.LockedException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
+
 import javax.servlet.http.HttpSession
 import java.sql.SQLException
 
@@ -35,7 +35,6 @@ class ResetPasswordController {
     private static final Logger log = Logger.getLogger( "controllers.ResetPasswordController" )
 
     def questans ={
-        def config = SpringSecurityUtils.securityConfig
         response.setHeader("Cache-Control", "no-cache")
         response.setHeader("Cache-Control", "no-store")
         response.setDateHeader("Expires", 0)
@@ -105,7 +104,6 @@ class ResetPasswordController {
         response.setHeader("Cache-Control", "no-store")
         response.setDateHeader("Expires", 0)
         response.setHeader("Pragma", "no-cache")
-        def config = SpringSecurityUtils.securityConfig
         String postBackUrl = "${request.contextPath}/resetPassword/validateans"
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
         String id = request.getParameter("username")

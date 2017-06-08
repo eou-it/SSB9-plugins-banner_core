@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.query
 
@@ -16,7 +16,7 @@ import net.hedtech.banner.exceptions.ApplicationException
  *
  */
 class DynamicFinder {
-    static def log = Logger.getLogger( 'net.hedtech.banner.query.DynamicFinder' )
+    private static final def log = Logger.getLogger( 'net.hedtech.banner.query.DynamicFinder' )
 
     def domainClass
     def query
@@ -84,11 +84,11 @@ class DynamicFinder {
 
         def filterDataClone = filterData.clone()
         filterDataClone.params = getCriteriaParamsFromParams(filterData.params)
-       
+
         def queryString = QueryBuilder.buildQuery(query.flattenString(), tableIdentifier, filterDataClone, pagingAndSortParams, domainClass)
 
         Map params = getParamsFromCriteriaParams(filterDataClone.params)
-       
+
         try {
             def list = domainClass.findAll(queryString, params, pagingAndSortParams)
             return list

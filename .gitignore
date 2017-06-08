@@ -1,17 +1,14 @@
 .DS_Store
 target
-target/**/*
 web-app/WEB-INF/classes
 web-app/WEB-INF/classes/**/*
 web-app/WEB-INF/tld/*.tld
-web-app/WEB-INF/tld/**/*
 *.log
 *.iws
 *.ipr
 *.iml
 .settings/org.eclipse.jdt.core.prefs
 SendFailures.txt
-*.iml
 .idea
 .idea/**/*
 out/
@@ -25,3 +22,4 @@ plugin.xml
 **-rtl.css
 messages_ar_SA.properties
 lib/bannerTransform.jar
+*.ser

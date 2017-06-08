@@ -164,7 +164,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 
 		def sql
         try {
-            sql = new Sql( sessionFactory.getCurrentSession().connection() )
+            sql = new Sql( dataSource.getConnection() )
             sql.executeUpdate( "update STVCOLL set STVCOLL_VERSION = 999 where STVCOLL_SURROGATE_ID = ?", [foo.id] )
         }
         finally {

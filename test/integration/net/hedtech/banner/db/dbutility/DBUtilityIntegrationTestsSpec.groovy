@@ -1,3 +1,6 @@
+/*******************************************************************************
+ Copyright 2016 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.db.dbutility
 
 import grails.util.Holders
@@ -15,11 +18,14 @@ class DBUtilityIntegrationTestsSpec extends BaseIntegrationTestCase {
 
     @Before
     public void setUp() {
+        formContext = ['GUAGMNU']
+        super.setUp()
         dbUtility = new DBUtility()
     }
 
     @After
     public void tearDown() {
+        super.tearDown()
         logout()
     }
 
@@ -96,7 +102,6 @@ class DBUtilityIntegrationTestsSpec extends BaseIntegrationTestCase {
         try{
             loginSSB(username, password)
         } catch(Exception e){
-            e.printStackTrace()
             assertTrue(true)
         }
     }
@@ -114,7 +119,6 @@ class DBUtilityIntegrationTestsSpec extends BaseIntegrationTestCase {
     public void testIsSSUserFailCase() {
         setUpValidSSBTypeUser()
         loginSSB("grails_user","u_pick_it")
-        def user = SecurityContextHolder?.context?.authentication?.principal
         assertTrue(!dbUtility.isSSUser())
     }
 

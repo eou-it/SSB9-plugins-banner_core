@@ -17,22 +17,6 @@ import org.codehaus.groovy.grails.exceptions.InvalidPropertyException
  *
  */
 class QueryBuilder {
-    private static boolean isTimeSet(Object date) {
-        boolean isTimeSet = false;
-
-        // if(date instanceof Date) {
-        int hours = date.getHours()
-        int minutes = date.getMinutes()
-        int seconds = date.getSeconds()
-
-        if (hours != 0 || minutes != 0 || seconds != 0) {
-            isTimeSet = true
-        }
-        //}
-        return isTimeSet
-    }
-
-
     public static getCriteriaParams(criteria, params, operator) {
         List<CriteriaParam> criteriaParams = new ArrayList<CriteriaParam>();
         def data = params.get(criteria.key)
@@ -161,7 +145,6 @@ class QueryBuilder {
                 newQuery.orderBy(sort)
             }
         }
-        println newQuery.toString()
         returnQuery = newQuery.toString()
         return returnQuery
     }
@@ -226,11 +209,7 @@ class QueryBuilder {
             if (hqlBuilderOperators.containsKey(it["operator"])) {
                 // For backward compatibility convert old HQLBuilder operator to DynamicFinder operator
                 it["operator"] = hqlBuilderOperators[it["operator"]]
-            } else {
-                // filter[index][operator] value is from net.hedtech.banner.query.operators.Operators
-                // No validation done here.  Will be passed to DynamicFinder directly.
             }
-
             if (it.containsKey("type")) {
                 // URL parameter "filter[index][type]" exists.  Either "numeric" or "date".
                 if (it["type"] == "num" || it["type"] == "number") {

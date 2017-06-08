@@ -1,11 +1,9 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.GrantedAuthority
-
 /**
  * An authentication token created upon successful authentication.
  */
