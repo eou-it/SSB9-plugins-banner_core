@@ -149,4 +149,18 @@ class DBUtilityIntegrationTestsSpec extends BaseIntegrationTestCase {
         assertTrue(!DBUtility.isMepEnabled())
     }
 
+    @Test
+    public void testIsSsbUserWithRole(){
+        setUpValidSSBTypeUser()
+        loginSSB(username, password)
+        assertTrue(dbUtility.isSsbUserWithRole())
+    }
+
+    @Test
+    public void testIsSsbUserWithRoleFailure(){
+        setUpValidSSBTypeUser()
+        loginSSB("grails_user","u_pick_it")
+        assertTrue(!dbUtility.isSsbUserWithRole())
+    }
+
 }
