@@ -108,7 +108,7 @@ class DBUtility {
             Set authorities = user?.authorities
             if (authorities) {
                 authorities.each {
-                    if (it.authority.equals("SELFSERVICE-SSROLE_BAN_DEFAULT_M")) {
+                    if (it.authority.equals("ROLE_SELFSERVICE-SSROLE_BAN_DEFAULT_M")) {
                         ssRole = true
                     }
                 }
