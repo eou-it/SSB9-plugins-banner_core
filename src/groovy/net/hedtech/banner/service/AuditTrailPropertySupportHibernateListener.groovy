@@ -116,6 +116,6 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         } catch (e) {
             println "Error : Could not retrieve last modified by lastModifiedBy:$lastModifiedBy $e"
         }
-        return lastModifiedBy
+        return lastModifiedBy?.toUpperCase()
     }
 }
