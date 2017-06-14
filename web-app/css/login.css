@@ -268,3 +268,135 @@ LOG IN
     position: absolute;
     top: 246px;
 }
+
+
+/* Enable theming */
+.splashBg, .pageBg {
+    background-image: none;
+}
+
+.pageBg {
+  background-color: #4c8db5;
+  background-image: linear-gradient( #015d96, #4c8db5 );
+  background-repeat: repeat-x;
+  background-size: auto 674px;
+}
+
+.splashBg {
+  height: 408px;
+  width: 705px;
+  position: relative;
+  background-color: #4e8bbb; /* center section background */
+  border: 2px solid #00579a;
+  box-shadow: 0 0 30px 0px #000;
+  top: 155px;
+  margin: auto;
+  left: 0px;
+}
+
+.splashBg:before {
+  /* top section */
+  content: "";
+  position: absolute;
+  display: block;
+  top: 0px;
+  height: 156px;
+  width: 100%;
+  background-color: #70a4c4;
+  background-image: linear-gradient( to right, #70a4c4, #337dab );
+  border: 0px;
+  border-bottom: 1px solid;
+  border-image: linear-gradient( to right, #4287b1, #005c96 ) 1;
+}
+
+.splashBg .copyright {
+  /* bottom section */
+  top: 244px;
+  bottom: 0;
+  left:0;
+  right:0;
+  margin: 0;
+  padding: 24px 35px 0 85px;
+  background-image: linear-gradient( to right, #3f85b0, #0d649b ); /* bottom section */
+  border: 0px;
+  border-top: 1px solid;
+  border-image: linear-gradient( to right, #367fac, #005c96 ) 1;
+}
+
+.splashBg .appName {
+  /* Banner(R) name */
+  top:55px;
+  right:35px;
+}
+
+.splashBg .loginMsg {
+  /* instructions under banner name */
+  top: 110px;
+  right: 37px;
+}
+
+
+.splashBg .ellucianName {
+  /* Ellucian (TM) from auth.gsp patch */
+  color: #ffffff;
+  font-size: 37px;
+  position: absolute;
+  left: 62px;
+  top: 181px;
+  height: 86px;
+}
+
+.splashBg .ellucianName .trademark {
+  font-size:4px;
+}
+
+.splashBg .logIn {
+  margin: 36px 0 0 248px;
+}
+
+.splashBg .logIn DIV  {
+  margin-top: 0;
+}
+
+.splashBg .ie-warning {
+  position: relative;
+}
+
+.ie-warning DIV {
+  color: #ffffff;
+}
+
+.splashBg .signin-button-wrapper {
+  bottom: 0;
+  top: -.15em;
+}
+
+.signin-button {
+  background: #658ea8;
+  background-image:linear-gradient(#658ea8, #194161);
+  border: 1px solid #003366;
+  text-shadow:none;
+}
+
+.signin-button:hover {
+  background: #97b2c2;
+  background-image:linear-gradient(#97b2c2, #25506b);
+}
+
+.signin-button:active {
+  background: #194a6a;
+  background-image:linear-gradient(#194a6a, #658ea8);
+}
+
+.splashBg .forgotPasswordDiv {
+    left: 440px;
+    right: auto;
+    position: absolute;
+    top: 219px;
+}
+
+.splashBg .forgotpassword {
+    color: #ffffff !important;
+    text-decoration: underline !important;
+    font-size: 1em !important;
+}
