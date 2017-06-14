@@ -150,17 +150,17 @@ class DBUtilityIntegrationTestsSpec extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testIsSsbUserWithRole(){
+    public void testIsSsbUserWithAnyRole(){
         setUpValidSSBTypeUser()
         loginSSB(username, password)
-        assertTrue(dbUtility.isSsbUserWithRole())
+        assertTrue(dbUtility.isSsbUserWithAnyRole())
     }
 
     @Test
-    public void testIsSsbUserWithRoleFailure(){
+    public void testIsSsbUserWithAnyRoleFailure(){
         setUpValidSSBTypeUser()
         loginSSB("grails_user","u_pick_it")
-        assertTrue(!dbUtility.isSsbUserWithRole())
+        assertTrue(!dbUtility.isSsbUserWithAnyRole())
     }
 
 }

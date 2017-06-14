@@ -100,7 +100,7 @@ class DBUtility {
     }
 
     //Checks if user is SS user with roles in GOVROLE/TWGRROLE table
-    public static boolean isSsbUserWithRole() {
+    public static boolean isSsbUserWithAnyRole() {
         def user = SecurityContextHolder?.context?.authentication?.principal
         def ssRole = false
 
