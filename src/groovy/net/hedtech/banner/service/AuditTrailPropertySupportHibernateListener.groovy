@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.service
 
@@ -111,11 +111,11 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
             }
 
             if (lastModifiedBy?.length() > 30) {
-                return  lastModifiedBy.substring(0,30)
+                lastModifiedBy = lastModifiedBy.substring(0,30)
             }
         } catch (e) {
             println "Error : Could not retrieve last modified by lastModifiedBy:$lastModifiedBy $e"
         }
-        return lastModifiedBy
+        return lastModifiedBy?.toUpperCase()
     }
 }
