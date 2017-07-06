@@ -69,7 +69,7 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         cal.setTime( new Date() )
         cal.set( Calendar.MILLISECOND, 0 ) // truncate fractional seconds, so that we can compare dates to those retrieved from the database
         Date lastModified = new Date( cal.getTime().getTime() )
-        def  lastModifiedBy = getLastModifiedBy()
+        def  lastModifiedBy = getLastModifiedBy(event.entity?.lastModifiedBy)
         def  dataOrigin = ApiUtils.isApiRequest() ?
                 event.entity?.dataOrigin ?: (CH.config?.dataOrigin ?: "Banner") :
                 CH.config?.dataOrigin ?: "Banner"
@@ -98,7 +98,7 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         }
     }
 
-    def getLastModifiedBy() {
+    def getLastModifiedBy(String existingLastModifiedBy =  null) {
         String  lastModifiedBy
         try {
             if  (SCH.context?.authentication?.principal instanceof BannerUser )
@@ -107,10 +107,10 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
                 lastModifiedBy = SCH.context?.authentication?.principal
 
             if (lastModifiedBy == null) {
-                lastModifiedBy == 'anonymous'
+                lastModifiedBy = (existingLastModifiedBy?.equalsIgnoreCase('BANNER'))? existingLastModifiedBy : 'anonymous'
             }
 
-            if (lastModifiedBy.length() > 30) {
+            if (lastModifiedBy?.length() > 30) {
                 return  lastModifiedBy.substring(0,30)
             }
         } catch (e) {

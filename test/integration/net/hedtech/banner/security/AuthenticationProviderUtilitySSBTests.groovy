@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -14,35 +14,26 @@ import org.junit.Test
 /**
  * Integration test for the AuthenticationProviderUtility class.
  **/
-@Ignore("Ignoing to debug the hanging issue")
+
 class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
 
-    def authenticationProviderUtility
     def dataSource
     def usage
-    def conn
-    def sqlObj
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        conn = dataSource.getConnection()
-        sqlObj = new Sql( conn )
-        authenticationProviderUtility = new AuthenticationProviderUtility()
-
     }
 
     @After
     public void tearDown() {
-        sqlObj.close()
-        conn.close()
         super.tearDown();
     }
 
     @Test
     void testRetrievalOfRoleBasedTimeouts() {
-        def timeouts = authenticationProviderUtility.retrieveRoleBasedTimeOuts( dataSource )
+        def timeouts = AuthenticationProviderUtility.retrieveRoleBasedTimeOuts( dataSource )
         assertTrue timeouts.size() > 0
     }
 
@@ -51,14 +42,14 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
 
-        Holders?.config?.productName ="Student";
-        Holders?.config?.banner.applicationName ="testApp";
+        Holders?.config?.productName ="Student"
+        Holders?.config?.banner.applicationName ="testApp"
 
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId("DSTERLIN", dataSource );
-        def  bannerPidm1 =49444;
-        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource);
+        def authResults = AuthenticationProviderUtility.getMappedUserForUdcId("DSTERLIN", dataSource)
+        def  bannerPidm1 = authResults.pidm
+        def fullName=AuthenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource)
 
-        assertEquals "Kishen Ray", fullName
+        assertEquals "Mr. Steve A Jorden", fullName
     }
 
     @Test
@@ -66,14 +57,14 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
 
-        Holders?.config?.productName ="testApp_LFMI";
-        Holders?.config?.banner.applicationName ="testApp_LFMI";
+        Holders?.config?.productName ="testApp_LFMI"
+        Holders?.config?.banner.applicationName ="testApp_LFMI"
 
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId("DSTERLIN", dataSource )
-        def bannerPidm1 =49444;
-        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource);
+        def authResults = AuthenticationProviderUtility.getMappedUserForUdcId("DSTERLIN", dataSource )
+        def bannerPidm1 = authResults.pidm
+        def fullName=AuthenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource)
 
-        assertEquals "Ray, Kishen", fullName
+        assertEquals "Jorden, Steve A.", fullName
     }
 
     @Test
@@ -81,14 +72,14 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
 
-        Holders?.config?.productName ="testApp";
-        Holders?.config?.banner.applicationName ="testApp";
+        Holders?.config?.productName ="testApp"
+        Holders?.config?.banner.applicationName = "testApp"
 
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId("DSTERLIN", dataSource )
-        def bannerPidm1 =49444;
-        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource);
+        def authResults = AuthenticationProviderUtility.getMappedUserForUdcId("DSTERLIN", dataSource )
+        def bannerPidm1 = authResults.pidm
+        def fullName=AuthenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource)
 
-        assertEquals "Kishen Ray", fullName
+        assertEquals "Mr. Steve A Jorden", fullName
 
     }
 
@@ -98,12 +89,12 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config.ssbOracleUsersProxied = false
 
         Holders?.config?.productName ="testApp";
-        Holders?.config?.banner.applicationName ="testApp";
+        Holders?.config?.banner.applicationName ="testApp"
 
         def bannerUDCID1 = "DSTERLIN"
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID1, dataSource )
-        def bannerPidm1 =50199;
-        def fullName=authenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource);
+        def authResults = AuthenticationProviderUtility.getMappedUserForUdcId(bannerUDCID1, dataSource )
+        def bannerPidm1 = authResults.pidm
+        def fullName=AuthenticationProviderUtility.getUserFullName(bannerPidm1,authResults["name"],dataSource)
 
         assertEquals "Mr. Steve A Jorden", fullName
 
@@ -114,9 +105,9 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
 
-        def bannerUDCID1 = "DSTERLIN";
+        def bannerUDCID1 = "DSTERLIN"
 
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID1, dataSource )
+        def authResults = AuthenticationProviderUtility.getMappedUserForUdcId(bannerUDCID1, dataSource )
 
         assertNotNull(authResults)
         assertNull(authResults["oracleUserName"])
@@ -128,12 +119,11 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
         Holders?.config.ssbEnabled = true
         Holders?.config.ssbOracleUsersProxied = false
 
-        def bannerUDCID1 = "271";
-        def authResults = authenticationProviderUtility.getMappedUserForUdcId(bannerUDCID1, dataSource )
+        def bannerUDCID1 = "271"
+        def authResults = AuthenticationProviderUtility.getMappedUserForUdcId(bannerUDCID1, dataSource )
 
         assertNotNull(authResults)
         assertNotNull(authResults["oracleUserName"])
-
     }
 
 }
