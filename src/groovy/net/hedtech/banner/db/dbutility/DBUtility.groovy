@@ -1,5 +1,5 @@
 /* *****************************************************************************
- Copyright 2015 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db.dbutility
 
@@ -10,9 +10,6 @@ import net.hedtech.banner.security.FormContext
 import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
 
-/**
- * Created by karthick on 7/2/2015.
- */
 class DBUtility {
 
     private final static Logger log = Logger.getLogger(DBUtility.class)
@@ -31,7 +28,6 @@ class DBUtility {
         boolean isOracleUser = user instanceof BannerUser && user?.oracleUserName
         isOracleUser
     }
-
 
     public static boolean isSSUser() {
         def user = SecurityContextHolder?.context?.authentication?.principal
@@ -101,6 +97,25 @@ class DBUtility {
     public static boolean isMepEnabled() {
         def enabled = config.mepEnabled instanceof Boolean ? config.mepEnabled : false
         enabled
+    }
+
+    //Checks if user is SS user with roles in GOVROLE/TWGRROLE table
+    public static boolean isSsbUserWithAnyRole() {
+        def user = SecurityContextHolder?.context?.authentication?.principal
+        def ssRole = false
+
+        if (user instanceof BannerUser) {
+            Set authorities = user?.authorities
+            if (authorities) {
+                authorities.each {
+                    if (it.authority.equals("ROLE_SELFSERVICE-SSROLE_BAN_DEFAULT_M")) {
+                        ssRole = true
+                    }
+                }
+            }
+        }
+
+        ssRole
     }
 
 }
