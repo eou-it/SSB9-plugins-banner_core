@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.service
 
@@ -69,16 +69,23 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         cal.setTime( new Date() )
         cal.set( Calendar.MILLISECOND, 0 ) // truncate fractional seconds, so that we can compare dates to those retrieved from the database
         Date lastModified = new Date( cal.getTime().getTime() )
-        def  lastModifiedBy = getLastModifiedBy(event.entity?.lastModifiedBy)
+        def  lastModifiedBy
+        if (event.entity.hasProperty('lastModifiedBy')) {
+            lastModifiedBy = getLastModifiedBy(event.entity?.lastModifiedBy)
+        }
         def  dataOrigin = ApiUtils.isApiRequest() ?
                 event.entity?.dataOrigin ?: (CH.config?.dataOrigin ?: "Banner") :
                 CH.config?.dataOrigin ?: "Banner"
-        if(lastModifiedBy) {
-            (setPropertyValue( event, "dataOrigin" ) { dataOrigin }
-                    && setPropertyValue( event, "lastModifiedBy" ) { lastModifiedBy }
-                    && setPropertyValue( event, "lastModified" ) { lastModified })
-        }
 
+        if(lastModifiedBy) {
+            setPropertyValue( event, "lastModifiedBy" ) { lastModifiedBy }
+        }
+        if (event.entity.hasProperty('dataOrigin')) {
+            setPropertyValue(event, "dataOrigin") { dataOrigin }
+        }
+        if (event.entity.hasProperty('lastModified')) {
+            setPropertyValue( event, "lastModified" ) { lastModified }
+        }
     }
 
 
@@ -111,11 +118,11 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
             }
 
             if (lastModifiedBy?.length() > 30) {
-                return  lastModifiedBy.substring(0,30)
+                lastModifiedBy = lastModifiedBy.substring(0,30)
             }
         } catch (e) {
             println "Error : Could not retrieve last modified by lastModifiedBy:$lastModifiedBy $e"
         }
-        return lastModifiedBy
+        return lastModifiedBy?.toUpperCase()
     }
 }
