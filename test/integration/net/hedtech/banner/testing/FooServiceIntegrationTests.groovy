@@ -59,7 +59,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "Horizon Test - TT", foo.description
 
         assertEquals Holders.config?.dataOrigin, foo.dataOrigin
-        assertEquals SecurityContextHolder.context?.authentication?.principal?.username, foo.lastModifiedBy
+        assertEquals SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase(), foo.lastModifiedBy
         assertNotNull foo.lastModified
     }
 
@@ -71,7 +71,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "Horizon Test - TT", foo.description
 
         assertEquals Holders.config?.dataOrigin, foo.dataOrigin
-        assertEquals SecurityContextHolder.context?.authentication?.principal?.username, foo.lastModifiedBy
+        assertEquals SecurityContextHolder.context?.authentication?.principal?.username?.toUpperCase(), foo.lastModifiedBy
         assertNotNull foo.lastModified
     }
 
