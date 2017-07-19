@@ -66,7 +66,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                 authenticationResults['webTimeout']         = AuthenticationProviderUtility.getWebTimeOut(authenticationResults,dataSource)
             }
             else{
-                authenticationResults['webTimeout'] = AuthenticationProviderUtility.getDefaultWebSessionTimeout()
+                authenticationResults['webTimeout'] = AuthenticationProviderUtility.findDefaultWebSessionTimeout()
             }
 
             AuthenticationProviderUtility.setWebSessionTimeout(  authenticationResults['webTimeout'] )
