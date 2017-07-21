@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -35,7 +35,7 @@ class AuthenticationProviderUtility {
 
     // a cached map of web roles to their configured timeout values, that is populated on first need
 
-    private static Integer defaultWebSessionTimeout // will be read from configuration
+    public static Integer defaultWebSessionTimeout // will be read from configuration
 
     public static def getMappedUserForUdcId(assertAttributeValue, dataSource ) {
         log.trace "AuthenticationProviderUtility.getMappedUserForUdcId doing external authentication"
@@ -186,7 +186,7 @@ class AuthenticationProviderUtility {
             dbUser['webTimeout'] = getWebTimeOut( dbUser,dataSource)
         }
         else{
-            dbUser['webTimeout'] = getDefaultWebSessionTimeout()
+            dbUser['webTimeout'] = findDefaultWebSessionTimeout()
         }
 
         setWebSessionTimeout( dbUser['webTimeout'] )
@@ -382,7 +382,7 @@ class AuthenticationProviderUtility {
     }
 
 
-    public static int getDefaultWebSessionTimeout() {
+    public static int findDefaultWebSessionTimeout() {
 
         if (!defaultWebSessionTimeout) {
             def configuredTimeout = Holders.config.defaultWebSessionTimeout
@@ -394,7 +394,7 @@ class AuthenticationProviderUtility {
 
     public static getWebTimeOut( authenticationResults,dataSource) {
         if (roleBasedTimeOutsCache.size() == 0) {retrieveRoleBasedTimeOuts(dataSource)}
-        def timeoutsForUser = [ getDefaultWebSessionTimeout() ]
+        def timeoutsForUser = [ findDefaultWebSessionTimeout() ]
         authenticationResults['authorities']?.each { authority ->
             def objectNameSplit
             def timeout
