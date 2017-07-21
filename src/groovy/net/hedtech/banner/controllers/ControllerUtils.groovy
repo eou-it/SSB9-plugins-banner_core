@@ -1,6 +1,6 @@
 /*******************************************************************************
 Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+*******************************************************************************/
 package net.hedtech.banner.controllers
 
 import grails.plugin.springsecurity.SpringSecurityUtils
@@ -11,29 +11,6 @@ import org.springframework.web.context.request.RequestContextHolder
  * Utilities for controllers.
  */
 class ControllerUtils {
-
-
-    public static def keyblock = { controller ->
-        if (controller.request[ "keyblock" ] == null) {
-            controller.request[ "keyblock" ] = ParamsUtils.namedParams( controller.params, "keyblock." )
-        }
-        return controller.request[ "keyblock" ]
-    }
-
-
-    public static def buildModel = { keyblock, blocks ->
-        def model = [ keyblock: keyblock ]
-
-        if (blocks) {
-            blocks.each { block ->
-                block.each {
-                    model.put( it.key, it.value )
-                }
-            }
-        }
-        return model
-    }
-
 
 
     public static def buildLogoutRedirectURI() {

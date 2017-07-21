@@ -4,7 +4,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 package net.hedtech.banner.framework
 
 import grails.util.Holders
-import net.hedtech.banner.configuration.ApplicationConfigurationUtils as ReleaseVersionHolder
+import net.hedtech.banner.configuration.ApplicationConfigurationUtils
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
@@ -38,11 +38,11 @@ public class ReleaseInfoIntegrationTests extends BaseIntegrationTestCase {
             assertTrue Holders.config.application.version.contains( appVersion )
             assertTrue Holders.config.application.build.number.isInteger()
             assertNotNull Holders.config.build.number.url
-            assertTrue ReleaseVersionHolder.getReleaseNumber()?.contains( appVersion )
-            assertTrue ReleaseVersionHolder.getReleaseNumber()?.contains( "-${Holders.config.application.build.number}" )
-            assertFalse ReleaseVersionHolder.getReleaseNumber()?.contains( "-DEVELOPMENT" )
+            assertTrue ApplicationConfigurationUtils.getReleaseNumber()?.contains( appVersion )
+            assertTrue ApplicationConfigurationUtils.getReleaseNumber()?.contains( "-${Holders.config.application.build.number}" )
+            assertFalse ApplicationConfigurationUtils.getReleaseNumber()?.contains( "-DEVELOPMENT" )
         } else {
-            assertTrue ReleaseVersionHolder.getReleaseNumber() == "$appVersion-DEVELOPMENT"
+            assertTrue ApplicationConfigurationUtils.getReleaseNumber() == "$appVersion-DEVELOPMENT"
             // default behavior is an empty map if a config property does not exist
             assertTrue Holders.config.application.build.version instanceof Map
         }

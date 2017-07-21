@@ -24,7 +24,6 @@ import java.sql.SQLException
  **/
 class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 
-    def zipService
     private validationTagLibInstance
 
     @Before
@@ -32,7 +31,6 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
         formContext = ['GUAGMNU']
         super.setUp()
         controller = new TermController()
-        controller.zipService = zipService
     }
 
     @After
@@ -376,69 +374,6 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 		assertTrue "returnMap was not as expected, but was: ${returnMap.message}", returnMap.message?.contains( "my test runtime exception" )
 	    assertNull returnMap.errors
 	    assertTrue returnMap.underlyingErrorMessage ==~ /.*my test runtime exception.*/
-    }
-
-
-    // how's this for a long name ;-)
-    @Test
-    public void testWrappedAnyOtherExceptionThatUsesBannerConventionsToEncodeResourceCodeAndParams() {
-        RuntimeException e = new RuntimeException( "@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@" )
-		def ae = new ApplicationException( Foo, e )
-	    assertTrue "toString() does not have expected content, but has: ${ae}",
-	               ae.toString().contains( "@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@" )
-		assertEquals 'RuntimeException', ae.getType()
-
-		def returnMap = ae.returnMap( controller.localizer )
-		assertFalse returnMap.success
-
-		assertTrue returnMap.message ==~ /.*Sorry, FooController.SomeMissingAction is not yet implemented.*/
-	    assertNull returnMap.errors
-	    assertTrue returnMap.underlyingErrorMessage ==~ /.*@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@.*/
-    }
-
-    @Test
-    public void testAutoWrappingRuntimeException() {
-		def ae = new ApplicationException( Foo, "@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@" )
-	    assertTrue "toString() does not have expected content, but has: ${ae}",
-	               ae.toString().contains( "@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@" )
-		assertEquals 'RuntimeException', ae.getType()
-
-		def returnMap = ae.returnMap( controller.localizer )
-		assertFalse returnMap.success
-
-		assertTrue returnMap.message ==~ /.*Sorry, FooController.SomeMissingAction is not yet implemented.*/
-	    assertNull returnMap.errors
-	    assertTrue returnMap.underlyingErrorMessage ==~ /.*@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@.*/
-    }
-
-    @Test
-    public void testAutoWrappingRuntimeExceptionWithUnneededDefault() {
-		def ae = new ApplicationException( Foo, "@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@", "The the default message!" )
-	    assertTrue "toString() does not have expected content, but has: ${ae}",
-	               ae.toString().contains( "@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@" )
-		assertEquals 'RuntimeException', ae.getType()
-
-		def returnMap = ae.returnMap( controller.localizer )
-		assertFalse returnMap.success
-
-		assertTrue "message not as expected but was: ${returnMap.message}", returnMap.message ==~ /.*Sorry, FooController.SomeMissingAction is not yet implemented.*/
-	    assertNull returnMap.errors
-	    assertTrue returnMap.underlyingErrorMessage ==~ /.*@@r1:runtime.not.yet.implemented:FooController:.SomeMissingAction@@.*/
-    }
-
-    @Test
-    public void testAutoWrappingRuntimeExceptionWithNeededDefault() {
-		def ae = new ApplicationException( Foo, "@@r1:runtime.you.wont.find.me:FooController:.SomeMissingAction@@", "The default message!" )
-	    assertTrue "toString() does not have expected content, but has: ${ae}",
-	               ae.toString().contains( "@@r1:runtime.you.wont.find.me:FooController:.SomeMissingAction@@" )
-		assertEquals 'RuntimeException', ae.getType()
-
-		def returnMap = ae.returnMap( controller.localizer )
-		assertFalse returnMap.success
-
-		assertTrue "message not as expected but was: ${returnMap.message}", returnMap.message ==~ /.*The default message!.*/
-	    assertNull returnMap.errors
-	    assertTrue returnMap.underlyingErrorMessage ==~ /.*@@r1:runtime.you.wont.find.me:FooController:.SomeMissingAction@@.*/
     }
 
 

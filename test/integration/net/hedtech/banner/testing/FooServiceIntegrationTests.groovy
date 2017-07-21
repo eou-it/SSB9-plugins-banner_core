@@ -5,7 +5,6 @@ package net.hedtech.banner.testing
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.service.KeyBlockHolder
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -24,8 +23,6 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 
 
     def fooService                     // injected by Spring
-    def supplementalDataService        // injected by Spring
-    def sessionContext                 // injected by Spring
     private static final Logger log = Logger.getLogger(getClass())
 
 
@@ -38,15 +35,12 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         tearDownTestFoo( true ) // tearDown should take care of this -- will really only be effective once we stop managing
                                 // transactions within the test framework (that is, for a specific framework test of transactions)
                                 // but instead rely on declarative transactions.
-        fooService.testKeyBlock = null // remove any testkeyBlock (this is a test-only field exposed by the FooService)
     }
 
 
     @After
     public void tearDown() {
         super.tearDown()
-        fooService.testKeyBlock = null // Grails 2.x retains session bound to thread across tests
-
     }
 
     @Test
@@ -280,41 +274,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 //        assertTrue newTransaction
 //    }
 
-    @Test
-    void testKeyBlockFoundInMap() {
-        def foo = fooService.create( newTestFooParams() )
-        foo.description = "Updated"
 
-        assertNull fooService.testKeyBlock
-        fooService.update( [ foo: foo, keyBlock: [ kb: 'Dummy KeyBlock' ] ] )
-        assertEquals "Dummy KeyBlock", fooService.getTestKeyBlock()?.kb
-    }
-
-    @Test
-    void testKeyBlockFoundInHolder() {
-        def foo = fooService.create( newTestFooParams() )
-        foo.description = "Updated"
-
-        assertNull fooService.testKeyBlock
-        KeyBlockHolder.set( [ kb: 'Dummy KeyBlock' ] )
-        fooService.update( foo )
-        assertEquals "Dummy KeyBlock", fooService.getTestKeyBlock()?.kb
-    }
-
-    @Test
-    void testKeyBlockIsOptional() {
-        KeyBlockHolder.clear()
-        assertFalse KeyBlockHolder.isOptional()
-        assertNotNull KeyBlockHolder.get()
-
-        KeyBlockHolder.markAsOptional()
-        assertTrue KeyBlockHolder.isOptional()
-        assertNull KeyBlockHolder.get()
-
-        KeyBlockHolder.clear()
-        assertFalse KeyBlockHolder.isOptional()
-        assertNotNull KeyBlockHolder.get()
-    }
 
     @Test
     void testApiContextVariableUsage() {
