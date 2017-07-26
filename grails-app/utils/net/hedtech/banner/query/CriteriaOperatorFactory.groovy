@@ -1,15 +1,6 @@
 package net.hedtech.banner.query
 
-import net.hedtech.banner.query.operators.EqualsOperator
-import net.hedtech.banner.query.operators.BetweenOperator
-
-import net.hedtech.banner.query.operators.GreaterThanOperator
-import net.hedtech.banner.query.operators.GreaterThanEqualsOperator
-import net.hedtech.banner.query.operators.LessThanOperator
-import net.hedtech.banner.query.operators.LessThanEqualsOperator
-
-import net.hedtech.banner.query.operators.Operators;
-import net.hedtech.banner.query.operators.CriteriaOperator
+import net.hedtech.banner.query.operators.*
 
 class CriteriaOperatorFactory {
 
@@ -22,9 +13,27 @@ class CriteriaOperatorFactory {
             case Operators.EQUALS:
                 return new EqualsOperator();
                 break;
+            case Operators.EQUALS_IGNORE_CASE:
+                return new EqualsIgnoreCaseOperator();
+                break;
+            case Operators.NOT_EQUALS:
+                return new NotEqualsOperator()
+                break;
             case Operators.BETWEEN:
             case "numericbetween": //TODO need to remove this when numeric between is removed from all zuls
                 return new BetweenOperator();
+                break;
+            case Operators.CONTAINS:
+                return new ContainsOperator();
+                break;
+            case Operators.STARTS_WITH:
+                return new StartsWithOperator()
+                break;
+            case Operators.IS_NULL:
+                return new IsNullOperator()
+                break;
+            case Operators.IS_NOT_NULL:
+                return new IsNotNullOperator()
                 break;
             case Operators.GREATER_THAN:
                 return new GreaterThanOperator()
