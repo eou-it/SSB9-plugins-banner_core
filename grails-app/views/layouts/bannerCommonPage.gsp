@@ -8,6 +8,9 @@ Copyright 2017 Ellucian Company L.P. and its affiliates.
 <!DOCTYPE html>
 <html lang="${message(code: 'default.language.locale')}">
 <head>
+    <script>
+        window.mepCode='${session.mep}';
+    </script>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <r:require modules="bannerCommonRTL"/>
     </g:if>

@@ -6,6 +6,9 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    <script>
+        window.mepCode='${session.mep}';
+    </script>
     <title><g:message code="net.hedtech.banner.login.title"/></title>
     <link rel="shortcut icon" href="${resource(plugin: 'bannerCore', dir: 'images', file: 'favicon.ico')}"
           type="image/x-icon"/>
