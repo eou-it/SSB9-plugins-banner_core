@@ -1,11 +1,14 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!--
 /*******************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    <script>
+        window.mepCode='${session.mep}';
+    </script>
     <title><g:message code="net.hedtech.banner.login.title"/></title>
     <link rel="shortcut icon" href="${resource(plugin: 'bannerCore', dir: 'images', file: 'favicon.ico')}"
           type="image/x-icon"/>
@@ -15,7 +18,12 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
     </g:if>
     <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
     <g:if test="${themeConfig.url}">
-        <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${session.mep ?: themeConfig.name}&template=${themeConfig.template}&mep=${session.mep}">
+        <g:if test="${session.mep}">
+            <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name + session.mep}&template=${themeConfig.template}&mepCode=${session.mep}">
+        </g:if>
+        <g:else>
+            <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}">
+        </g:else>
     </g:if>
 </head>
 
