@@ -296,6 +296,9 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             rows?.each { row ->
                 authorities << BannerGrantedAuthority.create( "SELFSERVICE-$row.TWGRROLE_ROLE", "BAN_DEFAULT_M", null )
             }
+            if(rows.size() > 0){
+                authorities << BannerGrantedAuthority.create( "SELFSERVICE-SSROLE", "BAN_DEFAULT_M", null )
+            }
         }
         if (authentictionResults.pidm) {
             authorities << BannerGrantedAuthority.create( "SELFSERVICE-ALLROLES", "BAN_DEFAULT_M", null )

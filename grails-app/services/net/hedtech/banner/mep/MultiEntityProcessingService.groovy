@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.mep
 
@@ -331,9 +331,14 @@ class MultiEntityProcessingService {
     }
     def getMepDescriptionSsbUser(mep) {
         def desc
-        Sql sql = new Sql(dataSource.getSsbConnection())
-        sql.eachRow("select * from gtvvpdi where gtvvpdi_code = ?", [mep]) {
-            desc = it.gtvvpdi_desc
+        Sql sql
+        try{
+            sql = new Sql(dataSource.getSsbConnection())
+            sql.eachRow("select * from gtvvpdi where gtvvpdi_code = ?", [mep]) {
+                desc = it.gtvvpdi_desc
+        }
+        }finally {
+            sql?.close()
         }
 
         desc
