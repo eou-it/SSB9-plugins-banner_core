@@ -307,7 +307,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-   @Test
+    @Test
     void testValidateCodeWithoutRequestPage() {
         resetPasswordController.validateCode()
         assertEquals(302, resetPasswordController.response.status)
@@ -414,17 +414,6 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
 
 
     @Test
-    void testResetPinWithNonPidm() {
-        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "resetpin")
-        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("nonPidmId", "tuessb02@ssb.com")
-        resetPasswordController.request.setContextPath("http://abc:8080")
-        resetPasswordController.request.setParameter("password", "111111")
-        resetPasswordController.request.setParameter("repassword", "111111")
-        resetPasswordController.resetPin()
-        assertEquals(302, resetPasswordController.response.status)
-        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("pidm")
-    }
-    @Test
     void testResetPinWithEmptyPasswordAndConfirmPassword() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "resetpin")
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("pidm", "900702")
@@ -439,7 +428,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testChangeExpiredPasswordWithoutRequestPage() {
-         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersPidm", "900702")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersPidm", "900702")
         resetPasswordController.request.setContextPath("http://abc:8080")
         resetPasswordController.request.setParameter("password", " 111111")
         resetPasswordController.changeExpiredPassword()
@@ -451,7 +440,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testChangeExpiredPasswordWithRequestPage() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "changeexpiredpassword")
-         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersPidm", "900702")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersPidm", "900702")
         resetPasswordController.request.setContextPath("http://abc:8080")
         resetPasswordController.request.setParameter("password", " 111111")
         resetPasswordController.request.setParameter("repassword", " 222222")
@@ -460,7 +449,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("usersPidm")
     }
 
-   @Test
+    @Test
     void testChangeExpiredPasswordWithConfirmPassword() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "changeexpiredpassword")
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersPidm", "900702")
@@ -481,9 +470,10 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         }
         return new String(Base64.encodeBase64(rowId.getBytes()))
     }
+
     public void enableUser() {
-            db.executeUpdate("Update GOBTPAC set  GOBTPAC_PIN_DISABLED_IND='N' WHERE GOBTPAC_PIDM='900700' ")
-            db.commit()
+        db.executeUpdate("Update GOBTPAC set  GOBTPAC_PIN_DISABLED_IND='N' WHERE GOBTPAC_PIDM='900700' ")
+        db.commit()
     }
 }
 
