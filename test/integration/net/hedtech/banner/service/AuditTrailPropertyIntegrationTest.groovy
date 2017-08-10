@@ -5,7 +5,6 @@ package net.hedtech.banner.service
 
 import net.hedtech.banner.testing.AcademicYearForTesting
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import net.hedtech.banner.testing.FacultyScheduleQueryViewForTesting
 import org.junit.Before
 import org.junit.After
 import org.junit.Test

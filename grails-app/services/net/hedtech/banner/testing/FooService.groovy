@@ -1,5 +1,5 @@
 /* ****************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 package net.hedtech.banner.testing
@@ -67,19 +67,6 @@ class FooService extends ServiceBase {
     //
     // Note for a simple service, with no additional methods like the test ones below, the body of the class would be completely empty.
     //
-
-    // The 'testKeyBlock' field is used solely for testing, and simply exposes the keyBlock if one was provided to the service
-    // either within a map or via the KeyBlockHolder threadlocal.
-    // Foo (or College) doesn't need or use a key block - again, this is solely for testing the framework.
-    private def testKeyBlock
-    public def getTestKeyBlock() { testKeyBlock }
-
-    // This preUpdate callback is used solely for testing. It facilitates access to the keyBlock when it exists.
-    void preUpdate( inputArg ) {
-        testKeyBlock = getKeyBlock( inputArg )
-    }
-
-
     // We'll override 'read' so that we can support MEP testing.
     // Please see FooResourceApiFunctionalSpec.
     // Specifically, we throw an exception for a 'bad' MEP code and include a 'good'

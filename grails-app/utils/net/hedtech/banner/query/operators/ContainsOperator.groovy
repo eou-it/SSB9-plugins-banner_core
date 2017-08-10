@@ -4,7 +4,7 @@ import net.hedtech.banner.query.criteria.CriteriaData
 import net.hedtech.banner.query.criteria.CriteriaParam
 
 class ContainsOperator extends CriteriaOperator {
-     public ContainsOperator () {
+     public ContainsOperator() {
         this.label = "net.hedtech.banner.ui.zk.search.advancedSearch.operator.contains";
         this.operator = "like";
         this.key = Operators.CONTAINS;
