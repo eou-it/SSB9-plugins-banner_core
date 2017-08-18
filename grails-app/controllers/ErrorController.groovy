@@ -1,11 +1,13 @@
 /*******************************************************************************
-Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
 import grails.plugin.springsecurity.SpringSecurityUtils
 import org.springframework.security.core.context.SecurityContextHolder as SCH
+import org.springframework.security.web.authentication.logout.LogoutHandler
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler
 
 class ErrorController {
 
@@ -25,7 +27,11 @@ class ErrorController {
         }
          //SCH.context?.authentication is passed and logout is fired on the logout handlers registered
         logoutHandlers.each { handler ->
-            handler.logout(request, response, SCH.context?.authentication)
+            if(handler instanceof LogoutHandler) {
+                handler.logout(request, response, SCH.context?.authentication)
+            } else if (handler instanceof LogoutSuccessHandler) {
+                handler.onLogoutSuccess(request, response, SCH.context?.authentication)
+            }
         }
         def model = [
             exception: exception,
