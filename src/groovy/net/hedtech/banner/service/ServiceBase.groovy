@@ -1,5 +1,5 @@
 /* *****************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.service
 
@@ -782,26 +782,6 @@ class ServiceBase {
         sessionFactory.getCurrentSession().connection()
     }
 
-
-    /**
-     * Returns true if there is a keyblock associated with the current request.
-     * @param domainModelOrMap An optional argument that is expected to be the input argument that was supplied to the create/update/delete method
-     * @return boolean True if a keyblock is available for the current request
-     **/
-    protected boolean hasKeyblock( domainModelOrMap = null ) {
-        getKeyBlock( domainModelOrMap ) ? true : false
-    }
-
-
-    /**
-     * Returns the keyblock if one exists, otherwise returns null.
-     * @param domainModelOrMap An optional argument that is expected to be the input argument that was supplied to the create/update/delete
-     * @return the keyblock if it exists, or null if there is no keyblock
-     **/
-    protected def getKeyBlock( domainModelOrMap ) {
-        if (domainModelOrMap instanceof Map) KeyBlockHolder.get( domainModelOrMap )
-        else                                 KeyBlockHolder.get()
-    }
 
 
     /**

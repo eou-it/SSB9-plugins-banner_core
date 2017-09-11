@@ -13,9 +13,9 @@ class LessThanOperator extends CriteriaOperator {
     }
 
     public String getQueryString(CriteriaData data) {
-       if(data.params && data.params.size() > 0) {
-           return "${data.tableAlias}.${data.tableBindingAttribute} < :${data.paramKey}"
-       }
-       return ""
+        if(data.params && data.params.size() > 0) {
+            return "${data.tableAlias}.${data.tableBindingAttribute} < :${data.paramKey}"
+        }
+        return ""
     }
 }

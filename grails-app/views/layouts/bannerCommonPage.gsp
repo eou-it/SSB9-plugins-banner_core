@@ -8,6 +8,9 @@ Copyright 2017 Ellucian Company L.P. and its affiliates.
 <!DOCTYPE html>
 <html lang="${message(code: 'default.language.locale')}">
 <head>
+    <script>
+        window.mepCode='${session.mep}';
+    </script>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <r:require modules="bannerCommonRTL"/>
     </g:if>
@@ -26,8 +29,14 @@ Copyright 2017 Ellucian Company L.P. and its affiliates.
 
     <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
     <g:if test="${themeConfig.url}">
-        <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${session.mep ?: themeConfig.name}&template=${themeConfig.template}&mep=${session.mep}">
+        <g:if test="${session.mep}">
+            <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name + session.mep}&template=${themeConfig.template}&mepCode=${session.mep}">
+        </g:if>
+        <g:else>
+            <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}">
+        </g:else>
     </g:if>
+
 </head>
 
 <body>

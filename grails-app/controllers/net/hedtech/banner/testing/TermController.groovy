@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.testing
 
@@ -23,9 +23,6 @@ class TermController {
     }
 
 
-    def zipService
-
-
     def main = {
           render view : "main"
     }
@@ -34,10 +31,4 @@ class TermController {
         def terms = Term.findAll()
           [ terms: terms ]
     }
-
-    def testdual = {
-        zipService.testSimple()
-        render view : "main"
-    }
-
 }
