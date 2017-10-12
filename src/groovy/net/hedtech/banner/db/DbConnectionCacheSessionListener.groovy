@@ -1,17 +1,16 @@
 /* ****************************************************************************
-Copyright 2013 Ellucian Company L.P. and its affiliates.
+Copyright 2017 Ellucian Company L.P. and its affiliates.
 ******************************************************************************/
 
 package net.hedtech.banner.db
 
-import net.hedtech.banner.service.HttpSessionService
-
+import grails.util.Environment
 import grails.util.Holders
+import net.hedtech.banner.service.HttpSessionService
 
 import javax.servlet.http.HttpSession
 import javax.servlet.http.HttpSessionEvent
 import javax.servlet.http.HttpSessionListener
-import grails.util.Environment
 
 class DbConnectionCacheSessionListener implements HttpSessionListener {
 
@@ -30,8 +29,9 @@ class DbConnectionCacheSessionListener implements HttpSessionListener {
         // Ensure that the service is called only when the session contains a connection
         // Login causes the earlier established session to be destroyed and then no request
         // is avaiable and HTTPSerice sessionDestroyed throws an Exception
-        if(session.getAttribute("cachedConnection") && (Environment.current != Environment.TEST))
-            getHttpSessionService().sessionDestroyed(session)
+        String userName = session.getAttribute("SPRING_SECURITY_CONTEXT" )?.authentication?.user?.username
+        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(userName) && (Environment.current != Environment.TEST))
+            getHttpSessionService().sessionDestroyed(userName)
     }
 
 
