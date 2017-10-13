@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.controllers
 
@@ -17,7 +17,7 @@ class ControllerUtils {
 
         def uri =  SpringSecurityUtils.securityConfig.logout.filterProcessesUrl //'/j_spring_security_logout'
         if(isSamlEnabled()) {
-            uri= "/"+RequestContextHolder?.currentRequestAttributes()?.request?.session?.getServletContext().getAttribute("logoutEndpoint")
+            uri="/"+Holders.config?.logoutEndpoint
         }
         def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
         if (mep) {
