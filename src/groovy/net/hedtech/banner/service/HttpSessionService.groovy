@@ -1,36 +1,41 @@
 /*******************************************************************************
- Copyright 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.service
 
+import net.hedtech.banner.db.BannerConnection
 import org.apache.log4j.Logger
+import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.http.HttpSession
 import java.sql.Connection
 
 class HttpSessionService {
     def dataSource     // injected by Spring
     private static final Logger log = Logger.getLogger( getClass() )
+    public static ConcurrentHashMap<String,BannerConnection> cachedConnectionMap = new ConcurrentHashMap<String,BannerConnection>()
 
     def sessionCreated(HttpSession session) {
         log.trace("Session created: " + session.id)
     }
 
-    def sessionDestroyed(HttpSession session) {
-        log.trace("Session destroyed: " + session.id)
-        closeDBConnection(session)
+    def sessionDestroyed(String user) {
+        closeDBConnection(user)
     }
 
-    def closeDBConnection(HttpSession session) {
+    def closeDBConnection(String user) {
         log.trace("HttpSessionService.closeDBConnection invoked")
         try {
-            Connection conn  = session?.getAttribute("cachedConnection")
+            Connection conn = cachedConnectionMap.get(user)
+
             log.trace("HttpSessionService.closeDBConnection invoked $conn cleaned up")
-            if (conn)
+            if (conn){
                 dataSource.removeConnection(conn)
+                cachedConnectionMap.remove(user)
+            }
+
         }
         catch (e) {
-            log.trace(e)
-        }
+			log.trace(e)        }
     }
 }

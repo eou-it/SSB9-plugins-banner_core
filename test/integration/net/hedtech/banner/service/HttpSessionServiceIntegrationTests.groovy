@@ -33,8 +33,11 @@ class HttpSessionServiceIntegrationTests extends BaseIntegrationTestCase {
         HttpSession session = request.getSession()
         HttpSessionService.sessionCreated(session)
         assertNotNull session.id
-        HttpSessionService.sessionDestroyed(session)
+        String userName = session.getAttribute("SPRING_SECURITY_CONTEXT" )?.authentication?.user?.username
+        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(userName))
+            getHttpSessionService().sessionDestroyed(userName)
     }
+
 
     @Test
     void testSessionDestroyed() {
@@ -42,21 +45,23 @@ class HttpSessionServiceIntegrationTests extends BaseIntegrationTestCase {
         HttpSession session = request.getSession()
         HttpSessionService.sessionCreated(session)
         assertNotNull session.id
-        HttpSessionService.sessionDestroyed(session)
+        String userName = session.getAttribute("SPRING_SECURITY_CONTEXT" )?.authentication?.user?.username
+        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(userName))
+            getHttpSessionService().sessionDestroyed(userName)
     }
 
 
     @Test
     void testSessionCachedConnectionTrue() {
         GrailsMockHttpServletRequest request = new GrailsMockHttpServletRequest()
-        def oldCachedConnection = request.getSession().getAttribute("cachedConnection")
         HttpSession session = request.getSession()
+        String userName = "Test"
         def conn = dataSource.getSsbConnection()
-        session.setAttribute("cachedConnection", conn)
+        HttpSessionService.cachedConnectionMap.put(userName,conn)
         HttpSessionService.sessionCreated(session)
         assertNotNull session.id
-        HttpSessionService.sessionDestroyed(session)
-        request?.getSession()?.setAttribute("cachedConnection", oldCachedConnection)
+        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(userName))
+                    getHttpSessionService().sessionDestroyed(userName)
     }
 
 }
