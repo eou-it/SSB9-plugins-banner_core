@@ -37,6 +37,7 @@ grails.project.dependency.resolution = {
     repositories {
         if (System.properties['PROXY_SERVER_NAME']) {
             mavenRepo "${System.properties['PROXY_SERVER_NAME']}"
+            mavenRepo "http://repo.grails.org/grails/core"
         }
         grailsCentral()
         mavenCentral()
@@ -51,7 +52,7 @@ grails.project.dependency.resolution = {
         compile 'org.grails:grails-web-databinding-spring:2.4.4'
 		compile "commons-dbcp:commons-dbcp:1.4"
         test 'org.easymock:easymock:3.2'
-
+        compile( 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.2')
     }
 
 }
