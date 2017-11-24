@@ -37,12 +37,12 @@ grails.project.dependency.resolution = {
     repositories {
         if (System.properties['PROXY_SERVER_NAME']) {
             mavenRepo "${System.properties['PROXY_SERVER_NAME']}"
-            mavenRepo "http://repo.grails.org/grails/core"
         }
         grailsCentral()
         mavenCentral()
         mavenRepo "https://code.lds.org/nexus/content/groups/main-repo"
         mavenRepo "http://repository.jboss.org/maven2/"
+	mavenRepo "http://repo.grails.org/grails/core"
     }
 
     dependencies {
