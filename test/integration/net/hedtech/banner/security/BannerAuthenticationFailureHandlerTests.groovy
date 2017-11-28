@@ -11,7 +11,6 @@ import org.junit.Before
 import org.junit.Test
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -22,8 +21,6 @@ import org.springframework.web.context.request.RequestContextHolder
 class BannerAuthenticationFailureHandlerTests extends BaseIntegrationTestCase {
 
     private BannerAuthenticationFailureHandler failureHandler
-    def dataSource
-
 
     @Before
     public void setUp() {
@@ -34,16 +31,13 @@ class BannerAuthenticationFailureHandlerTests extends BaseIntegrationTestCase {
         }
 
     @After
-    public void tearDown() {
+    public void tearDown() {s
         super.tearDown()
     }
 
 
     @Test
     public void testBannerAuthentiationWithSpecificUsage() {
-        Holders.config.ssbEnabled = false
-        Holders?.config?.productName = "testApp_LFMI"
-        Holders?.config?.banner?.applicationName = "testApp_LFMI"
         MockHttpServletRequest request = new MockHttpServletRequest()
         MockHttpServletResponse response = new MockHttpServletResponse()
         failureHandler.onAuthenticationFailure(request,response,new UsernameNotFoundException("User Not Found"));
