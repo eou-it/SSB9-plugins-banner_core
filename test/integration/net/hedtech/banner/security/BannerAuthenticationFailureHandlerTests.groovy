@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.security
@@ -15,7 +15,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
- * Intergration test cases for banner authentication provider
+ * Intergration test cases for Banner Authentication Failure Handler
  */
 
 class BannerAuthenticationFailureHandlerTests extends BaseIntegrationTestCase {
@@ -31,7 +31,7 @@ class BannerAuthenticationFailureHandlerTests extends BaseIntegrationTestCase {
         }
 
     @After
-    public void tearDown() {s
+    public void tearDown() {
         super.tearDown()
     }
 
