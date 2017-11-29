@@ -73,7 +73,6 @@ class TelephonicTypeForTestingIntegrationTests extends BaseIntegrationTestCase {
         telephoneTypeForTesting.setLastModified(new Date(12,2,15))
         telephoneTypeForTesting2.setLastModified(new Date(12,2,12))
         telephoneTypeForTesting.equals(telephoneTypeForTesting2)
-
     }
 
 
@@ -82,7 +81,6 @@ class TelephonicTypeForTestingIntegrationTests extends BaseIntegrationTestCase {
         telephoneTypeForTesting.setLastModifiedBy("telephoneTypeForLastModifiedBy")
         telephoneTypeForTesting2.setLastModifiedBy("telephoneTypeForLastModifiedBy2")
         telephoneTypeForTesting.equals(telephoneTypeForTesting2)
-
     }
 
 
@@ -91,7 +89,6 @@ class TelephonicTypeForTestingIntegrationTests extends BaseIntegrationTestCase {
         telephoneTypeForTesting.setCode("code")
         telephoneTypeForTesting2.setCode("code2")
         telephoneTypeForTesting.equals(telephoneTypeForTesting2)
-
     }
 
     @Test
@@ -99,7 +96,6 @@ class TelephonicTypeForTestingIntegrationTests extends BaseIntegrationTestCase {
         telephoneTypeForTesting.setDataOrigin("dataOrigin")
         telephoneTypeForTesting2.setDataOrigin("dataOrigin2")
         telephoneTypeForTesting.equals(telephoneTypeForTesting2)
-
     }
 
 
@@ -109,14 +105,12 @@ class TelephonicTypeForTestingIntegrationTests extends BaseIntegrationTestCase {
         telephoneTypeForTesting.setDataOrigin("dataOrigin")
         telephoneTypeForTesting2.setDataOrigin("dataOrigin2")
         telephoneTypeForTesting.equals(academicYearForTesting)
-
     }
 
 
     @Test
     void testTelephonicTypeWithEqualsSameObject() {
         telephoneTypeForTesting.equals(telephoneTypeForTesting)
-
     }
 
 
