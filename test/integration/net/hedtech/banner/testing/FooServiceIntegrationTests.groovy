@@ -5,6 +5,7 @@ package net.hedtech.banner.testing
 
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.exceptions.MepCodeNotFoundException
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -13,6 +14,7 @@ import grails.util.Holders
 import org.springframework.security.core.context.SecurityContextHolder
 import org.junit.Ignore
 import org.apache.log4j.Logger
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * Integration test for the Foo service.
@@ -347,5 +349,48 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 		  districtDivision: "TT", houseNumber: "TT", addressStreetLine4: "TT" ]
     }
 
+    @Test
+    void testGetWithMEPCodeApplicationException(){
+        def foo = new Foo( newTestFooParams() )
+        def session = RequestContextHolder.currentRequestAttributes()?.request?.session
+        session?.setAttribute("mep","MEPCODENOTFOUND_AE")
+        boolean thrown = false
+        try {
+            fooService.get(foo.id)
+        }catch(ApplicationException ae) {
+            thrown =true
+        }
+        assertTrue(thrown)
+    }
+
+
+    @Test
+    void testGetWithMEPCodeRunTimeException(){
+        def foo = new Foo( newTestFooParams() )
+        def session = RequestContextHolder.currentRequestAttributes()?.request?.session
+        session?.setAttribute("mep","MEPCODENOTFOUND_RE")
+        boolean thrown = false
+        try {
+            fooService.get(foo.id)
+        }catch(RuntimeException re) {
+            thrown =true
+        }
+        assertTrue(thrown)
+    }
+
+
+    @Test
+    void testGetWithMEPCodeNotFoundException(){
+        def foo = new Foo( newTestFooParams() )
+        def session = RequestContextHolder.currentRequestAttributes()?.request?.session
+        session?.setAttribute("mep","MEPCODENOTFOUND")
+        boolean thrown = false
+        try {
+            fooService.get(foo.id)
+        }catch(MepCodeNotFoundException me) {
+            thrown =true
+        }
+        assertTrue(thrown)
+    }
 }
 
