@@ -1,5 +1,5 @@
 /* *****************************************************************************
- Copyright 2010-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db
 
@@ -14,6 +14,7 @@ import net.hedtech.banner.security.BannerGrantedAuthority
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.security.BannerUser
 import net.hedtech.banner.security.FormContext
+import net.hedtech.banner.service.HttpSessionService
 import oracle.jdbc.OracleConnection
 import org.apache.log4j.Logger
 import org.springframework.context.ApplicationContext
@@ -125,7 +126,7 @@ public class BannerDS implements DataSource {
                     bannerConnection.isCached = true
                     def session = RequestContextHolder.currentRequestAttributes().request.session
                     session.setAttribute("bannerRoles", roles)
-                    session.setAttribute("cachedConnection", bannerConnection)
+                    HttpSessionService.cachedConnectionMap.put(user?.username,bannerConnection)
                     session.setAttribute("formContext", FormContext.get())
                 }
             }
@@ -145,8 +146,8 @@ public class BannerDS implements DataSource {
 
         if (user instanceof BannerUser){
             setLocaleInDatabase(bannerConnection.underlyingConnection)
-			return bannerConnection
-		}
+            return bannerConnection
+        }
         else{
             setLocaleInDatabase(conn)
             return new BannerConnection(conn, user?.username, this)// Note that while an IDE may not like this, the delegate supports this type coersion    }
@@ -186,7 +187,7 @@ public class BannerDS implements DataSource {
 
         if (Environment.current != Environment.TEST && ApiUtils.shouldCacheConnection()) {
             def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
-            bannerConnection = session.getAttribute("cachedConnection")
+            bannerConnection = HttpSessionService.cachedConnectionMap.get(user?.username)
             if (session.getAttribute("formContext"))
                 formContext = new ArrayList(session?.getAttribute("formContext"))
         }
@@ -229,7 +230,7 @@ public class BannerDS implements DataSource {
     }
 
     public def userRoles(user, applicableAuthorities) {
-       return getUserRoles(user, applicableAuthorities)
+        return getUserRoles(user, applicableAuthorities)
     }
 
     private getUserRoles(user, applicableAuthorities) {
@@ -439,13 +440,13 @@ public class BannerDS implements DataSource {
         getUnderlyingDataSource().getLoginTimeout()
     }
 
-	/*
+    /*
      * Added for java7 support
      * don't use 	@Override annotation so as to  have backward compatibility (JDK 6)
-	 * This method returns java.util.logging.Logger used by Data Source,
-	 * Since this class uses different logger i.e. org.apache.log4j.Logger method will rethrow back
-	 * SQLFeatureNotSupportedException
-	 * @return java.util.logging.Logger
+     * This method returns java.util.logging.Logger used by Data Source,
+     * Since this class uses different logger i.e. org.apache.log4j.Logger method will rethrow back
+     * SQLFeatureNotSupportedException
+     * @return java.util.logging.Logger
      **/
     java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
         throw new SQLFeatureNotSupportedException("Operation getParentLogger not supported.");
@@ -656,9 +657,9 @@ public class BannerDS implements DataSource {
                         log.error "Mep Code is invalid, will throw MepCodeNotFoundException"
                         throw new MepCodeNotFoundException(mepCode: mepCode)
                     }else {
-                            getMultiEntityProcessingService().setHomeContext(mepCode, conn)
-                            getMultiEntityProcessingService().setProcessContext(mepCode, conn)
-                        }
+                        getMultiEntityProcessingService().setHomeContext(mepCode, conn)
+                        getMultiEntityProcessingService().setProcessContext(mepCode, conn)
+                    }
                 }
 
             }

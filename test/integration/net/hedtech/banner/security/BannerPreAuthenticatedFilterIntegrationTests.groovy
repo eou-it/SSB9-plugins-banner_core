@@ -29,11 +29,11 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
+        Holders.config.ssbEnabled = true
+        super.setUp()
         RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
         Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken('INTGRN',111111))
         SecurityContextHolder.getContext().setAuthentication( auth )
-        Holders.config.ssbEnabled = true
-        super.setUp()
         Holders?.config.banner.sso.authenticationAssertionAttribute = "UDC_IDENTIFIER"
         Holders?.config.banner.sso.authenticationProvider = "external"
         bannerPIDM = getBannerPIDM()

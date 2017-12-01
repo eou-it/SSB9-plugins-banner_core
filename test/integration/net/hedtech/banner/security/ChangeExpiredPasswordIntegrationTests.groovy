@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -34,6 +34,7 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
     String pinResetFormat
     def dataSource
     def grailsApplication
+    def testUser
     static final String GUBPPRF_QUERY = "select GUBPPRF_MIN_LENGTH,GUBPPRF_MAX_LENGTH,GUBPPRF_NUM_IND,GUBPPRF_CHAR_IND from GUBPPRF"
 
     @Before
@@ -60,9 +61,8 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testOldPasswordSuccess() {
-        def user = PERSON
-        def oldPassword = 111111
-        auth = selfServiceBannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(user, oldPassword))
+        testUser = existingUser(PERSON, 123456)
+        auth = selfServiceBannerAuthenticationProvider.authenticate(new TestAuthenticationRequest(testUser))
         assertNotEquals(auth, null)
     }
 
@@ -169,6 +169,17 @@ class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {
     private void enableUser(pidm) {
         sql.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
         sql.commit()
+    }
+
+    private def existingUser(userId, newPin) {
+        def existingUser = [name: userId]
+        def testAuthenticationRequest = new TestAuthenticationRequest(existingUser)
+        existingUser['pidm'] = selfServiceBannerAuthenticationProvider.getPidm(testAuthenticationRequest, sql)
+        sql.commit()
+        sql.call("{call gb_third_party_access.p_update(p_pidm=>${existingUser.pidm}, p_pin=>${newPin})}")
+        sql.commit()
+        existingUser.pin = newPin
+        return existingUser
     }
 }
 

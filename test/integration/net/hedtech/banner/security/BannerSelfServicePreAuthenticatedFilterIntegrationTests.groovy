@@ -33,10 +33,10 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
     public void setUp() {
         formContext = ['GUAGMNU']
         Holders.config.ssbEnabled = true
+        super.setUp()
         bannerPIDM = getBannerPIDM()
         Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken('INTGRN',111111))
         SecurityContextHolder.getContext().setAuthentication( auth )
-        super.setUp()
     }
 
     @After

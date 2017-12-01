@@ -28,9 +28,7 @@ grails.project.dependency.resolution = {
         compile ':resources:1.2.8'
         compile ':markdown:1.0.0.RC1'
 		runtime ":webxml:1.4.1"
-        compile ":functional-test:2.0.0"
         compile ":xframeoptions:1.0"
-
     }
 
     distribution = {
@@ -44,6 +42,7 @@ grails.project.dependency.resolution = {
         mavenCentral()
         mavenRepo "https://code.lds.org/nexus/content/groups/main-repo"
         mavenRepo "http://repository.jboss.org/maven2/"
+	mavenRepo "http://repo.grails.org/grails/core"
     }
 
     dependencies {
@@ -53,7 +52,7 @@ grails.project.dependency.resolution = {
         compile 'org.grails:grails-web-databinding-spring:2.4.4'
 		compile "commons-dbcp:commons-dbcp:1.4"
         test 'org.easymock:easymock:3.2'
-
+        compile( 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.2')
     }
 
 }
