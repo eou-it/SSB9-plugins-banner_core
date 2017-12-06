@@ -382,7 +382,6 @@ class ResetPasswordService {
                 [error:errorMessage]
             }
             else{
-                sql.close()
                 [nonPidmId: nonPidmId]
             }
         }
@@ -393,9 +392,12 @@ class ResetPasswordService {
             else{
                 errorMessage = sqle.getMessage()
             }
-            sql.close()
             [error: errorMessage]
         }
+        finally {
+            sql?.close()
+        }
+
     }
 
     /**
@@ -519,8 +521,9 @@ class ResetPasswordService {
         Sql sql = new Sql(dataSource.getUnproxiedConnection())
         def errorMessage = "";
         def passwordReuseDays = 0;
-        if (pidm) {
+
             try{
+                if (pidm) {
                 sql.eachRow(PREFERENCE_REUSE_QUERY){row ->
                     passwordReuseDays = row.GUBPPRF_REUSE_DAYS
                 }
@@ -533,11 +536,11 @@ class ResetPasswordService {
                 ) { error_message ->
                     errorMessage = error_message;
                 }
-            }
+            }}
             finally{
                 sql?.close();
             }
-        }
+
         (errorMessage == null || errorMessage?.toString()?.trim()?.length() == 0) ? [error: false] : [error: true, errorMessage: errorMessage];
     }
 
