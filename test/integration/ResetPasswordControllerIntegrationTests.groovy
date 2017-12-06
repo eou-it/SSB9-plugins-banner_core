@@ -7,26 +7,30 @@ import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.security.ResetPasswordService
 import net.hedtech.banner.testing.BaseIntegrationTestCase
+import org.apache.commons.codec.binary.Base64
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.web.context.request.RequestContextHolder
-import org.apache.commons.codec.binary.Base64
-import java.sql.SQLException
 
+import java.sql.SQLException
 
 class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
 
     ResetPasswordService resetPasswordService
+    def testUser
+    def dataSource
+    def conn
+    Sql db
     public static final String PERSON_RESP001 = 'RESP001'
     public static final String PERSON_RESP002 = 'RESP002'
     public static final String PERSON_RESP003 = 'RESP003'
     public static final String PERSON_RESP004 = 'tuessb01@ssb.com'
     public static final String PERSON_RESP005 = 'RESP004'
-
-    def dataSource
-    def conn
-    Sql db
+    public static final String PERSON_HOSWEB001 = 'HOSWEB001'
+    public static final String PERSON_ESSREG03 = 'ESSREG03'
+    public static final String GUEST1 = 'sss04@ssb.com'
+    def selfServiceBannerAuthenticationProvider
     ResetPasswordController resetPasswordController
 
 
@@ -38,6 +42,8 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         conn = dataSource.getSsbConnection()
         conn.setAutoCommit(false)
         db = new Sql(conn)
+        testUser = existingUser(PERSON_HOSWEB001, 111111)
+        enableUser(db, testUser.pidm)
     }
 
 
@@ -45,8 +51,8 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     public void tearDown() {
         super.tearDown()
         conn.rollback()
-        conn.close()
         db.close()
+        conn.close()
     }
 
 
@@ -88,6 +94,17 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("requestPage")
     }
 
+    @Test
+    void testWithResetPasswordNoQuestionMap() {
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
+        resetPasswordController.request.setParameter("j_username", PERSON_ESSREG03)
+        def oldIsResetSsbPasswordEnabled = Holders?.config.ssbPassword.reset.enabled
+        Holders?.config.ssbPassword.reset.enabled = true
+        resetPasswordController.questans()
+        assertEquals(200, resetPasswordController.response.status)
+        Holders?.config.ssbPassword.reset.enabled = oldIsResetSsbPasswordEnabled
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("requestPage")
+    }
 
     @Test
     void testWithResetPasswordNull() {
@@ -105,10 +122,9 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testWithQuestionInfoMapAndUserName() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", PERSON_RESP001)
-        enableUser()
+        resetPasswordController.request.setParameter("j_username", PERSON_RESP003)
         resetPasswordController.questans()
-        assertEquals(200, resetPasswordController.response.status)
+        assertEquals(302, resetPasswordController.response.status)
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("requestPage")
     }
 
@@ -191,6 +207,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         assertEquals(302, resetPasswordController.response.status)
     }
 
+
     @Test
     void validateAnswerWithRequestPage() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
@@ -259,7 +276,6 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         Map questionsInfoMap = resetPasswordService.getQuestionInfoByLoginId(PERSON_RESP001)
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("questions", questionsInfoMap.get(PERSON_RESP001))
         resetPasswordController.validateAnswer()
-        assertEquals(200, resetPasswordController.response.status)
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("requestPage")
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("pidm")
     }
@@ -289,6 +305,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         resetPasswordController.changePassword()
         assertEquals(200, resetPasswordController.response.status)
     }
+
 
     @Test
     void testRecovery() {
@@ -425,6 +442,33 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("pidm")
     }
 
+    @Test
+    void testResetPinWithEmptyPasswordAndConfirmPasswordGuest() {
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "resetpin")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("nonPidmId", "sss01@ssb.com")
+        resetPasswordController.request.setContextPath("http://abc:8080")
+        resetPasswordController.request.setParameter("password", "111111")
+        resetPasswordController.request.setParameter("repassword", "111111")
+        resetPasswordController.resetPin()
+        assertEquals(302, resetPasswordController.response.status)
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("nonPidmId")
+    }
+
+
+    @Test
+    void testResetPinWithEmptyPasswordAndConfirmPasswordGuest3() {
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "resetpin")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("nonPidmId", "ss01@ssb.com")
+        resetPasswordController.request.setContextPath("http://abc:8080")
+        resetPasswordController.request.setParameter("password", "111111")
+        resetPasswordController.request.setParameter("repassword", "111111")
+        try {
+            resetPasswordController.resetPin()
+        } catch (SQLException sqe) {
+            assertEquals 01403, sqe.getErrorCode()
+        }
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("nonPidmId")
+    }
 
     @Test
     void testChangeExpiredPasswordWithoutRequestPage() {
@@ -449,6 +493,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("usersPidm")
     }
 
+
     @Test
     void testChangeExpiredPasswordWithConfirmPassword() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "changeexpiredpassword")
@@ -463,7 +508,129 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     }
 
 
-    public String getRowIDEncoded(def proxyPIDM) {
+    @Test
+    void testChangeExpiredPasswordWithConfirmPasswordWitValidateResultFalse() {
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "changeexpiredpassword")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersPidm", "90070")
+        resetPasswordController.request.setContextPath("http://abc:8080")
+        resetPasswordController.request.setParameter("oldpassword", "111111")
+        resetPasswordController.request.setParameter("password", "das!2ee22")
+        resetPasswordController.request.setParameter("repassword", "das!2ee22")
+        resetPasswordController.changeExpiredPassword()
+        assertEquals(200, resetPasswordController.response.status)
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("usersPidm")
+    }
+
+
+    @Test
+    void testChangeExpiredPasswordWithConfirmPasswordWithSuccess() {
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "changeexpiredpassword")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersPidm", "30176")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersName", "HOSWEB001")
+        resetPasswordController.request.setContextPath("http://abc:8080")
+        resetPasswordController.request.setParameter("oldpassword", "111111")
+        resetPasswordController.request.setParameter("password", "111111")
+        resetPasswordController.request.setParameter("repassword", "111111")
+        resetPasswordController.changeExpiredPassword()
+        assertEquals(302, resetPasswordController.response.status)
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("usersPidm")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("usersName")
+    }
+
+
+    @Test
+    void testChangeExpiredPasswordWithConfirmPasswordWithOlfPasswordWrong() {
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "changeexpiredpassword")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersPidm", "30176")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersName", "HOSWEB001")
+        resetPasswordController.request.setContextPath("http://abc:8080")
+        resetPasswordController.request.setParameter("oldpassword", "222222")
+        resetPasswordController.request.setParameter("password", "111111")
+        resetPasswordController.request.setParameter("repassword", "111111")
+        resetPasswordController.changeExpiredPassword()
+        assertEquals(200, resetPasswordController.response.status)
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("usersPidm")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("usersName")
+    }
+
+
+    @Test
+    void testChangeExpiredPasswordWithConfirmPasswordWithDisabledSuccess() {
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "changeexpiredpassword")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersPidm", "24")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersName", "HOSS003")
+        resetPasswordController.request.setContextPath("http://abc:8080")
+        resetPasswordController.request.setParameter("oldpassword", "111111")
+        resetPasswordController.request.setParameter("password", "111111")
+        resetPasswordController.request.setParameter("repassword", "111111")
+        resetPasswordController.changeExpiredPassword()
+        assertEquals(200, resetPasswordController.response.status)
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("usersPidm")
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("usersName")
+    }
+
+
+    @Test
+    void testResetPasswordWithValidateToken() {
+        resetPasswordController.request.setParameter("token", getRowIDEncoded(-99999985))
+        resetPasswordController.recovery()
+    }
+
+
+    @Test
+    void testResetPasswordWithValidateTokenDisabledY() {
+        resetPasswordController.request.setParameter("token", getRowIDEncoded(-99999984))
+        resetPasswordController.recovery()
+    }
+
+
+    @Test
+    void testResetPasswordWithValidateTokenSuccess() {
+        resetPasswordController.request.setParameter("token", getRowIDEncoded(-99999983))
+        resetPasswordController.recovery()
+    }
+
+
+    @Test
+    void testResetPasswordWithValidateTokenSuccess2() {
+        resetPasswordController.request.setParameter("token", getRowIDEncoded(-99999982))
+        resetPasswordController.recovery()
+    }
+
+
+    @Test
+    void testResetPasswordWithValidateTokenSuccess3() {
+        resetPasswordController.request.setParameter("token", getRowIDEncoded(-99999981))
+        resetPasswordController.recovery()
+    }
+
+    @Test
+    void testResetPasswordWithQuestionsGuest() {
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
+        resetPasswordController.request.setParameter("j_username", GUEST1)
+        try {
+            resetPasswordController.questans()
+        } catch (SQLException sqe) {
+            assertEquals 20002, sqe.getErrorCode()
+        }
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("requestPage")
+    }
+
+
+    @Test
+    void testResetPasswordWithQuestionsGuestGuestUrl() {
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
+        resetPasswordController.request.setParameter("j_username", GUEST1)
+        def oldRestEnabledValue = Holders?.config.ssbPassword.guest.reset.enabled
+        Holders?.config.ssbPassword.guest.reset.enabled = null
+        resetPasswordController.questans()
+        assertEquals(302, resetPasswordController.response.status)
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("requestPage")
+        Holders?.config.ssbPassword.guest.reset.enabled = oldRestEnabledValue
+    }
+
+
+    private String getRowIDEncoded(def proxyPIDM) {
         def rowId
         db.eachRow("SELECT GPBELTR.rowid FROM GPBELTR, GPBPRXY WHERE GPBPRXY_PROXY_IDM = GPBELTR_PROXY_IDM AND GPBELTR_PROXY_IDM=?", [proxyPIDM]) { row ->
             rowId = row.ROWID
@@ -471,9 +638,24 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         return new String(Base64.encodeBase64(rowId.getBytes()))
     }
 
-    public void enableUser() {
-        db.executeUpdate("Update GOBTPAC set  GOBTPAC_PIN_DISABLED_IND='N' WHERE GOBTPAC_PIDM='900700' ")
+
+    private void enableUser(Sql db, pidm) {
+        db.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
         db.commit()
     }
+
+    private def existingUser(userId, newPin) {
+        def existingUser = [name: userId]
+
+        def testAuthenticationRequest = new TestAuthenticationRequest(existingUser)
+        existingUser['pidm'] = selfServiceBannerAuthenticationProvider.getPidm(testAuthenticationRequest, db)
+        db.commit()
+        db.call("{call gb_third_party_access.p_update(p_pidm=>${existingUser.pidm}, p_pin=>${newPin})}")
+        db.commit()
+        existingUser.pin = newPin
+        return existingUser
+    }
 }
+
+
 
