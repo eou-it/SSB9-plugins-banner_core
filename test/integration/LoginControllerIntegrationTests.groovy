@@ -6,11 +6,13 @@ import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.AuthorizationException
 import net.hedtech.banner.i18n.MessageHelper
+import net.hedtech.banner.security.SelfServiceBannerAuthenticationProvider
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.security.authentication.*
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.context.request.RequestContextHolder
@@ -27,6 +29,11 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
 
     private static final def HOSWEB001_PWD = 111111
 
+    def testUser
+    def dataSource
+    def conn
+    Sql db
+
 
     @Before
     public void setUp() {
@@ -36,7 +43,11 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("mep", "BANNER")
         Holders.config.ssbEnabled = true
         Holders.config.ssbOracleUsersProxied = false
-
+        conn = dataSource.getSsbConnection()
+        conn.setAutoCommit(false)
+        db = new Sql(conn)
+        testUser = existingUser(PERSON_HOSWEB001, HOSWEB001_PWD)
+        enableUser (db, testUser.pidm)
     }
 
 
@@ -46,6 +57,8 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         super.tearDown()
         Holders.config.ssbEnabled = false
         Holders.config.ssbOracleUsersProxied = false
+        db.close()
+        conn.close()
     }
 
 
@@ -272,4 +285,37 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.authfail()
         assertEquals(200, controller.response.status)
     }
- }
+    private void enableUser(Sql db, pidm) {
+        db.executeUpdate("update gobtpac set gobtpac_pin_disabled_ind='N' where gobtpac_pidm=$pidm")
+        db.commit()
+    }
+    private def existingUser (userId, newPin) {
+        def existingUser = [ name: userId]
+
+        def testAuthenticationRequest = new TestAuthenticationRequest(existingUser)
+        existingUser['pidm'] = selfServiceBannerAuthenticationProvider.getPidm(testAuthenticationRequest, db )
+        db.commit()
+        db.call ("{call gb_third_party_access.p_update(p_pidm=>${existingUser.pidm}, p_pin=>${newPin})}")
+        db.commit()
+        existingUser.pin = newPin
+        return existingUser
+    }
+}
+class TestAuthenticationRequest implements Authentication {
+
+    def user
+
+    public TestAuthenticationRequest( user ) {
+        this.user = user
+    }
+
+    public Collection getAuthorities() { [] }
+    public Object getCredentials() { user.pin }
+    public Object getDetails() { user }
+    public Object getPrincipal() { user }
+    public boolean isAuthenticated() { false }
+    public void setAuthenticated( boolean b ) { }
+    public String getName() { user.name }
+    public Object getPidm() { user.pidm }
+    public Object getOracleUserName() { user.oracleUserName }
+}
