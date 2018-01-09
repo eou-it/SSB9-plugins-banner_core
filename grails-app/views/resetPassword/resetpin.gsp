@@ -5,7 +5,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 -->
 
 <%@ page contentType="text/html;charset=UTF-8" %>
-<html lang="${message(code: 'default.language.locale')}">
+<html>
   <head>
       <title><g:message code="net.hedtech.banner.resetpassword.resetpassword.title"/></title>
        <meta name="layout" content="bannerSelfServicePage"/>

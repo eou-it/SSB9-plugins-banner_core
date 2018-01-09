@@ -3,7 +3,7 @@
 Copyright 2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
-<html lang="${message(code: 'default.language.locale')}">
+<html>
 <head>
     <title><g:message code="changeExpiredPassword.title"/></title>
     <meta name="layout" content="bannerSelfServicePage"/>
