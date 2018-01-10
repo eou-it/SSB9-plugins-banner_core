@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 /*******************************************************************************
-Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+Copyright 2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <html lang="${message(code: 'default.language.locale')}">
