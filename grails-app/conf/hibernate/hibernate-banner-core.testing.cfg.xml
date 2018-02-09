@@ -30,6 +30,6 @@ there is no concept of an 'entity manager' within this project.
         <mapping class="net.hedtech.banner.testing.TelephoneTypeForTesting"/>
         <mapping class="net.hedtech.banner.testing.EmailTypeForTesting"/>
         <mapping class="net.hedtech.banner.testing.CommonMatchingSourceForTesting"/>
-
+        <mapping class="net.hedtech.banner.testing.FacultyScheduleQueryViewForTesting"/>
     </session-factory>
 </hibernate-configuration>

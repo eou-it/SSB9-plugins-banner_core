@@ -27,13 +27,13 @@ class BannerUserIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         Holders.config.ssbEnabled = true
+        super.setUp()
         RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
         conn = dataSource.getSsbConnection()
         sqlObj = new Sql(conn)
         PERSON_PIDM =  getPidmBySpridenId(PERSON)
         existingUser(PERSON_PIDM,PERSON_PASSWORD)
         enableUser (PERSON_PIDM)
-        super.setUp()
     }
 
     @After
