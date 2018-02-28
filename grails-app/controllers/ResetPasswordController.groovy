@@ -48,7 +48,7 @@ class ResetPasswordController {
         }
         else if(id == null || id.trim().length() == 0){
 
-            render view: "auth", model: [usernameRequired = true]
+            render view: "auth", model: [usernameRequired : true]
         }
         else if(resetPasswordService.isPidmUser(id)){
             if(CH?.config.ssbPassword.reset.enabled == null || CH?.config.ssbPassword.reset.enabled == false){

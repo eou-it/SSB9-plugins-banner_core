@@ -293,9 +293,9 @@ class AuthenticationProviderUtility {
 
         if(module=="Self Service Banner")
             sessionObj.setAttribute("module", sessionModule? sessionModule + ", " + shortName : shortName)
-        else
-            sessionObj.setAttribute("module", sessionModule? sessionModule + ", " + module : module)
-
+        else {
+            sessionObj.setAttribute("module", sessionModule ? sessionModule + ", " + module : module)
+        }
         sessionObj.setAttribute("msg", sessionMsg? sessionMsg + ", " + msg : msg)
 
         throw exception
