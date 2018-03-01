@@ -4,7 +4,7 @@
 Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="${message(code: 'default.language.locale')}">
 <head>
     <script>
         window.mepCode='${session.mep}';

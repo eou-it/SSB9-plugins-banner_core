@@ -7,7 +7,7 @@ import net.hedtech.banner.apisupport.ApiUtils
 import org.apache.commons.lang.ArrayUtils
 
 import grails.util.Holders  as CH
-
+import org.apache.log4j.Logger
 import org.hibernate.cfg.Configuration
 import org.hibernate.event.Initializable
 import org.hibernate.event.PreInsertEvent
@@ -25,6 +25,7 @@ import net.hedtech.banner.security.BannerUser
  */
 class AuditTrailPropertySupportHibernateListener implements PreInsertEventListener, PreUpdateEventListener, Initializable {
 
+    private static final Logger log = Logger.getLogger( "net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener" )
     static detailed = false
 
 
@@ -100,7 +101,7 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
             }
             true
         } catch (e) {
-            println "Error in setPropertyValueAuditTrailPropertySupportHibernateListener.setPropertyValue caught $e"
+            log.error("Error in setPropertyValueAuditTrailPropertySupportHibernateListener.setPropertyValue caught $e")
             false
         }
     }
@@ -110,8 +111,9 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         try {
             if  (SCH.context?.authentication?.principal instanceof BannerUser )
                 lastModifiedBy = SCH.context?.authentication?.principal?.username
-            else
+            else {
                 lastModifiedBy = SCH.context?.authentication?.principal
+            }
 
             if (lastModifiedBy == null) {
                 lastModifiedBy = (existingLastModifiedBy?.equalsIgnoreCase('BANNER'))? existingLastModifiedBy : 'anonymous'
@@ -121,7 +123,7 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
                 lastModifiedBy = lastModifiedBy.substring(0,30)
             }
         } catch (e) {
-            println "Error : Could not retrieve last modified by lastModifiedBy:$lastModifiedBy $e"
+            log.error("Error : Could not retrieve last modified by lastModifiedBy:$lastModifiedBy $e")
         }
         return lastModifiedBy?.toUpperCase()
     }

@@ -101,9 +101,10 @@ class BannerAccessDecisionVoter extends RoleVoter {
             determinedForms = formControllerMap[
                     (params.parentPluralizedResourceName ? params.parentPluralizedResourceName + "/" : "") +
                     params.pluralizedResourceName ] ?: []
-        else
-        determinedForms = UrlBasedFormsIdentifier.getFormsFor( url, prefixes,
-                                                 formControllerMap, pageName )
+        else {
+            determinedForms = UrlBasedFormsIdentifier.getFormsFor(url, prefixes,
+                    formControllerMap, pageName)
+        }
        log.debug "getCorrespondingFormNamesFor() will return form name(s): ${determinedForms?.join(', ')}"
        determinedForms
     }
@@ -169,8 +170,9 @@ class BannerAccessDecisionVoter extends RoleVoter {
             def pageName = RequestContextHolder.currentRequestAttributes()?.request?.getParameter( "page" )?.toLowerCase()
             if (pageName)
             message = message + "$pageName(${forms[0]})"
-            else
+            else {
                 message = message + "${url}"
+            }
         }
         publishViolation(authentication, message, forms)
     }
