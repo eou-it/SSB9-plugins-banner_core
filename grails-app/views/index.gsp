@@ -3,7 +3,7 @@
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
-<html>
+<html lang="${message(code: 'default.language.locale')}">
   <head>
 	  <title>Banner Core Home Page</title>
 	  <style type="text/css">
