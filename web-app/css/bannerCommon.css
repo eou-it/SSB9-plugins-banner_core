@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 body,html {
@@ -48,7 +48,7 @@ body,html {
 }
 #banner-header-main-section {
     width: 100%;
-    background-color: #206E9F;
+    background-color: #5353D1;
     height: 5.859375%;
     position: relative;
     min-height: 3.4em;
