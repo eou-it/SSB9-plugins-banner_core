@@ -135,14 +135,8 @@ class AuthenticationProviderUtility {
             conn = dataSource.getConnection()
             log.debug "AuthenticationProviderUtility.getUserFullName using banproxy connection"
         }
-
         try {
-            try {
-                preferredName = preferredNameService.getPreferredName(pidm, conn) as String
-            } catch (ApplicationException aex) {
-                preferredName = MessageHelper.message("net.hedtech.banner.preferredname.noname")
-                log.error "Exception occurred while fetching Preferred Name from preferredNameService :${aex}"
-            }
+            preferredName = preferredNameService.getPreferredName(pidm, conn) as String
             if (preferredName != null && !preferredName.isEmpty()) {
                 fullName = preferredName
                 log.debug "AuthenticationProviderUtility.getUserFullName found full name $preferredName"
@@ -151,6 +145,7 @@ class AuthenticationProviderUtility {
                 log.debug "AuthenticationProviderUtility.getUserFullName found full name $fullName"
             }
         } catch (ApplicationException aex) {
+            fullName = ""
             log.error "ApplicationException occurred while fetching Preferred Name with :${aex}"
         }
         finally {
