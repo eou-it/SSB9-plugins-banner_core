@@ -22,14 +22,22 @@ modules = {
         resource url: [plugin: 'banner-core', file: 'js/bannerCommon.js']
     }
 
+    'eds' {
+        resource url: 'https://cdn.elluciancloud.com/assets/1.3.0/css/ellucian-design-system-ltr.min.css'
+    }
+
+    'edsRTL' {
+        resource url: 'https://cdn.elluciancloud.com/assets/1.3.0/css/ellucian-design-system-rtl.min.css'
+    }
+
     'bannerCommonLTR' {
-        dependsOn "bannerCommon"
+        dependsOn "bannerCommon , eds"
         resource url: [plugin: 'banner-core', file: 'css/bannerCommon.css'], attrs: [media: 'screen, projection']
         resource url: [plugin: 'banner-core', file: 'css/timeout.css'], attrs: [media: 'screen, projection']
     }
 
     'bannerCommonRTL' {
-        dependsOn "bannerCommon"
+        dependsOn "bannerCommon, edsRTL"
         resource url: [plugin: 'banner-core', file: 'css/bannerCommon-rtl.css'], attrs: [media: 'screen, projection']
         resource url: [plugin: 'banner-core', file: 'css/timeout-rtl.css'], attrs: [media: 'screen, projection']
     }
