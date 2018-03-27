@@ -136,7 +136,12 @@ class AuthenticationProviderUtility {
             log.debug "AuthenticationProviderUtility.getUserFullName using banproxy connection"
         }
         try {
-            preferredName = preferredNameService.getPreferredName(pidm, conn) as String
+            try {
+                preferredName = preferredNameService.getPreferredName(pidm, conn) as String
+            } catch (ApplicationException aex) {
+                preferredName = ""
+                log.error "Exception occurred while fetching Preferred Name from preferredNameService : ${aex}"
+            }
             if (preferredName != null && !preferredName.isEmpty()) {
                 fullName = preferredName
                 log.debug "AuthenticationProviderUtility.getUserFullName found full name $preferredName"
@@ -145,7 +150,6 @@ class AuthenticationProviderUtility {
                 log.debug "AuthenticationProviderUtility.getUserFullName found full name $fullName"
             }
         } catch (ApplicationException aex) {
-            fullName = ""
             log.error "ApplicationException occurred while fetching Preferred Name with :${aex}"
         }
         finally {

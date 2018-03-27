@@ -60,8 +60,8 @@ class PreferredNameService {
            log.error "SQLException occured while executing Preferred Name Script ", ex
          }
         if(preferredName?.contains("*ERROR*"))  {
-            log.error "Error occurred while fetching Preferred Name with error :${preferredName}"
-            //throw new ApplicationException(PreferredNameService, MessageHelper.message("net.hedtech.banner.preferredname.invalid.rule"))
+            log.error "Error occurred while fetching Preferred Name with error : ${preferredName}"
+            throw new ApplicationException(PreferredNameService, preferredName)
         }
         //Sql.LOG.level = level
         return preferredName
