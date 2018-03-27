@@ -10,8 +10,6 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
         window.mepCode='${session.mep}';
     </script>
     <title><g:message code="net.hedtech.banner.login.title"/></title>
-    <link rel="shortcut icon" href="${resource(plugin: 'bannerCore', dir: 'images', file: 'favicon.ico')}"
-          type="image/x-icon"/>
     <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login.css')}"/>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login.css')}"/>
@@ -43,7 +41,7 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
     <meta name="msapplication-TileColor" content="#9f00a7"/>
     <meta name="msapplication-TileImage" content="https://cdn.elluciancloud.com/assets/1.3.0/favicon/mstile-144x144.png"/>
     <meta name="theme-color" content="#783084"/>
-    <link rel="icon" href="https://cdn.elluciancloud.com/assets/1.3.0/favicon/favicon.ico"/>
+    <link rel="shortcut icon" href="https://cdn.elluciancloud.com/assets/1.3.0/favicon/favicon.ico"/>
 
 </head>
 
