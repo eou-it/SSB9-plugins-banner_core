@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 
@@ -11,7 +11,19 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
        <meta name="layout" content="bannerSelfServicePage"/>
        <meta name="menuBaseURL" content="${createLink(uri: '/ssb')}" />
        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword.css')}"/>
+      <meta name="headerAttributes" content=""/>
        <script language="javascript">
+
+
+
+           document.getElementsByName('headerAttributes')[0].content = JSON.stringify({
+               "pageTitle": "<g:message code="net.hedtech.banner.resetpassword.resetpassword.title"/>",
+               "breadcrumb": {
+                   "<g:message code="net.hedtech.banner.resetpassword.resetpassword.title"/>" : ""
+               }
+           });
+
+
             function gotoLogin(){
                 var form = document.getElementById('resetPinForm');
                 form.action='${cancelUrl}';
@@ -82,25 +94,25 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
       <div class="ui-layout-center inner-content" id="inner-content">
           <div class="inner-center">
               <div id="resetpassword" class="ui-widget ui-widget-section">
-                  <div class="ui-widget-header"><g:message code="net.hedtech.banner.resetpassword.resetpassword.title"/></div>
+
                   <div class="main-wrapper" >
                       <div class="ui-widget-panel">
                       <form action="${postBackUrl}" method="post" id="resetPinForm">
                           <table cellpadding="5" cellspacing="10" class="input-table">
-                             <tr><td class="tabledata" colspan="2"><g:message code="net.hedtech.banner.resetpassword.resetpassword.message"/></td></tr>
+                             <tr align="center"><td class="tabledata" colspan="2"><g:message code="net.hedtech.banner.resetpassword.resetpassword.message"/></td></tr>
                               <g:if test="${flash.message}">
-                                    <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.newpassword"/>:</td><td class="tabledata"><input type="password" id="password" name="password" class="input-text error-state" autocomplete="off"/> </td></tr>
-                                    <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.repassword" /> :</td><td  class="tabledata"><input type="password" id="repassword" name="repassword" class="input-text error-state" autocomplete="off"/> </td></tr>
+                                    <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.newpassword"/>:</td><td class="tabledata"><input type="password" id="password" name="password" class="eds-text-field error-state" autocomplete="off"/> </td></tr>
+                                    <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.repassword" /> :</td><td  class="tabledata"><input type="password" id="repassword" name="repassword" class="eds-text-field error-state" autocomplete="off"/> </td></tr>
                               </g:if>
                               <g:else>
-                                 <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.newpassword"/>:</td><td class="tabledata"><input type="password" id="password" name="password" class="input-text default-state" autocomplete="off"/> </td></tr>
-                                 <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.repassword" /> :</td><td  class="tabledata"><input type="password" id="repassword" name="repassword" class="input-text default-state" autocomplete="off"/> </td></tr>
+                                 <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.newpassword"/>:</td><td class="tabledata"><input type="password" id="password" name="password" class="eds-text-field default-state" autocomplete="off"/> </td></tr>
+                                 <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.repassword" /> :</td><td  class="tabledata"><input type="password" id="repassword" name="repassword" class="eds-text-field default-state" autocomplete="off"/> </td></tr>
                              </g:else>
                           </table>
                           <div class="button-bar-container">
                                 <div class="button-bar">
-                                    <button id="cancelButton1" class="secondary-button" onclick="gotoLogin()"><g:message code="net.hedtech.banner.resetpassword.button.cancel"/></button>
-                                    <button id="createAccount1" class="primary-button" type="submit"><g:message code="net.hedtech.banner.resetpassword.button.submit"/></button>
+                                    <button id="cancelButton1" class="secondary" onclick="gotoLogin()"><g:message code="net.hedtech.banner.resetpassword.button.cancel"/></button>
+                                    <button id="createAccount1" class="primary" type="submit"><g:message code="net.hedtech.banner.resetpassword.button.submit"/></button>
                                 </div>
                           </div>
                        </form>
