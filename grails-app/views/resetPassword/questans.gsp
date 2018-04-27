@@ -48,7 +48,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
             }, 500);
 
             $("input").blur(function (e) {
-                var emptyErrorMessage = "${message( code:"net.hedtech.banner.resetpassword.question.answer.required.error" )}";
+                var emptyErrorMessage = "${message( code:"net.hedtech.banner.resetpassword.answer.required.error" )}";
                 var element = $(e.currentTarget);
                 if (element.val().trim() != "" && element.hasClass("error-state")) {
                     element.removeClass("error-state");
