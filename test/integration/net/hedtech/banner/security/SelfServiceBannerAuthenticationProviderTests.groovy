@@ -93,7 +93,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertEquals  auth.name, testUser.name as String
         assertTrue    auth.details.credentialsNonExpired
         assertEquals  auth.pidm,testUser.pidm
-        assertTrue    auth.webTimeout >= 30
         assertEquals auth.fullName,"Bernadette McKall"
 
     }
@@ -111,7 +110,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertEquals  auth.name, testUser.name as String
         assertTrue    auth.details.credentialsNonExpired
         assertEquals  auth.pidm,testUser.pidm
-        assertTrue    auth.webTimeout >= 30
         assertEquals auth.fullName,"McKall, Bernadette"
 
     }
