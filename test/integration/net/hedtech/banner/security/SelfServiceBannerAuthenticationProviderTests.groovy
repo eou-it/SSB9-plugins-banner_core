@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -93,7 +93,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertEquals  auth.name, testUser.name as String
         assertTrue    auth.details.credentialsNonExpired
         assertEquals  auth.pidm,testUser.pidm
-        assertTrue    auth.webTimeout >= 30
         assertEquals auth.fullName,"Bernadette McKall"
 
     }
@@ -111,7 +110,6 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
         assertEquals  auth.name, testUser.name as String
         assertTrue    auth.details.credentialsNonExpired
         assertEquals  auth.pidm,testUser.pidm
-        assertTrue    auth.webTimeout >= 30
         assertEquals auth.fullName,"McKall, Bernadette"
 
     }
