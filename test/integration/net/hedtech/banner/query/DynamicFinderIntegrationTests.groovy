@@ -153,6 +153,23 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
+    void testInvalidFetchAll() {
+        def query = """FROM  ZipForTesting1 a WHERE (a.code like :zipcode) """
+        filterData.params = ["zipcode": "%19%"]
+        def pagingAndSortParams = [sortCriteria: [
+                ["sortColumn": "city", "sortDirection": "asc"]
+        ]]
+        shouldFail(ApplicationException) {
+            try {
+                def result = DynamicFinder.fetchAll(zipForTestingObject.class, query, "a", filterData, pagingAndSortParams)
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
+    }
+
+    @Test
     void testSortByColumnInRelationalDomainClass(){
         def query = """FROM  TermForTesting a WHERE (a.code like :code) """
         filterData.params = ["code": "%19%"]
