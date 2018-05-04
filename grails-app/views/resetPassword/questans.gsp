@@ -9,7 +9,12 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
     <title><g:message code="net.hedtech.banner.resetpassword.forgotpassword.title"/></title>
     <meta name="layout" content="bannerSelfServicePage"/>
     <meta name="menuBaseURL" content="${createLink(uri: '/ssb')}"/>
-    <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword.css')}"/>
+    <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
+        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword-rtl.css')}"/>
+    </g:if>
+    <g:else>
+        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword.css')}"/>
+    </g:else>
 
     <!--This fix is given by the OWASP: Frame Busting (or ClickJack issue).
         Link: https://www.owasp.org/images/0/0e/OWASP_AppSec_Research_2010_Busting_Frame_Busting_by_Rydstedt.pdf-->
