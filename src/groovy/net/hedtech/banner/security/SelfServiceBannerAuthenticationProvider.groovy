@@ -71,11 +71,11 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
             AuthenticationProviderUtility.setWebSessionTimeout(  authenticationResults['webTimeout'] )
             authenticationResults['transactionTimeout'] = getTransactionTimeout()
-            String preferredName = authenticationResults.guest ? "" :AuthenticationProviderUtility.getUserFullName(authenticationResults.pidm,authenticationResults.name,dataSource) as String
-            if(preferredName!=null && !preferredName.isEmpty() )
-                authenticationResults['fullName']=preferredName
-            else {
+            String preferredName = AuthenticationProviderUtility.getUserFullName(authenticationResults.pidm,authenticationResults.name,dataSource) as String
+            if(authenticationResults.guest){
                 authenticationResults['fullName'] = getFullName(authenticationResults, dataSource) as String
+            } else {
+                authenticationResults['fullName'] = preferredName
             }
 
             setTransactionTimeout( authenticationResults['transactionTimeout'] )

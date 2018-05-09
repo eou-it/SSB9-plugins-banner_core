@@ -5,7 +5,9 @@ package net.hedtech.banner.security
 
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
+import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.AuthorizationException
+import net.hedtech.banner.i18n.MessageHelper
 import org.apache.log4j.Logger
 import grails.util.Holders
 import org.springframework.context.ApplicationContext
@@ -120,35 +122,40 @@ class AuthenticationProviderUtility {
     }
 
 
-    public static getUserFullName(pidm,name,dataSource){
+    public static getUserFullName(pidm, name, dataSource) {
         def ctx = Holders.servletContext.getAttribute(GA.APPLICATION_CONTEXT)
         def preferredNameService = ctx.preferredNameService
         def fullName
         def conn
         def preferredName
         if (isSsbEnabled()) {
-            conn = dataSource.getSsbConnection();
+            conn = dataSource.getSsbConnection()
             log.debug "AuthenticationProviderUtility.getUserFullName using banssuser ssb connection"
-        }else{
-            conn = dataSource.getConnection();
+        } else {
+            conn = dataSource.getConnection()
             log.debug "AuthenticationProviderUtility.getUserFullName using banproxy connection"
         }
-
         try {
-            preferredName = preferredNameService.getPreferredName(pidm,conn) as String
-            if(preferredName!=null && !preferredName.isEmpty() ) {
+            try {
+                preferredName = preferredNameService.getPreferredName(pidm, conn) as String
+            } catch (ApplicationException aex) {
+                preferredName = ""
+                log.error "Exception occurred while fetching Preferred Name from preferredNameService : ${aex}"
+            }
+            if (preferredName != null && !preferredName.isEmpty()) {
                 fullName = preferredName
                 log.debug "AuthenticationProviderUtility.getUserFullName found full name $preferredName"
-            }
-            else {
+            } else {
                 fullName = getFullName(name.toUpperCase(), dataSource) as String
                 log.debug "AuthenticationProviderUtility.getUserFullName found full name $fullName"
             }
+        } catch (ApplicationException aex) {
+            log.error "ApplicationException occurred while fetching Preferred Name with :${aex}"
         }
-        finally{
+        finally {
             conn?.close()
         }
-        return fullName;
+        return fullName
     }
 
     public static BannerAuthenticationToken createAuthenticationToken(dbUser, dataSource, provider ) {
