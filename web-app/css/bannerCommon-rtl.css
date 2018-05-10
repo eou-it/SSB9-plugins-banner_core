@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 body,html  {
@@ -67,7 +67,7 @@ body,html  {
     float:right;
 }
 .institutionalBranding  {
-    background:url("../images/logo.svg") right center no-repeat;
+    background:url("../images/eds/logo.svg") right center no-repeat;
     height:inherit;
     width:15em;
     float:right;
