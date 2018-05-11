@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 .dialog-mask {
@@ -7,17 +7,18 @@
     height: 90%;
     display: table;
 }
+::-moz-focus-inner {border:0;}
 .dialog-wrapper {
     display: table-cell;
     vertical-align: middle;
-    color: #4F585F;
+    color: #8A6A00; /*EDS*/
     font-size: .875em
 }
 .dialog {
-    background: #FFFEEA url("../images/info-CO.png") no-repeat 1em 1em;
+    background: #F5F2E7 url("../images/info-CO.png") no-repeat 1em 1em; /*EDS*/
 }
 .custom-logout-dialog {
-    background: #FFFEEA url("../images/check-mark-sm.svg") no-repeat 1em 1em;
+    background: #F5F2E7 url("../images/check-mark-sm.svg") no-repeat 1em 1em; /*EDS*/
 }
 .dialog,
 .custom-logout-dialog {
@@ -29,12 +30,10 @@
 .dialog-content,
 .dialog-content-no-action {
     padding: 1em;
-    border: 1px solid #E0D397;
     border-bottom: none;
     border-radius: 5px 5px 0 0;
 }
 .dialog-content-no-action {
-    border-bottom: 1px solid #E0D397;
     border-radius: 5px 5px 5px 5px;
 }
 .dialog-sign {
@@ -52,9 +51,10 @@
 .common-button-primary {
     font-size: .875em;
     font-family: "OpenSans-Semibold";
-    background-color: #FFFEEA;
-    border: 1px solid #E0D397;
-    color: #4F585F;
+    border:none;
+    background-color: #F5F2E7; /*EDS*/
+    border-top: 1px solid #8A6A00; /*EDS*/
+    color: #8A6A00;/*EDS*/
     cursor: pointer;
     text-transform: none;
     overflow: visible;
@@ -64,6 +64,10 @@
     padding-top: .75em;
     padding-bottom: .75em;
     border-radius: 0 0 5px 5px;
+}
+.common-button-primary:focus {
+    border: 1px solid #026BC8; /*EDS*/
+    outline: none;
 }
 @media only screen and (min-width: 1024px) {
     .dialog,
