@@ -525,8 +525,9 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testChangeExpiredPasswordWithConfirmPasswordWithSuccess() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "changeexpiredpassword")
-        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersPidm", "30176")
-        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersName", "HOSWEB001")
+        def pidm = testUser.pidm
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersPidm", pidm)
+        RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("usersName", PERSON_HOSWEB001)
         resetPasswordController.request.setContextPath("http://abc:8080")
         resetPasswordController.request.setParameter("oldpassword", "111111")
         resetPasswordController.request.setParameter("password", "111111")

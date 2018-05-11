@@ -27,8 +27,8 @@ class PreferredNameService {
         if(params.pidm instanceof Boolean)
             return preferredName
 
-        Level level = Sql.LOG.level
-        Sql.LOG.level = java.util.logging.Level.SEVERE
+        //Level level = Sql.LOG.level
+        //Sql.LOG.level = java.util.logging.Level.SEVERE
         Sql sql = new Sql( conn )
         try {
             sql.call("{? = call gokname.f_get_name(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}",
@@ -56,13 +56,14 @@ class PreferredNameService {
                        params.debug
                     ]
                 )  {  preferredNameOut -> preferredName = preferredNameOut }
-         } catch(SQLException e){
-            log.trace " SQLException Preferred Name Script doesn't exists in the DB "
+         } catch(SQLException ex){
+           log.error "SQLException occured while executing Preferred Name Script ", ex
          }
         if(preferredName?.contains("*ERROR*"))  {
-            throw new ApplicationException("", MessageHelper.message("net.hedtech.banner.preferredname.invalid.pidm"))
+            log.error "Error occurred while fetching Preferred Name with error : ${preferredName}"
+            throw new ApplicationException(PreferredNameService, preferredName)
         }
-        Sql.LOG.level = level
+        //Sql.LOG.level = level
         return preferredName
     }
 
@@ -89,7 +90,7 @@ class PreferredNameService {
     public  String getPreferredName(pidm, conn){
         def params = setupPreferredNameParams(pidm)
         String displayName = getName(params,conn)
-        log.trace "PreferredNameService.getPreferredName is returning $displayName"
+        log.debug "PreferredNameService.getPreferredName is returning $displayName"
         return displayName
     }
 
