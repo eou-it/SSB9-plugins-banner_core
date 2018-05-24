@@ -64,7 +64,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
         </g:else>
     </div>
 
-    <div class="ellucianName">ellucian<span class="trademark">TM</span></div>
+    <div class="ellucianName"></div>
 
     <div id="userNameTxt" style="display: none;">User Name</div>
 
@@ -118,7 +118,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                     <input type='submit'
                           value="${message(code: 'net.hedtech.banner.login.signin', default: 'Sign In')}"
                           id="sign-in-btn" height="32px" onclick="submitForm()"
-                          class="signin-button"/>
+                          class="primary"/>
                 </div>
 
             </div>

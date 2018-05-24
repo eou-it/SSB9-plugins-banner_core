@@ -5,6 +5,21 @@ BODY {
     margin: 0px;
     padding: 0px;
     font: normal 66.7% Arial, Helvetica, sans-serif;
+
+
+}
+
+/*EDS*/
+html, body{
+    height: 100%;
+    /*background-image: url(http://ppcdn.500px.org/75319705/1991f76c0c6a91ae1d23eb94ac5c7a9f7e79c480/2048.jpg) ;*/
+    background-position: center center;
+    background-repeat:  no-repeat;
+    background-size:  cover;
+    margin:0px;
+    padding:0px;
+    top:0px;
+    overflow: hidden;
 }
 
 /*-----------------------------------------------------------
@@ -12,11 +27,10 @@ LOG IN
 -----------------------------------------------------------*/
 
 .pageBg {
-    background: #4C8DB5 url(../images/page-bg.png) repeat-x 0 0;
+    background-image: url(../images/1024x684.png); /*EDS*/
 }
 
 .splashBg {
-    background: url(../images/splash-bg-light.png) no-repeat 0 0;
     height: 438px;
     width: 735px;
     margin: 140px auto 0px;
@@ -24,7 +38,7 @@ LOG IN
 }
 
 .splashBg .appName {
-    color: #FFFFFF;
+    color: #026BC8; /*EDS*/
     font-size: 24px;
     font-weight: bold;
     padding-top: 4px;
@@ -104,7 +118,7 @@ LOG IN
 
 .splashBg .copyright {
     bottom: 56px;
-    color: #FFFFFF;
+    color: #151618; /*EDS*/
     font-size: 12px;
     margin: 0 50px 0 100px;
     position: absolute;
@@ -117,7 +131,7 @@ LOG IN
 
 .loginMsg {
     text-align: right;
-    color: #FFF;
+    color: #151618; /*EDS*/
     position: absolute;
     top: 125px;
     right: 52px;
@@ -161,7 +175,7 @@ LOG IN
 
 .ie-warning {
     background: url(../images/icon-warning-24x24.png) no-repeat 7px scroll transparent #f7eca3;
-    color: #FFFFFF;
+    color: #151618;  /*EDS*/
     font-family: Arial;
     font-size: 0.917em;
     margin: 30px 30px 0;
@@ -271,42 +285,29 @@ LOG IN
 
 
 /* Enable theming */
-.splashBg, .pageBg {
+.splashBg {  /*EDS*/
     background-image: none;
 }
-
-.pageBg {
-  background-color: #4c8db5;
-  background-image: linear-gradient( #015d96, #4c8db5 );
-  background-repeat: repeat-x;
-  background-size: auto 674px;
-}
-
 .splashBg {
   height: 408px;
   width: 705px;
   position: relative;
-  background-color: #4e8bbb; /* center section background */
-  border: 2px solid #00579a;
-  box-shadow: 0 0 30px 0px #000;
+  background-color: #ffffff; /* center section background */ /*EDS*/
+  box-shadow: 0 0 10px 0px #CECECE; /*EDS*/
   top: 155px;
   margin: auto;
   left: 0px;
+  border-radius: 6px;/*EDS*/
 }
 
 .splashBg:before {
   /* top section */
-  content: "";
   position: absolute;
   display: block;
   top: 0px;
   height: 156px;
   width: 100%;
-  background-color: #70a4c4;
-  background-image: linear-gradient( to right, #70a4c4, #337dab );
-  border: 0px;
-  border-bottom: 1px solid;
-  border-image: linear-gradient( to right, #4287b1, #005c96 ) 1;
+  background-color: #ffffff; /*EDS*/
 }
 
 .splashBg .copyright {
@@ -317,10 +318,6 @@ LOG IN
   right:0;
   margin: 0;
   padding: 24px 35px 0 85px;
-  background-image: linear-gradient( to right, #3f85b0, #0d649b ); /* bottom section */
-  border: 0px;
-  border-top: 1px solid;
-  border-image: linear-gradient( to right, #367fac, #005c96 ) 1;
 }
 
 .splashBg .appName {
@@ -338,12 +335,15 @@ LOG IN
 
 .splashBg .ellucianName {
   /* Ellucian (TM) from auth.gsp patch */
-  color: #ffffff;
-  font-size: 37px;
   position: absolute;
-  left: 62px;
-  top: 181px;
-  height: 86px;
+  left: 85px;   /*EDS*/
+  top: 191px;   /*EDS*/
+  height: 25px; /*EDS*/
+  background-image: url(../images/ellucian_logo.svg); /*EDS*/
+  background-size: cover; /*EDS*/
+  width: 10.875em; /*EDS*/
+  background-position: center center; /*EDS*/
+  background-repeat: no-repeat; /*EDS*/
 }
 
 .splashBg .ellucianName .trademark {
@@ -371,23 +371,6 @@ LOG IN
   top: -.15em;
 }
 
-.signin-button {
-  background: #658ea8;
-  background-image:linear-gradient(#658ea8, #194161);
-  border: 1px solid #003366;
-  text-shadow:none;
-}
-
-.signin-button:hover {
-  background: #97b2c2;
-  background-image:linear-gradient(#97b2c2, #25506b);
-}
-
-.signin-button:active {
-  background: #194a6a;
-  background-image:linear-gradient(#194a6a, #658ea8);
-}
-
 .splashBg .forgotPasswordDiv {
     left: 440px;
     right: auto;
@@ -396,7 +379,19 @@ LOG IN
 }
 
 .splashBg .forgotpassword {
-    color: #ffffff !important;
+    color: #026bc8 !important; /*EDS*/
     text-decoration: underline !important;
     font-size: 1em !important;
 }
+
+/*EDS*/
+.primary {
+    background-color: #026BC8;
+    color: #FFFFFF;
+    border-radius: 4px;
+    padding: 0.5em 1.5em;
+    border: none;
+    font-family: Open Sans !important;
+    outline:none;
+}
+
