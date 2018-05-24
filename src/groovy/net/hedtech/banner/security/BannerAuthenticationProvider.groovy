@@ -3,17 +3,11 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
-import grails.util.GrailsNameUtils
 import grails.util.Holders  as CH
 import groovy.sql.Sql
 import org.apache.log4j.Logger
 import org.springframework.context.ApplicationContext
-import org.springframework.security.authentication.AuthenticationProvider
-import org.springframework.security.authentication.DisabledException
-import org.springframework.security.authentication.CredentialsExpiredException
-import org.springframework.security.authentication.LockedException
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.authentication.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 
@@ -113,7 +107,6 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
     public static getFullName( String name, def dataSource ) {
         def conn = null
         def fullName
-        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>()
         name = name.toUpperCase()
         try {
             conn = dataSource.unproxiedConnection

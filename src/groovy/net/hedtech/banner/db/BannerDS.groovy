@@ -54,10 +54,6 @@ public class BannerDS implements DataSource {
 
     private final static Logger log = Logger.getLogger(BannerDS.class)
 
-    private isAnonymousUser (def user) {
-        user?.authorities?.size() && user?.authorities[0]?.authority == 'ROLE_ANONYMOUS'
-    }
-
     public static callNlsUtility(sql,userLocale){
         try {
             userLocale = userLocale.toString()?.replaceAll('_','-')
@@ -572,8 +568,9 @@ public class BannerDS implements DataSource {
         if (user) {
             if (DBUtility.isAdminOrOracleProxyRequired(user))
                 return underlyingDataSource
-            else
+            else {
                 return underlyingSsbDataSource
+            }
         }
         else {
             underlyingDataSource // we'll return the INB datasource if no user is authenticated

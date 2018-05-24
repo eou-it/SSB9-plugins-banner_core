@@ -3,6 +3,7 @@
 Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
+<html lang="${message(code: 'default.language.locale')}">
 <head>
 <meta name='layout' content='main' />
 <title>Login</title>
@@ -70,3 +71,4 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 })();
 </script>
 </body>
+</html>

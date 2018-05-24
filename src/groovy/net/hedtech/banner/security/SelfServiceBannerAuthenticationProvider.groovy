@@ -74,8 +74,9 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             String preferredName = authenticationResults.guest ? "" :AuthenticationProviderUtility.getUserFullName(authenticationResults.pidm,authenticationResults.name,dataSource) as String
             if(preferredName!=null && !preferredName.isEmpty() )
                 authenticationResults['fullName']=preferredName
-            else
-                authenticationResults['fullName']= getFullName( authenticationResults, dataSource ) as String
+            else {
+                authenticationResults['fullName'] = getFullName(authenticationResults, dataSource) as String
+            }
 
             setTransactionTimeout( authenticationResults['transactionTimeout'] )
 
@@ -116,7 +117,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         def expirationDate
         def displayUsage
         def oracleUserName
-        def valid
 
         db.call( "{call gokauth.p_authenticate(?,?,?,?,?,?,?)}",
             [ authentication.name,
