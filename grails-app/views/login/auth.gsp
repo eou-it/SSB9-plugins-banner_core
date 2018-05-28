@@ -117,7 +117,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                 <div class="signin-button-wrapper">
                     <input type='submit'
                           value="${message(code: 'net.hedtech.banner.login.signin', default: 'Sign In')}"
-                          id="sign-in-btn" height="32px" onclick="submitForm()"
+                          id="sign-in-btn" onclick="submitForm()"
                           class="primary"/>
                 </div>
 

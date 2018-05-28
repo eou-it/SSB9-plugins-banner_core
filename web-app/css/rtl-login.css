@@ -66,7 +66,7 @@ LOG IN
 }
 
 .splashBg .userName {
-    background: url(../images/textbox-sprites-rtl.png) no-repeat left -27px;
+    background: url(../images/textbox-rtl.png) no-repeat left -27px;
     padding: 0px 0px 0px 20px;
     margin-left: 10px;
     margin-right: 0;
@@ -76,13 +76,13 @@ LOG IN
 
 .splashBg .userName span {
     display: block;
-    background: url(../images/textbox-sprites-rtl.png) no-repeat right -27px;
+    background: url(../images/textbox-rtl.png) no-repeat right -27px;
     padding-right: 10px;
     height: 23px;
 }
 
 .splashBg .password {
-    background: url(../images/textbox-sprites-rtl.png) no-repeat left 0;
+    background: url(../images/textbox-rtl.png) no-repeat left 0;
     padding: 0px 0px 0px 20px;
     margin-left: 10px;
     margin-right: 0px;
@@ -92,14 +92,14 @@ LOG IN
 
 .splashBg .password span {
     display: block;
-    background: url(../images/textbox-sprites-rtl.png) no-repeat right 0;
+    background: url(../images/textbox-rtl.png) no-repeat right 0;
     padding-right: 10px;
     padding-left: 0px;
     height: 23px;
 }
 
 .splashBg .userName-error-state {
-    background: url(../images/textbox-sprites-rtl.png) no-repeat left -81px;
+    background: url(../images/textbox-rtl.png) no-repeat left -81px;
     padding: 0px 0px 0px 20px;
     margin-right: 0px;
     height: 23px;
@@ -109,13 +109,13 @@ LOG IN
 
 .splashBg .userName-error-state span {
     display: block;
-    background: url(../images/textbox-sprites-rtl.png) no-repeat right -81px;
+    background: url(../images/textbox-rtl.png) no-repeat right -81px;
     padding-right: 10px;
     height: 23px;
 }
 
 .splashBg .password-error-state {
-    background: url(../images/textbox-sprites-rtl.png) no-repeat left -54px;
+    background: url(../images/textbox-rtl.png) no-repeat left -54px;
     padding: 0px 0px 0px 20px;
     margin-right: 0px;
     height: 23px;
@@ -125,7 +125,7 @@ LOG IN
 
 .splashBg .password-error-state span {
     display: block;
-    background: url(../images/textbox-sprites-rtl.png) no-repeat right -54px;
+    background: url(../images/textbox-rtl.png) no-repeat right -54px;
     padding-right: 10px;
     height: 23px;
 }

@@ -71,7 +71,7 @@ LOG IN
 }
 
 .splashBg .userName {
-    background: url(../images/textbox-sprites.png) no-repeat left -27px;
+    background: url(../images/textbox.png) no-repeat left -27px;
     padding: 0px 0px 0px 20px;
     margin-right: 10px;
     height: 24px;
@@ -80,13 +80,13 @@ LOG IN
 
 .splashBg .userName SPAN {
     display: block;
-    background: url(../images/textbox-sprites.png) no-repeat right 0;
+    background: url(../images/textbox.png) no-repeat right 0;
     padding-right: 10px;
     height: 24px;
 }
 
 .splashBg .password {
-    background: url(../images/textbox-sprites.png) no-repeat left 0;
+    background: url(../images/textbox.png) no-repeat left 0;
     padding: 0px 0px 0px 20px;
     height: 24px;
     width: 139px;
@@ -95,7 +95,7 @@ LOG IN
 
 .splashBg .password SPAN {
     display: block;
-    background: url(../images/textbox-sprites.png) no-repeat right 0;
+    background: url(../images/textbox.png) no-repeat right 0;
     padding-right: 10px;
     height: 24px;
 }
@@ -143,7 +143,7 @@ LOG IN
 }
 
 .splashBg .userName-error-state {
-    background: url(../images/textbox-sprites.png) no-repeat left -81px;
+    background: url(../images/textbox.png) no-repeat left -81px;
     padding: 0px 0px 0px 20px;
     margin-right: 10px;
     height: 24px;
@@ -152,13 +152,13 @@ LOG IN
 
 .splashBg .userName-error-state SPAN {
     display: block;
-    background: url(../images/textbox-sprites.png) no-repeat right -81px;
+    background: url(../images/textbox.png) no-repeat right -81px;
     padding-right: 10px;
     height: 24px;
 }
 
 .splashBg .password-error-state {
-    background: url(../images/textbox-sprites.png) no-repeat left -54px;
+    background: url(../images/textbox.png) no-repeat left -54px;
     padding: 0px 0px 0px 20px;
     height: 24px;
     width: 139px;
@@ -167,7 +167,7 @@ LOG IN
 
 .splashBg .password-error-state SPAN {
     display: block;
-    background: url(../images/textbox-sprites.png) no-repeat right -54px;
+    background: url(../images/textbox.png) no-repeat right -54px;
     padding-right: 10px;
     height: 24px;
 }
@@ -292,6 +292,7 @@ LOG IN
   width: 705px;
   position: relative;
   background-color: #ffffff; /* center section background */ /*EDS*/
+  border: 2px solid #ffffff;
   box-shadow: 0 0 10px 0px #CECECE; /*EDS*/
   top: 155px;
   margin: auto;
@@ -384,6 +385,19 @@ LOG IN
 }
 
 /*EDS*/
+/* Button Styles Prisma */
+
+.primary:hover:not([disabled]) {
+    background-color: #065AA5;
+    border: none;
+}
+
+.primary:focus:not([disabled]) {
+    border: 2px solid #81C8FF;
+    -ms-user-select: none;
+    outline: none;
+}
+
 .primary {
     background-color: #026BC8;
     color: #FFFFFF;
@@ -391,6 +405,20 @@ LOG IN
     padding: 0.5em 1.5em;
     border: none;
     font-family: Open Sans !important;
-    outline:none;
 }
+.primary:hover:not([disabled]) {
+    background-color: #065AA5;
+}
+.primary:disabled {
+    background-color: #B2B3B7;
+    color: #FFFFFF;
+    border: none;
+}
+
+.primary:active:not([disabled]) {
+    background-color: #0A4982;
+    border: none;
+}
+
+
 
