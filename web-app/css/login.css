@@ -387,18 +387,18 @@ LOG IN
 /*EDS*/
 /* Button Styles Prisma */
 
-.primary:hover:not([disabled]) {
+.login-primary:hover:not([disabled]) {
     background-color: #065AA5;
     border: none;
 }
 
-.primary:focus:not([disabled]) {
+.login-primary:focus:not([disabled]) {
     border: 2px solid #81C8FF;
     -ms-user-select: none;
     outline: none;
 }
 
-.primary {
+.login-primary {
     background-color: #026BC8;
     color: #FFFFFF;
     border-radius: 4px;
@@ -406,16 +406,16 @@ LOG IN
     border: none;
     font-family: Open Sans !important;
 }
-.primary:hover:not([disabled]) {
+.login-primary:hover:not([disabled]) {
     background-color: #065AA5;
 }
-.primary:disabled {
+.login-primary:disabled {
     background-color: #B2B3B7;
     color: #FFFFFF;
     border: none;
 }
 
-.primary:active:not([disabled]) {
+.login-primary:active:not([disabled]) {
     background-color: #0A4982;
     border: none;
 }

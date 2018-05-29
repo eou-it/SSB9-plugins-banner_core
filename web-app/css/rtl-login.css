@@ -150,10 +150,8 @@ LOG IN
     right: auto;
 }
 
-.signin-button {
+.login-primary {
     left: -269px;
-    font-size: 1.1em;
-    padding: 0.15em 0.5em;
 }
 
 .signin-button-wrapper {
@@ -271,13 +269,4 @@ LOG IN
     text-decoration: underline !important;
     font-size: 1em !important;
 }
-/*EDS*/
-.primary {
-    background-color: #026BC8;
-    color: #FFFFFF;
-    border-radius: 4px;
-    padding: 0.5em 1.5em;
-    border: none;
-    font-family: Open Sans !important;
-    outline:none;
-}
+

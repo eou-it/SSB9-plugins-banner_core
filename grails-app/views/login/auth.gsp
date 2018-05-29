@@ -118,7 +118,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                     <input type='submit'
                           value="${message(code: 'net.hedtech.banner.login.signin', default: 'Sign In')}"
                           id="sign-in-btn" onclick="submitForm()"
-                          class="primary"/>
+                          class="login-primary"/>
                 </div>
 
             </div>
