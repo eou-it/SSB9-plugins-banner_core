@@ -6,9 +6,9 @@ package net.hedtech.banner.general.utility
 
 import org.springframework.context.ApplicationContext
 import grails.util.Holders
-import org.codehaus.groovy.grails.commons.GrailsApplication
+import grails.core.GrailsApplication
 import net.hedtech.banner.configuration.SupplementalDataUtils
-import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
+import org.grails.core.DefaultGrailsDomainClass
 import org.apache.commons.lang.ClassUtils
 
 import groovy.sql.Sql

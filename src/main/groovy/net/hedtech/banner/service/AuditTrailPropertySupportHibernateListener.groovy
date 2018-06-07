@@ -7,13 +7,16 @@ import net.hedtech.banner.apisupport.ApiUtils
 import org.apache.commons.lang.ArrayUtils
 
 import grails.util.Holders  as CH
-import org.apache.log4j.Logger
+import net.hedtech.banner.apisupport.ApiUtils
+import net.hedtech.banner.security.BannerUser
+import org.apache.commons.lang.ArrayUtils
 import org.hibernate.cfg.Configuration
-import org.hibernate.event.Initializable
-import org.hibernate.event.PreInsertEvent
-import org.hibernate.event.PreUpdateEvent
-import org.hibernate.event.PreInsertEventListener
-import org.hibernate.event.PreUpdateEventListener
+import org.hibernate.event.spi.PreInsertEvent
+import org.hibernate.event.spi.PreInsertEventListener
+import org.hibernate.event.spi.PreUpdateEvent
+import org.hibernate.event.spi.PreUpdateEventListener
+import org.springframework.security.core.context.SecurityContextHolder as SCH
+
 
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import net.hedtech.banner.security.BannerUser
@@ -23,9 +26,8 @@ import net.hedtech.banner.security.BannerUser
  * via an event listener ensures audit trail properties set even if a service isn't implemented
  * to update these fields or if GORM is used directly to persist a model.
  */
-class AuditTrailPropertySupportHibernateListener implements PreInsertEventListener, PreUpdateEventListener, Initializable {
+class AuditTrailPropertySupportHibernateListener implements PreInsertEventListener, PreUpdateEventListener {
 
-    private static final Logger log = Logger.getLogger( "net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener" )
     static detailed = false
 
 

@@ -10,7 +10,7 @@ import net.hedtech.banner.configuration.ConfigurationUtils
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.security.FormContext
 import org.apache.log4j.Logger
-import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
+import org.grails.plugins.web.taglib.ValidationTagLib
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before

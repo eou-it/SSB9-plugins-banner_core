@@ -1,12 +1,11 @@
 /* ******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package banner.core
 
 import grails.plugins.*
 import grails.plugin.springsecurity.web.filter.GrailsAnonymousAuthenticationFilter
 import grails.util.GrailsUtil
-import grails.util.Environment
 import grails.util.Holders
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.mep.MultiEntityProcessingService
@@ -15,7 +14,6 @@ import net.hedtech.banner.service.*
 import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.Logger
-//import org.apache.log4j.jmx.HierarchyDynamicMBean
 import grails.util.Holders  as CH
 import grails.core.GrailsApplication
 import grails.util.GrailsClassUtils as GCU
@@ -26,9 +24,7 @@ import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtracto
 import org.springframework.jmx.export.MBeanExporter
 import org.springframework.jmx.support.MBeanServerFactoryBean
 import org.springframework.jndi.JndiObjectFactoryBean
-import org.springframework.security.authentication.ProviderManager
 import org.springframework.security.web.access.ExceptionTranslationFilter
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
@@ -45,8 +41,7 @@ import java.util.concurrent.Executors
  *
  */
 class BannerCoreGrailsPlugin extends Plugin {
-
-    //String version = "9.21.2"
+    String version = "9.28.1"
     private static final Logger staticLogger = Logger.getLogger(BannerCoreGrailsPlugin.class)
 
     // the version or versions of Grails the plugin is designed for
@@ -80,10 +75,10 @@ class BannerCoreGrailsPlugin extends Plugin {
     Closure doWithSpring() { {->
         secureAdhocPatterns()
         def conf = SpringSecurityUtils.securityConfig
-        //switch (GrailsUtil.environment) {
-        switch (Environment.getCurrent().getName()) {
-        //case GrailsApplication.ENV_PRODUCTION:
-            case Environment.PRODUCTION.getName():
+			//switch (GrailsUtil.environment) {
+			  switch (Environment.getCurrent().getName()) {
+				//case GrailsApplication.ENV_PRODUCTION:
+				case Environment.PRODUCTION.getName():
                 log.info "Will use a dataSource configured via JNDI"
                 underlyingDataSource(JndiObjectFactoryBean) {
                     jndiName = "java:comp/env/${CH.config.bannerDataSource.jndiName}"
@@ -190,41 +185,41 @@ class BannerCoreGrailsPlugin extends Plugin {
             disableUrlRewriting = false
         }
 
-        /*
+			/*
         statelessSecurityContextPersistenceFilter(SecurityContextPersistenceFilter) {
             securityContextRepository = ref('statelessSecurityContextRepository')
             forceEagerSessionCreation = false
         }
-        */
+			*/
 
-        statelessSecurityContextPersistenceFilter(SecurityContextPersistenceFilter , ref('statelessSecurityContextRepository')) {
-            //securityContextRepository = ref('statelessSecurityContextRepository')
-            forceEagerSessionCreation = false
-        }
+			statelessSecurityContextPersistenceFilter(SecurityContextPersistenceFilter , ref('statelessSecurityContextRepository')) {
+				//securityContextRepository = ref('statelessSecurityContextRepository')
+				forceEagerSessionCreation = false
+			}
 
-        /*
+			/*
         basicAuthenticationFilter(BasicAuthenticationFilter) {
             authenticationManager = ref('authenticationManager')
             authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
         }
-        */
+			*/
 
-        basicAuthenticationFilter(BasicAuthenticationFilter , ref('authenticationManager'),  ref('basicAuthenticationEntryPoint')) {
-            //authenticationManager = ref('authenticationManager')
-            //authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
-        }
+			basicAuthenticationFilter(BasicAuthenticationFilter , ref('authenticationManager'),  ref('basicAuthenticationEntryPoint')) {
+				//authenticationManager = ref('authenticationManager')
+				//authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
+			}
 
-        /*
+			/*
         basicExceptionTranslationFilter(ExceptionTranslationFilter) {
             authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
             accessDeniedHandler = ref('accessDeniedHandler')
         }
-        */
+			*/
 
-        basicExceptionTranslationFilter(ExceptionTranslationFilter , ref('basicAuthenticationEntryPoint')) {
-            //authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
-            accessDeniedHandler = ref('accessDeniedHandler')
-        }
+			basicExceptionTranslationFilter(ExceptionTranslationFilter , ref('basicAuthenticationEntryPoint')) {
+				//authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
+				accessDeniedHandler = ref('accessDeniedHandler')
+			}
 
         anonymousProcessingFilter(GrailsAnonymousAuthenticationFilter) {
             authenticationDetailsSource = ref('authenticationDetailsSource')
@@ -243,7 +238,7 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         // ---------------- JMX Mbeans (incl. Logging) ----------------
 
-        /*
+			/*
         log4jBean(HierarchyDynamicMBean)
 
         mbeanServer(MBeanServerFactoryBean) {
@@ -261,14 +256,14 @@ class BannerCoreGrailsPlugin extends Plugin {
                 }
                 break
         }
-        */
+			*/
 
         // Switch to grails.util.Holders in Grails 2.x
         if (!CH.config.privacy?.codes) {
             // Populate with default privacy policy codes
             CH.config.privacy.codes = "INT NAV UNI"
         }
-    }
+        }
     }
 
     void doWithDynamicMethods() {
@@ -280,14 +275,14 @@ class BannerCoreGrailsPlugin extends Plugin {
         // the more granular control of transaction attributes possible with annotations.
         //
 
-        /*
+		/*
         application.serviceClasses.each { serviceArtefact ->
             def needsCRUD = GCU.getStaticPropertyValue(serviceArtefact.clazz, "defaultCrudMethods")
             if (needsCRUD) {
                 serviceArtefact.clazz.mixin ServiceBase
             }
         }
-        */
+		*/
 
         grailsApplication.serviceClasses.each { serviceArtefact ->
             def needsCRUD = GCU.getStaticPropertyValue(serviceArtefact.clazz, "defaultCrudMethods")
@@ -320,9 +315,9 @@ class BannerCoreGrailsPlugin extends Plugin {
         applicationContext.authenticationManager.providers = createBeanList(providerNames, applicationContext)
 
 
-        //Hibernate Event Listeners commented for Grails-3 as it has been chanaged.
+		//Hibernate Event Listeners commented for Grails-3 as it has been chanaged.
 
-        /*
+		/*
         def listeners = applicationContext.sessionFactory.eventListeners
 
         // register hibernate listener for populating audit trail properties before inserting and updating models
@@ -330,7 +325,7 @@ class BannerCoreGrailsPlugin extends Plugin {
         ['preInsert', 'preUpdate'].each {
             addEventTypeListener(listeners, auditTrailSupportListener, it)
         }
-        */
+		*/
 
         // Define the spring security filters
         def authenticationProvider = CH?.config?.banner.sso.authenticationProvider
@@ -358,7 +353,7 @@ class BannerCoreGrailsPlugin extends Plugin {
             filterChainMap[new AntPathRequestMatcher(key)] = filters
         }
 
-        //applicationContext.springSecurityFilterChain.filterChainMap = filterChainMap
+		//applicationContext.springSecurityFilterChain.filterChainMap = filterChainMap
 
         //set the teransaction timeout on transaction manager time unit in seconds
         def transTimeOut = CH.config.banner?.transactionTimeout instanceof Integer ? CH.config.banner?.transactionTimeout : 30

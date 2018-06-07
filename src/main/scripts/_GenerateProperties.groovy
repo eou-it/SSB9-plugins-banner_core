@@ -1,11 +1,11 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/ 
 
 includeTargets << grailsScript("Init")
 includeTargets << grailsScript("_GrailsInit")
 
-import grails.util.BuildSettingsHolder
+import grails.util.BuildSettings
 import groovy.io.FileType
 import java.math.MathContext
 import java.math.RoundingMode
@@ -130,7 +130,7 @@ def generatePropertiesFile( args = null ) {
     def params = getParamsMap( args )
 
 
-    def dir = BuildSettingsHolder.settings.baseDir
+    def dir = BuildSettings.BASE_DIR
     def generatedProps = []
     dir.traverse(type: FileType.FILES, nameFilter: params.filter) { source ->
         println "Generating props for " + source.canonicalFile

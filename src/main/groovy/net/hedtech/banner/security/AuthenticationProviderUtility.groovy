@@ -19,7 +19,7 @@ import org.springframework.security.authentication.LockedException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GA
+import org.grails.web.util.GrailsApplicationAttributes as GA
 import org.springframework.web.context.request.RequestContextHolder
 
 import java.sql.SQLException

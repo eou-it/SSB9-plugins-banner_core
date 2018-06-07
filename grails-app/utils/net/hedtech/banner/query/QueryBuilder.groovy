@@ -8,10 +8,10 @@ import net.hedtech.banner.query.criteria.CriteriaParam
 import net.hedtech.banner.query.criteria.Query
 import net.hedtech.banner.query.operators.CriteriaOperator
 import net.hedtech.banner.query.operators.Operators
-import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
+import org.grails.core.DefaultGrailsDomainClass
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.i18n.MessageHelper
-import org.codehaus.groovy.grails.exceptions.InvalidPropertyException
+import org.grails.core.exceptions.InvalidPropertyException
 
 /**
  *

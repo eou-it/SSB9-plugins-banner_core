@@ -50,6 +50,23 @@ dependencies {
     testCompile "org.grails:grails-gorm-testing-support"
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails:grails-web-testing-support"
+
+    // Added for BannerXE for Grails-3
+    compile "org.grails.plugins:hibernate5"
+    compile "org.hibernate:hibernate-core:5.1.5.Final"
+    compile "org.grails.plugins:spring-security-core:3.2.1"
+    compile "commons-dbcp:commons-dbcp:1.4"
+    compile "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
+    compile "junit:junit:4.12"
+    compile "commons-codec:commons-codec:1.10"
+
+    // Added for BannerXE - Oracle jars - specified as physical path
+    compile files("lib/ojdbc6-11.2.0.1.0.jar")
+    runtime files("lib/xdb6-11.2.0.4.jar")
+
+    //compile project(":banner-codenarc")
+    //compile project(":i18n-core")
+    //compile project(":grails-constraints")
 }
 
 bootRun {

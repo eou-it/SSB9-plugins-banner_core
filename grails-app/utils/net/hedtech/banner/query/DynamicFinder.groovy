@@ -5,9 +5,9 @@ package net.hedtech.banner.query
 
 import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.query.criteria.CriteriaParam
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.hibernate.hql.ast.QuerySyntaxException
+import grails.web.context.ServletContextHolder
+import org.grails.web.util.GrailsApplicationAttributes
+import org.hibernate.hql.internal.ast.QuerySyntaxException
 import org.springframework.context.ApplicationContext
 import org.apache.log4j.Logger
 import net.hedtech.banner.exceptions.ApplicationException

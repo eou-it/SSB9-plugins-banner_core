@@ -6,7 +6,7 @@ package net.hedtech.banner.service
 
 import grails.validation.ValidationException
 import grails.util.GrailsNameUtils
-import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
+import org.grails.core.DefaultGrailsDomainClass
 
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
@@ -17,7 +17,7 @@ import net.hedtech.banner.security.FormContext
 import org.apache.log4j.Logger
 
 import grails.util.Holders
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import grails.util.GrailsClassUtils
 import org.hibernate.StaleObjectStateException
 
 import org.springframework.context.ApplicationContext

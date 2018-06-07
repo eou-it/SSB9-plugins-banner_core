@@ -1,17 +1,8 @@
+/*******************************************************************************
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 import groovy.io.FileType
 import groovy.text.SimpleTemplateEngine
-
-/** *****************************************************************************
-
- ? 2012 SunGard Higher Education.  All Rights Reserved.
-
- CONFIDENTIAL BUSINESS INFORMATION
-
- THIS PROGRAM IS PROPRIETARY INFORMATION OF SUNGARD HIGHER EDUCATION
- AND IS NOT TO BE COPIED, REPRODUCED, LENT, OR DISPOSED OF,
- NOR USED FOR ANY PURPOSE OTHER THAN THAT WHICH IT IS SPECIFICALLY PROVIDED
- WITHOUT THE WRITTEN PERMISSION OF THE SAID COMPANY
- ****************************************************************************** */
 
 includeTargets << grailsScript("_GrailsArgParsing")
 includeTargets << new File("${grailsHome}/scripts/Bootstrap.groovy")
@@ -29,15 +20,7 @@ target(main: "Generates Hibernate hibernate.cfg.xml file mappings") {
 
     final hibernateTemplate = '''<?xml version='1.0' encoding='utf-8'?>
    <!-- *****************************************************************************
-
-    Copyright 2012 SunGard Higher Education.  All Rights Reserved.
-
-    CONFIDENTIAL BUSINESS INFORMATION
-
-    THIS PROGRAM IS PROPRIETARY INFORMATION OF SUNGARD HIGHER EDUCATION
-    AND IS NOT TO BE COPIED, REPRODUCED, LENT, OR DISPOSED OF,
-    NOR USED FOR ANY PURPOSE OTHER THAN THAT WHICH IT IS SPECIFICALLY PROVIDED
-    WITHOUT THE WRITTEN PERMISSION OF THE SAID COMPANY
+    Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
     ****************************************************************************** -->
 
     <!--
@@ -81,15 +64,15 @@ target(main: "Generates Hibernate hibernate.cfg.xml file mappings") {
             def jpaDomains = []
             dir.eachFileRecurse(FileType.FILES) { file ->
                 file.eachLine {
-                    // condition to detect an @Entity annotation
+                        // condition to detect an @Entity annotation
                     ln ->
-                    if (ln =~ '^@Entity') {
-                        def content = file.text
-                        GroovyClassLoader gcl = new GroovyClassLoader();
-                        def d = ((GroovyObject) gcl.parseClass(content).newInstance())
+                        if (ln =~ '^@Entity') {
+                            def content = file.text
+                            GroovyClassLoader gcl = new GroovyClassLoader();
+                            def d = ((GroovyObject) gcl.parseClass(content).newInstance())
 
-                        jpaDomains << d.getClass().getName()
-                    }
+                            jpaDomains << d.getClass().getName()
+                        }
                 }
             }
 
