@@ -3,26 +3,26 @@
  ****************************************************************************** */
 package banner.core
 
-import grails.plugins.*
+import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.plugin.springsecurity.web.filter.GrailsAnonymousAuthenticationFilter
-import grails.util.GrailsUtil
+import grails.plugins.Plugin
+import grails.util.Environment
+import grails.util.GrailsClassUtils as GCU
 import grails.util.Holders
+import grails.util.Holders  as CH
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.mep.MultiEntityProcessingService
 import net.hedtech.banner.security.*
-import net.hedtech.banner.service.*
+import net.hedtech.banner.service.DefaultLoaderService
+import net.hedtech.banner.service.HttpSessionService
+import net.hedtech.banner.service.LoginAuditService
+import net.hedtech.banner.service.ServiceBase
 import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.log4j.Logger
-import grails.util.Holders  as CH
-import grails.core.GrailsApplication
-import grails.util.GrailsClassUtils as GCU
-import grails.plugin.springsecurity.SpringSecurityUtils
 import org.codehaus.groovy.runtime.GStringImpl
 import org.springframework.context.event.SimpleApplicationEventMulticaster
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
-import org.springframework.jmx.export.MBeanExporter
-import org.springframework.jmx.support.MBeanServerFactoryBean
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
@@ -31,7 +31,6 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher
-import net.hedtech.banner.security.BannerAuthenticationFailureHandler
 
 import javax.servlet.Filter
 import java.util.concurrent.Executors

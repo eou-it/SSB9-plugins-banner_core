@@ -54,6 +54,7 @@ dependencies {
     // Added for BannerXE for Grails-3
     compile "org.grails.plugins:hibernate5"
     compile "org.hibernate:hibernate-core:5.1.5.Final"
+    compile "org.hibernate:hibernate-ehcache:5.1.5.Final"
     compile "org.grails.plugins:spring-security-core:3.2.1"
     compile "commons-dbcp:commons-dbcp:1.4"
     compile "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
@@ -64,9 +65,9 @@ dependencies {
     compile files("lib/ojdbc6-11.2.0.1.0.jar")
     runtime files("lib/xdb6-11.2.0.4.jar")
 
-    //compile project(":banner-codenarc")
-    //compile project(":i18n-core")
-    //compile project(":grails-constraints")
+    compile project(":banner-codenarc")
+    compile project(":i18n-core")
+    compile project(":grails-constraints")
 }
 
 bootRun {
@@ -88,7 +89,6 @@ grailsPublish {
     desc = "Full plugin description"
     developers = [johndoe:"John Doe"]
 }
-
 
 
 assets {
