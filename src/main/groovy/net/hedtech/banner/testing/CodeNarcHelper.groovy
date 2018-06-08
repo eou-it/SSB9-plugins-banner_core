@@ -4,6 +4,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 package net.hedtech.banner.testing
 
 import grails.util.GrailsUtil
+import groovy.util.AntBuilder
 
 /**
  * This is a helper class to be invoked by projects who want to run code narc.  It is in a helper class and not a
@@ -13,7 +14,6 @@ class CodeNarcHelper {
 
 
     private static final GROOVY_FILES = '**/*.groovy'
-
 
     void runCodeNarc() {
 

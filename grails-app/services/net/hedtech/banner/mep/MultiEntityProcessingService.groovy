@@ -19,7 +19,6 @@ import org.springframework.web.context.request.RequestContextHolder
 class MultiEntityProcessingService {
 
     static transactional = true
-    private final Logger log = Logger.getLogger(getClass())
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
 

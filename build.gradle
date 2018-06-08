@@ -50,6 +50,7 @@ dependencies {
     testCompile "org.grails:grails-gorm-testing-support"
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails:grails-web-testing-support"
+    compile "org.codehaus.groovy:groovy-ant:2.4.13"
 
     // Added for BannerXE for Grails-3
     compile "org.grails.plugins:hibernate5"

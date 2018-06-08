@@ -32,8 +32,6 @@ class ResetPasswordController {
 
     def selfServiceBannerAuthenticationProvider
 
-    private static final Logger log = Logger.getLogger( "controllers.ResetPasswordController" )
-
     def questans ={
         response.setHeader("Cache-Control", "no-cache")
         response.setHeader("Cache-Control", "no-store")

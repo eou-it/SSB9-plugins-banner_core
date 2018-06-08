@@ -3,9 +3,8 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.json
 
-import grails.converters.JSON
-
 import org.apache.log4j.Logger
+import org.grails.web.json.JSONObject
 
 
 /**
@@ -27,7 +26,7 @@ class JsonHelper {
         try {
             for (entry in json) {
                 log.debug "JsonHelper.replaceJSONObjectNULL will, if needed, replace JSONObject.NULL instance with null for $entry"
-                if (entry.getValue() == org.codehaus.groovy.grails.web.json.JSONObject.NULL) entry.setValue( null )
+                if (entry.getValue() == JSONObject.NULL) entry.setValue( null )
             }
         } catch (e) {
             log.error "JsonHelper.replaceJSONObjectNULL caught (and will re-throw) unexpected exception $e", e
