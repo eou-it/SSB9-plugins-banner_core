@@ -9,7 +9,7 @@ buildscript {
     }
 }
 
-version "0.1"
+version "9.28.1"
 group "banner.core"
 
 apply plugin:"eclipse"
@@ -50,7 +50,6 @@ dependencies {
     testCompile "org.grails:grails-gorm-testing-support"
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails:grails-web-testing-support"
-    compile "org.codehaus.groovy:groovy-ant:2.4.13"
 
     // Added for BannerXE for Grails-3
     compile "org.grails.plugins:hibernate5"
@@ -61,6 +60,8 @@ dependencies {
     compile "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
     compile "junit:junit:4.12"
     compile "commons-codec:commons-codec:1.10"
+    compile "org.codehaus.groovy:groovy-ant:2.4.13"
+    //compile "org.codenarc:CodeNarc:0.17"
 
     // Added for BannerXE - Oracle jars - specified as physical path
     compile files("lib/ojdbc6-11.2.0.1.0.jar")
@@ -95,3 +96,23 @@ grailsPublish {
 assets {
     packagePlugin = true
 }
+
+/*tasks.withType(CodeNarc) {
+    def allGroovySourceDirs = subprojects.collect { Project p -> p.sourceSets.main.allGroovy.getSrcDirs() }.flatten()
+
+    //println allGroovySourceDirs
+    //println "-----------------" + codenarcClasspath
+    codenarcClasspath = codenarcClasspath + files("${rootProject.projectDir}/out/banner_codenarc.git-9.26.2.jar")
+    println "-----------------" + codenarcClasspath
+    allGroovySourceDirs.each {
+        println "-----------------" + it
+        source(it)
+    }
+}
+
+task codeNarcConsole(type: CodeNarc) {
+    // other config
+    reportFormat = 'console'
+}
+check.dependsOn('codeNarcConsole')
+*/
