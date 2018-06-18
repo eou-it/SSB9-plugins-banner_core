@@ -74,10 +74,8 @@ class BannerCoreGrailsPlugin extends Plugin {
     Closure doWithSpring() { {->
         secureAdhocPatterns()
         def conf = SpringSecurityUtils.securityConfig
-			//switch (GrailsUtil.environment) {
-			  switch (Environment.getCurrent().getName()) {
-				//case GrailsApplication.ENV_PRODUCTION:
-				case Environment.PRODUCTION.getName():
+			  switch (Environment.current) {
+				case Environment.PRODUCTION:
                 log.info "Will use a dataSource configured via JNDI"
                 underlyingDataSource(JndiObjectFactoryBean) {
                     jndiName = "java:comp/env/${CH.config.bannerDataSource.jndiName}"
