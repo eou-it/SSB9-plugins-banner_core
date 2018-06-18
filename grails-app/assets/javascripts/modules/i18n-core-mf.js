@@ -1,0 +1,11 @@
+//= require calendars/jquery.calendars.js
+//= require calendars/jquery.calendars.plus.js
+//= require calendars/jquery.calendars.picker.js
+//= require calendars/jquery.calendars.picker.ext.js
+//= require calendars/jquery.calendars.islamic.js
+//= require time/jquery.timeentry.js
+//= require jquery.multi.calendars.picker.js
+//= require jquery.jeditable.multi.datepicker.js
+//= require jquery.multi.calendars.picker.ext.js
+//= require multi.calendar.init.js
+//= require calendars/jquery.calendars.ummalqura.js
