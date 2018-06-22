@@ -1,0 +1,1 @@
+// require modules/changePasswordCommon-mf.js
