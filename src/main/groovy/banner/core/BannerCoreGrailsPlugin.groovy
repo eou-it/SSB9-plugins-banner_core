@@ -139,7 +139,7 @@ class BannerCoreGrailsPlugin extends Plugin {
             defaultFailureUrl = SpringSecurityUtils.securityConfig.failureHandler.defaultFailureUrl
         }
 
-        roleVoter(BannerAccessDecisionVoter)
+        //roleVoter(BannerAccessDecisionVoter)
 
         httpSessionService(HttpSessionService) {
             dataSource = ref(dataSource)

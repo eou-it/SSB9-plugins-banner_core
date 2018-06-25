@@ -55,7 +55,9 @@ class LoginController {
         String view = 'auth'
         String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
 
-        render view: view, plugin: "bannerCore", model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
+        /*render view: view, plugin: "bannerCore", model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
+                rememberMeParameter: config.rememberMe.parameter]*/
+        render view: view, model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
                 rememberMeParameter: config.rememberMe.parameter]
     }
 
