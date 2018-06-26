@@ -1,10 +1,16 @@
 /** *****************************************************************************
- Copyright 2009-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 body {
     margin: 0px;
     padding: 0px;
     font: normal 100% Arial, Helvetica, sans-serif;
+    height: 100%; /*EDS*/
+    background-position: center center;/*EDS*/
+    background-repeat:  no-repeat;/*EDS*/
+    background-size:  cover;/*EDS*/
+    top:0px;/*EDS*/
+    overflow: hidden;/*EDS*/
 }
 
 #test {
@@ -14,18 +20,17 @@ body {
 LOG IN
 -----------------------------------------------------------*/
 .pageBg {
-    background: #4C8DB5 url(../images/page-bg.png) repeat-x 0 0;
+    background-image: url(../images/1024x684.png); /*EDS*/
 }
 
 .splashBg {
-    background: url(../images/splash-bg-light-rtl.png) no-repeat 0 0;
     height: 438px;
     width: 735px;
     margin: 140px auto 0px;
 }
 
 .splashBg .appName {
-    color: #FFF;
+    color: #026BC8; /*EDS*/
     text-align: left;
     margin: 0px 0px 0px 50px;
     padding-top: 24px;
@@ -61,7 +66,7 @@ LOG IN
 }
 
 .splashBg .userName {
-    background: url(../images/textbox-sprites-rtl.png) no-repeat left -27px;
+    background: url(../images/textbox-rtl.png) no-repeat left -27px;
     padding: 0px 0px 0px 20px;
     margin-left: 10px;
     margin-right: 0;
@@ -71,13 +76,13 @@ LOG IN
 
 .splashBg .userName span {
     display: block;
-    background: url(../images/textbox-sprites-rtl.png) no-repeat right -27px;
+    background: url(../images/textbox-rtl.png) no-repeat right -27px;
     padding-right: 10px;
     height: 23px;
 }
 
 .splashBg .password {
-    background: url(../images/textbox-sprites-rtl.png) no-repeat left 0;
+    background: url(../images/textbox-rtl.png) no-repeat left 0;
     padding: 0px 0px 0px 20px;
     margin-left: 10px;
     margin-right: 0px;
@@ -87,14 +92,14 @@ LOG IN
 
 .splashBg .password span {
     display: block;
-    background: url(../images/textbox-sprites-rtl.png) no-repeat right 0;
+    background: url(../images/textbox-rtl.png) no-repeat right 0;
     padding-right: 10px;
     padding-left: 0px;
     height: 23px;
 }
 
 .splashBg .userName-error-state {
-    background: url(../images/textbox-sprites-rtl.png) no-repeat left -81px;
+    background: url(../images/textbox-rtl.png) no-repeat left -81px;
     padding: 0px 0px 0px 20px;
     margin-right: 0px;
     height: 23px;
@@ -104,13 +109,13 @@ LOG IN
 
 .splashBg .userName-error-state span {
     display: block;
-    background: url(../images/textbox-sprites-rtl.png) no-repeat right -81px;
+    background: url(../images/textbox-rtl.png) no-repeat right -81px;
     padding-right: 10px;
     height: 23px;
 }
 
 .splashBg .password-error-state {
-    background: url(../images/textbox-sprites-rtl.png) no-repeat left -54px;
+    background: url(../images/textbox-rtl.png) no-repeat left -54px;
     padding: 0px 0px 0px 20px;
     margin-right: 0px;
     height: 23px;
@@ -120,7 +125,7 @@ LOG IN
 
 .splashBg .password-error-state span {
     display: block;
-    background: url(../images/textbox-sprites-rtl.png) no-repeat right -54px;
+    background: url(../images/textbox-rtl.png) no-repeat right -54px;
     padding-right: 10px;
     height: 23px;
 }
@@ -129,7 +134,7 @@ LOG IN
     clear: both;
     margin: 0px 100px 0px 50px;
     font-size: 0.75em;
-    color: #FFF;
+    color: #151618; /*EDS*/
     padding-top: 33px;
     text-align: right;
     top: 250px;
@@ -137,7 +142,7 @@ LOG IN
 
 .loginMsg {
     text-align: left;
-    color: #FFF;
+    color: #151618; /*EDS*/
     padding-top: 20px;
     margin-left: 50px;
     background-image: url(../images/icon-error-16x16.png) left top no-repeat;
@@ -145,10 +150,8 @@ LOG IN
     right: auto;
 }
 
-.signin-button {
+.login-primary {
     left: -269px;
-    font-size: 1.1em;
-    padding: 0.15em 0.5em;
 }
 
 .signin-button-wrapper {
@@ -163,42 +166,30 @@ LOG IN
 
 
 /* Enable theming */
-.splashBg, .pageBg {
+.splashBg{   /*EDS*/
     background-image: none;
-}
-
-.pageBg {
-  background-color: #4c8db5;
-  background-image: linear-gradient( #015d96, #4c8db5 );
-  background-repeat: repeat-x;
-  background-size: auto 674px;
 }
 
 .splashBg {
   height: 408px;
   width: 705px;
   position: relative;
-  background-color: #4e8bbb; /* center section background */
-  border: 2px solid #00579a;
-  box-shadow: 0 0 30px 0px #000;
+  background-color: #ffffff; /* center section background */ /*EDS*/
+  box-shadow: 0 0 10px 0px #CECECE; /*EDS*/
   top: 155px;
   margin: auto;
   right: 0px;
+  border-radius: 6px;/*EDS*/
 }
 
 .splashBg:before {
   /* top section */
-  content: "";
   position: absolute;
   display: block;
   top: 0px;
   height: 156px;
   width: 100%;
-  background-color: #70a4c4;
-  background-image: linear-gradient( to right, #70a4c4, #337dab );
-  border: 0px;
-  border-bottom: 1px solid;
-  border-image: linear-gradient( to right, #4287b1, #005c96 ) 1;
+  background-color: #ffffff; /*EDS*/
 }
 
 .splashBg .copyright {
@@ -209,10 +200,6 @@ LOG IN
   right:0;
   margin: 0;
   padding: 24px 85px 0 35px;
-  background-image: linear-gradient( to right, #3f85b0, #0d649b ); /* bottom section */
-  border: 0px;
-  border-top: 1px solid;
-  border-image: linear-gradient( to right, #367fac, #005c96 ) 1;
 }
 
 .splashBg .appName {
@@ -232,14 +219,18 @@ LOG IN
 
 .splashBg .ellucianName {
   /* Ellucian (TM) from auth.gsp patch */
-  color: #ffffff;
-  font-size: 37px;
   position: absolute;
-  right: 62px;
+  right: 81px;
   left: auto;
-  top: 181px;
-  height: 86px;
   text-align: right;
+  top: 191px;   /*EDS*/
+  height: 25px; /*EDS*/
+  background-image: url(../images/ellucian_logo.svg); /*EDS*/
+  background-size: cover; /*EDS*/
+  width: 10.875em; /*EDS*/
+  background-position: center center; /*EDS*/
+  background-repeat: no-repeat; /*EDS*/
+  font:normal 66.7% Arial, Helvetica, sans-serif;/*EDS*/
 }
 
 .splashBg .ellucianName .trademark {
@@ -266,24 +257,6 @@ LOG IN
   bottom: 0;
   top: -.15em;
 }
-
-.signin-button {
-  background: #658ea8;
-  background-image:linear-gradient(#658ea8, #194161);
-  border: 1px solid #003366;
-  text-shadow:none;
-}
-
-.signin-button:hover {
-  background: #97b2c2;
-  background-image:linear-gradient(#97b2c2, #25506b);
-}
-
-.signin-button:active {
-  background: #194a6a;
-  background-image:linear-gradient(#194a6a, #658ea8);
-}
-
 .splashBg .forgotPasswordDiv {
     left: 195px;
     right: auto;
@@ -292,7 +265,8 @@ LOG IN
 }
 
 .splashBg .forgotpassword {
-    color: #ffffff !important;
+    color: #026bc8 !important; /*EDS*/
     text-decoration: underline !important;
     font-size: 1em !important;
 }
+

@@ -1,20 +1,19 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 import grails.converters.JSON
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.AuthorizationException
 import grails.plugin.springsecurity.SpringSecurityUtils
-import org.springframework.security.authentication.AccountExpiredException
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.authentication.CredentialsExpiredException
-import org.springframework.security.authentication.DisabledException
-import org.springframework.security.authentication.LockedException
+import org.springframework.security.authentication.*
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.context.request.RequestContextHolder
+
+import org.springframework.security.web.WebAttributes
 
 class LoginController {
 
@@ -55,10 +54,15 @@ class LoginController {
         String view = 'auth'
         String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
 
-        /*render view: view, plugin: "bannerCore", model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
-                rememberMeParameter: config.rememberMe.parameter]*/
-        render view: view, model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
+        /*
+        render view: view, plugin: "bannerCore", model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
                 rememberMeParameter: config.rememberMe.parameter]
+        */
+
+        render view: view,  model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
+                                    rememberMeParameter: config.rememberMe.parameter]
+
+
     }
 
     /**
@@ -109,7 +113,11 @@ class LoginController {
      */
     def authfail = {
 
-        def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+        //def username = session[UsernamePasswordAuthenticationFilter.SPRING_SECURITY_LAST_USERNAME_KEY]
+        def username = session[UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY]
+
+        //def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+        def exception = session[WebAttributes.AUTHENTICATION_EXCEPTION]
 
         if(exception instanceof CredentialsExpiredException){
             forward controller : "resetPassword", action: "changePassword", params : params
@@ -190,7 +198,7 @@ class LoginController {
             String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
             String forgotPasswordUrl =  "${request.contextPath}/login/resetPassword";
             render view: view, plugin: "bannerCore", model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl, userNameRequired: true,
-                    rememberMeParameter: config.rememberMe.parameter]
+                                                             rememberMeParameter: config.rememberMe.parameter]
         }
         else{
             session.setAttribute("requestPage", "questans")

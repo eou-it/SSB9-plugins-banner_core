@@ -10,9 +10,9 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
         window.mepCode='${session.mep}';
     </asset:script>
     <title><g:message code="net.hedtech.banner.login.title"/></title>
-    <link rel="stylesheet" href="${assetPath(plugin: 'bannerCore', dir: 'css', file: 'login.css')}"/>
+    <asset:stylesheet href="login.css"/>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
-        <link rel="stylesheet" href="${assetPath(plugin: 'bannerCore', dir: 'css', file: 'rtl-login.css')}"/>
+        <asset:stylesheet href="rtl-login.css"/>
     </g:if>
     <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
     <g:if test="${themeConfig.url}">
@@ -24,20 +24,20 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
         </g:else>
     </g:if>
 
-    <link rel="apple-touch-icon" sizes="57x57" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-57x57.png')}"/>
-    <link rel="apple-touch-icon" sizes="60x60" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-60x60.png')}"/>
-    <link rel="apple-touch-icon" sizes="72x72" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-72x72.png')}"/>
-    <link rel="apple-touch-icon" sizes="76x76" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-76x76.png')}"/>
-    <link rel="apple-touch-icon" sizes="114x114" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-114x114.png')}"/>
-    <link rel="apple-touch-icon" sizes="120x120" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-120x120.png')}"/>
-    <link rel="apple-touch-icon" sizes="144x144" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-144x144.png')}"/>
-    <link rel="apple-touch-icon" sizes="152x152" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-152x152.png')}"/>
-    <link rel="apple-touch-icon" sizes="180x180" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-180x180.png')}"/>
-    <link rel="shortcut icon" type="image/png" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'favicon-32x32.png')}" sizes="32x32"/>
-    <link rel="shortcut icon" type="image/png" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'android-chrome-192x192.png')}" sizes="192x192"/>
-    <link rel="shortcut icon" type="image/png" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'favicon-96x96.png')}" sizes="96x96"/>
-    <link rel="shortcut icon" type="image/png" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'favicon-16x16.png')}" sizes="16x16"/>
-    <link rel="shortcut icon" href="${assetPath(plugin: 'bannerCore', dir:'images/eds/',file:'favicon.ico')}" type="image/x-icon" />
+    <asset:link rel="apple-touch-icon" sizes="57x57" href="eds/apple-touch-icon-57x57.png"/>
+    <asset:link rel="apple-touch-icon" sizes="60x60" href="eds/apple-touch-icon-60x60.png"/>
+    <asset:link rel="apple-touch-icon" sizes="72x72" href="eds/apple-touch-icon-72x72.png"/>
+    <asset:link rel="apple-touch-icon" sizes="76x76" href="eds/apple-touch-icon-76x76.png"/>
+    <asset:link rel="apple-touch-icon" sizes="114x114" href="eds/apple-touch-icon-114x114.png"/>
+    <asset:link rel="apple-touch-icon" sizes="120x120" href="eds/apple-touch-icon-120x120.png"/>
+    <asset:link rel="apple-touch-icon" sizes="144x144" href="eds/apple-touch-icon-144x144.png"/>
+    <asset:link rel="apple-touch-icon" sizes="152x152" href="eds/apple-touch-icon-152x152.png"/>
+    <asset:link rel="apple-touch-icon" sizes="180x180" href="eds/apple-touch-icon-180x180.png"/>
+    <asset:link rel="shortcut icon" type="image/png" href="eds/favicon-32x32.png" sizes="32x32"/>
+    <asset:link rel="shortcut icon" type="image/png" href="eds/android-chrome-192x192.png" sizes="192x192"/>
+    <asset:link rel="shortcut icon" type="image/png" href="eds/favicon-96x96.png" sizes="96x96"/>
+    <asset:link rel="shortcut icon" type="image/png" href="eds/favicon-16x16.png" sizes="16x16"/>
+    <asset:link rel="shortcut icon"  sizes="57x57" href="eds/favicon.ico" type="image/x-icon"/>
 
 </head>
 
@@ -76,47 +76,47 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
             <div class="textfield-wrapper">
                 <g:if test='${userNameRequired}'>
                     <div class="userName-error-state">
-                        <span><input type='text' name='j_username' id='j_username'
-                                   aria-labelledby='userNameTxt'
-                                   aria-describedby='loginMsg'/>
+                        <span><input type='text' name='username' id='username'
+                                        aria-labelledby='userNameTxt'
+                                        aria-describedby='loginMsg'/>
                         </span>
                     </div>
 
                     <div class="password">
-                        <span><input type='password' name='j_password' id='j_password'
-                                   autocomplete="off" aria-labelledby='passwordTxt'/>
+                        <span><input type='password' name='password' id='password'
+                                     autocomplete="off" aria-labelledby='passwordTxt'/>
                         </span>
                     </div>
                 </g:if>
                 <g:elseif test='${flash.message}'>
                     <div class="userName-error-state">
-                        <span><input type='text' name='j_username' id='j_username'
-                                   aria-labelledby='userNameTxt'
-                                   aria-describedby='loginMsg'/>
+                        <span><input type='text' name='username' id='username'
+                                     aria-labelledby='userNameTxt'
+                                     aria-describedby='loginMsg'/>
                         </span>
                     </div>
 
                     <div class="password-error-state">
-                        <span><input type='password' name='j_password' id='j_password'
-                                   autocomplete="off" aria-labelledby='passwordTxt'/>
+                        <span><input type='password' name='password' id='password'
+                                     autocomplete="off" aria-labelledby='passwordTxt'/>
                         </span>
                     </div>
                 </g:elseif>
                 <g:else>
                     <div class="userName">
-                        <span><input type='text' id="userName" name='j_username' id='j_username'
-                                  aria-labelledby='userNameTxt' aria-describedby='loginMsg'/>
+                        <span><input type='text' id="userName" name='username' id='username'
+                                     aria-labelledby='userNameTxt' aria-describedby='loginMsg'/>
                         </span>
                     </div>
 
                     <div class="password">
-                        <span><input type='password' name='j_password' id='j_password'
-                               autocomplete="off" aria-labelledby='passwordTxt'/></span>
+                        <span><input type='password' name='password' id='password'
+                                     autocomplete="off" aria-labelledby='passwordTxt'/></span>
                     </div>
                 </g:else>
                 <div class="signin-button-wrapper">
                     <input type='submit'
-                          value="${message(code: 'net.hedtech.banner.login.signin', default: 'Sign In')}"
+                           value="${message(code: 'net.hedtech.banner.login.signin', default: 'Sign In')}"
                           id="sign-in-btn" onclick="submitForm()"
                           class="login-primary"/>
                 </div>
