@@ -13,6 +13,7 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
     </script>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <r:require modules="bannerCommonRTL"/>
+
     </g:if>
     <g:else>
         <r:require modules="bannerCommonLTR"/>
