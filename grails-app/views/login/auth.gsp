@@ -77,8 +77,8 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                 <g:if test='${userNameRequired}'>
                     <div class="userName-error-state">
                         <span><input type='text' name='username' id='username'
-                                        aria-labelledby='userNameTxt'
-                                        aria-describedby='loginMsg'/>
+                                     aria-labelledby='userNameTxt'
+                                     aria-describedby='loginMsg'/>
                         </span>
                     </div>
 
@@ -139,7 +139,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 
 <script type='text/javascript'>
     (function () {
-        document.forms['loginForm'].elements['j_username'].focus();
+        document.forms['loginForm'].elements['username'].focus();
 
         if (isIe() && (getIEDocMode() < 8)) {
             document.getElementById("ieWarningMessage").style.visibility = "visible";
@@ -155,14 +155,14 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
         // If we are in IE 8 (any mode) or previous versions of IE,
         // we check for the documentMode or compatMode for pre 8 versions
         return (document.documentMode)
-                ? document.documentMode
-                : (document.compatMode && document.compatMode == "CSS1Compat")
+            ? document.documentMode
+            : (document.compatMode && document.compatMode == "CSS1Compat")
                 ? 7
                 : 5; // default to quirks mode IE5
     }
 
     function openWindow() {
-    <g:set var="onLineHelpUrl" value="${grails.util.Holders.config.onLineHelp.url}" />
+        <g:set var="onLineHelpUrl" value="${grails.util.Holders.config.onLineHelp.url}" />
 
         window.open("${onLineHelpUrl}?productName=general&formName=login", '_blank');
         return false;
