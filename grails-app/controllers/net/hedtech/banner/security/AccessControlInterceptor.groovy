@@ -18,7 +18,6 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 class AccessControlInterceptor {
     //TODO check the precedence using constants
     int order = 50
-    //def dlog = LogFactory.getLog( getClass() ) // workaround for logging issues when using grails injected log
 
     /**
      * Executed before a matched action
@@ -37,7 +36,8 @@ class AccessControlInterceptor {
         }
 
         Map formControllerMap = grailsApplication.config.formControllerMap
-        def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
+        //def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
+        def associatedFormsList = formControllerMap.get(controllerName?.toLowerCase())
 
         if (!associatedFormsList?.contains( "SELFSERVICE" )) {
             // Get the 'real' URL (versus request.getRequestURI() which shows the '.dispatch')
@@ -49,6 +49,7 @@ class AccessControlInterceptor {
 
         log.debug "AccessControlInterceptorInteceptor.setFormContext 'before filter' for URL $theUrl will set a FormContext with ${associatedFormsList?.size()} forms. (controller=$controllerName and action=$actionName). "
         FormContext.set( associatedFormsList )
+        return true
     }
 
 

@@ -167,7 +167,7 @@ class BannerCoreGrailsPlugin extends Plugin {
             defaultFailureUrl = SpringSecurityUtils.securityConfig.failureHandler.defaultFailureUrl
         }
 
-        //roleVoter(BannerAccessDecisionVoter)
+        roleVoter(BannerAccessDecisionVoter)
 
         httpSessionService(HttpSessionService) {
             dataSource = ref(dataSource)
@@ -378,6 +378,7 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         // Define the spring security filters
         def authenticationProvider = CH?.config?.banner.sso.authenticationProvider
+        println "authenticationProvider = " +authenticationProvider
         LinkedHashMap<String, String> filterChain = new LinkedHashMap();
         switch (authenticationProvider) {
             case 'external':
