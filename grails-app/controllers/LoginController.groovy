@@ -95,7 +95,7 @@ class LoginController {
             redirect action: full, params: params
         }
 
-        render view: "denied", plugin: "bannerCore", model: [uri: ControllerUtils.buildLogoutRedirectURI()]
+        render view: "denied",  model: [uri: ControllerUtils.buildLogoutRedirectURI()]
     }
 
     /**

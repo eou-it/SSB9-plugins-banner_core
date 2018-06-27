@@ -97,11 +97,11 @@ grails {
             useRequestMapDomainClass = false
             securityConfigType = SecurityConfigType.InterceptUrlMap
             interceptUrlMap = [
-                    '/': ['ROLE_GUAGMNU_BAN_DEFAULT_M'],
-                    '/login/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-                    '/logout/**': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-                    '/index': ['IS_AUTHENTICATED_ANONYMOUSLY'],
-                    '/**': ['IS_AUTHENTICATED_ANONYMOUSLY']
+                    [pattern:'/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                    [pattern:'/login/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                    [pattern:'/logout/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                    [pattern:'/index/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                    [pattern:'/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
             ]
         }
     }
@@ -169,3 +169,5 @@ environments {
         }
     }
 }
+
+

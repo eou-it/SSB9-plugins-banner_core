@@ -123,7 +123,9 @@ class AuthenticationProviderUtility {
 
 
     public static getUserFullName(pidm, name, dataSource) {
-        def ctx = Holders.servletContext.getAttribute(GA.APPLICATION_CONTEXT)
+        /*def ctx = Holders.servletContext.getAttribute(GA.APPLICATION_CONTEXT)*/
+        //TODO Application Context was returning Null
+        def ctx = Holders.grailsApplication.mainContext
         def preferredNameService = ctx.preferredNameService
         def fullName
         def conn

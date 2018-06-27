@@ -32,8 +32,36 @@ import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher
 
+
 import javax.servlet.Filter
 import java.util.concurrent.Executors
+
+/****************** Added for DS inject fix *****************/
+import org.apache.commons.dbcp.BasicDataSource
+
+//import org.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
+import org.grails.orm.hibernate.HibernateMappingContextSessionFactoryBean
+
+import org.grails.orm.hibernate.support.HibernateMappingContextFactoryBean
+import org.grails.orm.hibernate.cfg.HibernateMappingContext
+import org.grails.orm.hibernate.HibernateDatastore
+
+import java.util.Properties;
+import org.hibernate.engine.jdbc.connections.internal.DatasourceConnectionProviderImpl
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider
+import javax.sql.DataSource
+import org.hibernate.internal.SessionFactoryImpl
+import org.hibernate.engine.spi.SessionFactoryImplementor
+
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
+import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
+
+import net.hedtech.banner.db.BannerDS as BannerDataSource
+
+import net.hedtech.banner.db.BannerDS
+
+import grails.core.GrailsApplication
+import org.springframework.context.ConfigurableApplicationContext
 
 /**
  * A Grails Plugin supporting cross cutting concerns.
@@ -139,7 +167,7 @@ class BannerCoreGrailsPlugin extends Plugin {
             defaultFailureUrl = SpringSecurityUtils.securityConfig.failureHandler.defaultFailureUrl
         }
 
-        //roleVoter(BannerAccessDecisionVoter)
+        roleVoter(BannerAccessDecisionVoter)
 
         httpSessionService(HttpSessionService) {
             dataSource = ref(dataSource)
@@ -299,6 +327,30 @@ class BannerCoreGrailsPlugin extends Plugin {
 
     void doWithApplicationContext() {
 
+        println "==============> doWithApplicationContext() datasourse fix start ===========>"
+
+        def sessionFactory = applicationContext.sessionFactory
+
+        ConnectionProvider connectionProvider = ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService(ConnectionProvider.class);
+        if(connectionProvider instanceof DatasourceConnectionProviderImpl) {
+            DataSource ds = ((DatasourceConnectionProviderImpl) connectionProvider).getDataSource();
+            if(ds instanceof TransactionAwareDataSourceProxy) {
+                println "======= Yes ====== TransactionAwareDataSourceProxy"
+                //DataSource dsTemp = ((TransactionAwareDataSourceProxy) ds).getTargetDataSource();
+                //BannerDS bannerds = new BannerDS()
+                BannerDS bannerds = applicationContext.getBean("dataSource")
+                ((TransactionAwareDataSourceProxy) ds).setTargetDataSource(bannerds)
+
+            }
+            if (ds instanceof LazyConnectionDataSourceProxy){
+                println "======= Yes ====== LazyConnectionDataSourceProxy"
+            }
+
+        }
+
+        println "==============> doWithApplicationContext() datasourse fix end ===========>"
+
+
         // build providers list here to give dependent plugins a chance to register some
         def conf = SpringSecurityUtils.securityConfig
         def providerNames = []
@@ -326,6 +378,7 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         // Define the spring security filters
         def authenticationProvider = CH?.config?.banner.sso.authenticationProvider
+        println "authenticationProvider = " +authenticationProvider
         LinkedHashMap<String, String> filterChain = new LinkedHashMap();
         switch (authenticationProvider) {
             case 'external':
