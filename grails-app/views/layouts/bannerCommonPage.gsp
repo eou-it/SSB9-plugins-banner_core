@@ -25,7 +25,6 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
     </g:else>
 
 
-    <r:layoutResources/>
     <g:layoutHead/>
     <g:customStylesheetIncludes/>
 
@@ -70,7 +69,7 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
     </header>
 
     <g:layoutBody/>
-    <r:layoutResources/>
     <g:customJavaScriptIncludes/>
+    <asset:deferredScripts/>
 </body>
 </html>
