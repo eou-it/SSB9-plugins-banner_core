@@ -11,18 +11,20 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
     <script>
         window.mepCode='${session.mep}';
     </script>
-    <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
-        <r:require modules="bannerCommonRTL"/>
-
-    </g:if>
-    <g:else>
-        <r:require modules="bannerCommonLTR"/>
-    </g:else>
-
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="menuBaseURL" content="${request.contextPath}/ssb"/>
     <meta charset="${message(code: 'default.character.encoding')}"/>
     <title><g:layoutTitle default="Banner"/></title>
+    <g:if test="${message(code: 'default.language.direction')  == 'rtl'}">
+        <asset:javascript src="modules/bannerCommon-mf.js"/>
+        <asset:stylesheet src="modules/bannerCommonRTL-mf.css"/>
+    </g:if>
+    <g:else>
+        <asset:javascript src="modules/bannerCommon-mf.js"/>
+        <asset:stylesheet src="modules/bannerCommonLTR-mf.css"/>
+    </g:else>
+
+
     <r:layoutResources/>
     <g:layoutHead/>
     <g:customStylesheetIncludes/>
