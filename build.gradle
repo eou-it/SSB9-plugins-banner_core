@@ -66,10 +66,6 @@ dependencies {
     // Added for BannerXE - Oracle jars - specified as physical path
     compile files("lib/ojdbc6-11.2.0.1.0.jar")
     runtime files("lib/xdb6-11.2.0.4.jar")
-
-    compile project(":banner-codenarc")
-    compile project(":i18n-core")
-    compile project(":grails-constraints")
 }
 
 bootRun {
@@ -95,6 +91,16 @@ grailsPublish {
 
 assets {
     packagePlugin = true
+}
+
+// TODO :grails_332_change, needs to revisit
+// Added for BannerXE - Internal plugin dependency
+grails {
+    plugins {
+        compile project(":banner-codenarc")
+        compile project(":i18n-core")
+        compile project(":grails-constraints")
+    }
 }
 
 /*tasks.withType(CodeNarc) {
