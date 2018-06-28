@@ -11,10 +11,12 @@ Copyright 2016-18 Ellucian Company L.P. and its affiliates.
     <meta name="menuBaseURL" content="${request.contextPath}/ssb"/>
     <meta name="headerAttributes" content=""/>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
-        <r:require modules="changePasswordRTL"/>
+        <asset:javascript src="modules/changePasswordRTL-mf.js"/>
+        <asset:stylesheet src="modules/changePasswordRTL-mf.css"/>
     </g:if>
     <g:else>
-        <r:require modules="changePasswordLTR"/>
+        <asset:javascript src="modules/changePasswordLTR-mf.js"/>
+        <asset:stylesheet src="modules/changePasswordLTR-mf.css"/>
     </g:else>
     <meta name="headerAttributes" content=""/>
     <script type="application/javascript">
