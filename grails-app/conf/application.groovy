@@ -121,8 +121,6 @@ grails.validateable.packages=['net.hedtech.banner.student.registration']
 // base.dir is probably not defined for .war file deployments
 //banner.picturesPath=System.getProperty('base.dir') + '/test/images'
 
-// local seeddata files
-seedDataTarget = [ ]
 
 markdown = [
         removeHtml: true
@@ -142,9 +140,10 @@ dataSource {
 hibernate {
     cache.use_second_level_cache = true
     cache.use_query_cache = true
-    cache.provider_class = 'net.sf.ehcache.hibernate.EhCacheProvider'
-    hbm2ddl.auto = null
-    //show_sql = true
+    //cache.provider_class = 'net.sf.ehcache.hibernate.EhCacheProvider'
+    cache.region.factory_class = 'org.hibernate.cache.ehcache.EhCacheRegionFactory'
+    //hbm2ddl.auto = null
+    show_sql = true
 //   	naming_strategy = "org.hibernate.cfg.ImprovedNamingStrategy"
     dialect = "org.hibernate.dialect.Oracle10gDialect"
     config.location = [

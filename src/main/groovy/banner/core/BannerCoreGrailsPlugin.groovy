@@ -67,9 +67,11 @@ import org.springframework.context.ConfigurableApplicationContext
  * A Grails Plugin supporting cross cutting concerns.
  *
  */
+import groovy.util.logging.Slf4j
+
+@Slf4j
 class BannerCoreGrailsPlugin extends Plugin {
     String version = "9.28.1"
-    private static final Logger staticLogger = Logger.getLogger(BannerCoreGrailsPlugin.class)
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "3.3.2 > *"
@@ -327,7 +329,7 @@ class BannerCoreGrailsPlugin extends Plugin {
 
     void doWithApplicationContext() {
 
-        println "==============> doWithApplicationContext() datasourse fix start ===========>"
+      /*  println "==============> doWithApplicationContext() datasourse fix start ===========>"
 
         def sessionFactory = applicationContext.sessionFactory
 
@@ -348,7 +350,7 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         }
 
-        println "==============> doWithApplicationContext() datasourse fix end ===========>"
+        println "==============> doWithApplicationContext() datasourse fix end ===========>"*/
 
 
         // build providers list here to give dependent plugins a chance to register some
@@ -460,20 +462,20 @@ class BannerCoreGrailsPlugin extends Plugin {
         def resourcesConfig = Holders.grailsApplication.config.grails.resources
 
         if (!resourcesConfig.adhoc.includes ) {
-            staticLogger.warn("No grails.resources.adhoc.includes specified... adding default includes: " + DEFAULT_ADHOC_INCLUDES)
+            log.warn("No grails.resources.adhoc.includes specified... adding default includes: " + DEFAULT_ADHOC_INCLUDES)
             resourcesConfig.adhoc.includes = DEFAULT_ADHOC_INCLUDES
         }
 
         if (!resourcesConfig.adhoc.excludes ) {
-            staticLogger.warn("No grails.resources.adhoc.excludes specified... adding default excludes: " + DEFAULT_ADHOC_EXCLUDES)
+            log.warn("No grails.resources.adhoc.excludes specified... adding default excludes: " + DEFAULT_ADHOC_EXCLUDES)
             resourcesConfig.adhoc.excludes = DEFAULT_ADHOC_EXCLUDES
         } else if (!resourcesConfig.adhoc.excludes.contains('/WEB-INF/**')) {
-            staticLogger.warn("Specified grails.resources.adhoc.excludes does not exclude WEB-INF ... appending default excludes: " + DEFAULT_ADHOC_EXCLUDES)
+            log.warn("Specified grails.resources.adhoc.excludes does not exclude WEB-INF ... appending default excludes: " + DEFAULT_ADHOC_EXCLUDES)
             resourcesConfig.adhoc.excludes.addAll(DEFAULT_ADHOC_EXCLUDES)
         }
 
-        staticLogger.info("Final grails.resources.adhoc.includes" + resourcesConfig.adhoc.includes)
-        staticLogger.info("Final grails.resources.adhoc.excludes" + resourcesConfig.adhoc.excludes)
+        log.info("Final grails.resources.adhoc.includes" + resourcesConfig.adhoc.includes)
+        log.info("Final grails.resources.adhoc.excludes" + resourcesConfig.adhoc.excludes)
     }
 
     private createBeanList(names, ctx) { names.collect { name -> ctx.getBean(name) } }

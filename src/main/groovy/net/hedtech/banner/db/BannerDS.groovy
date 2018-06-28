@@ -40,6 +40,10 @@ import java.sql.SQLFeatureNotSupportedException
  * 'cannot resolve class' issues when including this plugin.  It is recommended when importing this
  * class, to import it like: 'import net.hedtech.banner.db.BannerDS as BannerDataSource'.
  * */
+
+import groovy.util.logging.Slf4j
+
+@Slf4j
 public class BannerDS implements DataSource {
 
     // Delegates all methods not implemented here, to the underlying dataSource injected via Spring.
@@ -52,7 +56,7 @@ public class BannerDS implements DataSource {
 
     MultiEntityProcessingService multiEntityProcessingService
 
-    private final static Logger log = Logger.getLogger(BannerDS.class)
+
 
     public static callNlsUtility(sql,userLocale){
         try {
