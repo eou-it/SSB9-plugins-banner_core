@@ -102,10 +102,29 @@ class BannerCoreGrailsPlugin extends Plugin {
 
 
     Closure doWithSpring() { {->
-        secureAdhocPatterns()
+        println "**********************************************************************"
+        println "Before External config merged"
+        println "bannerDataSource URL=${CH.config.bannerDataSource.url}"
+        println "bannerDataSource username=${CH.config.bannerDataSource.username}"
+        println "footerFadeAwayTime=${CH.config.footerFadeAwayTime}"
+        println "**********************************************************************"
+        println "\n \n "
+
+        //TODO :grails_332_change, needs to revisit
+        setupExternalConfig()
+
+        println "**********************************************************************"
+        println "After External config merged"
+        println "bannerDataSource URL=${CH.config.bannerDataSource.url}"
+        println "bannerDataSource username=${CH.config.bannerDataSource.username}"
+        println "footerFadeAwayTime=${CH.config.footerFadeAwayTime}"
+        println "**********************************************************************"
+
+        // TODO :grails_332_change, needs to revisit
+        // secureAdhocPatterns()
         def conf = SpringSecurityUtils.securityConfig
-			  switch (Environment.current) {
-				case Environment.PRODUCTION:
+        switch (Environment.current) {
+            case Environment.PRODUCTION:
                 log.info "Will use a dataSource configured via JNDI"
                 underlyingDataSource(JndiObjectFactoryBean) {
                     jndiName = "java:comp/env/${CH.config.bannerDataSource.jndiName}"
@@ -212,41 +231,41 @@ class BannerCoreGrailsPlugin extends Plugin {
             disableUrlRewriting = false
         }
 
-			/*
-        statelessSecurityContextPersistenceFilter(SecurityContextPersistenceFilter) {
-            securityContextRepository = ref('statelessSecurityContextRepository')
+        /*
+    statelessSecurityContextPersistenceFilter(SecurityContextPersistenceFilter) {
+        securityContextRepository = ref('statelessSecurityContextRepository')
+        forceEagerSessionCreation = false
+    }
+        */
+
+        statelessSecurityContextPersistenceFilter(SecurityContextPersistenceFilter , ref('statelessSecurityContextRepository')) {
+            //securityContextRepository = ref('statelessSecurityContextRepository')
             forceEagerSessionCreation = false
         }
-			*/
 
-			statelessSecurityContextPersistenceFilter(SecurityContextPersistenceFilter , ref('statelessSecurityContextRepository')) {
-				//securityContextRepository = ref('statelessSecurityContextRepository')
-				forceEagerSessionCreation = false
-			}
+        /*
+    basicAuthenticationFilter(BasicAuthenticationFilter) {
+        authenticationManager = ref('authenticationManager')
+        authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
+    }
+        */
 
-			/*
-        basicAuthenticationFilter(BasicAuthenticationFilter) {
-            authenticationManager = ref('authenticationManager')
-            authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
+        basicAuthenticationFilter(BasicAuthenticationFilter , ref('authenticationManager'),  ref('basicAuthenticationEntryPoint')) {
+            //authenticationManager = ref('authenticationManager')
+            //authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
         }
-			*/
 
-			basicAuthenticationFilter(BasicAuthenticationFilter , ref('authenticationManager'),  ref('basicAuthenticationEntryPoint')) {
-				//authenticationManager = ref('authenticationManager')
-				//authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
-			}
+        /*
+    basicExceptionTranslationFilter(ExceptionTranslationFilter) {
+        authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
+        accessDeniedHandler = ref('accessDeniedHandler')
+    }
+        */
 
-			/*
-        basicExceptionTranslationFilter(ExceptionTranslationFilter) {
-            authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
+        basicExceptionTranslationFilter(ExceptionTranslationFilter , ref('basicAuthenticationEntryPoint')) {
+            //authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
             accessDeniedHandler = ref('accessDeniedHandler')
         }
-			*/
-
-			basicExceptionTranslationFilter(ExceptionTranslationFilter , ref('basicAuthenticationEntryPoint')) {
-				//authenticationEntryPoint = ref('basicAuthenticationEntryPoint')
-				accessDeniedHandler = ref('accessDeniedHandler')
-			}
 
         anonymousProcessingFilter(GrailsAnonymousAuthenticationFilter) {
             authenticationDetailsSource = ref('authenticationDetailsSource')
@@ -265,32 +284,32 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         // ---------------- JMX Mbeans (incl. Logging) ----------------
 
-			/*
-        log4jBean(HierarchyDynamicMBean)
+        /*
+    log4jBean(HierarchyDynamicMBean)
 
-        mbeanServer(MBeanServerFactoryBean) {
-            locateExistingServerIfPossible = true
-        }
+    mbeanServer(MBeanServerFactoryBean) {
+        locateExistingServerIfPossible = true
+    }
 
-        switch (GrailsUtil.environment) {
-            case "development": // 'pass through', so logging will be exported via JMX for 'development' and 'production'
-            case "production":
-                String log4jBeanName = getUniqueJmxBeanNameFor('log4j') + ':hierarchy=default'
+    switch (GrailsUtil.environment) {
+        case "development": // 'pass through', so logging will be exported via JMX for 'development' and 'production'
+        case "production":
+            String log4jBeanName = getUniqueJmxBeanNameFor('log4j') + ':hierarchy=default'
 
-                exporter(MBeanExporter) {
-                    server = mbeanServer
-                    beans = [("$log4jBeanName" as String): log4jBean]
-                }
-                break
-        }
-			*/
+            exporter(MBeanExporter) {
+                server = mbeanServer
+                beans = [("$log4jBeanName" as String): log4jBean]
+            }
+            break
+    }
+        */
 
         // Switch to grails.util.Holders in Grails 2.x
         if (!CH.config.privacy?.codes) {
             // Populate with default privacy policy codes
             CH.config.privacy.codes = "INT NAV UNI"
         }
-        }
+    }
     }
 
     void doWithDynamicMethods() {
@@ -302,14 +321,14 @@ class BannerCoreGrailsPlugin extends Plugin {
         // the more granular control of transaction attributes possible with annotations.
         //
 
-		/*
+        /*
         application.serviceClasses.each { serviceArtefact ->
             def needsCRUD = GCU.getStaticPropertyValue(serviceArtefact.clazz, "defaultCrudMethods")
             if (needsCRUD) {
                 serviceArtefact.clazz.mixin ServiceBase
             }
         }
-		*/
+        */
 
         grailsApplication.serviceClasses.each { serviceArtefact ->
             def needsCRUD = GCU.getStaticPropertyValue(serviceArtefact.clazz, "defaultCrudMethods")
@@ -329,7 +348,7 @@ class BannerCoreGrailsPlugin extends Plugin {
 
     void doWithApplicationContext() {
 
-      /*  println "==============> doWithApplicationContext() datasourse fix start ===========>"
+        println "==============> doWithApplicationContext() datasourse fix start ===========>"
 
         def sessionFactory = applicationContext.sessionFactory
 
@@ -350,7 +369,7 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         }
 
-        println "==============> doWithApplicationContext() datasourse fix end ===========>"*/
+        println "==============> doWithApplicationContext() datasourse fix end ===========>"
 
 
         // build providers list here to give dependent plugins a chance to register some
@@ -366,9 +385,9 @@ class BannerCoreGrailsPlugin extends Plugin {
         applicationContext.authenticationManager.providers = createBeanList(providerNames, applicationContext)
 
 
-		//Hibernate Event Listeners commented for Grails-3 as it has been chanaged.
+        //Hibernate Event Listeners commented for Grails-3 as it has been chanaged.
 
-		/*
+        /*
         def listeners = applicationContext.sessionFactory.eventListeners
 
         // register hibernate listener for populating audit trail properties before inserting and updating models
@@ -376,7 +395,7 @@ class BannerCoreGrailsPlugin extends Plugin {
         ['preInsert', 'preUpdate'].each {
             addEventTypeListener(listeners, auditTrailSupportListener, it)
         }
-		*/
+        */
 
         // Define the spring security filters
         def authenticationProvider = CH?.config?.banner.sso.authenticationProvider
@@ -405,7 +424,7 @@ class BannerCoreGrailsPlugin extends Plugin {
             filterChainMap[new AntPathRequestMatcher(key)] = filters
         }
 
-		//applicationContext.springSecurityFilterChain.filterChainMap = filterChainMap
+        //applicationContext.springSecurityFilterChain.filterChainMap = filterChainMap
 
         //set the teransaction timeout on transaction manager time unit in seconds
         def transTimeOut = CH.config.banner?.transactionTimeout instanceof Integer ? CH.config.banner?.transactionTimeout : 30
@@ -479,5 +498,46 @@ class BannerCoreGrailsPlugin extends Plugin {
     }
 
     private createBeanList(names, ctx) { names.collect { name -> ctx.getBean(name) } }
+
+
+    private setupExternalConfig() {
+        boolean extConfigLoaded = false
+        def config = CH.config
+        def locations = config.grails.config.locations
+        String filePathName
+
+        locations.each { propertyName,  fileName ->
+            filePathName = getFilePath(System.getProperty(propertyName))
+            if (Environment.getCurrent() != Environment.PRODUCTION) {
+                if (!filePathName) {
+                    filePathName = getFilePath("${System.getProperty('user.home')}/.grails/${fileName}")
+                    if (filePathName) log.info "Using configuration file '\$HOME/.grails/$fileName'"
+                }
+                if (!filePathName) {
+                    filePathName = getFilePath("${fileName}")
+                    if (filePathName) log.info "Using configuration file '$fileName'"
+                }
+                if (!filePathName) {
+                    filePathName = getFilePath("grails-app/conf/$fileName")
+                    if (filePathName) log.info "Using configuration file 'grails-app/conf/$fileName'"
+                }
+            }
+            if(filePathName) {
+                println "External configuration file: " + filePathName
+                try {
+                    config.merge(new ConfigSlurper().parse(new File(filePathName).text))
+                }
+                catch (e) {
+                    log.warn "NOTICE: Caught exception while loading configuration files (depending on current grails target, this may be ok): ${e.message}"
+                }
+            }
+        }
+    }
+
+    private static String getFilePath( filePath ) {
+        if (filePath && new File( filePath ).exists()) {
+            "${filePath}"
+        }
+    }
 
 }
