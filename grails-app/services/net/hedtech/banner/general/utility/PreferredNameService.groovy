@@ -12,11 +12,12 @@ import org.apache.log4j.Logger
 import java.sql.Connection
 import java.sql.SQLException
 import java.util.logging.Level
+import grails.gorm.transactions.Transactional
 
-
+@Transactional
 class PreferredNameService {
 
-    static transactional = true
+    //static transactional = true
     def dataSource //injected by Spring
 
     def config = Holders.getConfig()
