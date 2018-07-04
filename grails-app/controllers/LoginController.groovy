@@ -103,7 +103,7 @@ class LoginController {
      */
     def full = {
         def config = SpringSecurityUtils.securityConfig
-        render view: 'auth', plugin: "bannerCore", params: params,
+        render view: 'auth', params: params,
                 model: [hasCookie: authenticationTrustResolver.isRememberMe(SCH.context?.authentication),
                         postUrl: "${request.contextPath}${config.apf.filterProcessesUrl}"]
     }
@@ -191,13 +191,13 @@ class LoginController {
     def forgotpassword ={
         def config = SpringSecurityUtils.securityConfig
 
-        String userName = request.getParameter("j_username")
+        String userName = request.getParameter("username")
         if(userName == null || userName.trim().length() == 0){
             flash.message =  message( code: "net.hedtech.banner.resetpassword.username.required.error")
             String view = 'auth'
             String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
             String forgotPasswordUrl =  "${request.contextPath}/login/resetPassword";
-            render view: view, plugin: "bannerCore", model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl, userNameRequired: true,
+            render view: view, model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl, userNameRequired: true,
                                                              rememberMeParameter: config.rememberMe.parameter]
         }
         else{
@@ -208,7 +208,7 @@ class LoginController {
 
     def error = {
         def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
-        render view: "customerror", plugin: "bannerCore", model: [msg: getMessageFor( exception ), uri: buildLogout()]
+        render view: "customerror", model: [msg: getMessageFor( exception ), uri: buildLogout()]
     }
 
     private def buildLogout() {

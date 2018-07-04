@@ -37,7 +37,7 @@ class ResetPasswordController {
         response.setHeader("Cache-Control", "no-store")
         response.setDateHeader("Expires", 0)
         response.setHeader("Pragma", "no-cache")
-        String id = request.getParameter("j_username")
+        String id = request.getParameter("username")
         def cancelUrl = "${request.contextPath}/resetPassword/auth"
         if(session.getAttribute("requestPage") != "questans"){
             session.invalidate()
