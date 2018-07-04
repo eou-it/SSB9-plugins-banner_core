@@ -1,8 +1,8 @@
+import grails.plugin.springsecurity.SecurityConfigType
+
 /*******************************************************************************
  Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
-
-
 
 grails.project.groupId = "net.hedtech" // used when deploying to a maven repo
 
@@ -46,16 +46,6 @@ grails.enable.native2ascii = false
 // enable GSP preprocessing: replace head -> g:captureHead, title -> g:captureTitle, meta -> g:captureMeta, body -> g:captureBody
 grails.views.gsp.sitemesh.preprocess = true
 
-grails.resources.mappers.yuicssminify.includes = ['**/*.css']
-grails.resources.mappers.yuijsminify.includes  = ['**/*.js']
-grails.resources.mappers.yuicssminify.excludes = ['**/*.min.css']
-grails.resources.mappers.yuijsminify.excludes  = ['**/*.min.js']
-
-environments {
-    development {
-        grails.resources.debug = true
-    }
-}
 
 
 // ******************************************************************************
@@ -150,23 +140,6 @@ hibernate {
             "classpath:hibernate-banner-core.cfg.xml",
             "classpath:hibernate-banner-core.testing.cfg.xml"
     ]
-}
-
-
-// environment specific settings
-environments {
-    development {
-        dataSource {
-        }
-    }
-    test {
-        dataSource {
-        }
-    }
-    production {
-        dataSource {
-        }
-    }
 }
 
 

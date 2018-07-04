@@ -102,23 +102,8 @@ class BannerCoreGrailsPlugin extends Plugin {
 
 
     Closure doWithSpring() { {->
-        println "**********************************************************************"
-        println "Before External config merged"
-        println "bannerDataSource URL=${CH.config.bannerDataSource.url}"
-        println "bannerDataSource username=${CH.config.bannerDataSource.username}"
-        println "footerFadeAwayTime=${CH.config.footerFadeAwayTime}"
-        println "**********************************************************************"
-        println "\n \n "
-
         //TODO :grails_332_change, needs to revisit
         setupExternalConfig()
-
-        println "**********************************************************************"
-        println "After External config merged"
-        println "bannerDataSource URL=${CH.config.bannerDataSource.url}"
-        println "bannerDataSource username=${CH.config.bannerDataSource.username}"
-        println "footerFadeAwayTime=${CH.config.footerFadeAwayTime}"
-        println "**********************************************************************"
 
         // TODO :grails_332_change, needs to revisit
         // secureAdhocPatterns()
