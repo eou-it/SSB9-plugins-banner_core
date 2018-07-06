@@ -62,7 +62,7 @@ dependencies {
     compile "commons-codec:commons-codec:1.10"
     compile "org.codehaus.groovy:groovy-ant:2.4.13"
     //compile "org.codenarc:CodeNarc:0.17"
-
+    compile 'org.grails.plugins:grails-markdown:3.0.0'
     // Added for BannerXE - Oracle jars - specified as physical path
     compile files("lib/ojdbc6-11.2.0.1.0.jar")
     runtime files("lib/xdb6-11.2.0.4.jar")
