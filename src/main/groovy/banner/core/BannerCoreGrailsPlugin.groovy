@@ -10,6 +10,8 @@ import grails.util.Environment
 import grails.util.GrailsClassUtils as GCU
 import grails.util.Holders
 import grails.util.Holders  as CH
+import groovy.util.logging.Slf4j
+import net.hedtech.banner.db.BannerDS
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.mep.MultiEntityProcessingService
 import net.hedtech.banner.security.*
@@ -19,9 +21,13 @@ import net.hedtech.banner.service.LoginAuditService
 import net.hedtech.banner.service.ServiceBase
 import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
-import org.apache.log4j.Logger
 import org.codehaus.groovy.runtime.GStringImpl
+import org.hibernate.engine.jdbc.connections.internal.DatasourceConnectionProviderImpl
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider
+import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.context.event.SimpleApplicationEventMulticaster
+import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.security.web.access.ExceptionTranslationFilter
@@ -32,43 +38,16 @@ import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher
 
-
 import javax.servlet.Filter
+import javax.sql.DataSource
 import java.util.concurrent.Executors
 
 /****************** Added for DS inject fix *****************/
-import org.apache.commons.dbcp.BasicDataSource
-
 //import org.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
-import org.grails.orm.hibernate.HibernateMappingContextSessionFactoryBean
-
-import org.grails.orm.hibernate.support.HibernateMappingContextFactoryBean
-import org.grails.orm.hibernate.cfg.HibernateMappingContext
-import org.grails.orm.hibernate.HibernateDatastore
-
-import java.util.Properties;
-import org.hibernate.engine.jdbc.connections.internal.DatasourceConnectionProviderImpl
-import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider
-import javax.sql.DataSource
-import org.hibernate.internal.SessionFactoryImpl
-import org.hibernate.engine.spi.SessionFactoryImplementor
-
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
-import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
-
-import net.hedtech.banner.db.BannerDS as BannerDataSource
-
-import net.hedtech.banner.db.BannerDS
-
-import grails.core.GrailsApplication
-import org.springframework.context.ConfigurableApplicationContext
-
 /**
  * A Grails Plugin supporting cross cutting concerns.
  *
  */
-import groovy.util.logging.Slf4j
-
 @Slf4j
 class BannerCoreGrailsPlugin extends Plugin {
     String version = "9.28.1"
@@ -78,9 +57,9 @@ class BannerCoreGrailsPlugin extends Plugin {
 
     // the other plugins this plugin depends on
     List loadAfter = ['springSecurityCore']
-    def dependsOn = [
-            springSecurityCore: '3.2.1 => *'
-    ]
+    def dependsOn =  [
+                       springSecurityCore: '3.2.1 => *'
+                     ]
 
     // resources that are excluded from plugin packaging
     def pluginExcludes = ["grails-app/views/error.gsp"]
@@ -486,7 +465,6 @@ class BannerCoreGrailsPlugin extends Plugin {
 
 
     private setupExternalConfig() {
-        boolean extConfigLoaded = false
         def config = CH.config
         def locations = config.grails.config.locations
         String filePathName
@@ -506,6 +484,8 @@ class BannerCoreGrailsPlugin extends Plugin {
                     filePathName = getFilePath("grails-app/conf/$fileName")
                     if (filePathName) log.info "Using configuration file 'grails-app/conf/$fileName'"
                 }
+            } else {
+                filePathName = Thread.currentThread().getContextClassLoader().getResource( "$fileName" )?.toURI()
             }
             if(filePathName) {
                 println "External configuration file: " + filePathName

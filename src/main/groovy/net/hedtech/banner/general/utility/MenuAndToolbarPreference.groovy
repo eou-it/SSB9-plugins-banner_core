@@ -23,6 +23,7 @@ import javax.persistence.GenerationType
     * Where clause on this entity present in forms:
   * Order by clause on this entity present in forms:
 */
+//TODO:Can be deleted
 @Entity
 @Table(name="GURTPRF")
 @NamedQueries(value = [

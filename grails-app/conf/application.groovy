@@ -1,5 +1,3 @@
-import grails.plugin.springsecurity.SecurityConfigType
-
 /*******************************************************************************
  Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
@@ -85,7 +83,7 @@ grails {
                 mepErrorLogoutUrl='/logout/logoutPage'
             }
             useRequestMapDomainClass = false
-            securityConfigType = SecurityConfigType.InterceptUrlMap
+            securityConfigType = grails.plugin.springsecurity.SecurityConfigType.InterceptUrlMap
             interceptUrlMap = [
                     [pattern:'/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
                     [pattern:'/login/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
@@ -130,11 +128,11 @@ dataSource {
 hibernate {
     cache.use_second_level_cache = true
     cache.use_query_cache = true
-    //cache.provider_class = 'net.sf.ehcache.hibernate.EhCacheProvider'
     cache.region.factory_class = 'org.hibernate.cache.ehcache.EhCacheRegionFactory'
     //hbm2ddl.auto = null
-    show_sql = true
-//   	naming_strategy = "org.hibernate.cfg.ImprovedNamingStrategy"
+    show_sql = false
+    packagesToScan="net.hedtech.**.*"
+    flush.mode = AUTO
     dialect = "org.hibernate.dialect.Oracle10gDialect"
     config.location = [
             "classpath:hibernate-banner-core.cfg.xml",
