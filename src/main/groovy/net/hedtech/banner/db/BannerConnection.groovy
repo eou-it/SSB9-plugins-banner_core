@@ -4,19 +4,20 @@
 
 package net.hedtech.banner.db
 
+import groovy.util.logging.Slf4j
 import javax.sql.DataSource
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.CallableStatement
-
 import oracle.jdbc.OracleConnection
 import grails.util.Environment
 
-import org.apache.log4j.Logger
 /**
  * A dataSource that proxies connections, sets roles needed for the current request,
  * and invokes p_commit and p_rollback.
  * */
+
+@Slf4j
 class BannerConnection {
 
     @Delegate
@@ -26,8 +27,6 @@ class BannerConnection {
     def bannerDataSource
     def oracleConnection // the native connection
     boolean isCached
-
-    private static final Logger log = Logger.getLogger(getClass())
 
     BannerConnection(Connection conn, DataSource bannerDataSource) {
         assert conn

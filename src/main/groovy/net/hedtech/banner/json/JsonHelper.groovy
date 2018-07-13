@@ -1,18 +1,18 @@
 /*******************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.json
 
-import org.apache.log4j.Logger
+import groovy.util.logging.Slf4j
 import org.grails.web.json.JSONObject
 
 
 /**
  * A helper class that assists in using JSON representations of models.
  **/
+@Slf4j
 class JsonHelper {
 
-    private static final def log = Logger.getLogger( JsonHelper.name )
 
     /**
      * Provides a minimal workaround for Jira Grails-5585 -- once the JSON converter is 'fixed', this should be removed.

@@ -1,10 +1,11 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.util.Holders  as CH
+import groovy.util.logging.Slf4j
 import org.springframework.security.access.ConfigAttribute
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UsernameNotFoundException
@@ -18,15 +19,14 @@ import javax.servlet.ServletException
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
-import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter
 
 import javax.servlet.http.HttpServletResponse
 
+@Slf4j
 class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFilter {
 
-    private static final Logger log = Logger.getLogger(getClass())
 
     def dataSource // injected by Spring
 

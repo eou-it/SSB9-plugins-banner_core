@@ -3,8 +3,7 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
-import org.apache.log4j.Logger
-
+import groovy.util.logging.Slf4j
 import grails.util.Holders  as CH
 import org.grails.web.mapping.DefaultUrlMappingInfo
 import org.springframework.security.access.vote.RoleVoter
@@ -30,12 +29,12 @@ import org.springframework.context.ApplicationContext
  * THe UI and service layers may need to perform additional handling
  * (e.g., using conventions such as '_Q' roles give only read-only access).
  */
+@Slf4j
 class BannerAccessDecisionVoter extends RoleVoter {
 
     static final String ROLE_PREFIX = "ROLE_"
     static final String ROLE_DETERMINED_DYNAMICALLY = 'ROLE_DETERMINED_DYNAMICALLY'
 
-    private static final Logger log = Logger.getLogger( getClass() )
 
     boolean supports( ConfigAttribute configAttribute ) {
         log.debug "BannerAccessDecisionVoter.supports(ConfigAttribute) invoked with $configAttribute and will return ${configAttribute.attribute?.startsWith( ROLE_PREFIX )}"

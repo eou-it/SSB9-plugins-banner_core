@@ -4,12 +4,14 @@
 package net.hedtech.banner.security
 
 import groovy.sql.Sql
+import net.hedtech.banner.db.BannerDS
 import java.sql.SQLException
 import javax.sql.DataSource
-import org.apache.log4j.Logger
 import grails.plugin.springsecurity.SpringSecurityUtils
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.GrantedAuthority
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Class for manipulating the Spring Security User Authorities.
@@ -17,10 +19,9 @@ import org.springframework.security.core.GrantedAuthority
 class BannerGrantedAuthorityService {
 
     static transactional = false
-
-    private static final Logger staticLogger = Logger.getLogger(BannerGrantedAuthorityService.class)
     private static final String WEB_USER = "WEBUSER"
     private static final String ANONYMOUS_USER = "anonymousUser"
+    static Logger logger = LoggerFactory.getLogger(BannerGrantedAuthorityService.class);
 
     /**
      *
@@ -82,12 +83,12 @@ class BannerGrantedAuthorityService {
         final oracleUserName = authenticationResults['oracleUserName']
 
         if (!oracleUserName) {
-            staticLogger.debug("No authorities returned for $oracleUserName")
+            logger.debug("No authorities returned for $oracleUserName")
             return authorities   // empty list
         }
 
         try {
-            def traceDS = Logger.getLogger(net.hedtech.banner.db.BannerDS.class).isTraceEnabled()
+            def traceDS = LoggerFactory.getLogger(BannerDS.class).isTraceEnabled()
             if (traceDS) {
                 sqlObject.call "{call dbms_application_info.set_module( 'SELFSERVICE', 'GETROLES' )}"
             }
@@ -107,9 +108,9 @@ class BannerGrantedAuthorityService {
                 sqlObject.call "{call dbms_application_info.set_module( NULL, NULL )}"
             }
         } catch (SQLException e) {
-            staticLogger.warn "UserAuthorityService not able to determine Authorities for user ${oracleUserName} due to exception $e.message"
+            logger.warn "UserAuthorityService not able to determine Authorities for user ${oracleUserName} due to exception $e.message"
         }
-        staticLogger.trace "UserAuthorityService.determineAuthorities is returning ${authorities?.size()} authorities. "
+        logger.trace "UserAuthorityService.determineAuthorities is returning ${authorities?.size()} authorities. "
         authorities
     }
 
@@ -118,17 +119,17 @@ class BannerGrantedAuthorityService {
      */
     public static List<BannerGrantedAuthority> filterAuthorities(List<BannerGrantedAuthority> grantedAuthorities) {
         if (!grantedAuthorities) {
-            staticLogger.debug("Input list of Authorities were EMPTY !!!")
+            logger.debug("Input list of Authorities were EMPTY !!!")
             return []
         }
         List formContext = new ArrayList(FormContext.get())
-        staticLogger.debug "UserAuthorityService has retrieved the FormContext value: $formContext"
+        logger.debug "UserAuthorityService has retrieved the FormContext value: $formContext"
         return filterAuthoritiesForFormNames(grantedAuthorities, formContext)
     }
 
     public static List<BannerGrantedAuthority> filterAuthorities(List<String> formNames, authentication) {
         if (authentication.principal instanceof String) {
-            staticLogger.debug("Authentication Principal is just a String")
+            logger.debug("Authentication Principal is just a String")
             return []
         }
         final authorityList = (authentication.principal.authorities).asList()
@@ -146,7 +147,7 @@ class BannerGrantedAuthorityService {
                 }
             }
         }
-        staticLogger.debug "Given FormContext of ${formNames?.join(',')}, the user's applicable authorities are $applicableAuthorities"
+        logger.debug "Given FormContext of ${formNames?.join(',')}, the user's applicable authorities are $applicableAuthorities"
         return applicableAuthorities
     }
 

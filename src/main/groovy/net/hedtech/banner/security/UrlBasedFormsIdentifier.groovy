@@ -1,14 +1,14 @@
 /* ****************************************************************************
-Copyright 2013 Ellucian Company L.P. and its affiliates.
+Copyright 2013-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
-import org.apache.log4j.Logger
+import groovy.util.logging.Slf4j
 
 
+@Slf4j
 class UrlBasedFormsIdentifier {
 
-    private static final Logger log = Logger.getLogger( "net.hedtech.banner.security.UrlBasedFormsIdentifier" )
 
     public static List getTokensFor( String requestUrl ) {
         log.debug "getTokensFor will extract tokens for url $requestUrl"

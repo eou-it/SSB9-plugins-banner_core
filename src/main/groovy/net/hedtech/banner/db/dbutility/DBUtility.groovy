@@ -1,18 +1,18 @@
 /* *****************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db.dbutility
 
 import grails.util.Holders
+import groovy.util.logging.Slf4j
 import net.hedtech.banner.apisupport.ApiUtils
 import net.hedtech.banner.security.BannerUser
 import net.hedtech.banner.security.FormContext
-import org.apache.log4j.Logger
 import org.springframework.security.core.context.SecurityContextHolder
 
+@Slf4j
 class DBUtility {
 
-    private final static Logger log = Logger.getLogger(DBUtility.class)
 
     private static def config = Holders.getConfig()
 

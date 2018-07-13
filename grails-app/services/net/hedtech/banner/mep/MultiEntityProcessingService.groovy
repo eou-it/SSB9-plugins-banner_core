@@ -9,13 +9,7 @@ import oracle.jdbc.OracleTypes
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.web.context.request.RequestContextHolder
 
-/**
- * Created by IntelliJ IDEA.
- * User: mhitrik
- * Date: 7/6/11
- * Time: 10:17 AM
- * To change this template use File | Settings | File Templates.
- */
+
 class MultiEntityProcessingService {
 
     static transactional = true

@@ -1,23 +1,17 @@
 /*******************************************************************************
- Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.service
 
-import net.hedtech.banner.apisupport.ApiUtils
-import org.apache.commons.lang.ArrayUtils
-
+import groovy.util.logging.Slf4j
 import grails.util.Holders  as CH
 import net.hedtech.banner.apisupport.ApiUtils
-import net.hedtech.banner.security.BannerUser
 import org.apache.commons.lang.ArrayUtils
 import org.hibernate.cfg.Configuration
 import org.hibernate.event.spi.PreInsertEvent
 import org.hibernate.event.spi.PreInsertEventListener
 import org.hibernate.event.spi.PreUpdateEvent
 import org.hibernate.event.spi.PreUpdateEventListener
-import org.springframework.security.core.context.SecurityContextHolder as SCH
-
-
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import net.hedtech.banner.security.BannerUser
 
@@ -26,6 +20,7 @@ import net.hedtech.banner.security.BannerUser
  * via an event listener ensures audit trail properties set even if a service isn't implemented
  * to update these fields or if GORM is used directly to persist a model.
  */
+@Slf4j
 class AuditTrailPropertySupportHibernateListener implements PreInsertEventListener, PreUpdateEventListener {
 
     static detailed = false

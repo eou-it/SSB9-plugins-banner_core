@@ -5,7 +5,7 @@ package net.hedtech.banner.security
 
 import grails.util.Holders  as CH
 import groovy.sql.Sql
-import org.apache.log4j.Logger
+import groovy.util.logging.Slf4j
 import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.*
 import org.springframework.security.core.Authentication
@@ -17,10 +17,8 @@ import java.sql.SQLException
 /**
  * An authentication provider which authenticates a user by logging into the Banner database.
  */
+@Slf4j
 public class BannerAuthenticationProvider implements AuthenticationProvider {
-
-    // note: using 'getClass()' here doesn't work -- we'll just use a String
-    private static final Logger log = Logger.getLogger( "net.hedtech.banner.security.BannerAuthenticationProvider" )
 
     private static def applicationContext // set lazily via 'getApplicationContext()'
 

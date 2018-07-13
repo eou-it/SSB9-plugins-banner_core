@@ -1,8 +1,9 @@
 /*******************************************************************************
-Copyright 2010-2017 Ellucian Company L.P. and its affiliates.
+Copyright 2010-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
+import groovy.util.logging.Slf4j
 import org.apache.log4j.Logger
 import org.springframework.security.core.GrantedAuthority
 
@@ -14,6 +15,7 @@ import grails.plugin.springsecurity.userdetails.GrailsUser
  * expects a UserDetail that has a getDomainClass().  Since we don't currently have a domain object for
  * users, the domainClass field is set to null.
  */
+@Slf4j
 public class BannerUser extends GrailsUser {
     Integer pidm
     Integer gidm
@@ -24,7 +26,6 @@ public class BannerUser extends GrailsUser {
     public String mepProcessContext
     public String mepHomeContextDescription
 
-    private static final Logger log = Logger.getLogger( getClass() )
 
     Map rolePass = [:]      // Storing role password map as part of user to improve performance
     Map<String,GrantedAuthority> formToRoleMap = new HashMap<String,GrantedAuthority>() // Storing roles keyed by Form context, to improve performance

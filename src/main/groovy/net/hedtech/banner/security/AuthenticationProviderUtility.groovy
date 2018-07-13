@@ -7,8 +7,6 @@ import grails.util.GrailsNameUtils
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.AuthorizationException
-import net.hedtech.banner.i18n.MessageHelper
-import org.apache.log4j.Logger
 import grails.util.Holders
 import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.AuthenticationProvider
@@ -21,17 +19,18 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.grails.web.util.GrailsApplicationAttributes as GA
 import org.springframework.web.context.request.RequestContextHolder
-
 import java.sql.SQLException
+import groovy.util.logging.Slf4j
+
 
 
 /**
  * An Utility Class to handle the common logic of mapping user to Banner user.
  */
+
+@Slf4j
 class AuthenticationProviderUtility {
 
-    // note: using 'getClass()' here doesn't work -- we'll just use a String
-    private static final Logger log = Logger.getLogger( "net.hedtech.banner.security.AuthenticationProviderUtility" )
     private static def applicationContext // set lazily via 'getApplicationContext()'
     private static roleBasedTimeOutsCache = [:]
 

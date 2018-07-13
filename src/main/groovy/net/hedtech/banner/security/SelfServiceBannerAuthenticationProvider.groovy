@@ -1,11 +1,11 @@
 /*******************************************************************************
-Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
 import grails.util.Holders  as CH
 import groovy.sql.Sql
-import org.apache.log4j.Logger
+import groovy.util.logging.Slf4j
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.CredentialsExpiredException
@@ -22,9 +22,9 @@ import java.sql.SQLException
  * An authentication provider which authenticates a self service user.  Self service users
  * need not have an oracle login..
  */
+@Slf4j
 public class SelfServiceBannerAuthenticationProvider implements AuthenticationProvider {
 
-    private static final Logger log = Logger.getLogger( "net.hedtech.banner.security.SelfServiceBannerAuthenticationProvider" )
 
     def dataSource	// injected by Spring
     def preferredNameService

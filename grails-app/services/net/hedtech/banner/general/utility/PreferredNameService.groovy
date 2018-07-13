@@ -8,7 +8,6 @@ import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.i18n.MessageHelper
-import org.apache.log4j.Logger
 import java.sql.Connection
 import java.sql.SQLException
 import java.util.logging.Level

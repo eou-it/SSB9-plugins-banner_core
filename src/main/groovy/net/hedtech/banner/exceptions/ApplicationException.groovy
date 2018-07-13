@@ -3,16 +3,12 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.exceptions
 
+import groovy.util.logging.Slf4j
+
 import java.sql.SQLException
-
 import javax.persistence.EntityExistsException
-
 import grails.util.GrailsNameUtils
-
-import org.apache.log4j.Logger
-
 import org.springframework.jdbc.UncategorizedSQLException
-
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.validation.FieldError
 import java.text.DecimalFormat
@@ -27,6 +23,7 @@ import net.hedtech.banner.i18n.DateConverterService
  * Developers who need to add specific support for a particular exception should add an
  * entry to the private 'exceptionHandlers' map.
  **/
+@Slf4j
 class ApplicationException extends RuntimeException {
 
     def          wrappedException       // a checked or runtime exception being wrapped
@@ -40,8 +37,6 @@ class ApplicationException extends RuntimeException {
 
     String       entityClassName        // the fully qualified class name for the associated domain model
     def          id                     // optional, the id of the model if applicable
-
-    private static final def log = Logger.getLogger( ApplicationException.name )
 
 
     /**

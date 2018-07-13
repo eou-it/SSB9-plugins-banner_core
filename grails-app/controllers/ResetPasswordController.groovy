@@ -6,7 +6,6 @@
 import grails.util.Holders  as CH
 import net.hedtech.banner.security.ResetPasswordService
 import org.apache.commons.codec.binary.Base64
-import org.apache.log4j.Logger
 import org.springframework.security.authentication.CredentialsExpiredException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.LockedException

@@ -6,6 +6,7 @@ package net.hedtech.banner.service
 
 import grails.validation.ValidationException
 import grails.util.GrailsNameUtils
+import groovy.util.logging.Slf4j
 import org.grails.core.DefaultGrailsDomainClass
 
 import groovy.sql.Sql
@@ -13,8 +14,6 @@ import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.NotFoundException
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
 import net.hedtech.banner.security.FormContext
-
-import org.apache.log4j.Logger
 
 import grails.util.Holders
 import grails.util.GrailsClassUtils
@@ -53,11 +52,10 @@ import org.springframework.transaction.support.DefaultTransactionStatus
  * see 'FooService' developer comments.
  * The FooService, and Foo model, are 'test' artifacts used to test the framework.
  */
+@Slf4j
 @Transactional(readOnly = false, propagation = Propagation.REQUIRED )
 class ServiceBase {
 
-    @Lazy // note: Lazy annotation is needed here to ensure 'this' refers to the service we're mixed into (if we're mixed in)
-    private static final def log = Logger.getLogger( this.getClass() )
 
     Class domainClass // if not explicitly set by a subclass, this will be determined when needed
 

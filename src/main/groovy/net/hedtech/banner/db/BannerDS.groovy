@@ -16,7 +16,6 @@ import net.hedtech.banner.security.BannerUser
 import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.service.HttpSessionService
 import oracle.jdbc.OracleConnection
-import org.apache.log4j.Logger
 import org.springframework.context.ApplicationContext
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder

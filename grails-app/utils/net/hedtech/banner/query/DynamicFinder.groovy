@@ -1,22 +1,22 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.query
 
+import groovy.util.logging.Slf4j
 import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.query.criteria.CriteriaParam
 import grails.web.context.ServletContextHolder
 import org.grails.web.util.GrailsApplicationAttributes
 import org.hibernate.hql.internal.ast.QuerySyntaxException
 import org.springframework.context.ApplicationContext
-import org.apache.log4j.Logger
 import net.hedtech.banner.exceptions.ApplicationException
 
 /**
  *
  */
+@Slf4j
 class DynamicFinder {
-    private static final def log = Logger.getLogger( 'net.hedtech.banner.query.DynamicFinder' )
 
     def domainClass
     def query

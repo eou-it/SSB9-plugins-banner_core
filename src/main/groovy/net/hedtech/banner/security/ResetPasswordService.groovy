@@ -1,19 +1,18 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
-import org.apache.log4j.Logger
+import groovy.util.logging.Slf4j
 import java.sql.SQLException
 import java.util.regex.Pattern
 
-
+@Slf4j
 class ResetPasswordService {
 
     static transactional = true
-    private static final Logger log = Logger.getLogger(getClass())
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
     def authenticationDataSource           // injected by Spring

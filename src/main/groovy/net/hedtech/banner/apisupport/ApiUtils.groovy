@@ -1,14 +1,13 @@
 /* *****************************************************************************
- Copyright 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2018 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.apisupport
 
-import org.apache.log4j.Logger
-
+import groovy.util.logging.Slf4j
 import grails.util.Holders  as CH
-
 import org.springframework.web.context.request.RequestContextHolder
 
+@Slf4j
 class ApiUtils {
 
 
@@ -24,9 +23,6 @@ class ApiUtils {
     // external consumption (versus used via Ajax on behalf of authenticated users).
     //
     private static List avoidSessionsFor = null
-
-    private static final Logger log = Logger.getLogger("net.hedtech.banner.apisupport.ApiUtils")
-
 
     public static boolean shouldCacheConnection() {
         boolean isWebRequest = RequestContextHolder.getRequestAttributes() != null
