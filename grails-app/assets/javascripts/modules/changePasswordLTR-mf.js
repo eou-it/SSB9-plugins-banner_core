@@ -1,1 +1,1 @@
-// require modules/changePasswordCommon-mf.js
+//= require modules/changePasswordCommon-mf.js

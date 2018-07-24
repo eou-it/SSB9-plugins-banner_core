@@ -16,11 +16,9 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
     <meta charset="${message(code: 'default.character.encoding')}"/>
     <title><g:layoutTitle default="Banner"/></title>
     <g:if test="${message(code: 'default.language.direction')  == 'rtl'}">
-        <asset:javascript src="modules/bannerCommon-mf.js"/>
         <asset:stylesheet src="modules/bannerCommonRTL-mf.css"/>
     </g:if>
     <g:else>
-        <asset:javascript src="modules/bannerCommon-mf.js"/>
         <asset:stylesheet src="modules/bannerCommonLTR-mf.css"/>
     </g:else>
 
@@ -67,7 +65,7 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
             </div>
         </div>
     </header>
-
+    <asset:javascript src="modules/bannerCommon-mf.js"/>
     <g:layoutBody/>
     <g:customJavaScriptIncludes/>
     <asset:deferredScripts/>
