@@ -41,6 +41,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher
 import javax.servlet.Filter
 import javax.sql.DataSource
 import java.util.concurrent.Executors
+import net.hedtech.banner.db.BannerDataSourceConnectionSourceFactory
 
 /****************** Added for DS inject fix *****************/
 //import org.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
@@ -56,7 +57,7 @@ class BannerCoreGrailsPlugin extends Plugin {
     def grailsVersion = "3.3.2 > *"
 
     // the other plugins this plugin depends on
-    List loadAfter = ['springSecurityCore']
+    List loadAfter = ['springSecurityCore','hibernate']
     def dependsOn =  [
                        springSecurityCore: '3.2.1 => *'
                      ]
@@ -127,6 +128,16 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         nativeJdbcExtractor(NativeJdbcExtractor)
 
+      /*  dataSource(BannerDataSource) {
+            underlyingDataSource = ref(underlyingDataSource)
+            try {
+                underlyingSsbDataSource = ref(underlyingSsbDataSource)
+            } catch (MissingPropertyException) { } // don't inject it if we haven't configured this datasource
+            nativeJdbcExtractor = ref(nativeJdbcExtractor)
+        }*/
+
+        /*** custom datasource fix ***/
+        dataSourceConnectionSourceFactory(BannerDataSourceConnectionSourceFactory)
         dataSource(BannerDataSource) {
             underlyingDataSource = ref(underlyingDataSource)
             try {
@@ -312,6 +323,7 @@ class BannerCoreGrailsPlugin extends Plugin {
 
     void doWithApplicationContext() {
 
+        /*
         println "==============> doWithApplicationContext() datasourse fix start ===========>"
 
         def sessionFactory = applicationContext.sessionFactory
@@ -335,7 +347,7 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         println "==============> doWithApplicationContext() datasourse fix end ===========>"
 
-
+*/
         // build providers list here to give dependent plugins a chance to register some
         def conf = SpringSecurityUtils.securityConfig
         def providerNames = []
