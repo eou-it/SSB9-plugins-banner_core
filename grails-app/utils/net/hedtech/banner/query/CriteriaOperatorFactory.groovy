@@ -1,3 +1,6 @@
+/** *****************************************************************************
+ Copyright 2013-2018 Ellucian Company L.P. and its affiliates.
+ ****************************************************************************** */
 package net.hedtech.banner.query
 
 import net.hedtech.banner.query.operators.*
@@ -26,11 +29,17 @@ class CriteriaOperatorFactory {
             case Operators.CONTAINS:
                 return new ContainsOperator();
                 break;
+            case Operators.IN:
+                return new InOperator()
+                break;
             case Operators.STARTS_WITH:
                 return new StartsWithOperator()
                 break;
             case Operators.IS_NULL:
                 return new IsNullOperator()
+                break;
+            case Operators.NOT_EQUALS_OR_IS_NULL:
+                return new NotEqualsOrIsNullOperator()
                 break;
             case Operators.IS_NOT_NULL:
                 return new IsNotNullOperator()
