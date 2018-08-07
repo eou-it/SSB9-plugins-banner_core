@@ -42,7 +42,7 @@ class AuthenticationProviderUtility {
         log.trace "AuthenticationProviderUtility.getMappedUserForUdcId doing external authentication"
 
         if(assertAttributeValue == null) {
-            log.fatal("System is configured for non default authentication and identity assertion is $assertAttributeValue")  // NULL
+            log.error("System is configured for non default authentication and identity assertion is $assertAttributeValue")  // NULL
             throw new UsernameNotFoundException("System is configured for non default authentication and identity assertion is $assertAttributeValue")
         }
 
@@ -102,7 +102,7 @@ class AuthenticationProviderUtility {
                     log.trace "AuthenticationProviderUtility.getMappedUserForUdcId spridenID $spridenId and gobumap pidm $pidm found"
                     authenticationResults = [ name: spridenId, pidm: pidm, valid: (spridenId && pidm), oracleUserName: oracleUserName ].withDefault { k -> false }
                 } else {
-                    log.fatal "System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user"
+                    log.error "System is configured for external authentication, identity assertion $assertAttributeValue does not map to a Banner user"
                 }
             }
 
@@ -173,7 +173,7 @@ class AuthenticationProviderUtility {
                 authorities = SelfServiceBannerAuthenticationProvider.determineAuthorities( dbUser, db )
                 log.debug "AuthenticationProviderUtility.createAuthenticationToken found Self Service authorities $authorities"
             } catch(Exception e) {
-                log.fatal("Error occurred in loading authorities : " + e.localizedMessage())
+                log.error("Error occurred in loading authorities : " + e.localizedMessage())
                 throw new BadCredentialsException(e.localizedMessage());
             } finally {
                 conn?.close()
@@ -185,7 +185,7 @@ class AuthenticationProviderUtility {
             log.debug "AuthenticationProviderUtility.createAuthenticationToken found Banner Admin authorities $authorities"
         }
         if(authorities == null || authorities.size() == 0) {
-            log.fatal("No authorities found")
+            log.error("No authorities found")
             throw new AuthorizationException("No authorities found")
         }
         dbUser['authorities'] = authorities

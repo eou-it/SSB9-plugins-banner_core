@@ -10,6 +10,7 @@ import grails.util.Environment
 import grails.util.GrailsClassUtils as GCU
 import grails.util.Holders
 import grails.util.Holders  as CH
+import grails.util.Metadata
 import groovy.util.logging.Slf4j
 import net.hedtech.banner.db.BannerDS
 import net.hedtech.banner.db.BannerDS as BannerDataSource
@@ -30,16 +31,14 @@ import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jndi.JndiObjectFactoryBean
+import org.springframework.security.web.DefaultSecurityFilterChain
+import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
-import org.springframework.security.web.util.matcher.RequestMatcher
-
-import javax.servlet.Filter
-import javax.sql.DataSource
 import java.util.concurrent.Executors
 import net.hedtech.banner.db.BannerDataSourceConnectionSourceFactory
 
@@ -83,6 +82,8 @@ class BannerCoreGrailsPlugin extends Plugin {
 
     Closure doWithSpring() { {->
         //TODO :grails_332_change, needs to revisit
+        String appName = Metadata.current.getApplicationName()
+        println "AppName is = ${appName}"
         setupExternalConfig()
 
         // TODO :grails_332_change, needs to revisit
@@ -323,31 +324,6 @@ class BannerCoreGrailsPlugin extends Plugin {
 
     void doWithApplicationContext() {
 
-        /*
-        println "==============> doWithApplicationContext() datasourse fix start ===========>"
-
-        def sessionFactory = applicationContext.sessionFactory
-
-        ConnectionProvider connectionProvider = ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService(ConnectionProvider.class);
-        if(connectionProvider instanceof DatasourceConnectionProviderImpl) {
-            DataSource ds = ((DatasourceConnectionProviderImpl) connectionProvider).getDataSource();
-            if(ds instanceof TransactionAwareDataSourceProxy) {
-                println "======= Yes ====== TransactionAwareDataSourceProxy"
-                //DataSource dsTemp = ((TransactionAwareDataSourceProxy) ds).getTargetDataSource();
-                //BannerDS bannerds = new BannerDS()
-                BannerDS bannerds = applicationContext.getBean("dataSource")
-                ((TransactionAwareDataSourceProxy) ds).setTargetDataSource(bannerds)
-
-            }
-            if (ds instanceof LazyConnectionDataSourceProxy){
-                println "======= Yes ====== LazyConnectionDataSourceProxy"
-            }
-
-        }
-
-        println "==============> doWithApplicationContext() datasourse fix end ===========>"
-
-*/
         // build providers list here to give dependent plugins a chance to register some
         def conf = SpringSecurityUtils.securityConfig
         def providerNames = []
@@ -374,8 +350,8 @@ class BannerCoreGrailsPlugin extends Plugin {
         */
 
         // Define the spring security filters
-        def authenticationProvider = CH?.config?.banner.sso.authenticationProvider
-        println "authenticationProvider = " +authenticationProvider
+        def authenticationProvider = CH?.config?.banner?.sso?.authenticationProvider
+        println "AuthenticationProvider = " +authenticationProvider
         LinkedHashMap<String, String> filterChain = new LinkedHashMap();
         switch (authenticationProvider) {
             case 'external':
@@ -392,15 +368,14 @@ class BannerCoreGrailsPlugin extends Plugin {
                 break
         }
 
-        LinkedHashMap<RequestMatcher, List<Filter>> filterChainMap = new LinkedHashMap()
+        List<SecurityFilterChain> chains = new ArrayList<SecurityFilterChain>()
         filterChain.each { key, value ->
             def filters = value.toString().split(',').collect {
                 name -> applicationContext.getBean(name)
             }
-            filterChainMap[new AntPathRequestMatcher(key)] = filters
+            chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher(key), filters));
         }
-
-        //applicationContext.springSecurityFilterChain.filterChainMap = filterChainMap
+        applicationContext.springSecurityFilterChain.filterChains = chains
 
         //set the teransaction timeout on transaction manager time unit in seconds
         def transTimeOut = CH.config.banner?.transactionTimeout instanceof Integer ? CH.config.banner?.transactionTimeout : 30
@@ -412,7 +387,7 @@ class BannerCoreGrailsPlugin extends Plugin {
     }
 
     void onConfigChange(Map<String, Object> event) {
-        secureAdhocPatterns()
+        //secureAdhocPatterns()
     }
 
     void onShutdown(Map<String, Object> event) {
@@ -503,10 +478,12 @@ class BannerCoreGrailsPlugin extends Plugin {
             if(filePathName) {
                 println "External configuration file: " + filePathName
                 try {
-                    config.merge(new ConfigSlurper().parse(new File(filePathName).text))
+                    String configText = new File(filePathName).text
+                    Map properties = configText ? new ConfigSlurper(Environment.current.name).parse(configText)?.flatten() : [:]
+                    Holders.config.merge(properties)
                 }
                 catch (e) {
-                    log.warn "NOTICE: Caught exception while loading configuration files (depending on current grails target, this may be ok): ${e.message}"
+                    println "NOTICE: Caught exception while loading configuration files (depending on current grails target, this may be ok): ${e.message}"
                 }
             }
         }

@@ -48,7 +48,7 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
 
         if (assertAttributeValue == null) {
             if(CH?.config?.banner?.sso?.authenticationProvider.equalsIgnoreCase('external')) {
-                log.fatal("System is configured for external authentication and identity assertion $authenticationAssertionAttribute is null")
+                log.error("System is configured for external authentication and identity assertion $authenticationAssertionAttribute is null")
                 unsuccessfulAuthentication(request, response, new UsernameNotFoundException("System is configured for external authentication and identity assertion $authenticationAssertionAttribute is null"));
                 return;
             }
