@@ -12,8 +12,8 @@ import grails.util.Holders
 import grails.util.Holders  as CH
 import grails.util.Metadata
 import groovy.util.logging.Slf4j
-import net.hedtech.banner.db.BannerDS
 import net.hedtech.banner.db.BannerDS as BannerDataSource
+import net.hedtech.banner.db.BannerDataSourceConnectionSourceFactory
 import net.hedtech.banner.mep.MultiEntityProcessingService
 import net.hedtech.banner.security.*
 import net.hedtech.banner.service.DefaultLoaderService
@@ -23,12 +23,7 @@ import net.hedtech.banner.service.ServiceBase
 import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.runtime.GStringImpl
-import org.hibernate.engine.jdbc.connections.internal.DatasourceConnectionProviderImpl
-import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider
-import org.hibernate.engine.spi.SessionFactoryImplementor
 import org.springframework.context.event.SimpleApplicationEventMulticaster
-import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.security.web.DefaultSecurityFilterChain
@@ -39,11 +34,9 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
-import java.util.concurrent.Executors
-import net.hedtech.banner.db.BannerDataSourceConnectionSourceFactory
 
-/****************** Added for DS inject fix *****************/
-//import org.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
+import java.util.concurrent.Executors
+
 /**
  * A Grails Plugin supporting cross cutting concerns.
  *
@@ -56,10 +49,8 @@ class BannerCoreGrailsPlugin extends Plugin {
     def grailsVersion = "3.3.2 > *"
 
     // the other plugins this plugin depends on
-    List loadAfter = ['springSecurityCore','hibernate']
-    def dependsOn =  [
-                       springSecurityCore: '3.2.1 => *'
-                     ]
+    List loadAfter = ['hibernate','i18nCore','springSecuritySaml','springSecurityCas']
+    //List loadBefore = ['springSecuritySaml','springSecurityCas']
 
     // resources that are excluded from plugin packaging
     def pluginExcludes = ["grails-app/views/error.gsp"]
@@ -81,14 +72,11 @@ class BannerCoreGrailsPlugin extends Plugin {
 
 
     Closure doWithSpring() { {->
-        //TODO :grails_332_change, needs to revisit
         String appName = Metadata.current.getApplicationName()
         println "AppName is = ${appName}"
         setupExternalConfig()
-
         // TODO :grails_332_change, needs to revisit
         // secureAdhocPatterns()
-        def conf = SpringSecurityUtils.securityConfig
         switch (Environment.current) {
             case Environment.PRODUCTION:
                 log.info "Will use a dataSource configured via JNDI"
@@ -323,9 +311,8 @@ class BannerCoreGrailsPlugin extends Plugin {
     }
 
     void doWithApplicationContext() {
-
-        // build providers list here to give dependent plugins a chance to register some
         def conf = SpringSecurityUtils.securityConfig
+        // build providers list here to give dependent plugins a chance to register some
         def providerNames = []
         if (conf.providerNames) {
             providerNames.addAll conf.providerNames
@@ -350,9 +337,10 @@ class BannerCoreGrailsPlugin extends Plugin {
         */
 
         // Define the spring security filters
-        def authenticationProvider = CH?.config?.banner?.sso?.authenticationProvider
+        //println "CH?.config?. = " +Holders.config
+        def authenticationProvider = Holders.config.banner.sso.authenticationProvider
         println "AuthenticationProvider = " +authenticationProvider
-        LinkedHashMap<String, String> filterChain = new LinkedHashMap();
+        LinkedHashMap<String, String> filterChain = new LinkedHashMap()
         switch (authenticationProvider) {
             case 'external':
                 filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
