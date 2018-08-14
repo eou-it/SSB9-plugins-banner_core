@@ -4,6 +4,7 @@
 package banner.core
 
 import grails.plugin.springsecurity.SpringSecurityUtils
+import grails.plugin.springsecurity.web.GrailsSecurityFilterChain
 import grails.plugin.springsecurity.web.filter.GrailsAnonymousAuthenticationFilter
 import grails.plugins.Plugin
 import grails.util.Environment
@@ -35,6 +36,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
+import javax.servlet.Filter
 import java.util.concurrent.Executors
 
 /**
@@ -341,30 +343,30 @@ class BannerCoreGrailsPlugin extends Plugin {
         def authenticationProvider = Holders.config.banner.sso.authenticationProvider
         println "AuthenticationProvider = " +authenticationProvider
         LinkedHashMap<String, String> filterChain = new LinkedHashMap()
+        List<Map<String, ?>> filterChains = []
         switch (authenticationProvider) {
             case 'external':
-                filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
-                filterChain['/**/qapi/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
-                filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,bannerMepCodeFilter,bannerPreAuthenticatedFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
+                filterChains << [pattern: '/**/api/**',   filters: 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
+                filterChains << [pattern: '/**/qapi/**',  filters: 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
+                filterChains << [pattern: '/**',          filters: 'securityContextPersistenceFilter,logoutFilter,bannerMepCodeFilter,bannerPreAuthenticatedFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor']
                 break
             case 'saml':
                 break
             default:
-                filterChain['/**/api/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
-                filterChain['/**/qapi/**'] = 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor'
-                filterChain['/**'] = 'securityContextPersistenceFilter,logoutFilter,bannerMepCodeFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor'
+                filterChains << [pattern: '/**/api/**',   filters: 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
+                filterChains << [pattern: '/**/qapi/**',  filters: 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
+                filterChains << [pattern: '/**',          filters: 'securityContextPersistenceFilter,logoutFilter,bannerMepCodeFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor']
                 break
         }
 
-        List<SecurityFilterChain> chains = new ArrayList<SecurityFilterChain>()
-        filterChain.each { key, value ->
-            def filters = value.toString().split(',').collect {
-                name -> applicationContext.getBean(name)
-            }
-            chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher(key), filters));
+        List<GrailsSecurityFilterChain> chains = new ArrayList<GrailsSecurityFilterChain>()
+        for (Map<String, ?> entry in filterChains) {
+            println " entry  === " + entry
+            String value = (entry.filters ?: '').toString().trim()
+            List<Filter> filters = value.toString().split(',').collect { String name -> applicationContext.getBean(name, Filter) }
+            chains << new GrailsSecurityFilterChain(entry.pattern as String, filters)
         }
-        applicationContext.springSecurityFilterChain.filterChains = chains
-
+       applicationContext.springSecurityFilterChain.filterChains = chains
         //set the teransaction timeout on transaction manager time unit in seconds
         def transTimeOut = CH.config.banner?.transactionTimeout instanceof Integer ? CH.config.banner?.transactionTimeout : 30
         applicationContext.getBean('transactionManager')?.setDefaultTimeout(transTimeOut)

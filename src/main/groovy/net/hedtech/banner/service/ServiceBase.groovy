@@ -21,7 +21,7 @@ import org.hibernate.StaleObjectStateException
 
 import org.springframework.context.ApplicationContext
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
-import org.springframework.transaction.annotation.Transactional
+import grails.gorm.transactions.Transactional
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.interceptor.TransactionAspectSupport
 import org.springframework.transaction.support.DefaultTransactionStatus
