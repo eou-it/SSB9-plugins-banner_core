@@ -33,14 +33,16 @@ class LogoutController {
         if(request?.getHeader(HTTP_REQUEST_REFERER_STRING)?.endsWith(LOGIN_AUTH_ACTION_URI)){
             forward(controller:LOGIN_CONTROLLER)
         } else {
+            def mepCode = session.mep
             def uri = createLink([ action:ACTION_TIMEOUT_PAGE, absolute:true ])
             invalidateSession( response )
-            redirect uri: uri
+            redirect uri: uri, params: [ mep: mepCode]
         }
     }
 
     def timeoutPage = {
-        render view: VIEW_TIMEOUT, plugin: "bannerCore", model: [uri: ControllerUtils.buildLogoutRedirectURI() ]
+        def mep = params.mep
+        render view: VIEW_TIMEOUT, plugin: "bannerCore", model: [uri: ControllerUtils.buildLogoutRedirectURI(), mep: mep]
     }
 
     def logoutPage = {

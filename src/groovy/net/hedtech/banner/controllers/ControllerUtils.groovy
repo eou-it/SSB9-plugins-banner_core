@@ -19,7 +19,7 @@ class ControllerUtils {
         if(isSamlEnabled()) {
             uri="/"+Holders.config?.logoutEndpoint
         }
-        def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep")
+        def mep = RequestContextHolder?.currentRequestAttributes()?.request?.session?.getAttribute("mep") || RequestContextHolder?.currentRequestAttributes()?.params?.mepCode
         if (mep) {
             if(uri.contains("?")){
                 uri += "&spring-security-redirect=?mepCode=${mep}"
