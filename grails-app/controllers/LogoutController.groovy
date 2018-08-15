@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 import net.hedtech.banner.controllers.ControllerUtils
 import javax.servlet.http.Cookie

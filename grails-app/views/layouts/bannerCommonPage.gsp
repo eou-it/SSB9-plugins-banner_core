@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2018 Ellucian Company L.P. and its affiliates.
+Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 
@@ -14,6 +14,10 @@ Copyright 2018 Ellucian Company L.P. and its affiliates.
     <g:else>
         <r:require modules="bannerCommonLTR"/>
     </g:else>
+
+    <script>
+        window.mepCode='${session.mep}';
+    </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="menuBaseURL" content="${request.contextPath}/ssb"/>
