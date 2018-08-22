@@ -24,6 +24,7 @@ import net.hedtech.banner.service.ServiceBase
 import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.runtime.GStringImpl
+import org.grails.datastore.mapping.core.Datastore
 import org.springframework.context.event.SimpleApplicationEventMulticaster
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jndi.JndiObjectFactoryBean
@@ -35,6 +36,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
 
 import javax.servlet.Filter
 import java.util.concurrent.Executors
@@ -72,7 +74,6 @@ class BannerCoreGrailsPlugin extends Plugin {
 
     def profiles = ['web']
 
-
     Closure doWithSpring() { {->
         String appName = Metadata.current.getApplicationName()
         println "AppName is = ${appName}"
@@ -94,7 +95,7 @@ class BannerCoreGrailsPlugin extends Plugin {
             default: // we'll use our locally configured dataSource for development and test environments
                 log.info "Using development/test datasource"
                 underlyingDataSource(BasicDataSource) {
-                    maxActive = 5
+                    maxActive = 5// Define the spring security filters
                     maxIdle = 2
                     defaultAutoCommit = "false"
                     driverClassName = "${CH.config.bannerDataSource.driver}"
@@ -337,6 +338,11 @@ class BannerCoreGrailsPlugin extends Plugin {
             addEventTypeListener(listeners, auditTrailSupportListener, it)
         }
         */
+        applicationContext.getBeansOfType(Datastore).each { String key, Datastore datastore ->
+            String dataSourceName = datastore.metaClass.getProperty(datastore, 'dataSourceName')
+            println "Data Source Name is " + dataSourceName
+            applicationContext.addApplicationListener(new AuditTrailPropertySupportHibernateListener(datastore))
+        }
 
         // Define the spring security filters
         //println "CH?.config?. = " +Holders.config
