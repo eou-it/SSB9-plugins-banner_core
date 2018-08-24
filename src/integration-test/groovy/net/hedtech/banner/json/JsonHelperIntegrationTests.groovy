@@ -4,7 +4,8 @@
 package net.hedtech.banner.json
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
-import org.codehaus.groovy.grails.web.json.JSONObject
+//import org.codehaus.groovy.grails.web.json.JSONObject
+import org.grails.web.json.JSONObject
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

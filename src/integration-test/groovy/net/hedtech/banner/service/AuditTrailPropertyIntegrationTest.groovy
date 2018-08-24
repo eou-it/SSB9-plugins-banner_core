@@ -7,7 +7,8 @@ import net.hedtech.banner.testing.AcademicYearForTesting
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.testing.FacultyScheduleQueryViewForTesting
 import net.zorched.test.Address
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
+//import org.codehaus.groovy.grails.validation.ConstrainedProperty
+import grails.gorm.validation.ConstrainedProperty
 import org.junit.Before
 import org.junit.After
 import org.junit.Test

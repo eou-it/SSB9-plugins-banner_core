@@ -9,7 +9,8 @@ import net.hedtech.banner.testing.Bar
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.testing.Foo
 import net.hedtech.banner.testing.TermController
-import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
+//import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
+import org.grails.plugins.web.taglib.ValidationTagLib
 import org.junit.After
 import org.junit.Before
 import org.junit.Test

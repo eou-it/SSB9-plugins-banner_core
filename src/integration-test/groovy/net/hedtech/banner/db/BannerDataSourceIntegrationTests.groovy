@@ -10,7 +10,8 @@ import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import oracle.jdbc.OracleConnection
 import org.apache.commons.dbcp.BasicDataSource
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
+//import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
