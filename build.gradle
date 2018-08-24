@@ -81,6 +81,31 @@ assets {
     packagePlugin = true
 }
 
+assemble.doLast {
+
+    //def packageDir = "build/libs/packaging/"+"${rootProject.name}"+version
+    def packageDir = "../../build/libs/packaging/${rootProject.name}${rootProject.version}"
+    def releaseDir = "../../build/libs/Release"
+    ant.mkdir( dir: packageDir)
+    ant.mkdir( dir: releaseDir)
+    println "packageDir >>>>>>>${packageDir}"
+    println "releaseDir >>>>>>>${releaseDir}"
+    def warName = "${rootProject.name}-${rootProject.version}.war"
+    println ".....Unzipping ... build/libs/${rootProject.name}-${rootProject.version}.war"
+    ant.unzip(src: "../../build/libs/${warName}", dest: packageDir, overwrite: "true")
+
+    println "......Moving >>>>> ${packageDir}WEB-INF/lib/ojdbc6-11.2.0.1.0.jar  to ${releaseDir}"
+
+    ant.move (file: packageDir+"/WEB-INF/lib/ojdbc6-11.2.0.1.0.jar", toDir: releaseDir )
+    println "......Moving >>>>> ${packageDir}WEB-INF/lib/xdb6-11.2.0.4.jar  to ${releaseDir}"
+
+    ant.move (file: packageDir+"/WEB-INF/lib/xdb6-11.2.0.4.jar", toDir: releaseDir )
+    ant.zip(destfile: releaseDir+"/${rootProject.name}${rootProject.version}.war", basedir: packageDir)
+    ant.delete(file: "../../build/libs/${warName}")
+    println "War created! - Copy the war from the release folder."
+    ant.delete( dir: packageDir )
+}
+
 // TODO :grails_332_change, needs to revisit
 // Added for BannerXE - Internal plugin dependency
 grails {
