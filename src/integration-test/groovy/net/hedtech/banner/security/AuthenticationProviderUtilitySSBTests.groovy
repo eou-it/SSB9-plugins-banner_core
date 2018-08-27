@@ -10,11 +10,14 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 
 /**
  * Integration test for the AuthenticationProviderUtility class.
  **/
-
+@Integration
+@Rollback
 class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
 
     def dataSource
