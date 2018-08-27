@@ -8,7 +8,11 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 
+@Integration
+@Rollback
 class QueryIntegrationTests extends BaseIntegrationTestCase {
 
     def query

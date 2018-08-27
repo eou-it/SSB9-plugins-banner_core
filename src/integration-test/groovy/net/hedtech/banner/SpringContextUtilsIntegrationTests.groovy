@@ -8,8 +8,11 @@ import net.hedtech.banner.SpringContextUtils
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 
-
+@Integration
+@Rollback 
 class SpringContextUtilsIntegrationTests extends BaseIntegrationTestCase {
 
 

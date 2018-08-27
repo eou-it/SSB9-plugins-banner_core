@@ -12,7 +12,12 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
+import static groovy.test.GroovyAssert.shouldFail
 
+@Integration
+@Rollback
 class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
     def params
     int pidm

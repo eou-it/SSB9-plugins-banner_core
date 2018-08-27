@@ -10,7 +10,11 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 
+@Integration
+@Rollback
 class PersonalPreferenceIntegrationTests extends BaseIntegrationTestCase {
 
 	@Before
