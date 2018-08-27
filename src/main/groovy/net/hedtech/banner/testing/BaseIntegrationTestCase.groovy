@@ -18,6 +18,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 
+import grails.util.GrailsWebMockUtil
+import org.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.grails.plugins.testing.GrailsMockHttpServletResponse
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.web.context.WebApplicationContext
+import org.springframework.web.context.request.RequestContextHolder
+
+
 
 /**
  * Base class for integration tests, that sets the FormContext and logs in 'GRAILS_USER' if necessary
@@ -30,6 +39,7 @@ import org.springframework.security.core.context.SecurityContextHolder
  * Lastly, this base class provides additional helper methods.  To ensure the login/logout is
  * effective, this class manipulates the hibernate session and database connecitons.
  */
+
 class BaseIntegrationTestCase extends Assert {
 
     def transactional = false         // this turns off 'Grails' test framework management of transactions
@@ -42,8 +52,10 @@ class BaseIntegrationTestCase extends Assert {
     def selfServiceBannerAuthenticationProvider
     def bannerAuthenticationProvider  // injected
     def dataSource                    // injected via spring
-    def transactionManager            // injected via spring
-    def sessionFactory                // injected via spring
+    
+	//def transactionManager            // injected via spring
+    
+	def sessionFactory                // injected via spring
     def nativeJdbcExtractor           // injected via spring
     def messageSource                 // injected via spring
     def codecLookup                  // injected via spring
@@ -57,8 +69,16 @@ class BaseIntegrationTestCase extends Assert {
 
     def username = ""
     def password = ""
-    private static final def log = Logger.getLogger(this.getClass())
-    /**
+	
+	def isController = false
+	
+	@Autowired
+    WebApplicationContext webAppCtx
+	
+    
+	//private static final def log = Logger.getLogger(this.getClass())
+    
+	/**
      * Performs a login for the standard 'grails_user' if necessary, and calls super.setUp().
      * If you need to log in another user or ensure no user is logged in,
      * then you must either NOT call super.setUp from your setUp method
@@ -81,7 +101,7 @@ class BaseIntegrationTestCase extends Assert {
             formContext = associatedFormsList
             FormContext.set( associatedFormsList )
         } else {
-            log.info("Warning: No FormContext has been set, and it cannot be set automatically without knowing the controller...")
+            //log.info("Warning: No FormContext has been set, and it cannot be set automatically without knowing the controller...")
         }
 
         if (controller) {
@@ -92,6 +112,7 @@ class BaseIntegrationTestCase extends Assert {
         }
         loginIfNecessary(username,password)
 
+		/*
         if (useTransactions) {
             sessionFactory.currentSession.with {
                 connection().rollback()                 // needed to protect from other tests
@@ -102,6 +123,7 @@ class BaseIntegrationTestCase extends Assert {
             transactionManager.getTransaction().setRollbackOnly()                 // and make sure we don't commit to the database
             sessionFactory?.queryCache?.clear()                                     //clear the query cache when ehcache is being used
         }
+		*/
     }
 
 
@@ -112,11 +134,12 @@ class BaseIntegrationTestCase extends Assert {
     @After
     public void tearDown() {
         FormContext.clear()
+		/*
         if (useTransactions) {
             sessionFactory.currentSession.connection().rollback()
             sessionFactory.currentSession.close()
         }
-
+		*/
     }
 
 
@@ -393,6 +416,7 @@ class BaseIntegrationTestCase extends Assert {
         }
         loginSSB(username,password)
 
+		/*
         if (useTransactions) {
             sessionFactory.currentSession.with {
                 connection().rollback()                 // needed to protect from other tests
@@ -403,6 +427,7 @@ class BaseIntegrationTestCase extends Assert {
             transactionManager.getTransaction().setRollbackOnly()                 // and make sure we don't commit to the database
             sessionFactory?.queryCache?.clear()
         }
+		*/
     }
 
 }

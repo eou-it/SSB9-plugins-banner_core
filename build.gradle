@@ -47,9 +47,14 @@ dependencies {
     provided "org.grails:grails-plugin-services"
     provided "org.grails:grails-plugin-domain-class"
     runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.14.6"
-    testCompile "org.grails:grails-gorm-testing-support"
-    testCompile "org.grails:grails-plugin-testing"
-    testCompile "org.grails:grails-web-testing-support"
+    
+	//testCompile "org.grails:grails-gorm-testing-support"
+    //testCompile "org.grails:grails-plugin-testing"
+    //testCompile "org.grails:grails-web-testing-support"
+	
+	compile "org.grails:grails-gorm-testing-support"
+    compile "org.grails:grails-plugin-testing"
+    compile "org.grails:grails-web-testing-support"
 
     // Added for BannerXE for Grails-3
     compile "org.grails.plugins:hibernate5"

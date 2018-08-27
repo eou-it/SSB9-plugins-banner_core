@@ -140,4 +140,9 @@ hibernate {
     ]
 }
 
+//Added for integration tests to run in plugin level
+grails.config.locations = [
+        BANNER_APP_CONFIG:        "banner_configuration.groovy",
+        PLATFORM_SANDBOX_APP_CONFIG: "PlatformSandboxApp_configuration.groovy"
+]
 

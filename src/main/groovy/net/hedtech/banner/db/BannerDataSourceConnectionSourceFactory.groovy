@@ -27,12 +27,13 @@ class BannerDataSourceConnectionSourceFactory extends DataSourceConnectionSource
 
     @Override
     public ConnectionSource<DataSource, DataSourceSettings> create(String name, DataSourceSettings settings) {
-
+		DataSource dataSource
         String dataSourceName = "dataSource"
         try {
-            DataSource springDataSource = (DataSource)this.applicationContext.getBean(dataSourceName, DataSource.class);
-            return new DataSourceConnectionSource(name, springDataSource, settings);
-        } catch (NoSuchBeanDefinitionException var6) {
+            dataSource = applicationContext.getBean(dataSourceName, DataSource.class);
+			dataSource = proxy(dataSource, settings);
+            return new DataSourceConnectionSource(name, dataSource, settings);
+        } catch (NoSuchBeanDefinitionException ex) {
             return super.create(name, settings);
         }
     }
