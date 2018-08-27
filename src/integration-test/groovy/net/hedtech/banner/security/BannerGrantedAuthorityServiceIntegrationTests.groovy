@@ -10,10 +10,14 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.junit.Ignore
 import org.junit.Test
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 
 /**
  * Integration test for the self service Banner authentication provider.
  **/
+@Integration
+@Rollback 
 class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestCase {
 
     public static final String EDITABLE_USER = "GRAILS_USER"
