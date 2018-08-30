@@ -79,7 +79,6 @@ class BannerCoreGrailsPlugin extends Plugin {
         println "AppName is = ${appName}"
         setupExternalConfig()
         // TODO :grails_332_change, needs to revisit
-        // secureAdhocPatterns()
         switch (Environment.current) {
             case Environment.PRODUCTION:
                 log.info "Will use a dataSource configured via JNDI"
@@ -340,7 +339,6 @@ class BannerCoreGrailsPlugin extends Plugin {
         */
         applicationContext.getBeansOfType(Datastore).each { String key, Datastore datastore ->
             String dataSourceName = datastore.metaClass.getProperty(datastore, 'dataSourceName')
-            println "Data Source Name is " + dataSourceName
             applicationContext.addApplicationListener(new AuditTrailPropertySupportHibernateListener(datastore))
         }
 
@@ -367,13 +365,12 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         List<GrailsSecurityFilterChain> chains = new ArrayList<GrailsSecurityFilterChain>()
         for (Map<String, ?> entry in filterChains) {
-            println " entry  === " + entry
             String value = (entry.filters ?: '').toString().trim()
             List<Filter> filters = value.toString().split(',').collect { String name -> applicationContext.getBean(name, Filter) }
             chains << new GrailsSecurityFilterChain(entry.pattern as String, filters)
         }
        applicationContext.springSecurityFilterChain.filterChains = chains
-        //set the teransaction timeout on transaction manager time unit in seconds
+        //set the transaction timeout on transaction manager time unit in seconds
         def transTimeOut = CH.config.banner?.transactionTimeout instanceof Integer ? CH.config.banner?.transactionTimeout : 30
         applicationContext.getBean('transactionManager')?.setDefaultTimeout(transTimeOut)
     }
@@ -383,7 +380,7 @@ class BannerCoreGrailsPlugin extends Plugin {
     }
 
     void onConfigChange(Map<String, Object> event) {
-        //secureAdhocPatterns()
+
     }
 
     void onShutdown(Map<String, Object> event) {
@@ -415,34 +412,6 @@ class BannerCoreGrailsPlugin extends Plugin {
         }
     }
 
-    private static void secureAdhocPatterns (){
-
-        def DEFAULT_ADHOC_INCLUDES = [
-                '/images/**', '/css/**', '/js/**', '/plugins/**'
-        ]
-
-        def DEFAULT_ADHOC_EXCLUDES = [
-                '/WEB-INF/**'
-        ]
-
-        def resourcesConfig = Holders.grailsApplication.config.grails.resources
-
-        if (!resourcesConfig.adhoc.includes ) {
-            log.warn("No grails.resources.adhoc.includes specified... adding default includes: " + DEFAULT_ADHOC_INCLUDES)
-            resourcesConfig.adhoc.includes = DEFAULT_ADHOC_INCLUDES
-        }
-
-        if (!resourcesConfig.adhoc.excludes ) {
-            log.warn("No grails.resources.adhoc.excludes specified... adding default excludes: " + DEFAULT_ADHOC_EXCLUDES)
-            resourcesConfig.adhoc.excludes = DEFAULT_ADHOC_EXCLUDES
-        } else if (!resourcesConfig.adhoc.excludes.contains('/WEB-INF/**')) {
-            log.warn("Specified grails.resources.adhoc.excludes does not exclude WEB-INF ... appending default excludes: " + DEFAULT_ADHOC_EXCLUDES)
-            resourcesConfig.adhoc.excludes.addAll(DEFAULT_ADHOC_EXCLUDES)
-        }
-
-        log.info("Final grails.resources.adhoc.includes" + resourcesConfig.adhoc.includes)
-        log.info("Final grails.resources.adhoc.excludes" + resourcesConfig.adhoc.excludes)
-    }
 
     private createBeanList(names, ctx) { names.collect { name -> ctx.getBean(name) } }
 
