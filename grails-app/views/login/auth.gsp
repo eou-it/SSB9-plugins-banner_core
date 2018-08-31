@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!--
 /*******************************************************************************
-Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <html xmlns="http://www.w3.org/1999/xhtml" lang="${message(code: 'default.language.locale')}">
@@ -10,8 +10,6 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
         window.mepCode='${session.mep}';
     </script>
     <title><g:message code="net.hedtech.banner.login.title"/></title>
-    <link rel="shortcut icon" href="${resource(plugin: 'bannerCore', dir: 'images', file: 'favicon.ico')}"
-          type="image/x-icon"/>
     <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login.css')}"/>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login.css')}"/>
@@ -25,6 +23,22 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
             <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}">
         </g:else>
     </g:if>
+
+    <link rel="apple-touch-icon" sizes="57x57" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-57x57.png')}"/>
+    <link rel="apple-touch-icon" sizes="60x60" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-60x60.png')}"/>
+    <link rel="apple-touch-icon" sizes="72x72" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-72x72.png')}"/>
+    <link rel="apple-touch-icon" sizes="76x76" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-76x76.png')}"/>
+    <link rel="apple-touch-icon" sizes="114x114" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-114x114.png')}"/>
+    <link rel="apple-touch-icon" sizes="120x120" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-120x120.png')}"/>
+    <link rel="apple-touch-icon" sizes="144x144" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-144x144.png')}"/>
+    <link rel="apple-touch-icon" sizes="152x152" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-152x152.png')}"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-180x180.png')}"/>
+    <link rel="shortcut icon" type="image/png" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'favicon-32x32.png')}" sizes="32x32"/>
+    <link rel="shortcut icon" type="image/png" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'android-chrome-192x192.png')}" sizes="192x192"/>
+    <link rel="shortcut icon" type="image/png" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'favicon-96x96.png')}" sizes="96x96"/>
+    <link rel="shortcut icon" type="image/png" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'favicon-16x16.png')}" sizes="16x16"/>
+    <link rel="shortcut icon" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'favicon.ico')}" type="image/x-icon" />
+
 </head>
 
 <body class="pageBg">

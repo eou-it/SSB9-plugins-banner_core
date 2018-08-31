@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <%@ page contentType="text/html;charset=UTF-8" %>
@@ -9,7 +9,12 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
     <title><g:message code="net.hedtech.banner.resetpassword.forgotpassword.title"/></title>
     <meta name="layout" content="bannerSelfServicePage"/>
     <meta name="menuBaseURL" content="${createLink(uri: '/ssb')}"/>
-    <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword.css')}"/>
+    <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
+        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword-rtl.css')}"/>
+    </g:if>
+    <g:else>
+        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword.css')}"/>
+    </g:else>
 
     <!--This fix is given by the OWASP: Frame Busting (or ClickJack issue).
         Link: https://www.owasp.org/images/0/0e/OWASP_AppSec_Research_2010_Busting_Frame_Busting_by_Rydstedt.pdf-->
@@ -48,7 +53,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
             }, 500);
 
             $("input").blur(function (e) {
-                var emptyErrorMessage = "${message( code:"net.hedtech.banner.resetpassword.question.answer.required.error" )}";
+                var emptyErrorMessage = "${message( code:"net.hedtech.banner.resetpassword.answer.required.error" )}";
                 var element = $(e.currentTarget);
                 if (element.val().trim() != "" && element.hasClass("error-state")) {
                     element.removeClass("error-state");
@@ -85,17 +90,17 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 <div id="mainContent" class="page-with-sidebar">
     <div class="ui-layout-center inner-content" id="inner-content">
         <div class="inner-center">
-            <div id="resetpassword" class="ui-widget ui-widget-section">
-                <div class="ui-widget-header"><g:message
+            <div id="resetpassword" class="ui-widget ui-widget-section resetpasswordsection">
+                <div class="fotgotpasswordtitle"><g:message
                         code="net.hedtech.banner.resetpassword.forgotpassword.title"/></div>
 
                 <div class="main-wrapper">
                     <div class="ui-widget-panel">
                         <form action="${postUrl}" method="post" id="answerForm">
-                            <table cellpadding="5" cellspacing="10" class="input-table">
+                            <table align="center" cellpadding="5" cellspacing="10" class="input-table">
                                 <tr><td class="tabletext"><g:message
                                         code="net.hedtech.banner.resetpassword.username"/> :</td><td
-                                        class="tabledata"><input type="text" readonly="readonly" value="${userName}"
+                                        class="tabledata"><input type="text" class="eds-text-field eds-text-field-readonly" readonly="readonly" value="${userName}"
                                                                  name="username" class="input-text disabled-state"/>
                                 </td></tr>
                                 <g:if test="${questionValidationMap}">
@@ -108,7 +113,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                                                     code="net.hedtech.banner.resetpassword.answer"/>  * :</td><td
                                                     class="tabledata"><input type="password" name="answer${it[0]}"
                                                                              id="answer${it[0]}"
-                                                                             class="input-text error-state"
+                                                                             class="eds-text-field error-state"
                                                                              data-error-message="${questionValidationMap.get(it[0]).get("message")}"
                                                                              autocomplete="off"/></td></tr>
                                         </g:if>
@@ -117,7 +122,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                                                     code="net.hedtech.banner.resetpassword.answer"/>  * :</td><td
                                                     class="tabledata"><input type="password" name="answer${it[0]}"
                                                                              id="answer${it[0]}"
-                                                                             class="input-text default-state"
+                                                                             class="eds-text-field default-state"
                                                                              value='${questionValidationMap.get(it[0]).get("answer")}'
                                                                              autocomplete="off"/></td></tr>
                                         </g:else>
@@ -132,7 +137,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                                                 code="net.hedtech.banner.resetpassword.answer"/>  * :</td><td
                                                 class="tabledata"><input type="password" name="answer${it[0]}"
                                                                          id="answer${it[0]}"
-                                                                         class="input-text default-state"
+                                                                         class="eds-text-field default-state"
                                                                          autocomplete="off"/></td></tr>
                                     </g:each>
                                 </g:else>
@@ -140,9 +145,9 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 
                             <div class="button-bar-container">
                                 <div class="button-bar">
-                                    <button id="cancelButton1" class="secondary-button" onclick="gotoLogin()"><g:message
+                                    <button id="cancelButton1" class="secondary" onclick="gotoLogin()"><g:message
                                             code="net.hedtech.banner.resetpassword.button.cancel"/></button>
-                                    <button id="createAccount1" class="primary-button" type="submit"><g:message
+                                    <button id="createAccount1" class="primary" type="submit"><g:message
                                             code="net.hedtech.banner.resetpassword.button.continue"/></button>
                                 </div>
                             </div>

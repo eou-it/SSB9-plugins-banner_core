@@ -9,7 +9,12 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
       <title><g:message code="net.hedtech.banner.resetpassword.recoverycode.title"/></title>
        <meta name="layout" content="bannerSelfServicePage"/>
        <meta name="menuBaseURL" content="${createLink(uri: '/ssb')}" />
-       <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword.css')}"/>
+      <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
+          <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword-rtl.css')}"/>
+      </g:if>
+      <g:else>
+          <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword.css')}"/>
+      </g:else>
        <script language="javascript">
             function gotoLogin(){
                 var form = document.getElementById('recoveryForm');
@@ -49,25 +54,25 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                                   <input type="hidden" name="nonPidmId" value='${nonPidmIdm}'/>
                              <tr><td class="tabledata" colspan="2"><g:message code="net.hedtech.banner.resetpassword.recoverycode.message"/></td></tr>
                              <g:if test="${flash.message}">
-                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text error-state" data-error-message="${flash.message}" autocomplete="off"/> </td></tr>
+                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="eds-text-field error-state" data-error-message="${flash.message}" autocomplete="off"/> </td></tr>
                              </g:if>
                              <g:else>
-                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="input-text default-state" autocomplete="off"/> </td></tr>
+                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="eds-text-field default-state" autocomplete="off"/> </td></tr>
                              </g:else>
                              </g:elseif>
                           </table>
                           <g:if test="${infoPage}">
                               <div class="button-bar-container">
                               <div class="button-bar">
-                                  <button id="closebutton" class="primary-button" onclick="gotoLogin()"> Close </button>
+                                  <button id="closebutton" class="primary" onclick="gotoLogin()"> Close </button>
                               </div>
                               </div>
                           </g:if>
                           <g:else>
                           <div class="button-bar-container">
                               <div class="button-bar">
-                                  <button id="cancelButton1" class="secondary-button" onclick="gotoLogin()"><g:message code="net.hedtech.banner.resetpassword.button.cancel"/></button>
-                                  <button id="createAccount1" class="primary-button" type="submit"><g:message code="net.hedtech.banner.resetpassword.button.continue"/></button>
+                                  <button id="cancelButton1" class="secondary" onclick="gotoLogin()"><g:message code="net.hedtech.banner.resetpassword.button.cancel"/></button>
+                                  <button id="createAccount1" class="primary" type="submit"><g:message code="net.hedtech.banner.resetpassword.button.continue"/></button>
                               </div>
                        </div>
                        </g:else>

@@ -1,9 +1,10 @@
 /*******************************************************************************
- Copyright 2015- 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2015- 2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.query
 
 import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.query.operators.Operators
 import net.hedtech.banner.testing.CommonMatchingSourceRuleForTesting
 import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -55,9 +56,24 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def result = dynamicFinder.find(filterData,pagingAndSortParams) ;
         assert result.size() > 0
         assertNotNull result?.find { it.city == "Broomall test" }?.city
+        int resultCount = dynamicFinder.count(filterData)
+        assertEquals(resultCount, result.size())
+    }
 
-        assertNotNull(dynamicFinder.count(filterData))
-
+    @Test
+    void testInvalidQuery(){
+        def query = """FROM  ZipForTesting1 a WHERE a.code = :zipcode and a.city = :city) """
+        filterData.params = ["zipcode":"98119", "city":"Broomall test"]
+        def pagingAndSortParams = [:]
+        shouldFail(ApplicationException) {
+            try {
+                def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
+                def result = dynamicFinder.find(filterData, pagingAndSortParams)
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
     }
 
     @Test
@@ -69,8 +85,9 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
         def result = dynamicFinder.find(filterData,pagingAndSortParams) ;
         assert result.size() > 0
-        assertNotNull result?.find { it.city == "Broomall test" }?.city
-        assertNotNull result?.find { it.city == "Ypsilanti" }?.city
+        (1..result.size() - 1).each {
+            assertTrue result[it - 1].city <= result[it].city
+        }
     }
 
     @Test
@@ -82,8 +99,9 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
         def results = dynamicFinder.find(filterData,pagingAndSortParams) ;
         assert results.size() > 0
-        assertNotNull results?.find { it.city == "Ypsilanti" }?.city
-        assertNotNull results?.find { it.city == "Broomall test" }?.city
+        (1..results.size() - 1).each {result ->
+            assertTrue results[result - 1].city >= results[result].city
+        }
     }
 
     @Test
@@ -96,10 +114,11 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [sortColumn: "city", sortDirection: "ASC", "max": PAGE_SIZE, "offset": (START_PAGE-1)*PAGE_SIZE]
 
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
-        def result = dynamicFinder.find(filterData,pagingAndSortParams) ;
-        assertEquals PAGE_SIZE, result.size()
-        assertNotNull  result?.find { it.city == "Broomall test" }?.city
-        assertNotNull  result?.find { it.city == "Lansdale" }?.city
+        def results = dynamicFinder.find(filterData,pagingAndSortParams) ;
+        assertTrue PAGE_SIZE >= results.size()
+        results.each { ZipForTesting ->
+            assertTrue ZipForTesting.code.contains ('19')
+        }
     }
 
     @Test
@@ -134,6 +153,23 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
+    void testInvalidFetchAll() {
+        def query = """FROM  ZipForTesting1 a WHERE (a.code like :zipcode) """
+        filterData.params = ["zipcode": "%19%"]
+        def pagingAndSortParams = [sortCriteria: [
+                ["sortColumn": "city", "sortDirection": "asc"]
+        ]]
+        shouldFail(ApplicationException) {
+            try {
+                def result = DynamicFinder.fetchAll(zipForTestingObject.class, query, "a", filterData, pagingAndSortParams)
+            } catch (ApplicationException ae) {
+                assert MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"), ae.message
+                throw ae
+            }
+        }
+    }
+
+    @Test
     void testSortByColumnInRelationalDomainClass(){
         def query = """FROM  TermForTesting a WHERE (a.code like :code) """
         filterData.params = ["code": "%19%"]
@@ -141,10 +177,11 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
                 ["sortColumn": "academicYear.code", "sortDirection": "asc"],
         ]]
 
-        def result = DynamicFinder.fetchAll(termForTestingObject.class, query, "a", filterData,pagingAndSortParams) ;
-        assert result.size() > 0
-        assertNotNull result?.find { it.code == "198830" }?.code
-        assertNotNull result?.find { it.code == "198840" }?.code
+        def results = DynamicFinder.fetchAll(termForTestingObject.class, query, "a", filterData,pagingAndSortParams) ;
+        assert results.size() > 0
+        (1..results.size() - 1).each { result ->
+            assertTrue results[result - 1].academicYear.code <= results[result].academicYear.code
+        }
     }
 
     @Test
