@@ -8,15 +8,16 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
 <!DOCTYPE html>
 <html lang="${message(code: 'default.language.locale')}">
 <head>
-    <script>
-        window.mepCode='${session.mep}';
-    </script>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <r:require modules="bannerCommonRTL"/>
     </g:if>
     <g:else>
         <r:require modules="bannerCommonLTR"/>
     </g:else>
+
+    <script>
+        window.mepCode='${session.mep}';
+    </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="menuBaseURL" content="${request.contextPath}/ssb"/>
@@ -31,6 +32,9 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
         <g:if test="${session.mep}">
             <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name + session.mep}&template=${themeConfig.template}&mepCode=${session.mep}">
         </g:if>
+        <g:elseif test="${mep}">
+            <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name + mep}&template=${themeConfig.template}&mepCode=${mep}">
+        </g:elseif>
         <g:else>
             <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}">
         </g:else>
