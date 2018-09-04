@@ -86,7 +86,7 @@ assets {
     packagePlugin = true
 }
 
-assemble.doLast {
+/*assemble.doLast {
 
     //def packageDir = "build/libs/packaging/"+"${rootProject.name}"+version
     def packageDir = "../../build/libs/packaging/${rootProject.name}${rootProject.version}"
@@ -109,7 +109,7 @@ assemble.doLast {
     ant.delete(file: "../../build/libs/${warName}")
     println "War created! - Copy the war from the target directory folder."
     ant.delete( dir: packageDir )
-}
+}*/
 
 // TODO :grails_332_change, needs to revisit
 // Added for BannerXE - Internal plugin dependency
