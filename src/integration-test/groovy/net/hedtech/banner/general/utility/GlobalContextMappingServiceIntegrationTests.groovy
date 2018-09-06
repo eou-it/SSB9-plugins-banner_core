@@ -3,6 +3,8 @@ Copyright 2015-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.general.utility
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
@@ -13,6 +15,8 @@ import org.junit.Test
  *
  * Created by arunu on 10/24/2016.
  */
+@Integration
+@Rollback
 class GlobalContextMappingServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def globalContextMappingService

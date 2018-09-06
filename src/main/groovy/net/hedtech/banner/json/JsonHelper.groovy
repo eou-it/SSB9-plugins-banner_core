@@ -5,6 +5,7 @@ package net.hedtech.banner.json
 
 import groovy.util.logging.Slf4j
 import org.grails.web.json.JSONObject
+import grails.converters.JSON
 
 
 /**
@@ -26,7 +27,7 @@ class JsonHelper {
         try {
             for (entry in json) {
                 log.debug "JsonHelper.replaceJSONObjectNULL will, if needed, replace JSONObject.NULL instance with null for $entry"
-                if (entry.getValue() == JSONObject.NULL) entry.setValue( null )
+                if (entry.getValue() == JSON.parse('{ "a": null }').a) entry.setValue( null )
             }
         } catch (e) {
             log.error "JsonHelper.replaceJSONObjectNULL caught (and will re-throw) unexpected exception $e", e

@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.query.operators
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.query.DynamicFinder
 import net.hedtech.banner.query.criteria.CriteriaParam
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -10,6 +12,9 @@ import net.hedtech.banner.testing.TermForTesting
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+
+@Integration
+@Rollback
 
 class DateOperatorIntegrationTests extends BaseIntegrationTestCase {
 

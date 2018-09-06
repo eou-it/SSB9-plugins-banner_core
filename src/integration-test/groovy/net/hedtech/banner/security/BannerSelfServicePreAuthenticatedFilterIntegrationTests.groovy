@@ -4,6 +4,8 @@
 
 package net.hedtech.banner.security
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -19,6 +21,9 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
 
+
+@Integration
+@Rollback
 
 class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCase {
 

@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.query
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.query.operators.BetweenOperator
 import net.hedtech.banner.query.operators.ContainsOperator
 import net.hedtech.banner.query.operators.EqualsIgnoreCaseOperator
@@ -20,6 +22,9 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+
+@Integration
+@Rollback
 
 class CriteriaOperatorFactoryIntegrationTests extends BaseIntegrationTestCase {
 

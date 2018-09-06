@@ -5,12 +5,16 @@ package net.hedtech.banner.json
 
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 //import org.codehaus.groovy.grails.web.json.JSONObject
+import grails.converters.JSON
 import org.grails.web.json.JSONObject
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 
-
+@Integration
+@Rollback
 class JsonHelperIntegrationTests extends BaseIntegrationTestCase {
 
     @Before
@@ -26,7 +30,8 @@ class JsonHelperIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     public void replaceJSONObjectNULLSuccess() {
-        def jsonObject = new JSONObject().put("Entity", JSONObject.NULL);
+        //def jsonObject = new JSONObject().put("Entity", JSON.parse('{ "a": null }').a);
+        def jsonObject = JSON.parse('{ "Entity": null }')
         jsonObject.put("Name", "Value")
         try {
             JsonHelper.replaceJSONObjectNULL(jsonObject)

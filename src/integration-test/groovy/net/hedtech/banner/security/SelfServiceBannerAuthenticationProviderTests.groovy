@@ -3,7 +3,9 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
+import grails.gorm.transactions.Rollback
 import grails.spring.BeanBuilder
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -22,6 +24,8 @@ import org.springframework.web.context.request.RequestContextHolder
 /**
  * Integration test for the self service Banner authentication provider.
  **/
+@Integration
+@Rollback
 class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCase{
 
 

@@ -9,7 +9,11 @@ import net.hedtech.banner.testing.ZipForTesting
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 
+@Integration
+@Rollback
 class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def domainAttributePropertiesService
@@ -67,7 +71,7 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         def maxSize
         // facultyScheduleQueryView
         maxSize = domainAttributePropertiesService.getDataLengthForColumn("","")
-        assertNull  maxSize
+        assertNull maxSize
 
     }
 
