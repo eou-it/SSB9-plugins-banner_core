@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.ui
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
@@ -12,6 +14,8 @@ import org.junit.Test
 /**
  * Integration test for the SanitizeMarkdownTagLib class.
  **/
+@Integration
+@Rollback
 class SanitizeMarkdownTagLibIntegrationTests extends BaseIntegrationTestCase {
     def grailsApplication
     def taglib

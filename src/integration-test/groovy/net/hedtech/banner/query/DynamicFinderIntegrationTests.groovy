@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.query
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.query.operators.Operators
 import net.hedtech.banner.testing.CommonMatchingSourceRuleForTesting
@@ -24,6 +26,8 @@ import org.springframework.core.convert.ConversionFailedException
  * to ensure the consistent execution.
  *
  */
+@Integration
+@Rollback
 class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
 
     def zipForTestingObject

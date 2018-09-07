@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.db.dbutility
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.commons.dbcp.BasicDataSource
@@ -13,6 +15,8 @@ import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.context.SecurityContextHolder
 
+@Integration
+@Rollback
 class DBUtilityIntegrationTestsSpec extends BaseIntegrationTestCase {
     DBUtility dbUtility
 

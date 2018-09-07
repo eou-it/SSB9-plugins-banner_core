@@ -3,6 +3,8 @@
  */
 package net.hedtech.banner.configuration
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import grails.util.Holders  as CH
 import org.junit.After
@@ -12,6 +14,8 @@ import org.junit.Test
 /**
  * To Test ConfiguationUtils class
  */
+@Integration
+@Rollback
 class ConfigurationUtilsIntegrationTests extends BaseIntegrationTestCase {
 
 

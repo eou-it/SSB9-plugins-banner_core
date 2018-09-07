@@ -1,11 +1,16 @@
 // Copyright 2017 Ellucian Company L.P. and its affiliates.
 package net.hedtech.banner.ui
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+
+@Integration
+@Rollback
 
 class AnalyticsTagLibIntegrationTests extends BaseIntegrationTestCase {
     def grailsApplication

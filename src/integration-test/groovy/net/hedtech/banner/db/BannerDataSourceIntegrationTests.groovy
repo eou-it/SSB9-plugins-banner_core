@@ -4,6 +4,8 @@
 
 package net.hedtech.banner.db
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.db.BannerDS as BannerDataSource
@@ -31,6 +33,8 @@ import java.util.logging.StreamHandler
 /**
  * Integration tests exercising the BannerDS (formerly named BannerDataSource) data source implementation.
  */
+@Integration
+@Rollback
 public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
     def config

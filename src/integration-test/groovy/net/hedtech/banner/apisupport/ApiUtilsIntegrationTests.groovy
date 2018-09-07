@@ -3,6 +3,8 @@ Copyright 2015-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.apisupport
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -15,6 +17,8 @@ import org.springframework.web.context.request.RequestContextHolder
  *
  * Created by arunu on 10/21/2016.
  */
+@Integration
+@Rollback
 class ApiUtilsIntegrationTests extends BaseIntegrationTestCase {
 
     @Before

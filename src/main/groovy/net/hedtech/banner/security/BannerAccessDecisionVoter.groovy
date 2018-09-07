@@ -3,6 +3,7 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
+import grails.util.Holders
 import groovy.util.logging.Slf4j
 import grails.util.Holders  as CH
 import org.grails.web.mapping.DefaultUrlMappingInfo
@@ -197,7 +198,8 @@ class BannerAccessDecisionVoter extends RoleVoter {
     }
 
     private static def publishViolation( def authentication, String message, def forms ) {
-        def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
+        //def applicationContext = (ApplicationContext) ServletContextHolder.getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)
+        def applicationContext = Holders.getGrailsApplication().getMainContext()
         applicationContext.publishEvent( new BannerAuthenticationEvent(authentication.name, false, message, forms[0], new Date(), 1) )
     }
     public static List getFormNamesForPageName(String pageName) {

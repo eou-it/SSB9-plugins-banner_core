@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.controllers
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -13,6 +15,8 @@ import org.springframework.web.context.request.RequestContextHolder
 /**
  * Test cases for ControllerUtils
  */
+@Integration
+@Rollback
 class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
     def outcome
     private static final def SAML = 'saml'
