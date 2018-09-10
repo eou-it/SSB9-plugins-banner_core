@@ -47,7 +47,6 @@ import java.util.concurrent.Executors
  */
 @Slf4j
 class BannerCoreGrailsPlugin extends Plugin {
-    String version = "9.28.1"
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "3.3.2 > *"
@@ -78,16 +77,28 @@ class BannerCoreGrailsPlugin extends Plugin {
         String appName = Metadata.current.getApplicationName()
         println "AppName is = ${appName}"
         setupExternalConfig()
-        // TODO :grails_332_change, needs to revisit
+        String serverType = CH.config.targetServer
         switch (Environment.current) {
             case Environment.PRODUCTION:
-                log.info "Will use a dataSource configured via JNDI"
-                underlyingDataSource(JndiObjectFactoryBean) {
-                    jndiName = "java:comp/env/${CH.config.bannerDataSource.jndiName}"
-                }
-                if (isSsbEnabled()) {
-                    underlyingSsbDataSource(JndiObjectFactoryBean) {
-                        jndiName = "java:comp/env/${CH.config.bannerSsbDataSource.jndiName}"
+                if(serverType?.equalsIgnoreCase('weblogic')){
+                    log.info "weblogic Will use a dataSource configured via JNDI"
+                    underlyingDataSource(JndiObjectFactoryBean) {
+                        jndiName = "${Holders.config.bannerDataSource.jndiName}"
+                    }
+                    if (isSsbEnabled()) {
+                        underlyingSsbDataSource(JndiObjectFactoryBean) {
+                            jndiName = "${Holders.config.bannerSsbDataSource.jndiName}"
+                        }
+                    }
+                } else {
+                    log.info "Tomcat Will use a dataSource configured via JNDI"
+                    underlyingDataSource(JndiObjectFactoryBean) {
+                        jndiName = "java:comp/env/${CH.config.bannerDataSource.jndiName}"
+                    }
+                    if (isSsbEnabled()) {
+                        underlyingSsbDataSource(JndiObjectFactoryBean) {
+                            jndiName = "java:comp/env/${CH.config.bannerSsbDataSource.jndiName}"
+                        }
                     }
                 }
                 break
