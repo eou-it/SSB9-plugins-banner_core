@@ -447,12 +447,15 @@ class BannerCoreGrailsPlugin extends Plugin {
                     filePathName = getFilePath("grails-app/conf/$fileName")
                     if (filePathName) log.info "Using configuration file 'grails-app/conf/$fileName'"
                 }
+                println "External configuration file: " + filePathName
             } else {
-                //filePathName = Thread.currentThread().getContextClassLoader().getResource( "$fileName" )?.toURI()
-                //filePathName = "classpath:$fileName"
+                filePathName = Thread.currentThread().getContextClassLoader().getResource( "$fileName" )?.getFile()
+                if (filePathName) {
+                    println "Using configuration file $fileName from the classpath"
+                    log.info "Using configuration file $fileName from the classpath (e.g., from within the war file)"
+                }
             }
             if(filePathName) {
-                println "External configuration file: " + filePathName
                 try {
                     String configText = new File(filePathName).text
                     Map properties = configText ? new ConfigSlurper(Environment.current.name).parse(configText)?.flatten() : [:]
