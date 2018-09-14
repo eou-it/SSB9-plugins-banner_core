@@ -29,14 +29,27 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
 
     <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
     <g:if test="${themeConfig.url}">
-        <g:if test="${session.mep}">
-            <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name + session.mep}&template=${themeConfig.template}&mepCode=${session.mep}">
+        <g:if test="${(themeConfig.url.toString()  ==~ /.*theme.*.elluciancloud.com.*/)}">
+            <g:if test="${session.mep}">
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}&mepCode=${session.mep}">
+            </g:if>
+            <g:elseif test="${mep}">
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}&mepCode=${mep}">
+            </g:elseif>
+            <g:else>
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}">
+            </g:else>
         </g:if>
-        <g:elseif test="${mep}">
-            <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name + mep}&template=${themeConfig.template}&mepCode=${mep}">
-        </g:elseif>
         <g:else>
-            <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}">
+            <g:if test="${session.mep}">
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name + session.mep}&template=${themeConfig.template}&mepCode=${session.mep}">
+            </g:if>
+            <g:elseif test="${mep}">
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name + mep}&template=${themeConfig.template}&mepCode=${mep}">
+            </g:elseif>
+            <g:else>
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}">
+            </g:else>
         </g:else>
     </g:if>
 
