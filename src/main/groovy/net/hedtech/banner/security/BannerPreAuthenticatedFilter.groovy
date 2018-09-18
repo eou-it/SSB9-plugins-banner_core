@@ -86,18 +86,15 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
             log.debug "BannerPreAuthenticatedFilter.requiresAuthentication SecurityContextHolder has the BannerToken"
             return false
         }
-
-        String url = request.getRequestURI().substring(request.getContextPath().length());
-        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url"
-        HashMap interceptUrlMap = SpringSecurityUtils.securityConfig["interceptUrlMap"]
+        String url = request.getRequestURI().substring(request.getContextPath().length())
+        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url {}", url
+        List interceptUrls= SpringSecurityUtils.securityConfig["interceptUrlMap"]
         AntPathMatcher antPathMatcher = new AntPathMatcher()
-        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication antUrlPathMatcher $antPathMatcher"
-        for (Map.Entry<Object, Collection<ConfigAttribute>> entry : interceptUrlMap.entrySet()) {
-            log.debug "BannerPreAuthenticatedFilter.requiresAuthentication entry : $entry"
-            if (antPathMatcher.match(entry.getKey(), url)) {
-                log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url matches $entry from interceptUrlMap"
-                if(entry.getValue().contains("IS_AUTHENTICATED_ANONYMOUSLY")) {
-                    log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url is authenticated anonymously"
+        interceptUrls.each {interceptUrl ->
+            if (antPathMatcher.match(interceptUrl.pattern, url)) {
+                log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url {} matches {} from interceptUrlMap", url, interceptUrl.pattern
+                if(interceptUrl.configAttributes?.attrib?.contains("IS_AUTHENTICATED_ANONYMOUSLY")) {
+                    log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url {} is authenticated anonymously", url
                     return false
                 }
                 return true
