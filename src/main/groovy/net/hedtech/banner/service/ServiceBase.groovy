@@ -8,6 +8,9 @@ import grails.validation.ValidationException
 import grails.util.GrailsNameUtils
 import groovy.util.logging.Slf4j
 import org.grails.core.DefaultGrailsDomainClass
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.web.converters.ConverterUtil
+import org.hibernate.StaleObjectStateException
 
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
@@ -212,7 +215,8 @@ class ServiceBase {
     }
 
     private void updateDomainProperties(domainObject, content) {
-        def d = new DefaultGrailsDomainClass(getDomainClass())
+
+        def d = Holders.getGrailsApplication().getMappingContext().getPersistentEntity( ConverterUtil.trimProxySuffix(getDomainClass().getName()))
         d.getPersistentProperties().each { it ->
             if(content.containsKey(it.name))   {
                 domainObject[it.name] = content[it.name]
