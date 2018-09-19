@@ -22,32 +22,32 @@ class LogoutController {
     /**
      * Index action. Redirects to the Spring security logout uri.
      */
-    def index = {
-        if(!ControllerUtils.isSamlEnabled()){
-            invalidateSession( response )
+    def index() {
+        if (!ControllerUtils.isSamlEnabled()) {
+            invalidateSession(response)
         }
         redirect uri: ControllerUtils.buildLogoutRedirectURI()
     }
 
-    def timeout = {
-        if(request?.getHeader(HTTP_REQUEST_REFERER_STRING)?.endsWith(LOGIN_AUTH_ACTION_URI)){
-            forward(controller:LOGIN_CONTROLLER)
+    def timeout() {
+        if (request?.getHeader(HTTP_REQUEST_REFERER_STRING)?.endsWith(LOGIN_AUTH_ACTION_URI)) {
+            forward(controller: LOGIN_CONTROLLER)
         } else {
-            def uri = createLink([ action:ACTION_TIMEOUT_PAGE, absolute:true ])
-            invalidateSession( response )
+            def uri = createLink([action: ACTION_TIMEOUT_PAGE, absolute: true])
+            invalidateSession(response)
             redirect uri: uri
         }
     }
 
-    def timeoutPage = {
-        render view: VIEW_TIMEOUT, model: [uri: ControllerUtils.buildLogoutRedirectURI() ]
+    def timeoutPage() {
+        render view: VIEW_TIMEOUT, model: [uri: ControllerUtils.buildLogoutRedirectURI()]
     }
 
-    def logoutPage = {
+    def logoutPage() {
         render view: VIEW_LOGOUT_PAGE
     }
-    
-    private void invalidateSession( response ) {
+
+    private void invalidateSession(response) {
         session.invalidate()
         Cookie cookie = new Cookie(JSESSIONID_COOKIE_NAME, null);
         cookie.setPath(request.getContextPath());
@@ -55,16 +55,16 @@ class LogoutController {
         response.addCookie(cookie);
     }
 
-    def customLogout = {
+    def customLogout() {
         boolean show = true
-        if (request.getParameter("error") || ControllerUtils.isCasEnabled()){
+        if (request.getParameter("error") || ControllerUtils.isCasEnabled()) {
             show = false
         }
 
-        if(ControllerUtils.isCasEnabled()) {
-            render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show  ]
+        if (ControllerUtils.isCasEnabled()) {
+            render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show]
         } else {
-            render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show  ]
+            render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show]
         }
 
     }
