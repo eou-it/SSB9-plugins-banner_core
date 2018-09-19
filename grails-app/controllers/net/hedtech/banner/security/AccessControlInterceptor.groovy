@@ -3,6 +3,7 @@ Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
+import groovy.util.logging.Slf4j
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
@@ -15,9 +16,11 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
  * Controllers -- not Composers.  The FormContext for the ZK user interface
  * is set by the sghe zk plugin.
  **/
+@Slf4j
+
 class AccessControlInterceptor {
     //TODO check the precedence using constants
-    int order = 50
+    int order = HIGHEST_PRECEDENCE + 50
 
     /**
      * Executed before a matched action
@@ -34,7 +37,6 @@ class AccessControlInterceptor {
         if (params?.mepCode){
             RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep",params?.mepCode?.toUpperCase())
         }
-
         Map formControllerMap = grailsApplication.config.formControllerMap
         //def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
         def associatedFormsList = formControllerMap.get(controllerName?.toLowerCase())
