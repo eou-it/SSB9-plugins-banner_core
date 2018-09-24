@@ -8,9 +8,6 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
 <!DOCTYPE html>
 <html lang="${message(code: 'default.language.locale')}">
 <head>
-    <script>
-        window.mepCode='${session.mep}';
-    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="menuBaseURL" content="${request.contextPath}/ssb"/>
     <meta charset="${message(code: 'default.character.encoding')}"/>
@@ -21,18 +18,36 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
     <g:else>
         <asset:stylesheet src="modules/bannerCommonLTR-mf.css"/>
     </g:else>
-
+    <script>
+        window.mepCode='${session.mep}';
+    </script>
 
     <g:layoutHead/>
     <g:customStylesheetIncludes/>
 
     <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
     <g:if test="${themeConfig.url}">
-        <g:if test="${session.mep}">
-            <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name + session.mep}&template=${themeConfig.template}&mepCode=${session.mep}">
+        <g:if test="${(themeConfig.url.toString()  ==~ /.*theme.*.elluciancloud.com.*/)}">
+            <g:if test="${session.mep}">
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}&mepCode=${session.mep}">
+            </g:if>
+            <g:elseif test="${mep}">
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}&mepCode=${mep}">
+            </g:elseif>
+            <g:else>
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}">
+            </g:else>
         </g:if>
         <g:else>
-            <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}">
+            <g:if test="${session.mep}">
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name + session.mep}&template=${themeConfig.template}&mepCode=${session.mep}">
+            </g:if>
+            <g:elseif test="${mep}">
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name + mep}&template=${themeConfig.template}&mepCode=${mep}">
+            </g:elseif>
+            <g:else>
+                <link rel="stylesheet" type="text/css" href="${themeConfig.url}/getTheme?name=${themeConfig.name}&template=${themeConfig.template}">
+            </g:else>
         </g:else>
     </g:if>
         <asset:link rel="apple-touch-icon" sizes="57x57" href="eds/apple-touch-icon-57x57.png"/>
