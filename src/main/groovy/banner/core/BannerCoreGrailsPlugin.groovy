@@ -25,6 +25,7 @@ import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.runtime.GStringImpl
 import org.grails.datastore.mapping.core.Datastore
+import org.grails.orm.hibernate.HibernateEventListeners
 import org.springframework.context.event.SimpleApplicationEventMulticaster
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jndi.JndiObjectFactoryBean
@@ -259,6 +260,13 @@ class BannerCoreGrailsPlugin extends Plugin {
             sessionFactory = ref('sessionFactory')
         }
 
+        auditTrailPropertySupportHibernateListener(AuditTrailPropertySupportHibernateListener)
+
+        hibernateEventListeners(HibernateEventListeners) {
+            listenerMap = ['pre-insert': auditTrailPropertySupportHibernateListener,
+                           'pre-update': auditTrailPropertySupportHibernateListener]
+        }
+
         // ---------------- JMX Mbeans (incl. Logging) ----------------
 
         /*
@@ -321,6 +329,7 @@ class BannerCoreGrailsPlugin extends Plugin {
         GString.metaClass.flattenString = {
             return delegate.replace("\n", "").replaceAll(/  */, " ")
         }
+
     }
 
     void doWithApplicationContext() {
@@ -336,25 +345,7 @@ class BannerCoreGrailsPlugin extends Plugin {
         }
         applicationContext.authenticationManager.providers = createBeanList(providerNames, applicationContext)
 
-
-        //Hibernate Event Listeners commented for Grails-3 as it has been chanaged.
-
-        /*
-        def listeners = applicationContext.sessionFactory.eventListeners
-
-        // register hibernate listener for populating audit trail properties before inserting and updating models
-        def auditTrailSupportListener = new AuditTrailPropertySupportHibernateListener()
-        ['preInsert', 'preUpdate'].each {
-            addEventTypeListener(listeners, auditTrailSupportListener, it)
-        }
-        */
-        applicationContext.getBeansOfType(Datastore).each { String key, Datastore datastore ->
-            String dataSourceName = datastore.metaClass.getProperty(datastore, 'dataSourceName')
-            applicationContext.addApplicationListener(new AuditTrailPropertySupportHibernateListener(datastore))
-        }
-
         // Define the spring security filters
-        //println "CH?.config?. = " +Holders.config
         def authenticationProvider = Holders.config.banner.sso.authenticationProvider
         println "AuthenticationProvider = " +authenticationProvider
         LinkedHashMap<String, String> filterChain = new LinkedHashMap()
@@ -397,17 +388,6 @@ class BannerCoreGrailsPlugin extends Plugin {
     void onShutdown(Map<String, Object> event) {
         // no-op
     }
-    def addEventTypeListener(listeners, listener, type) {
-        def typeProperty = "${type}EventListeners"
-        def typeListeners = listeners."${typeProperty}"
-
-        def expandedTypeListeners = new Object[typeListeners.length + 1]
-        System.arraycopy(typeListeners, 0, expandedTypeListeners, 0, typeListeners.length)
-        expandedTypeListeners[-1] = listener
-
-        listeners."${typeProperty}" = expandedTypeListeners
-    }
-
 
     private def isSsbEnabled() {
         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
