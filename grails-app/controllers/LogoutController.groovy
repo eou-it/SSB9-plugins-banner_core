@@ -42,7 +42,7 @@ class LogoutController {
 
     def timeoutPage() {
         def mep = params.mep
-        render view: VIEW_TIMEOUT, plugin: "bannerCore", model: [uri: ControllerUtils.buildLogoutRedirectURI(), mep: mep]
+        render view: VIEW_TIMEOUT, model: [uri: ControllerUtils.buildLogoutRedirectURI(), mep: mep]
     }
 
     def logoutPage() {
