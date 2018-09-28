@@ -436,6 +436,10 @@ class BannerCoreGrailsPlugin extends Plugin {
                     println "Using configuration file '$fileName' from the classpath"
                     log.info "Using configuration file '$fileName' from the classpath (e.g., from within the war file)"
                     configText = Thread.currentThread().getContextClassLoader().getResource( "$fileName" ).text
+                } else {
+                    println "In prod mode using configuration file '$fileName' from the system path"
+                    log.info "In prod mode using configuration file '$fileName' from the system path"
+                    configText = new File(filePathName)?.text
                 }
             }
             if(filePathName && configText) {
