@@ -24,9 +24,8 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
 
     public boolean onPreInsert(final PreInsertEvent event) {
         try {
-            println "Principal Object - ${SCH.context?.authentication?.principal}"
             updateSystemFields(event)
-            println "After onPreInsert event - ${event.entity}"
+            log.debug "After onPreInsert event - ${event.entity}"
         } catch (e) {
             e.printStackTrace()
             throw e
@@ -37,9 +36,8 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
 
     public boolean onPreUpdate(final PreUpdateEvent event) {
         try {
-            println "Principal Object - ${SCH.context?.authentication?.principal}"
             updateSystemFields(event)
-            println "After onPreUpdate event - ${event.entity}"
+            log.debug "After onPreUpdate event - ${event.entity}"
         } catch (e) {
             e.printStackTrace()
             throw e
@@ -59,7 +57,7 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         Date lastModified = new Date(cal.getTime().getTime())
         def lastModifiedBy
         if (event.entity.hasProperty('lastModifiedBy')) {
-            lastModifiedBy = getLastModifiedUser(event.entity?.lastModifiedBy)
+            lastModifiedBy = getLastModifiedUser(event.entity.lastModifiedBy)
         }
         def dataOrigin = ApiUtils.isApiRequest() ?
                 event.entity?.dataOrigin ?: (CH.config?.dataOrigin ?: "Banner") :
@@ -110,6 +108,7 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         } catch (e) {
             log.error("Error : Could not retrieve last modified by lastModifiedBy:$lastModifiedBy $e")
         }
+        log.debug "LastModifiedBy user is {}",lastModifiedBy
         return lastModifiedBy?.toUpperCase()
     }
 }
