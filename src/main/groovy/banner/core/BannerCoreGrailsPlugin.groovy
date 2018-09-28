@@ -411,6 +411,7 @@ class BannerCoreGrailsPlugin extends Plugin {
         def config = CH.config
         def locations = config.grails.config.locations
         String filePathName
+        String configText
 
         locations.each { propertyName,  fileName ->
             filePathName = getFilePath(System.getProperty(propertyName))
@@ -428,22 +429,25 @@ class BannerCoreGrailsPlugin extends Plugin {
                     if (filePathName) log.info "Using configuration file 'grails-app/conf/$fileName'"
                 }
                 println "External configuration file: " + filePathName
+                configText = new File(filePathName)?.text
             } else {
                 filePathName = Thread.currentThread().getContextClassLoader().getResource( "$fileName" )?.getFile()
                 if (filePathName) {
-                    println "Using configuration file $fileName from the classpath"
-                    log.info "Using configuration file $fileName from the classpath (e.g., from within the war file)"
+                    println "Using configuration file '$fileName' from the classpath"
+                    log.info "Using configuration file '$fileName' from the classpath (e.g., from within the war file)"
+                    configText = Thread.currentThread().getContextClassLoader().getResource( "$fileName" ).text
                 }
             }
-            if(filePathName) {
+            if(filePathName && configText) {
                 try {
-                    String configText = new File(filePathName).text
                     Map properties = configText ? new ConfigSlurper(Environment.current.name).parse(configText)?.flatten() : [:]
                     Holders.config.merge(properties)
                 }
                 catch (e) {
                     println "NOTICE: Caught exception while loading configuration files (depending on current grails target, this may be ok): ${e.message}"
                 }
+            } else {
+                log.error "Configuration files not found either in system variable or in classpath."
             }
         }
     }
