@@ -1,10 +1,4 @@
-/*********************************************************************************
- Copyright 2013 Ellucian Company L.P. and its affiliates.
- **********************************************************************************/
-
-def dummyArabicCharacters = ["\u0645", "\u0639", "\u0644", "\u062D", "\u062F", "\u0625", "\u0626", "\u0627", "\u0628", "\u0639"]
-def mainArabicProperties = new Properties()
-def ignoreList = ["default.name.format", "default.date.format", "default.birthdate.format", "default.dateEntry.format", "js.datepicker.dateFormat", "default.calendar", "default.language.direction"]
+description "Create Dummy Arabic Keys", "grails dummy-arabic"
 
 def generateFakeProperty(def fromThis, def arabicCharacterList) {
     String arabicString = ""
@@ -76,10 +70,10 @@ Boolean ignore(thisProperty, ignoreList) {
     return ignoreThis
 }
 
-
 def processPlugin(plugin, mainArabicProperties, arabicCharacterList, ignoreList) {
 
     // Load up the main arabic properties file from the grails app
+
     def arabicProperties = new Properties()
     def needSaudiFile = false
 
@@ -114,33 +108,31 @@ def processPlugin(plugin, mainArabicProperties, arabicCharacterList, ignoreList)
         }
     }
 
+
+
 }
 
-/**
- * Takes all of the missing arabic strings from the application and all of its plugins and adds those strings to the
- * applications messages_ar.properties file.
- */
-target(main: "Provides fake translations of missing Arabic properties. Used for RTL testing.") {
-
-    // Load in the main properties file
-    def messagesProperties = new Properties()
-    File messageFile = new File("grails-app/i18n/messages.properties")
-    if (messageFile.exists()) {
-        messageFile.withInputStream { stream ->
-            messagesProperties.load(stream)
+def mainMethod() {
+    def ignoreList = ["default.name.format", "default.date.format", "default.birthdate.format", "default.dateEntry.format", "js.datepicker.dateFormat", "default.calendar", "default.language.direction"]
+    def dummyArabicCharacters = ["\u0645", "\u0639", "\u0644", "\u062D", "\u062F", "\u0625", "\u0626", "\u0627", "\u0628", "\u0639"]
+    def mainArabicProperties = new Properties()
+    File messageFile11 = new File("grails-app/i18n/messages.properties")
+    if (messageFile11.exists()) {
+        messageFile11.withInputStream { stream ->
+            mainArabicProperties.load(stream)
         }
     }
 
-    messagesProperties.propertyNames().each { propertyName ->
+    mainArabicProperties.propertyNames().each { propertyName ->
         if (!ignore(propertyName, ignoreList) && !mainArabicProperties.getProperty(propertyName)) {
-            mainArabicProperties.setProperty(propertyName, generateFakeProperty(messagesProperties.getProperty(propertyName), dummyArabicCharacters))
+            mainArabicProperties.setProperty(propertyName, generateFakeProperty(mainArabicProperties.getProperty(propertyName), dummyArabicCharacters))
         }
     }
 
     // Find our list of plugins
     File plugins = new File("plugins")
-    plugins.eachFile { plugin ->
-        processPlugin(plugin, mainArabicProperties, dummyArabicCharacters, ignoreList)
+    plugins.eachFile { pgn ->
+        processPlugin(pgn, mainArabicProperties, dummyArabicCharacters, ignoreList)
     }
 
     println "Generating new grails-app/i18n/messages_ar_SA.properties"
@@ -155,4 +147,4 @@ target(main: "Provides fake translations of missing Arabic properties. Used for 
     }
 }
 
-setDefaultTarget(main)
+mainMethod()
