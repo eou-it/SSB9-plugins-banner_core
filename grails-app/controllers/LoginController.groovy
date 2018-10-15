@@ -2,18 +2,17 @@
  Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
+
 import grails.converters.JSON
+import grails.plugin.springsecurity.SpringSecurityUtils
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.AuthorizationException
-import grails.plugin.springsecurity.SpringSecurityUtils
 import org.springframework.security.authentication.*
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
+import org.springframework.security.web.WebAttributes
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.context.request.RequestContextHolder
-
-import org.springframework.security.web.WebAttributes
 
 class LoginController {
 
@@ -42,7 +41,7 @@ class LoginController {
     /**
      * Show the login page.
      */
-    def auth = {
+    def auth() {
 
         def config = SpringSecurityUtils.securityConfig
         String forgotPasswordUrl =  "${request.contextPath}/login/resetPassword"
@@ -69,7 +68,7 @@ class LoginController {
      * Called when making ajax request and being redirected to authenticate.  We are informing the client that the user is not authenticated
      * and sending a request for a login page by sending a response header down under the key 'X-Login-Page'.
      */
-    def authAjax = {
+    def authAjax() {
 
         def config = SpringSecurityUtils.securityConfig
 
@@ -88,7 +87,7 @@ class LoginController {
     /**
      * Show denied page.
      */
-    def denied = {
+    def denied() {
         if (springSecurityService.isLoggedIn() &&
                 authenticationTrustResolver.isRememberMe(SCH.context?.authentication)) {
             // have cookie but the page is guarded with IS_AUTHENTICATED_FULLY
@@ -101,7 +100,7 @@ class LoginController {
     /**
      * Login page for users with a remember-me cookie but accessing a IS_AUTHENTICATED_FULLY page.
      */
-    def full = {
+    def full() {
         def config = SpringSecurityUtils.securityConfig
         render view: 'auth', params: params,
                 model: [hasCookie: authenticationTrustResolver.isRememberMe(SCH.context?.authentication),
@@ -111,7 +110,7 @@ class LoginController {
     /**
      * Callback after a failed login. forwards to the auth page with a warning message.
      */
-    def authfail = {
+    def authfail() {
 
         //def username = session[UsernamePasswordAuthenticationFilter.SPRING_SECURITY_LAST_USERNAME_KEY]
         def username = session[UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY]
@@ -173,7 +172,7 @@ class LoginController {
     /**
      * The Ajax success redirect url.
      */
-    def ajaxSuccess = {
+    def ajaxSuccess() {
         render([success: true, username: springSecurityService.authentication.name] as JSON)
     }
 
@@ -181,14 +180,14 @@ class LoginController {
     /**
      * The Ajax denied redirect url.
      */
-    def ajaxDenied = {
+    def ajaxDenied() {
         render([error: 'access denied'] as JSON)
     }
 
     /**
      * When user clicks on forgot password URL.
      */
-    def forgotpassword ={
+    def forgotpassword() {
         def config = SpringSecurityUtils.securityConfig
 
         String userName = request.getParameter("username")
@@ -206,8 +205,9 @@ class LoginController {
         }
     }
 
-    def error = {
-        def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+    def error (){
+        //def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+        def exception = session[WebAttributes.AUTHENTICATION_EXCEPTION]
         render view: "customerror", model: [msg: getMessageFor( exception ), uri: buildLogout()]
     }
 

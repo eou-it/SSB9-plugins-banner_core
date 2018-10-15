@@ -53,7 +53,7 @@ class BannerCoreGrailsPlugin extends Plugin {
     def grailsVersion = "3.3.2 > *"
 
     // the other plugins this plugin depends on
-    List loadAfter = ['hibernate','i18nCore','springSecuritySaml','springSecurityCas']
+    List loadAfter = ['hibernate','i18nCore','springSecurityCore','springSecuritySaml','springSecurityCas']
     //List loadBefore = ['springSecuritySaml','springSecurityCas']
 
     // resources that are excluded from plugin packaging
@@ -163,7 +163,7 @@ class BannerCoreGrailsPlugin extends Plugin {
         }
 
         bannerAuthenticationFailureHandler(BannerAuthenticationFailureHandler){ bean ->
-            defaultFailureUrl = SpringSecurityUtils.securityConfig.failureHandler.defaultFailureUrl
+                defaultFailureUrl = SpringSecurityUtils.securityConfig.failureHandler.defaultFailureUrl
         }
 
         roleVoter(BannerAccessDecisionVoter)

@@ -31,7 +31,7 @@ class ResetPasswordController {
 
     def selfServiceBannerAuthenticationProvider
 
-    def questans ={
+    def questans(){
         response.setHeader("Cache-Control", "no-cache")
         response.setHeader("Cache-Control", "no-store")
         response.setDateHeader("Expires", 0)
@@ -96,7 +96,7 @@ class ResetPasswordController {
         }
     }
 
-    def validateAnswer ={
+    def validateAnswer(){
         response.setHeader("Cache-Control", "no-cache")
         response.setHeader("Cache-Control", "no-store")
         response.setDateHeader("Expires", 0)
@@ -157,10 +157,12 @@ class ResetPasswordController {
                     if(resetPasswordService.isPidmAccountDisabled(pidm)){
                         session.invalidate()
                         flash.message = message(code: "net.hedtech.banner.errors.login.disabled")
+                        //redirect(controller: 'login', action: 'auth')
                         redirect (uri: "/resetPassword/auth")
+                    }else{
+                        String view = 'questans'
+                        render view: view, model: [questions: questions, userName: id, postBackUrl : postBackUrl, cancelUrl: cancelUrl, questionValidationMap: questionValidationMap]
                     }
-                    String view = 'questans'
-                    render view: view, model: [questions: questions, userName: id, postBackUrl : postBackUrl, cancelUrl: cancelUrl, questionValidationMap: questionValidationMap]
                 }
                 else{
                     session.setAttribute("requestPage", "resetpin")
@@ -172,7 +174,7 @@ class ResetPasswordController {
         }
     }
 
-    def resetPin ={
+    def resetPin() {
         response.setHeader("Cache-Control", "no-cache")
         response.setHeader("Cache-Control", "no-store")
         response.setDateHeader("Expires", 0)
@@ -237,7 +239,7 @@ class ResetPasswordController {
             }
         }
     }
-    def recovery ={
+    def recovery() {
         String postUrl = "${request.contextPath}/ssb/resetPassword/validateCode"
         def cancelUrl = "${request.contextPath}/ssb/resetPassword/auth"
         def token= request.getParameter("token")
@@ -259,7 +261,7 @@ class ResetPasswordController {
         }
     }
 
-    def validateCode ={
+    def validateCode (){
         def recoveryCode = request.getParameter("recoverycode")
         def nonPidmIdm = request.getParameter("nonPidmId")
         if(session.getAttribute("requestPage") != "recovery"){
@@ -287,7 +289,7 @@ class ResetPasswordController {
             }
         }
     }
-    def changePassword={
+    def changePassword(){
         response.setHeader("Cache-Control", "no-cache")
         response.setHeader("Cache-Control", "no-store")
         response.setDateHeader("Expires", 0)
@@ -298,7 +300,7 @@ class ResetPasswordController {
         String postBackUrl= "${request.contextPath}/resetPassword/changeExpiredPassword"
         render view: view, model: [postBackUrl : postBackUrl, cancelUrl: cancelUrl]
     }
-    def changeExpiredPassword = {
+    def changeExpiredPassword() {
 
         response.setHeader("Cache-Control", "no-cache")
         response.setHeader("Cache-Control", "no-store")
