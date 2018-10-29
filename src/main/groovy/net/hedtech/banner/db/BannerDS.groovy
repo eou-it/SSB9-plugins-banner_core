@@ -6,6 +6,7 @@ package net.hedtech.banner.db
 import grails.util.Environment
 import grails.util.Holders
 import groovy.sql.Sql
+import groovy.util.logging.Slf4j
 import net.hedtech.banner.apisupport.ApiUtils
 import net.hedtech.banner.db.dbutility.DBUtility
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
@@ -17,10 +18,10 @@ import net.hedtech.banner.security.FormContext
 import net.hedtech.banner.service.HttpSessionService
 import oracle.jdbc.OracleConnection
 import org.springframework.context.ApplicationContext
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.context.i18n.LocaleContextHolder
 
 import javax.sql.DataSource
 import java.sql.Connection
@@ -39,9 +40,6 @@ import java.sql.SQLFeatureNotSupportedException
  * 'cannot resolve class' issues when including this plugin.  It is recommended when importing this
  * class, to import it like: 'import net.hedtech.banner.db.BannerDS as BannerDataSource'.
  * */
-
-import groovy.util.logging.Slf4j
-
 @Slf4j
 public class BannerDS implements DataSource {
 
@@ -105,7 +103,7 @@ public class BannerDS implements DataSource {
                     proxy(oconn, user?.oracleUserName)
                 }   catch(SQLException ex)  {
                     conn.close()
-                    log.error(ex.stackTrace)
+                    log.error(ex.stackTrace.toString())
                     throw ex
                 }
                 roles = setRoles(oconn, user, applicableAuthorities)?.keySet() as String[]
