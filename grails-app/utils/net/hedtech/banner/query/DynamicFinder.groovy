@@ -3,14 +3,15 @@
  *******************************************************************************/
 package net.hedtech.banner.query
 
+
+import grails.web.context.ServletContextHolder
 import groovy.util.logging.Slf4j
+import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.query.criteria.CriteriaParam
-import grails.web.context.ServletContextHolder
 import org.grails.web.util.GrailsApplicationAttributes
 import org.hibernate.hql.internal.ast.QuerySyntaxException
 import org.springframework.context.ApplicationContext
-import net.hedtech.banner.exceptions.ApplicationException
 
 /**
  *
@@ -94,7 +95,7 @@ class DynamicFinder {
             return list
         }  catch(Exception e){
             if (e?.cause instanceof QuerySyntaxException) {
-                log.error "Error message: " + e.stackTrace
+                log.error "Error message: " + e.stackTrace.toString()
                 def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
                 throw new ApplicationException(DynamicFinder, message);
 

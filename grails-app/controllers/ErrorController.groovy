@@ -20,9 +20,9 @@ class ErrorController {
     public static final String VIEW_FORBIDDEN = "forbidden"
     def logoutHandlers
 
-    def internalServerError = {
+    def internalServerError () {
         def exception = request.exception
-        if (exception?.cause instanceof MepCodeNotFoundException) {
+        if (exception?.cause?.target instanceof MepCodeNotFoundException) {
             returnHomeLinkAddress = VIEW_LOGOUT_PAGE
         }
          //SCH.context?.authentication is passed and logout is fired on the logout handlers registered
@@ -34,14 +34,14 @@ class ErrorController {
             }
         }
         def model = [
-            exception: exception,
+            exception: exception?.cause?.target,
             returnHomeLinkAddress : returnHomeLinkAddress
         ]
 
         render view: VIEW_ERROR_PAGE, model: model
     }
 
-    def pageNotFoundError = {
+    def pageNotFoundError() {
         def model = [
                 exception: request.exception,
                 request:   request,
@@ -52,7 +52,7 @@ class ErrorController {
     }
 
 
-    def accessForbidden = {
+    def accessForbidden(){
         def uri = ControllerUtils.buildLogoutRedirectURI()
 
         render view: VIEW_FORBIDDEN, model: [uri: uri]

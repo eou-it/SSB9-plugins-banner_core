@@ -3,14 +3,14 @@
  *******************************************************************************/
 package net.hedtech.banner.query
 
+import grails.util.Holders
+import net.hedtech.banner.exceptions.ApplicationException
+import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.query.criteria.CriteriaData
 import net.hedtech.banner.query.criteria.CriteriaParam
 import net.hedtech.banner.query.criteria.Query
 import net.hedtech.banner.query.operators.CriteriaOperator
 import net.hedtech.banner.query.operators.Operators
-import org.grails.core.DefaultGrailsDomainClass
-import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.i18n.MessageHelper
 import org.grails.core.exceptions.InvalidPropertyException
 
 /**
@@ -53,35 +53,39 @@ class QueryBuilder {
     public static boolean validateSortColumnName(def domainClass, String sortColumnName) {
         boolean isValidColumn = true;
 
-        def domainClassProperties = new DefaultGrailsDomainClass(domainClass)
+        def grailsApplication = Holders.grailsApplication
+        def domainClassProperties =grailsApplication.mappingContext.getPersistentEntity(domainClass.name)
         def domainArray = sortColumnName.tokenize(".")
         def relDomainClass, relDomainSortColumnName, relationalDomainClassType
         int splitIndex
         try{
-            if((domainArray.size()==1) && domainClassProperties.getPropertyByName(sortColumnName))
-                return isValidColumn
+            if(domainArray.size()==1){
+                if(null == domainClassProperties.getPropertyByName(sortColumnName)){
+                    throw new InvalidPropertyException(MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"))
+                } else{
+                    return isValidColumn
+                }
+            }
             else {
-
                 for (int i=0;i<domainArray.size()-1;i++)
                 {   splitIndex = sortColumnName.indexOf(".")
                     relDomainClass = sortColumnName.substring(0,splitIndex)
                     if(domainClassProperties.getPropertyByName(relDomainClass).isAssociation()){
                         relDomainSortColumnName = sortColumnName.substring(splitIndex+1)
                         relationalDomainClassType = domainClassProperties.getPropertyByName(relDomainClass).getType()
-                        domainClassProperties = new DefaultGrailsDomainClass(relationalDomainClassType)
+                        domainClassProperties =grailsApplication.mappingContext.getPersistentEntity(relationalDomainClassType.name)
                         sortColumnName=relDomainSortColumnName
                     }
                         else{
                         throw new InvalidPropertyException(MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException"))
                     }
-
                 }
                 if(domainClassProperties.getPropertyByName(domainArray.last()))
                     return isValidColumn
             }
         } catch (InvalidPropertyException e) {
             def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
-            throw new ApplicationException(QueryBuilder, message);
+            throw new ApplicationException(QueryBuilder, message)
         }
     }
 
