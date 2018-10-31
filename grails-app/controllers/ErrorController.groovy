@@ -1,10 +1,13 @@
 /*******************************************************************************
-Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 
+
+import grails.util.Environment
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
 import grails.plugin.springsecurity.SpringSecurityUtils
+
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler
@@ -22,10 +25,20 @@ class ErrorController {
 
     def internalServerError () {
         def exception = request.exception
-        if (exception?.cause?.target instanceof MepCodeNotFoundException) {
+        def targetException
+        def mepCodeException
+
+        if (Environment.current == Environment.PRODUCTION || Environment.current == Environment.TEST) {
+            targetException = exception
+            mepCodeException = exception?.cause
+        } else if (Environment.current == Environment.DEVELOPMENT) {
+            targetException=exception?.cause?.target
+            mepCodeException = exception?.cause?.target
+        }
+        if (mepCodeException instanceof MepCodeNotFoundException) {
             returnHomeLinkAddress = VIEW_LOGOUT_PAGE
         }
-         //SCH.context?.authentication is passed and logout is fired on the logout handlers registered
+        //SCH.context?.authentication is passed and logout is fired on the logout handlers registered
         logoutHandlers.each { handler ->
             if(handler instanceof LogoutHandler) {
                 handler.logout(request, response, SCH.context?.authentication)
@@ -34,8 +47,8 @@ class ErrorController {
             }
         }
         def model = [
-            exception: exception?.cause?.target,
-            returnHomeLinkAddress : returnHomeLinkAddress
+                exception: targetException,
+                returnHomeLinkAddress : returnHomeLinkAddress
         ]
 
         render view: VIEW_ERROR_PAGE, model: model
