@@ -32,23 +32,29 @@ class ErrorController {
             targetException = exception
             mepCodeException = exception?.cause
         } else if (Environment.current == Environment.DEVELOPMENT) {
-            targetException=exception?.cause?.target
-            mepCodeException = exception?.cause?.target
+            if (exception?.cause?.hasProperty('target')) {
+                targetException = exception?.cause?.target
+                mepCodeException = exception?.cause?.target
+            } else {
+                targetException = exception?.cause
+                mepCodeException = exception?.cause
+            }
         }
+
         if (mepCodeException instanceof MepCodeNotFoundException) {
             returnHomeLinkAddress = VIEW_LOGOUT_PAGE
         }
         //SCH.context?.authentication is passed and logout is fired on the logout handlers registered
         logoutHandlers.each { handler ->
-            if(handler instanceof LogoutHandler) {
+            if (handler instanceof LogoutHandler) {
                 handler.logout(request, response, SCH.context?.authentication)
             } else if (handler instanceof LogoutSuccessHandler) {
                 handler.onLogoutSuccess(request, response, SCH.context?.authentication)
             }
         }
         def model = [
-                exception: targetException,
-                returnHomeLinkAddress : returnHomeLinkAddress
+                exception            : targetException,
+                returnHomeLinkAddress: returnHomeLinkAddress
         ]
 
         render view: VIEW_ERROR_PAGE, model: model

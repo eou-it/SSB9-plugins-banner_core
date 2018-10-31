@@ -103,7 +103,7 @@ public class BannerDS implements DataSource {
                     proxy(oconn, user?.oracleUserName)
                 }   catch(SQLException ex)  {
                     conn.close()
-                    log.error(ex.stackTrace.toString())
+                    log.error(ex?.message)
                     throw ex
                 }
                 roles = setRoles(oconn, user, applicableAuthorities)?.keySet() as String[]
