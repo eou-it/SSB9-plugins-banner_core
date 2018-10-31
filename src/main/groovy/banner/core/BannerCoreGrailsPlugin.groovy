@@ -24,19 +24,17 @@ import net.hedtech.banner.service.ServiceBase
 import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.runtime.GStringImpl
-import org.grails.datastore.mapping.core.Datastore
 import org.grails.orm.hibernate.HibernateEventListeners
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.event.SimpleApplicationEventMulticaster
+import org.springframework.core.Ordered
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jndi.JndiObjectFactoryBean
-import org.springframework.security.web.DefaultSecurityFilterChain
-import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.ExceptionTranslationFilter
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
 
 import javax.servlet.Filter
@@ -197,8 +195,12 @@ class BannerCoreGrailsPlugin extends Plugin {
             authenticationManager = ref('authenticationManager')
         }
 
-
-        bannerMepCodeFilter(BannerMepCodeFilter)
+        def ssbMapping = ['/ssb/*']
+        bannerMepCodeFilter(FilterRegistrationBean) {
+            filter = bean(BannerMepCodeFilter)
+            urlPatterns = ssbMapping
+            order = Ordered.LOWEST_PRECEDENCE + 111
+        }
 
         basicAuthenticationEntryPoint(BasicAuthenticationEntryPoint) {
             realmName = 'Banner REST API Realm'
@@ -347,21 +349,19 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         // Define the spring security filters
         def authenticationProvider = Holders.config.banner.sso.authenticationProvider
-        println "AuthenticationProvider = " +authenticationProvider
-        LinkedHashMap<String, String> filterChain = new LinkedHashMap()
         List<Map<String, ?>> filterChains = []
         switch (authenticationProvider) {
             case 'external':
-                filterChains << [pattern: '/**/api/**',   filters: 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
-                filterChains << [pattern: '/**/qapi/**',  filters: 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
-                filterChains << [pattern: '/**',          filters: 'securityContextPersistenceFilter,logoutFilter,bannerMepCodeFilter,bannerPreAuthenticatedFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor']
+                filterChains << [pattern: '/**/api/**',   filters: 'statelessSecurityContextPersistenceFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
+                filterChains << [pattern: '/**/qapi/**',  filters: 'statelessSecurityContextPersistenceFilter,authenticationProcessingFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
+                filterChains << [pattern: '/**',          filters: 'securityContextPersistenceFilter,logoutFilter,bannerPreAuthenticatedFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor']
                 break
             case 'saml':
                 break
             default:
-                filterChains << [pattern: '/**/api/**',   filters: 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
-                filterChains << [pattern: '/**/qapi/**',  filters: 'statelessSecurityContextPersistenceFilter,bannerMepCodeFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
-                filterChains << [pattern: '/**',          filters: 'securityContextPersistenceFilter,logoutFilter,bannerMepCodeFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor']
+                filterChains << [pattern: '/**/api/**',   filters: 'statelessSecurityContextPersistenceFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
+                filterChains << [pattern: '/**/qapi/**',  filters: 'statelessSecurityContextPersistenceFilter,basicAuthenticationFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,basicExceptionTranslationFilter,filterInvocationInterceptor']
+                filterChains << [pattern: '/**',          filters: 'securityContextPersistenceFilter,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,anonymousProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor']
                 break
         }
 
