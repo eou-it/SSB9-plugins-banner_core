@@ -12,6 +12,7 @@ import net.hedtech.banner.query.criteria.Query
 import net.hedtech.banner.query.operators.CriteriaOperator
 import net.hedtech.banner.query.operators.Operators
 import org.grails.core.exceptions.InvalidPropertyException
+import org.grails.datastore.mapping.model.types.Association
 
 /**
  *
@@ -70,7 +71,7 @@ class QueryBuilder {
                 for (int i=0;i<domainArray.size()-1;i++)
                 {   splitIndex = sortColumnName.indexOf(".")
                     relDomainClass = sortColumnName.substring(0,splitIndex)
-                    if(domainClassProperties.getPropertyByName(relDomainClass).isAssociation()){
+                    if(domainClassProperties.getPropertyByName(relDomainClass) instanceof Association){
                         relDomainSortColumnName = sortColumnName.substring(splitIndex+1)
                         relationalDomainClassType = domainClassProperties.getPropertyByName(relDomainClass).getType()
                         domainClassProperties =grailsApplication.mappingContext.getPersistentEntity(relationalDomainClassType.name)
