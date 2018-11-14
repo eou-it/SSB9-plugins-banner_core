@@ -35,9 +35,10 @@ class AccessControlFilters {
 
             before = {
 
-                if (params?.mepCode){
+                //TODO need to check if there are any failure in Mep due to this commented code
+                /*if (params?.mepCode){
                  RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep",params?.mepCode?.toUpperCase())
-                }
+                }*/
 
                 Map formControllerMap = grailsApplication.config.formControllerMap
                 def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
