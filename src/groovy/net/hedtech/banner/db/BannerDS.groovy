@@ -46,6 +46,7 @@ public class BannerDS implements DataSource {
 
     DataSource underlyingDataSource
     DataSource underlyingSsbDataSource
+    DataSource underlyingCommmgrDataSource
 
     def nativeJdbcExtractor  // injected by Spring
     def dataSourceUrl
@@ -82,7 +83,23 @@ public class BannerDS implements DataSource {
         BannerConnection bannerConnection
         String[] roles
         def user = SecurityContextHolder?.context?.authentication?.principal
-        if ( DBUtility.isNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(user) ) {
+
+        //check for new datasource for transactions that are asynchronous and do not originate from a web request
+        //perform this logic only if configuration commmgrDataSourceEnabled attribute is true
+        //MEP will have to be set by the calling method
+        if( DBUtility.isCommmgrDataSourceEnabled() && (RequestContextHolder.getRequestAttributes() == null) && DBUtility.isAdminOrOracleProxyRequired(user)) {
+            conn = underlyingCommmgrDataSource.getConnection()
+            OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
+            log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingCommmgrDataSource for the user ${user}"
+
+            List applicableAuthorities = extractApplicableAuthorities(user)
+            setRoles(oconn, user, applicableAuthorities)
+
+
+            setFGAC(conn)
+            bannerConnection = new BannerConnection(conn, user?.username, this)
+        }
+        else if ( DBUtility.isNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(user) ) {
             conn = underlyingSsbDataSource.getConnection()
             setMepSsb(conn)
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
