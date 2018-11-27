@@ -3,12 +3,14 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
+import grails.util.Holders
+import org.springframework.web.filter.GenericFilterBean
+
 import javax.servlet.FilterChain
 import javax.servlet.ServletException
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
-import org.springframework.web.filter.GenericFilterBean
 
 class BannerMepCodeFilter extends GenericFilterBean {
 
@@ -20,7 +22,8 @@ class BannerMepCodeFilter extends GenericFilterBean {
 
 
         if (req.getParameter("mepCode")) {
-            if (!mepCodeModified(req)) {
+            def springSecurityService = Holders.applicationContext.getBean('springSecurityService')
+            if ( springSecurityService?.isLoggedIn() && !mepCodeModified(req)) {
                 req?.getSession()?.setAttribute("mep", req.getParameter("mepCode").toUpperCase())
             }
         }
