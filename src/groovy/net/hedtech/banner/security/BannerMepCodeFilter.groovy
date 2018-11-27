@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -31,20 +31,19 @@ class BannerMepCodeFilter extends GenericFilterBean {
         chain.doFilter(request, response);
     }
 
-    public boolean mepCodeModified(HttpServletRequest request) {
+    private boolean mepCodeModified(HttpServletRequest request) {
         String sessionMepCode = request?.getSession()?.getAttribute("mep")
         String currentMepCode = request.getParameter("mepCode")
         if (sessionMepCode && currentMepCode) {
             if (sessionMepCode != currentMepCode) {
                 request.setAttribute("mepcodeChanged", true)
-                return true
             } else {
                 request.setAttribute("mepcodeChanged", false)
-                return true
             }
+            return true
         } else {
             request.setAttribute("mepcodeChanged", false)
-            false
+            return false
         }
     }
 }

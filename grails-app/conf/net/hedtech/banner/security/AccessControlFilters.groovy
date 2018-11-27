@@ -1,5 +1,5 @@
 /* ****************************************************************************
-Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
