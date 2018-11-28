@@ -6,11 +6,15 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 -->
 <html xmlns="http://www.w3.org/1999/xhtml" lang="${message(code: 'default.language.locale')}">
 <head>
+    <meta name="viewport" content="width=device-width, height=device-height,  initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+
     <script>
         window.mepCode='${session.mep}';
     </script>
     <title><g:message code="net.hedtech.banner.login.title"/></title>
     <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login.css')}"/>
+    <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login-responsive.css')}"/>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login.css')}"/>
     </g:if>
@@ -52,6 +56,8 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 
     <div class="appName">Banner<span>&reg;</span></div>
 
+    <div class="ellucianName"></div>
+
     <div class="loginMsg" id="loginMsg">
         <g:if test='${flash.message}'>
             <span class="icon-error"></span>${flash.message}
@@ -64,11 +70,9 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
         </g:else>
     </div>
 
-    <div class="ellucianName"></div>
+    <div id="userNameTxt" style="display: none;">${message(code: 'net.hedtech.banner.login.username', default: 'User Name')}</div>
 
-    <div id="userNameTxt" style="display: none;">User Name</div>
-
-    <div id="passwordTxt" style="display: none;">Password</div>
+    <div id="passwordTxt" style="display: none;">${message(code: 'net.hedtech.banner.login.password', default: 'Password')}</div>
 
 
     <form action='${postUrl}' method='POST' id='loginForm'>
@@ -114,12 +118,6 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                                autocomplete="off" aria-labelledby='passwordTxt'/></span>
                     </div>
                 </g:else>
-                <div class="signin-button-wrapper">
-                    <input type='submit'
-                          value="${message(code: 'net.hedtech.banner.login.signin', default: 'Sign In')}"
-                          id="sign-in-btn" onclick="submitForm()"
-                          class="login-primary"/>
-                </div>
 
             </div>
         </div>
@@ -128,6 +126,18 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                                               class="forgotpassword">${message(code: 'net.hedtech.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')}</a>
             </div>
         </g:if>
+
+        <div class="logIn sign-in">
+            <div class="textfield-wrapper">
+                <div class="signin-button-wrapper">
+                    <input type='submit'
+                           value="${message(code: 'net.hedtech.banner.login.signin', default: 'Sign In')}"
+                           id="sign-in-btn" onclick="submitForm()"
+                           class="login-primary"/>
+                </div>
+            </div>
+        </div>
+
     </form>
 
     <div class="copyright">

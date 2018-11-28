@@ -1,6 +1,21 @@
 /** *****************************************************************************
  Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
+/* Regular */
+@font-face {
+    font-family: 'Open Sans';
+
+    src: url('fonts/OpenSans-Regular-webfont.eot');
+    src: url('fonts/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+    url('fonts/OpenSans-Regular-webfont.woff') format('woff'),
+    url('fonts/OpenSans-Regular-webfont.ttf') format('truetype'),
+    url('fonts/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: normal;
+    font-weight: 400;
+    font-style: normal;
+
+}
+
 BODY {
     margin: 0px;
     padding: 0px;
@@ -18,7 +33,7 @@ html, body{
     margin:0px;
     padding:0px;
     top:0px;
-    overflow: hidden;
+    overflow: auto;
 }
 
 /*-----------------------------------------------------------
@@ -129,7 +144,6 @@ LOG IN
 }
 
 .loginMsg {
-    text-align: right;
     color: #151618; /*EDS*/
     position: absolute;
     top: 125px;
@@ -330,6 +344,8 @@ LOG IN
   /* instructions under banner name */
   top: 110px;
   right: 37px;
+    float: right;
+    margin: 0 0 0 1em;
 }
 
 
@@ -364,6 +380,10 @@ LOG IN
 
 .ie-warning DIV {
   color: #ffffff;
+}
+
+.splashBg .logIn.sign-in {
+    margin: 36px 30px 30px 585px;
 }
 
 .splashBg .signin-button-wrapper {
