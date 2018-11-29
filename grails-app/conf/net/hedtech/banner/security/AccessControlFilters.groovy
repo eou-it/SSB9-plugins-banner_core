@@ -22,6 +22,8 @@ class AccessControlFilters {
 
     def dlog = LogFactory.getLog(getClass()) // workaround for logging issues when using grails injected log
 
+    def springSecurityService
+
     def filters = {
 
         /**
