@@ -207,9 +207,22 @@ class MultiEntityProcessingService {
 
     def getUserHomeCodes(userName) {
 
+        return getUserHomeCodesHelper(userName, new Sql(sessionFactory.getCurrentSession().connection()))
+
+    }
+
+
+    def getUserHomeCodes(userName, con) {
+
+        return getUserHomeCodesHelper(userName, new Sql(con))
+
+    }
+
+
+    def getUserHomeCodesHelper(userName, Sql sql) {
+
         def mepHomes = []
 
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         sql.call("""
           declare
             c_cursor SYS_REFCURSOR;
@@ -336,7 +349,7 @@ class MultiEntityProcessingService {
             sql = new Sql(dataSource.getSsbConnection())
             sql.eachRow("select * from gtvvpdi where gtvvpdi_code = ?", [mep]) {
                 desc = it.gtvvpdi_desc
-        }
+            }
         }finally {
             sql?.close()
         }
