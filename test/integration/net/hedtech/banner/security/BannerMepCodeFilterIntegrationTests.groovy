@@ -4,14 +4,12 @@ Copyright 2016 Ellucian Company L.P. and its affiliates.
 
 package net.hedtech.banner.security
 
-import grails.util.Holders
-import groovy.sql.Sql
+
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.mock.web.MockFilterChain
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.web.context.request.RequestContextHolder
 
 import javax.servlet.ServletException
