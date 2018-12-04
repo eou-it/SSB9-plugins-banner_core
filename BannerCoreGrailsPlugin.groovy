@@ -88,7 +88,7 @@ class BannerCoreGrailsPlugin {
                     }
                 }
                 //new DS
-                if (isCommmgrDataSourceEnabled()) {
+                if (isCommmgrDataSourceEnabled() && {CH.config.bannerCommmgrDataSource?.jndiName} != null) {
                    underlyingCommmgrDataSource(JndiObjectFactoryBean) {
                         jndiName = "java:comp/env/${CH.config.bannerCommmgrDataSource.jndiName}"
                     }
@@ -117,7 +117,9 @@ class BannerCoreGrailsPlugin {
                     }
 
                 }
-                if (isCommmgrDataSourceEnabled()) {
+                //ensure both the flag and the datasource have been defined before setting the
+                //underlyingdatasource
+                if (isCommmgrDataSourceEnabled() && CH.config.bannerCommmgrDataSource != [:] ) {
                     underlyingCommmgrDataSource(BasicDataSource) {
                         maxActive = 5
                         maxIdle = 2

@@ -86,8 +86,9 @@ public class BannerDS implements DataSource {
 
         //check for new datasource for transactions that are asynchronous and do not originate from a web request
         //perform this logic only if configuration commmgrDataSourceEnabled attribute is true
+        //and the commmgr datasource has been defined. Otherwise do regular processing
         //MEP will have to be set by the calling method
-        if( DBUtility.isCommmgrDataSourceEnabled() && (RequestContextHolder.getRequestAttributes() == null) && DBUtility.isAdminOrOracleProxyRequired(user)) {
+        if( DBUtility.isCommmgrDataSourceEnabled() && (underlyingCommmgrDataSource != null) && (RequestContextHolder.getRequestAttributes() == null) && DBUtility.isAdminOrOracleProxyRequired(user)) {
             conn = underlyingCommmgrDataSource.getConnection()
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
             log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingCommmgrDataSource for the user ${user}"
