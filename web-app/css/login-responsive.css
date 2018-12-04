@@ -54,6 +54,7 @@
 
     .splashBg .logIn DIV {
         float: none;
+        margin-bottom: 10px;
     }
 
     .splashBg .userName, .splashBg .userName-error-state,
@@ -71,7 +72,7 @@
     .splashBg A.forgotpassword:link {
         background: none;
         display: block;
-        width: unset;
+        width: unset !important;
         height: unset;
         text-align: center;
         color: #FFF;
@@ -88,7 +89,7 @@
     }
 
     .login-primary {
-        width: 9em;
+        width: 100%;
         margin-top: 1em;
     }
 
@@ -104,5 +105,13 @@
         margin: 1em 0;
         padding: 1em 0 0;
         position: relative;
+    }
+
+    .eds-text-field {
+        width: 100%;
+    }
+
+    .splashBg DIV SPAN INPUT {
+        margin: 0;
     }
 }

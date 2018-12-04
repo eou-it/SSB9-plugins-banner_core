@@ -17,6 +17,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
     <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login-responsive.css')}"/>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login.css')}"/>
+        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login-responsive-rtl.css')}"/>
     </g:if>
     <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
     <g:if test="${themeConfig.url}">
@@ -79,42 +80,48 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
         <div class="logIn">
             <div class="textfield-wrapper">
                 <g:if test='${userNameRequired}'>
-                    <div class="userName-error-state">
-                        <span><input type='text' name='j_username' id='j_username'
+                    <div class="error-state">
+                        <span><input type='text' name='j_username' id='j_username' class="eds-text-field"
+                                    placeholder="<g:message code="net.hedtech.banner.login.username"/>"
                                    aria-labelledby='userNameTxt'
                                    aria-describedby='loginMsg'/>
                         </span>
                     </div>
 
                     <div class="password">
-                        <span><input type='password' name='j_password' id='j_password'
+                        <span><input type='password' name='j_password' id='j_password' class="eds-text-field"
+                                     placeholder="<g:message code="net.hedtech.banner.login.password"/>"
                                    autocomplete="off" aria-labelledby='passwordTxt'/>
                         </span>
                     </div>
                 </g:if>
                 <g:elseif test='${flash.message}'>
-                    <div class="userName-error-state">
-                        <span><input type='text' name='j_username' id='j_username'
+                    <div class="error-state">
+                        <span><input type='text' name='j_username' id='j_username' class="eds-text-field"
+                                     placeholder="<g:message code="net.hedtech.banner.login.username"/>"
                                    aria-labelledby='userNameTxt'
                                    aria-describedby='loginMsg'/>
                         </span>
                     </div>
 
-                    <div class="password-error-state">
-                        <span><input type='password' name='j_password' id='j_password'
+                    <div class="error-state">
+                        <span><input type='password' name='j_password' id='j_password' class="eds-text-field"
+                                     placeholder="<g:message code="net.hedtech.banner.login.password"/>"
                                    autocomplete="off" aria-labelledby='passwordTxt'/>
                         </span>
                     </div>
                 </g:elseif>
                 <g:else>
-                    <div class="userName">
-                        <span><input type='text' id="userName" name='j_username' id='j_username'
+                    <div class="">
+                        <span><input type='text' id="userName" name='j_username' id='j_username' class="eds-text-field"
+                                     placeholder="<g:message code="net.hedtech.banner.login.username"/>"
                                   aria-labelledby='userNameTxt' aria-describedby='loginMsg'/>
                         </span>
                     </div>
 
-                    <div class="password">
-                        <span><input type='password' name='j_password' id='j_password'
+                    <div class="">
+                        <span><input type='password' name='j_password' id='j_password' class="eds-text-field"
+                                     placeholder="<g:message code="net.hedtech.banner.login.password"/>"
                                autocomplete="off" aria-labelledby='passwordTxt'/></span>
                     </div>
                 </g:else>
