@@ -210,28 +210,132 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         def userPin
         def firstName
         def lastName
-        db.eachRow( """select gpbprxy_salt, gpbprxy_pin,gpbprxy_first_name,gpbprxy_last_name,gpbprxy_proxy_idm
-                       from gpbprxy where  NVL(TRUNC(GPBPRXY_PIN_EXP_DATE), TRUNC(SYSDATE)) >= TRUNC(SYSDATE) AND GPBPRXY_PIN_DISABLED_IND = 'N' AND GPBPRXY_EMAIL_ADDRESS = ?""", [authentication.name] ) {
-            salt = it.gpbprxy_salt
-            hashPin = it.gpbprxy_pin
-            gidm = it.gpbprxy_proxy_idm
-            firstName = it.gpbprxy_first_name
-            lastName = it.gpbprxy_last_name
+
+        def errorStatus
+        def pass
+
+        String GUEST_AUTHENTICATION = """
+                         DECLARE
+                            lv_proxyIDM      gpbprxy.gpbprxy_proxy_idm%TYPE;
+                            lv_pinhash       gpbprxy.gpbprxy_pin%TYPE;
+                            lv_context_hash  gpbprxy.gpbprxy_pin%TYPE;
+                            lv_GPBPRXY_rec   gp_gpbprxy.gpbprxy_rec;
+                            lv_GPBPRXY_ref   gp_gpbprxy.gpbprxy_ref;
+                            state            NUMBER(1);
+                            gidm             gpbprxy.gpbprxy_proxy_idm%TYPE;
+                            firstName        gpbprxy.gpbprxy_first_name%TYPE;
+                            lastName         gpbprxy.gpbprxy_last_name%TYPE;
+                            
+                            PROCEDURE P_Update_Invalid_Login (
+                                     p_proxyIDM      gpbprxy.gpbprxy_proxy_idm%TYPE,
+                            p_disabled_ind  gpbprxy.gpbprxy_pin_disabled_ind%TYPE,
+                                     p_inv_login_cnt gpbprxy.gpbprxy_inv_login_cnt%TYPE)
+                            IS
+                            lv_cnt       gpbprxy.gpbprxy_inv_login_cnt%TYPE;
+                            lv_disabled  gpbprxy.gpbprxy_pin_disabled_ind%TYPE;
+                            BEGIN
+                            lv_cnt      := nvl(p_inv_login_cnt,0) + 1;
+                            lv_disabled := p_disabled_ind;
+                            
+                            IF lv_cnt >= NVL (bwgkprxy.F_GetOption ('MAX_INVALID_LOGINS'), 3) THEN
+                            lv_disabled := 'Y';
+                            lv_cnt      := 0;
+                            END IF;
+                            gp_gpbprxy.P_Update (
+                                     p_proxy_idm        => p_proxyIDM,
+                                     p_pin_disabled_ind => lv_disabled,
+                                     p_inv_login_cnt    => lv_cnt,
+                                     p_user_id          => goksels.f_get_ssb_id_context
+                            );
+                            gb_common.p_commit;
+                            
+                            END P_Update_Invalid_Login;
+                                                  
+                         BEGIN
+                            -- Get proxy by e-mail address
+                            lv_proxyIDM := bwgkpxya.F_GetProxyIDM (?);
+                            
+                         IF lv_proxyIDM = 0 THEN
+                               state := -1;
+                         ELSE
+                              lv_GPBPRXY_ref := gp_gpbprxy.F_Query_One (lv_proxyIDM);
+                            
+                            FETCH lv_GPBPRXY_ref INTO lv_GPBPRXY_rec;
+                            CLOSE lv_GPBPRXY_ref;
+                            
+                            gspcrpt.P_SaltedHash (?, lv_GPBPRXY_rec.R_SALT, lv_pinhash);
+                            
+                            -- Check for disabled PIN
+                            IF lv_GPBPRXY_rec.R_PIN_DISABLED_IND <> 'N' THEN
+                              state := -2;
+                            -- Check for expired PIN
+                            ELSIF NVL (TRUNC(lv_GPBPRXY_rec.R_PIN_EXP_DATE), TRUNC(SYSDATE)) < TRUNC(SYSDATE) THEN
+                              state := -3;
+                            ELSIF lv_pinhash <> lv_GPBPRXY_rec.R_PIN THEN
+                              state := -4;
+                              P_Update_Invalid_Login (lv_proxyIDM, lv_GPBPRXY_rec.R_PIN_DISABLED_IND, lv_GPBPRXY_rec.R_INV_LOGIN_CNT);
+                            
+                            ELSE
+                             gidm := lv_GPBPRXY_rec.r_proxy_idm;
+                             firstName := lv_GPBPRXY_rec.r_first_name;
+                             lastName := lv_GPBPRXY_rec.r_last_name;
+                             state := 0;
+                            END IF;
+                        END IF;
+                            
+                            ? := state;
+                            ? := gidm;
+                            ? := firstName;
+                            ? := lastName;
+                            
+                        END;
+      """
+        try {
+
+            db.call(GUEST_AUTHENTICATION,
+                    [authentication.name, authentication.credentials, db.NUMERIC, db.NUMERIC, db.VARCHAR,  db.VARCHAR])
+                    { errorOut, gidmOut, firstNameOut, lastNameOut ->
+                        errorStatus = errorOut
+                        gidm = gidmOut
+                        firstName = firstNameOut
+                        lastName = lastNameOut
+                    }
+
+            switch (errorStatus) {
+                case -1:
+                    log.debug "SelfServiceAuthenticationProvider guestAuthenticationS failed on invalid login id/pin"
+                    authenticationResults.valid = false
+                    pass = false
+                    break
+                case -2:
+                    log.debug "SelfServiceAuthenticationProvider guestAuthenticationS failed on disabled pin"
+                    authenticationResults.disabled = true
+                    pass = false
+                    RequestContextHolder.currentRequestAttributes()?.request?.session.setAttribute("guestUser", true)
+                    break
+                case -3:
+                    log.debug "SelfServiceAuthenticationProvider guestAuthentication failed on expired pin"
+                    authenticationResults.expired = true
+                    AuthenticationProviderUtility.setUserDetails(authenticationResults.pidm, authenticationResults.name)
+                    pass = false
+                    RequestContextHolder.currentRequestAttributes()?.request?.session.setAttribute("guestUser", true)
+                    break
+                case 0:
+                    authenticationResults.valid = true
+                    authenticationResults.gidm = gidm
+                    authenticationResults.fullName = firstName + " " + lastName
+                    pass = true
+                    RequestContextHolder.currentRequestAttributes()?.request?.session.setAttribute("guestUser", true)
+                    break
+            }
+
+        }catch(Exception e){
+            log.error('Problem with SelfServiceAuthenticationProvider guestAuthentication')
+            log.error(e)
+            return false
         }
-        if (null == hashPin) return false
-        db.call( "{call gspcrpt.p_saltedhash(?,?,?)}", [
-            authentication.credentials,
-            salt ,
-            Sql.VARCHAR
-            ]
-            ) {
-            userpasswd -> userPin = userpasswd}
-        if (userPin == hashPin)  {
-            authenticationResults.gidm = gidm
-            authenticationResults.fullName =  firstName + " " + lastName
-            return true
-        }
-        false
+
+        return pass
     }
 
 

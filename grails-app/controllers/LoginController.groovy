@@ -109,7 +109,7 @@ class LoginController {
 
         def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
 
-        if(exception instanceof CredentialsExpiredException){
+        if(exception instanceof CredentialsExpiredException  && !RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("guestUser")){
             forward controller : "resetPassword", action: "changePassword", params : params
         }
         else {
