@@ -360,7 +360,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testCommmgrConneciton(){
+    public void testCommmgrConnection(){
         backupConfigFileConfigurations();
         setupCommmgrData()
         def conn = (dataSource as BannerDS).getConnection()

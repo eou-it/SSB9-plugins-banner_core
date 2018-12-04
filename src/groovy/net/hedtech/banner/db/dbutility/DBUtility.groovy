@@ -90,7 +90,7 @@ class DBUtility {
     }
 
     public static boolean isCommmgrDataSourceEnabled() {
-        def useCommmgrDatasource  = config.commmgrDataSourceEnabled instanceof Boolean ? config.commmgrDataSourceEnabled : false
+        boolean useCommmgrDatasource  = config.commmgrDataSourceEnabled instanceof Boolean ? config.commmgrDataSourceEnabled : false
         return useCommmgrDatasource;
     }
 
