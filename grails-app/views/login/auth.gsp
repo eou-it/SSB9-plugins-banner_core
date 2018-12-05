@@ -88,7 +88,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                         </span>
                     </div>
 
-                    <div class="password">
+                    <div class="">
                         <span><input type='password' name='j_password' id='j_password' class="eds-text-field"
                                      placeholder="<g:message code="net.hedtech.banner.login.password"/>"
                                    autocomplete="off" aria-labelledby='passwordTxt'/>
