@@ -88,7 +88,7 @@ class BannerCoreGrailsPlugin {
                     }
                 }
                 //new DS
-                if (isCommmgrDataSourceEnabled() && {CH.config.bannerCommmgrDataSource?.jndiName} != null) {
+                if (isCommmgrDataSourceEnabled()) {
                    underlyingCommmgrDataSource(JndiObjectFactoryBean) {
                         jndiName = "java:comp/env/${CH.config.bannerCommmgrDataSource.jndiName}"
                     }
