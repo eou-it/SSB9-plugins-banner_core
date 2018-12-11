@@ -89,6 +89,11 @@ class DBUtility {
         return proxyApi;
     }
 
+    public static boolean isCommmgrDataSourceEnabled() {
+        boolean useCommmgrDatasource  = config.commmgrDataSourceEnabled instanceof Boolean ? config.commmgrDataSourceEnabled : false
+        return useCommmgrDatasource;
+    }
+
     public static isSelfServiceRequest() {
         log.trace "BannerDS.isSelfServiceRequest() will return '${FormContext.isSelfService()}' (FormContext = ${FormContext.get()})"
         FormContext.isSelfService()
