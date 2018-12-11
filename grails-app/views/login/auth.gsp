@@ -17,6 +17,8 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
     <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login-responsive.css')}"/>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login.css')}"/>
+        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login-rtl.css')}"/>
+        <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login-patch.css')}"/>
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login-responsive-rtl.css')}"/>
     </g:if>
     <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
