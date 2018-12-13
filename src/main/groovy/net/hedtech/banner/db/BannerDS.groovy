@@ -9,7 +9,9 @@ import groovy.sql.Sql
 import groovy.util.logging.Slf4j
 import net.hedtech.banner.apisupport.ApiUtils
 import net.hedtech.banner.db.dbutility.DBUtility
+import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
+import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.mep.MultiEntityProcessingService
 import net.hedtech.banner.security.BannerGrantedAuthority
 import net.hedtech.banner.security.BannerGrantedAuthorityService
@@ -27,6 +29,7 @@ import javax.sql.DataSource
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.SQLFeatureNotSupportedException
+import java.sql.SQLSyntaxErrorException
 
 /**
  * A dataSource that wraps an 'underlying' datasource.
@@ -550,8 +553,15 @@ public class BannerDS implements DataSource {
         String role_stmt = "\"${bannerAuth.roleName}\" identified by \"${bannerAuth.bannerPassword}\"" as String
         log.trace "BannerDS.unlockRole will set role '${bannerAuth.roleName}' for connection $conn"
 
-        Sql db = new Sql(conn)
-        db.call("{call dbms_session.set_role(?)}", [role_stmt]) // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
+        try{
+            Sql db = new Sql(conn)
+            db.call("{call dbms_session.set_role(?)}", [role_stmt]) // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
+        } catch(SQLSyntaxErrorException sqex){
+            log.error "Failed to set role for session for Oracle connection: $conn  with Exception: $sqex "
+            String message = MessageHelper.message("net.hedtech.banner.errors.login.rolemissing")
+            throw new ApplicationException('BannerDS', message)
+        }
+
     }
 
     /**
