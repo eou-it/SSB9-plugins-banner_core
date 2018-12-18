@@ -1,5 +1,5 @@
 /* ****************************************************************************
-Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -20,7 +20,9 @@ import org.springframework.web.context.request.RequestContextHolder
  **/
 class AccessControlFilters {
 
-    def dlog = LogFactory.getLog( getClass() ) // workaround for logging issues when using grails injected log
+    def dlog = LogFactory.getLog(getClass()) // workaround for logging issues when using grails injected log
+
+    def springSecurityService
 
     def filters = {
 
@@ -29,34 +31,36 @@ class AccessControlFilters {
          * It uses a configuration map that associates grails controllers to one or more Banner forms,
          * so that existing Banner Security roles may be employed when using this grails application.
          */
-        setFormContext( controller:'*', action:'*' ) {
+        setFormContext(controller: '*', action: '*') {
 
             def theUrl
 
             before = {
 
-                if (params?.mepCode){
-                 RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep",params?.mepCode?.toUpperCase())
+                //TODO need to check if there are any failure in Mep due to this commented code
+                if (params?.mepCode && !springSecurityService.isLoggedIn()) {
+                    //SETTING THE MEPCODE AS IN URL WHEN THE USER IS NOT LOGGED IN!
+                    RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep", params?.mepCode?.toUpperCase())
                 }
 
                 Map formControllerMap = grailsApplication.config.formControllerMap
-                def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
+                def associatedFormsList = formControllerMap[controllerName?.toLowerCase()]
 
-                if (!associatedFormsList?.contains( "SELFSERVICE" )) {
+                if (!associatedFormsList?.contains("SELFSERVICE")) {
                     // Get the 'real' URL (versus request.getRequestURI() which shows the '.dispatch')
                     theUrl = RCH.currentRequestAttributes().request.forwardURI
                     if ("$theUrl" =~ /ssb/) {
-                        associatedFormsList?.add( 0, "SELFSERVICE" )
+                        associatedFormsList?.add(0, "SELFSERVICE")
                     }
                 }
 
                 dlog.debug "AccessControlFilters.setFormContext 'before filter' for URL $theUrl will set a FormContext with ${associatedFormsList?.size()} forms. (controller=$controllerName and action=$actionName). "
-                FormContext.set( associatedFormsList )
+                FormContext.set(associatedFormsList)
             }
 
-            after = { }
+            after = {}
 
-            afterView = { }
+            afterView = {}
         }
     }
 
