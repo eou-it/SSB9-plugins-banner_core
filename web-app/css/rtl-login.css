@@ -46,7 +46,7 @@ LOG IN
 }
 
 .splashBg .logIn .textfield-wrapper {
-    width: 480px;
+    margin-top: 0;
 }
 
 .splashBg .logIn div {
@@ -54,10 +54,6 @@ LOG IN
 }
 
 .splashBg div span input {
-    width: 121px;
-    outline: none;
-    border-style: none;
-    border: 0;
     margin-left: -16px;
     direction: rtl;
     padding: 0;
@@ -207,6 +203,7 @@ LOG IN
   top:55px;
   left:35px;
   right:auto;
+  margin: 0;
 }
 
 .splashBg .loginMsg {
@@ -219,18 +216,7 @@ LOG IN
 
 .splashBg .ellucianName {
   /* Ellucian (TM) from auth.gsp patch */
-  position: absolute;
-  right: 81px;
   left: auto;
-  text-align: right;
-  top: 191px;   /*EDS*/
-  height: 25px; /*EDS*/
-  background-image: url(../images/ellucian_logo.svg); /*EDS*/
-  background-size: cover; /*EDS*/
-  width: 10.875em; /*EDS*/
-  background-position: center center; /*EDS*/
-  background-repeat: no-repeat; /*EDS*/
-  font:normal 66.7% Arial, Helvetica, sans-serif;/*EDS*/
 }
 
 .splashBg .ellucianName .trademark {
