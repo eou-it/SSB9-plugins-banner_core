@@ -1,6 +1,33 @@
 /** *****************************************************************************
  Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
+/* Regular */
+@font-face {
+    font-family: 'Open Sans';
+
+    src: url('fonts/OpenSans-Regular-webfont.eot');
+    src: url('fonts/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+    url('fonts/OpenSans-Regular-webfont.woff') format('woff'),
+    url('fonts/OpenSans-Regular-webfont.ttf') format('truetype'),
+    url('fonts/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: normal;
+    font-weight: 400;
+    font-style: normal;
+
+}
+/* SemiBold */
+@font-face {
+    font-family: 'OpenSans-semibold';
+    src: url('fonts/OpenSans-Semibold-webfont.eot');
+    src: url('fonts/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+    url('fonts/OpenSans-Semibold-webfont.woff') format('woff'),
+    url('fonts/OpenSans-Semibold-webfont.ttf') format('truetype'),
+    url('fonts/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+    font-weight: 500;
+    font-style: normal;
+
+}
+
 BODY {
     margin: 0px;
     padding: 0px;
@@ -18,7 +45,7 @@ html, body{
     margin:0px;
     padding:0px;
     top:0px;
-    overflow: hidden;
+    overflow: auto;
 }
 
 /*-----------------------------------------------------------
@@ -60,30 +87,10 @@ LOG IN
 }
 
 .splashBg DIV SPAN INPUT {
-    border-style: none;
-    font-size: 14px;
-    height: 16px;
-    margin: 2px 0 0 0;
-    outline: medium none;
-    padding: 1px;
-    width: 130px;
-    vertical-align: top;
+    margin:0 5px;
 }
 
-.splashBg .userName {
-    background: url(../images/textbox.png) no-repeat left -27px;
-    padding: 0px 0px 0px 20px;
-    margin-right: 10px;
-    height: 24px;
-    width: 139px;
-}
 
-.splashBg .userName SPAN {
-    display: block;
-    background: url(../images/textbox.png) no-repeat right 0;
-    padding-right: 10px;
-    height: 24px;
-}
 
 .splashBg .password {
     background: url(../images/textbox.png) no-repeat left 0;
@@ -129,7 +136,6 @@ LOG IN
 }
 
 .loginMsg {
-    text-align: right;
     color: #151618; /*EDS*/
     position: absolute;
     top: 125px;
@@ -140,21 +146,6 @@ LOG IN
 .icon-error {
     background: transparent url(../images/icon-error-16x16.png) no-repeat scroll 0 bottom;
     padding-left: 1.5em;
-}
-
-.splashBg .userName-error-state {
-    background: url(../images/textbox.png) no-repeat left -81px;
-    padding: 0px 0px 0px 20px;
-    margin-right: 10px;
-    height: 24px;
-    width: 139px;
-}
-
-.splashBg .userName-error-state SPAN {
-    display: block;
-    background: url(../images/textbox.png) no-repeat right -81px;
-    padding-right: 10px;
-    height: 24px;
 }
 
 .splashBg .password-error-state {
@@ -288,94 +279,100 @@ LOG IN
     background-image: none;
 }
 .splashBg {
-  height: 408px;
-  width: 705px;
-  position: relative;
-  background-color: #ffffff; /* center section background */ /*EDS*/
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 10px 0px #CECECE; /*EDS*/
-  top: 155px;
-  margin: auto;
-  left: 0px;
-  border-radius: 6px;/*EDS*/
+    height: 408px;
+    width: 705px;
+    position: relative;
+    background-color: #ffffff; /* center section background */ /*EDS*/
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 10px 0px #CECECE; /*EDS*/
+    top: 155px;
+    margin: auto;
+    left: 0px;
+    border-radius: 6px;/*EDS*/
 }
 
 .splashBg:before {
-  /* top section */
-  position: absolute;
-  display: block;
-  top: 0px;
-  height: 156px;
-  width: 100%;
-  background-color: #ffffff; /*EDS*/
+    /* top section */
+    position: absolute;
+    display: block;
+    top: 0px;
+    height: 156px;
+    width: 100%;
+    background-color: #ffffff; /*EDS*/
 }
 
 .splashBg .copyright {
-  /* bottom section */
-  top: 244px;
-  bottom: 0;
-  left:0;
-  right:0;
-  margin: 0;
-  padding: 24px 35px 0 85px;
+    /* bottom section */
+    top: 244px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 24px 0 0 0;
+    padding: 0 35px 0 85px;
 }
 
 .splashBg .appName {
-  /* Banner(R) name */
-  top:55px;
-  right:35px;
+    /* Banner(R) name */
+    top:55px;
+    right:35px;
 }
 
 .splashBg .loginMsg {
-  /* instructions under banner name */
-  top: 110px;
-  right: 37px;
+    /* instructions under banner name */
+    top: 110px;
+    right: 37px;
+    float: right;
+    margin: 0 0 0 1em;
 }
 
 
 .splashBg .ellucianName {
-  /* Ellucian (TM) from auth.gsp patch */
-  position: absolute;
-  left: 85px;   /*EDS*/
-  top: 191px;   /*EDS*/
-  height: 25px; /*EDS*/
-  background-image: url(../images/ellucian_logo.svg); /*EDS*/
-  background-size: cover; /*EDS*/
-  width: 10.875em; /*EDS*/
-  background-position: center center; /*EDS*/
-  background-repeat: no-repeat; /*EDS*/
+    /* Ellucian (TM) from auth.gsp patch */
+    position: absolute;
+    left: 85px;   /*EDS*/
+    top: 201px;   /*EDS*/
+    height: 25px; /*EDS*/
+    background-image: url(../images/ellucian_logo.svg); /*EDS*/
+    background-size: cover; /*EDS*/
+    width: 10.875em; /*EDS*/
+    background-position: center center; /*EDS*/
+    background-repeat: no-repeat; /*EDS*/
 }
 
 .splashBg .ellucianName .trademark {
-  font-size:4px;
+    font-size:4px;
 }
 
 .splashBg .logIn {
-  margin: 36px 0 0 248px;
+    margin: 36px 0 0 228px;
 }
 
 .splashBg .logIn DIV  {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 .splashBg .ie-warning {
-  position: relative;
+    position: relative;
 }
 
 .ie-warning DIV {
-  color: #ffffff;
+    color: #ffffff;
+}
+
+.splashBg .logIn.sign-in {
+    margin: 38px 30px 30px 575px;
 }
 
 .splashBg .signin-button-wrapper {
-  bottom: 0;
-  top: -.15em;
+    bottom: 0;
+    top: -.15em;
 }
 
 .splashBg .forgotPasswordDiv {
     left: 440px;
     right: auto;
     position: absolute;
-    top: 219px;
+    top: 239px;
 }
 
 .splashBg .forgotpassword {
@@ -399,10 +396,11 @@ LOG IN
 }
 
 .login-primary {
-    background-color: #026BC8;
+    -webkit-appearance: none;
+    background-color: rgb(2,107,200);
     color: #FFFFFF;
     border-radius: 4px;
-    padding: 0.5em 1.5em;
+    padding: 1em 1.5em;
     border: none;
     font-family: Open Sans !important;
 }
@@ -420,5 +418,40 @@ LOG IN
     border: none;
 }
 
+.eds-text-field {
+    width: 160px;
+    border-radius: 4px;
+    border: 1px solid #B2B3B7;
+    padding: 1em 0.75em !important;
+    box-sizing: border-box;
+    webkit-box-sizing: border-box;
+    background-color: #FFFFFF;
+    font-family: OpenSans-semibold !important;
+    text-align: left;
+}
 
+.eds-text-field:focus:not([valid]) {
+    border: 1px solid #026BC8;
+    color: #151618;
+    outline: none;
+    font-family: OpenSans-semibold !important;
+}
 
+.eds-text-field-readonly {
+    background-color: #F7F7F7;
+    border: 1px solid #151618;
+    color: #5B5E65;
+    opacity: 100%;
+}
+
+.eds-text-field-disabled {
+    border: 1px solid #151618;
+    color: #5B5E65;
+    background-color: #F7F7F7;
+}
+
+.error-state .eds-text-field{
+    background-color: #FFFFFF;/*EDS*/
+    color: #151618;/*EDS*/
+    border: 1px solid #FF3030;/*EDS*/
+}
