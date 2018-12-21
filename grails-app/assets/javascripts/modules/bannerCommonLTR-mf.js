@@ -1,1 +1,0 @@
-// require modules/bannerCommon-mf.js
