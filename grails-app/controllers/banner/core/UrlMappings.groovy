@@ -100,6 +100,7 @@ class UrlMappings {
         "/index.gsp" (redirect: "/ssb/home")
 
         "403"(controller: "error", action: "accessForbidden")
+        "404"(controller: "error", action: "pageNotFoundError")
         "500"(controller: "error", action: "internalServerError")
     }
 }

@@ -34,7 +34,7 @@ class LogoutController {
             forward(controller: LOGIN_CONTROLLER)
         } else {
             def mepCode = session.mep
-            def uri = createLink([action: ACTION_TIMEOUT_PAGE, absolute: true])
+            def uri = createLink([uri: '/ssb/logout/timeoutPage', action: ACTION_TIMEOUT_PAGE, absolute: true])
             invalidateSession(response)
             redirect uri: uri, params: mepCode?[ mep: mepCode]:[]
         }
