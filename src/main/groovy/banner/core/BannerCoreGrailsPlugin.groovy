@@ -100,6 +100,12 @@ class BannerCoreGrailsPlugin extends Plugin {
                         }
                     }
                 }
+                //new DS
+                if (isCommmgrDataSourceEnabled()) {
+                    underlyingCommmgrDataSource(JndiObjectFactoryBean) {
+                        jndiName = "java:comp/env/${CH.config.bannerCommmgrDataSource.jndiName}"
+                    }
+                }
                 break
             default: // we'll use our locally configured dataSource for development and test environments
                 log.info "Using development/test datasource"
@@ -122,7 +128,19 @@ class BannerCoreGrailsPlugin extends Plugin {
                         password = "${CH.config.bannerSsbDataSource.password}"
                         username = "${CH.config.bannerSsbDataSource.username}"
                     }
-
+                }
+                //ensure both the flag and the datasource have been defined before setting the
+                //underlyingdatasource
+                if (isCommmgrDataSourceEnabled() && CH.config.bannerCommmgrDataSource != [:] ) {
+                    underlyingCommmgrDataSource(BasicDataSource) {
+                        maxActive = 5
+                        maxIdle = 2
+                        defaultAutoCommit = "false"
+                        driverClassName = "${CH.config.bannerCommmgrDataSource.driver}"
+                        url = "${CH.config.bannerCommmgrDataSource.url}"
+                        password = "${CH.config.bannerCommmgrDataSource.password}"
+                        username = "${CH.config.bannerCommmgrDataSource.username}"
+                    }
                 }
                 break
         }
@@ -144,6 +162,10 @@ class BannerCoreGrailsPlugin extends Plugin {
             try {
                 underlyingSsbDataSource = ref(underlyingSsbDataSource)
             } catch (MissingPropertyException) { } // don't inject it if we haven't configured this datasource
+            try {
+                underlyingCommmgrDataSource = ref(underlyingCommmgrDataSource)
+            } catch (MissingPropertyException) { } // don't inject it if we haven't configured this datasource
+
             nativeJdbcExtractor = ref(nativeJdbcExtractor)
         }
 
@@ -392,6 +414,10 @@ class BannerCoreGrailsPlugin extends Plugin {
 
     private def isSsbEnabled() {
         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
+    }
+
+    private def isCommmgrDataSourceEnabled() {
+        CH.config.commmgrDataSourceEnabled instanceof Boolean ? CH.config.commmgrDataSourceEnabled : false
     }
 
 

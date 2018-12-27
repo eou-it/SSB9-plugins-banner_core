@@ -85,7 +85,11 @@ class ResetPasswordController {
             else{
                 String baseUrl = "${CH?.config.banner.events.resetpassword.guest.url}${request.contextPath}/resetPassword/recovery"
                 String postUrl = "${request.contextPath}/resetPassword/recovery"
-                resetPasswordService.generateResetPasswordURL(id, baseUrl)
+                if (CH?.config.banner.events.resetpassword.guest.url) { // Events App
+                    resetPasswordService.generateResetPasswordURL(id, baseUrl)
+                }else{
+                    resetPasswordService.generateResetPasswordProxyURL(id)  // Proxy App
+                }
                 String view = 'recovery'
                 render view: view, model: [userName: id, postUrl : postUrl, cancelUrl: cancelUrl, infoPage:true]
             }

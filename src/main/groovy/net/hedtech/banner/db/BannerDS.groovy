@@ -50,6 +50,8 @@ public class BannerDS implements DataSource {
 
     DataSource underlyingDataSource
     DataSource underlyingSsbDataSource
+    DataSource underlyingCommmgrDataSource
+
 
     def nativeJdbcExtractor  // injected by Spring
     def dataSourceUrl
@@ -86,12 +88,17 @@ public class BannerDS implements DataSource {
         BannerConnection bannerConnection
         String[] roles
         def user = SecurityContextHolder?.context?.authentication?.principal
-        if ( DBUtility.isNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(user) ) {
-            conn = underlyingSsbDataSource.getConnection()
-            setMepSsb(conn)
+        if( DBUtility.isCommmgrDataSourceEnabled() && (underlyingCommmgrDataSource != null) && (RequestContextHolder.getRequestAttributes() == null) && DBUtility.isAdminOrOracleProxyRequired(user)) {
+            conn = underlyingCommmgrDataSource.getConnection()
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
-            bannerConnection = new BannerConnection(conn, null, this)
-            log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
+            log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingCommmgrDataSource for the user ${user}"
+
+            List applicableAuthorities = extractApplicableAuthorities(user)
+            setRoles(oconn, user, applicableAuthorities)
+
+
+            setFGAC(conn)
+            bannerConnection = new BannerConnection(conn, user?.username, this)
         }
         else if (DBUtility.isAdminOrOracleProxyRequired(user)) {
             bannerConnection = getCachedConnection(user)

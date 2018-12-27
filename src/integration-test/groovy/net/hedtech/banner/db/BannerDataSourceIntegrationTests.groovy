@@ -51,6 +51,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     def apiOracleUsersProxiedInFile
     def apiUrlPrefixesInFile
     def ssbEnabledInFile
+    def commmgrDataSourceEnabledInFile
     BannerDS bannerDS
 
     // NOTE: Please also see 'FooServiceIntegrationTests', as that test also includes framework tests pertaining to connections.
@@ -75,6 +76,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         apiOracleUsersProxiedInFile=config.apiOracleUsersProxied
         apiUrlPrefixesInFile=config.apiUrlPrefixes
         ssbEnabledInFile=config.ssbEnabled
+        commmgrDataSourceEnabledInFile=config.commmgrDataSourceEnabled
     }
 
     public void resetConfigAsInTheFile(){
@@ -82,6 +84,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         config.apiOracleUsersProxied=apiOracleUsersProxiedInFile
         config.apiUrlPrefixes=apiUrlPrefixesInFile
         config.ssbEnabled=ssbEnabledInFile
+        config.commmgrDataSourceEnabled=commmgrDataSourceEnabledInFile
     }
 
     public void setupAPIData(){
@@ -119,6 +122,33 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         setupUnderlyingSSBDataSource()
     }
 
+    public void setupUnderlyingCommmgrDataSource(){
+        def bb = new grails.spring.BeanBuilder()
+        bb.beans {
+            underlyingCommmgrDataSource(BasicDataSource) {
+                maxActive = 5
+                maxIdle = 2
+                defaultAutoCommit = "false"
+                driverClassName = "oracle.jdbc.OracleDriver"
+                url = "${config.bannerSsbDataSource.url}"
+                password = "${config.bannerSsbDataSource.password}"
+                username = "commmgr"
+            }
+        }
+        ApplicationContext testSpringContext = bb.createApplicationContext()
+        dataSource.underlyingCommmgrDataSource =  testSpringContext.getBean("underlyingCommmgrDataSource")
+    }
+
+    public void setupCommmgrData(){
+        formContext = ['SELFSERVICE']
+        config.ssbEnabled = true
+        config.ssbOracleUsersProxied = true
+        config.commmgrDataSourceEnabled=true
+        setupUnderlyingCommmgrDataSource()
+        username = PROXY_USERNAME
+        password = PROXY_PASSWORD
+        SSBSetUp(username,password)
+    }
 
     public void setupSSBWithNoProxy(){
         config.ssbOracleUsersProxied = false
@@ -222,7 +252,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         } finally {
             handler.flush();
             String logMsg = out.toString()
-            log.error ("SQLSyntaxErrorException with "+ logMsg)
+            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             conn.close()
             sql.close()
@@ -260,7 +290,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         finally {
             handler.flush()
             String logMsg = out.toString()
-            log.error ("SQLSyntaxErrorException with "+ logMsg)
+            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             assertTrue(logMsg.toLowerCase().contains("ora-01979: missing or invalid password for role 'ban_default_m'"))
             conn.close()
@@ -300,7 +330,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         finally {
             handler.flush()
             String logMsg = out.toString()
-            log.error ("SQLSyntaxErrorException with "+ logMsg)
+            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             assertTrue(logMsg.toLowerCase().contains("ora-01924: role 'junk' not granted or does not exist"))
             conn.close()
@@ -328,6 +358,18 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         setupSSBWithProxy()
         def conn = (dataSource as BannerDS).getConnection()
         assertTrue "Expected BannerConnection but have ${conn?.class}", conn instanceof BannerConnection
+        dataSource.removeConnection(conn)
+        if (conn) conn.close()
+        tearDownDataSetup()
+        resetConfigAsInTheFile()
+    }
+
+    @Test
+    public void testCommmgrConnection(){
+        backupConfigFileConfigurations();
+        setupCommmgrData()
+        def conn = (dataSource as BannerDS).getConnection()
+        assertNotNull conn
         dataSource.removeConnection(conn)
         if (conn) conn.close()
         tearDownDataSetup()
@@ -399,6 +441,15 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
+    public void testUnderlyingDataSourceSSBUserWithCommmgrDataSourceFalse() {
+        setUpValidSSBTypeUserWithCommmgrDataSourceFalse()
+        loginSSB(username, password)
+        def underlyingDS = bannerDS.getUnderlyingDataSource()
+        assertNotNull(underlyingDS)
+        logout()
+    }
+
+    @Test
     public void testGetUserRoles () {
         setUpValidAdminUserId()
         login(username, password)
@@ -449,6 +500,22 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
+    public void testGetConnectionWithSelfServiceRequestWithCommmgrDatasourceFalse() {
+        def connection
+        try {
+            setUpValidSSBTypeUserWithCommmgrDataSourceFalse()
+            loginSSB(username, password)
+            connection = bannerDS.getSsbConnection()
+            assertNotNull(connection)
+        } finally {
+            if (connection) connection.close()
+            tearDownDataSetup()
+            resetConfigAsInTheFile()
+            logout()
+        }
+    }
+
+    @Test
     public void testGetCachedConnection () {
         backupConfigFileConfigurations();
         setupAPIWithNoProxy()
@@ -483,6 +550,30 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         setUpFormContext()
         def config = Holders.getConfig()
         config.ssbEnabled = true
+        username = "HOSH00002"
+        password = "111111"
+        def bb = new grails.spring.BeanBuilder()
+        bb.beans {
+            underlyingSsbDataSource(BasicDataSource) {
+                maxActive = 5
+                maxIdle = 2
+                defaultAutoCommit = "false"
+                driverClassName = "${config.bannerSsbDataSource.driver}"
+                url = "${config.bannerSsbDataSource.url}"
+                password = "${config.bannerSsbDataSource.password}"
+                username = "${config.bannerSsbDataSource.username}"
+            }
+        }
+
+        ApplicationContext testSpringContext = bb.createApplicationContext()
+        dataSource.underlyingSsbDataSource =  testSpringContext.getBean("underlyingSsbDataSource")
+    }
+
+    public void setUpValidSSBTypeUserWithCommmgrDataSourceFalse(){
+        setUpFormContext()
+        def config = Holders.getConfig()
+        config.ssbEnabled = true
+        config.commmgrDataSourceEnabled=false
         username = "HOSH00002"
         password = "111111"
         def bb = new grails.spring.BeanBuilder()

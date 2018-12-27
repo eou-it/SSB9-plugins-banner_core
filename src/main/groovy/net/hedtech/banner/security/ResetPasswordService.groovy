@@ -53,6 +53,8 @@ class ResetPasswordService {
     static final String LOG_RESET_PASSWORD_URL_MESSAGE_3 = " Reply"
     static final String LOG_RESET_PASSWORD_URL_ERROR_MESSAGE = "ERROR: Generate reset password URL"
     static final String Pin_EXP_DAYS_QUERY="select TWGBWRUL_PIN_EXP_DAYS from TWGBWRUL"
+    static final String LOG_RESET_PASSWORD_PROXY_URL_MESSAGE_5 = "Calling gokauth.p_reset_proxy_passwd procedure"
+    static final String FORGOT_PASSWORD_PROXY = "{call gokauth.p_reset_proxy_passwd(?,?,?)}"
 
     /**
      *
@@ -576,6 +578,39 @@ class ResetPasswordService {
             sql.close()
         }
 
+    }
+
+    /**
+     *
+     * @param nonPidmId
+     * @return
+     *
+     * This method will generate reset password URL for the non-pidm (Banner General SS Proxy App) user which is used later for resetting the password
+     *
+     */
+    public def generateResetPasswordProxyURL(nonPidmId){
+        Sql sql = new Sql(dataSource.getUnproxiedConnection())
+        def successFlag
+        def replyFlag
+        log.debug (LOG_RESET_PASSWORD_PROXY_URL_MESSAGE_5)
+        try {
+            sql.call( FORGOT_PASSWORD_PROXY,
+                    [ nonPidmId,
+                      Sql.VARCHAR,
+                      Sql.VARCHAR
+                    ]
+            ) { out_success,out_reply ->
+                successFlag = out_success
+                replyFlag = out_reply
+                log.debug( LOG_RESET_PASSWORD_URL_MESSAGE_2 + successFlag + LOG_RESET_PASSWORD_URL_MESSAGE_3 + replyFlag )
+            }
+
+        } catch (e) {
+            log.error( LOG_RESET_PASSWORD_URL_ERROR_MESSAGE + e)
+            throw e
+        } finally {
+            sql?.close()
+        }
     }
 
 }
