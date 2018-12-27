@@ -85,6 +85,6 @@ Copyright 2016-18 Ellucian Company L.P. and its affiliates.
         </div>
     </div>
 </div>
-<asset:javascript src="modules/changePasswordLTR-mf.js"/>
+<asset:javascript src="modules/changePassword-mf.js"/>
 </body>
 </html>
