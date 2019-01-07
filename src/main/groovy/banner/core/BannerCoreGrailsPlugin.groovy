@@ -40,6 +40,9 @@ import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
 import javax.servlet.Filter
 import java.util.concurrent.Executors
 
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
+import net.hedtech.banner.db.DbConnectionCacheSessionListener
+
 /**
  * A Grails Plugin supporting cross cutting concerns.
  *
@@ -313,6 +316,13 @@ class BannerCoreGrailsPlugin extends Plugin {
             break
     }
         */
+
+        /*** Register Http Session Listener ***/
+        dbConnectionCacheSessionListener(DbConnectionCacheSessionListener)
+        servletListenerRegistrationBean(ServletListenerRegistrationBean){
+            name = 'Banner Core Session Listener'
+            listener = ref('dbConnectionCacheSessionListener')
+        }
 
         // Switch to grails.util.Holders in Grails 2.x
         if (!CH.config.privacy?.codes) {
