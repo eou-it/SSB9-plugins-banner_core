@@ -119,9 +119,8 @@ markdown = [
 // installation-specific configuration file (see Config.groovy for the include).
 //
 dataSource {
-    //configClass = GrailsAnnotationConfiguration.class
     dialect = "org.hibernate.dialect.Oracle10gDialect"
-    //loggingSql = false
+    loggingSql = false
 }
 
 

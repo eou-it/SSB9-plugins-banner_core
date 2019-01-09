@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.testing
 
+import org.springframework.beans.factory.annotation.Autowired
+
 import static org.junit.Assert.*
 import grails.util.GrailsNameUtils
 import groovy.sql.Sql
@@ -90,6 +92,7 @@ class BaseIntegrationTestCase extends Assert {
         renderMap = [:]
         redirectMap = [:]
         flash = [:]
+        GrailsWebMockUtil.bindMockWebRequest(webAppCtx)
 
         if (formContext) {
             FormContext.set( formContext )

@@ -444,7 +444,7 @@ class BannerCoreGrailsPlugin extends Plugin {
     private createBeanList(names, ctx) { names.collect { name -> ctx.getBean(name) } }
 
 
-    private setupExternalConfig() {
+    private static setupExternalConfig() {
         def config = CH.config
         def locations = config.grails.config.locations
         String filePathName
@@ -481,14 +481,18 @@ class BannerCoreGrailsPlugin extends Plugin {
             }
             if(filePathName && configText) {
                 try {
-                    Map properties = configText ? new ConfigSlurper(Environment.current.name).parse(configText)?.flatten() : [:]
-                    Holders.config.merge(properties)
+                    if(filePathName.endsWith('.groovy')){
+                        loadExternalGroovyConfig(configText)
+                    }
+                    else if(filePathName.endsWith('.properties')){
+                        loadExternalPropertiesConfig(filePathName)
+                    }
                 }
                 catch (e) {
                     println "NOTICE: Caught exception while loading configuration files (depending on current grails target, this may be ok): ${e.message}"
                 }
             } else {
-                log.error "Configuration files not found either in system variable or in classpath."
+                println "Configuration files not found either in system variable or in classpath."
             }
         }
     }
@@ -499,4 +503,15 @@ class BannerCoreGrailsPlugin extends Plugin {
         }
     }
 
+    private static void loadExternalPropertiesConfig(String filePathName) {
+        FileInputStream inputStream = new FileInputStream(filePathName)
+        Properties prop = new Properties()
+        prop.load(inputStream)
+        Holders.config.merge(prop)
+    }
+
+    private static void loadExternalGroovyConfig(String configText) {
+        Map properties = configText ? new ConfigSlurper(Environment.current.name).parse(configText)?.flatten() : [:]
+        Holders.config.merge(properties)
+    }
 }
