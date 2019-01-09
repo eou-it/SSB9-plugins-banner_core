@@ -13,6 +13,7 @@ import grails.util.Holders
 import grails.util.Holders  as CH
 import grails.util.Metadata
 import groovy.util.logging.Slf4j
+import net.hedtech.banner.configuration.ExternalConfigurationUtils
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.db.BannerDataSourceConnectionSourceFactory
 import net.hedtech.banner.mep.MultiEntityProcessingService
@@ -25,9 +26,7 @@ import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.runtime.GStringImpl
 import org.grails.orm.hibernate.HibernateEventListeners
-import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.event.SimpleApplicationEventMulticaster
-import org.springframework.core.Ordered
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.security.web.access.ExceptionTranslationFilter
@@ -36,7 +35,6 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
-
 import javax.servlet.Filter
 import java.util.concurrent.Executors
 
@@ -78,7 +76,7 @@ class BannerCoreGrailsPlugin extends Plugin {
     Closure doWithSpring() { {->
         String appName = Metadata.current.getApplicationName()
         println "AppName is = ${appName}"
-        setupExternalConfig()
+        ExternalConfigurationUtils.setupExternalConfig()
         String serverType = CH.config.targetServer
         switch (Environment.current) {
             case Environment.PRODUCTION:
@@ -440,66 +438,9 @@ class BannerCoreGrailsPlugin extends Plugin {
         }
     }
 
-
-    private createBeanList(names, ctx) { names.collect { name -> ctx.getBean(name) } }
-
-
-    private static setupExternalConfig() {
-        def config = CH.config
-        def locations = config.grails.config.locations
-        String filePathName
-        String configText
-
-        locations.each { propertyName,  fileName ->
-            filePathName = getFilePath(System.getProperty(propertyName))
-            if (Environment.getCurrent() != Environment.PRODUCTION) {
-                if (!filePathName) {
-                    filePathName = getFilePath("${System.getProperty('user.home')}/.grails/${fileName}")
-                    if (filePathName) log.info "Using configuration file '\$HOME/.grails/$fileName'"
-                }
-                if (!filePathName) {
-                    filePathName = getFilePath("${fileName}")
-                    if (filePathName) log.info "Using configuration file '$fileName'"
-                }
-                if (!filePathName) {
-                    filePathName = getFilePath("grails-app/conf/$fileName")
-                    if (filePathName) log.info "Using configuration file 'grails-app/conf/$fileName'"
-                }
-                println "External configuration file: " + filePathName
-                configText = new File(filePathName)?.text
-            } else {
-                if (filePathName) {
-                    println "In prod mode using configuration file '$fileName' from the system path"
-                    log.info "In prod mode using configuration file '$fileName' from the system path"
-                    configText = new File(filePathName)?.text
-                } else {
-                    filePathName = Thread.currentThread().getContextClassLoader().getResource( "$fileName" )?.getFile()
-                    configText   = Thread.currentThread().getContextClassLoader().getResource( "$fileName" ).text
-                    println "Using configuration file '$fileName' from the classpath"
-                    log.info "Using configuration file '$fileName' from the classpath (e.g., from within the war file)"
-                }
-            }
-            if(filePathName && configText) {
-                try {
-                    if(filePathName.endsWith('.groovy')){
-                        loadExternalGroovyConfig(configText)
-                    }
-                    else if(filePathName.endsWith('.properties')){
-                        loadExternalPropertiesConfig(filePathName)
-                    }
-                }
-                catch (e) {
-                    println "NOTICE: Caught exception while loading configuration files (depending on current grails target, this may be ok): ${e.message}"
-                }
-            } else {
-                println "Configuration files not found either in system variable or in classpath."
-            }
-        }
-    }
-
-    private static String getFilePath( filePath ) {
-        if (filePath && new File( filePath ).exists()) {
-            "${filePath}"
+    private createBeanList(names, ctx) {
+        names.collect {
+            name -> ctx.getBean(name)
         }
     }
 
