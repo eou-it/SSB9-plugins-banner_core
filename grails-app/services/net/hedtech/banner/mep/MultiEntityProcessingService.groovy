@@ -200,9 +200,20 @@ class MultiEntityProcessingService {
 
     def getUserHomeCodes(userName) {
 
+        return getUserHomeCodesHelper(userName, new Sql(sessionFactory.getCurrentSession().connection()))
+
+    }
+
+
+    def getUserHomeCodes(userName, con) {
+        return getUserHomeCodesHelper(userName, new Sql(con))
+    }
+
+
+    def getUserHomeCodesHelper(userName, Sql sql) {
+
         def mepHomes = []
 
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         sql.call("""
           declare
             c_cursor SYS_REFCURSOR;
@@ -352,6 +363,7 @@ class MultiEntityProcessingService {
 
 
     private void setUserDefault(home) {
+
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         try {
             sql.call("{call g\$_vpdi_security.g\$_vpdi_set_user_default(${home})}")

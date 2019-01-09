@@ -121,7 +121,7 @@ public class BannerDS implements DataSource {
                 setRoles(oconn, user, applicableAuthorities)
 
                 if (ApiUtils.isApiRequest() || DBUtility.isSSBProxySupportEnabled()){ // APIs handle MEP like SSB
-                    setMepSsb(conn)
+                    setMepSsb(conn, user) // validate user is authorized for the MEP code
                 }
                 else {
                     setMep(conn, user)
