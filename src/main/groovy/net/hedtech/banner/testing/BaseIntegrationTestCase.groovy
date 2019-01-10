@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.testing
 
+import net.hedtech.banner.security.BannerAuthenticationProvider
 import org.springframework.beans.factory.annotation.Autowired
 
 import static org.junit.Assert.*
@@ -92,11 +93,12 @@ class BaseIntegrationTestCase extends Assert {
         renderMap = [:]
         redirectMap = [:]
         flash = [:]
-        GrailsWebMockUtil.bindMockWebRequest(webAppCtx)
+        bannerAuthenticationProvider = new BannerAuthenticationProvider()
 
         if (formContext) {
             FormContext.set( formContext )
         } else if (controller) {
+            GrailsWebMockUtil.bindMockWebRequest(webAppCtx)
             // the formContext wasn't set explicitly, but we should be able to set it automatically since we know the controller
             def controllerName = controller?.class.simpleName.replaceAll( /Controller/, '' )
             Map formControllerMap = getFormControllerMap() // note: getFormControllerMap() circumvents a current grails bug
