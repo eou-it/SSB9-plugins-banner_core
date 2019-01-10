@@ -604,7 +604,12 @@ class ServiceBase {
      *   3) be a map that contains a 'domainModel' key whose value is the domain model instance to return
      **/
     public def assignOrInstantiate( domainClass, Map domainObjectOrProperties ) {
-        domainClass.newInstance( extractParams( domainClass, domainObjectOrProperties, log ) )
+        Map content = extractParams(domainClass, domainObjectOrProperties, log)
+        def entity = Holders.getGrailsApplication().getMappingContext().getPersistentEntity(ConverterUtil.trimProxySuffix(getDomainClass().getName()))
+        def propertyNames = entity.getPersistentPropertyNames()
+        def properties = content.subMap(propertyNames)
+        def domainObject = domainClass.newInstance(properties)
+        return domainObject
     }
 
 
