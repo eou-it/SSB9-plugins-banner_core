@@ -561,8 +561,8 @@ public class BannerDS implements DataSource {
         log.trace "BannerDS.unlockRole will set role '${bannerAuth.roleName}' for connection $conn"
 
         try{
-            Sql db = new Sql(conn)
-            db.call("{call dbms_session.set_role(?)}", [role_stmt]) // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
+        Sql db = new Sql(conn)
+        db.call("{call dbms_session.set_role(?)}", [role_stmt]) // Note: we don't close the Sql as this closes the connection, and we're preparing the connection for subsequent use
         } catch(SQLSyntaxErrorException sqex){
             log.error "Failed to set role for session for Oracle connection: $conn  with Exception: $sqex "
             String message = MessageHelper.message("net.hedtech.banner.errors.login.rolemissing")
@@ -626,7 +626,7 @@ public class BannerDS implements DataSource {
         }
     }
 
-    private setMepSsb(conn) {
+    private setMepSsb(conn, user = null) {
 
         def desc
 
@@ -658,6 +658,17 @@ public class BannerDS implements DataSource {
                     log.error "Mep Code is invalid, will throw MepCodeNotFoundException"
                     throw new MepCodeNotFoundException(mepCode: mepCode)
                 } else {
+                    // // validate user is authorized for the MEP code
+                    if (user) {
+                        def authorizedMepCodes = getMultiEntityProcessingService().getUserHomeCodes(user.oracleUserName, conn).code
+                        if (!authorizedMepCodes.contains(mepCode)) {
+                            conn?.close()
+                            // We'll throw a MepCodeNotFoundException so that a '404' error code will be
+                            // specified when this is wrapped in an ApplicationException
+                            log.error "Mep Code is not authorized, will throw MepCodeNotFoundException"
+                            throw new MepCodeNotFoundException(mepCode: mepCode)
+                        }
+                    }
                     session.setAttribute("ssbMepDesc", desc)
                     getMultiEntityProcessingService().setHomeContext(mepCode, conn)
                     getMultiEntityProcessingService().setProcessContext(mepCode, conn)
