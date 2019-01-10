@@ -17,10 +17,12 @@ import org.junit.Before
 import org.junit.Test
 import org.springframework.context.ApplicationContext
 import org.springframework.core.convert.ConversionFailedException
+import static groovy.test.GroovyAssert.shouldFail
 
 /**
  * ZipForTesting domain is mapped to GTVZIPC which is
- * base table that comes with the template. So, the data
+ * base table that comes with the template. So, the
+ * data
  * is going to be consistent across the environments.
  * So the test case does not have to create a record
  * to ensure the consistent execution.
@@ -69,7 +71,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def query = """FROM  ZipForTesting1 a WHERE a.code = :zipcode and a.city = :city) """
         filterData.params = ["zipcode":"98119", "city":"Broomall test"]
         def pagingAndSortParams = [:]
-        shouldFail(ApplicationException) {
+        shouldFail {
             try {
                 def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
                 def result = dynamicFinder.find(filterData, pagingAndSortParams)
@@ -163,7 +165,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [sortCriteria: [
                 ["sortColumn": "city", "sortDirection": "asc"]
         ]]
-        shouldFail(ApplicationException) {
+        shouldFail{
             try {
                 def result = DynamicFinder.fetchAll(zipForTestingObject.class, query, "a", filterData, pagingAndSortParams)
             } catch (ApplicationException ae) {
@@ -233,7 +235,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [sortCriteria :  [
                 ["sortColumn": "addressType.telephoneType.code,id,xyz", "sortDirection": "asc"],
         ]]
-        shouldFail(ApplicationException) {
+        shouldFail {
             try {
                 DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
             } catch (ApplicationException ae) {
@@ -249,7 +251,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [sortCriteria :  [
                 ["sortColumn": "addressType.xyz.code,id,version", "sortDirection": "asc"],
         ]]
-        shouldFail(ApplicationException) {
+        shouldFail {
             try {
                 DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
             } catch (ApplicationException ae) {
@@ -266,7 +268,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [sortCriteria :  [
                 ["sortColumn": "addressType.telephoneType.code.xyz", "sortDirection": "asc"],
         ]]
-        shouldFail(ApplicationException) {
+        shouldFail {
             try {
                 DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
             } catch (ApplicationException ae) {
@@ -283,7 +285,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [sortCriteria :  [
                 ["sortColumn": "emailType.urlIndicator.xyz", "sortDirection": "asc"],
         ]]
-        shouldFail(ApplicationException) {
+        shouldFail {
             try {
                 DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
             } catch (ApplicationException ae) {
@@ -300,7 +302,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [sortCriteria :  [
                 ["sortColumn": "emailType.urlIndicator.lastModified", "sortDirection": "asc"],
         ]]
-        shouldFail(ApplicationException) {
+        shouldFail {
             try {
                 DynamicFinder.fetchAll(commonMatchingSourceRule.class, query, "a", filterData,pagingAndSortParams) ;
             } catch (ApplicationException ae) {
@@ -345,7 +347,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
                 ["sortColumn": "version;delete from spriden;", "sortDirection": "asc"],
         ]]
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
-        shouldFail(ApplicationException) {
+        shouldFail {
             try {
                dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ApplicationException ae) {
@@ -362,7 +364,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [sortColumn: "citysome"]
 
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
-        shouldFail(ApplicationException) {
+        shouldFail {
             try {
                 dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ApplicationException ae) {
@@ -379,7 +381,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [sortColumn: "city" , sortDirection: "xyz"]
 
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
-        shouldFail(ApplicationException) {
+        shouldFail {
             try {
                 dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ApplicationException ae) {
@@ -396,7 +398,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [max: "hjghjj", offset: 5]
 
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
-        shouldFail(ConversionFailedException) {
+        shouldFail {
             try {
                 dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ConversionFailedException ae) {
@@ -413,7 +415,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [max: 5, offset: "hjghjj"]
 
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
-        shouldFail(ConversionFailedException) {
+        shouldFail {
             try {
                 dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ConversionFailedException ae) {
@@ -430,7 +432,7 @@ class DynamicFinderIntegrationTests extends BaseIntegrationTestCase {
         def pagingAndSortParams = [sortColumn: "city;delete from spriden;"]
 
         def dynamicFinder = new DynamicFinder(zipForTestingObject.class, query, "a")
-        shouldFail(ApplicationException) {
+        shouldFail{
             try {
                 dynamicFinder.find(filterData, pagingAndSortParams);
             } catch (ApplicationException ae) {

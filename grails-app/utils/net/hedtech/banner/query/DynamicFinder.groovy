@@ -3,7 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.query
 
-
+import grails.util.Holders
 import grails.web.context.ServletContextHolder
 import groovy.util.logging.Slf4j
 import net.hedtech.banner.exceptions.ApplicationException
@@ -151,6 +151,6 @@ class DynamicFinder {
 
 
     public static ApplicationContext getApplicationContext() {
-        return (ApplicationContext) ServletContextHolder.getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
+        return Holders.getGrailsApplication().getMainContext()
     }
 }
