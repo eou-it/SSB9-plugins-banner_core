@@ -15,6 +15,7 @@ import org.junit.Before
 import org.junit.After
 import org.junit.Test
 import org.springframework.dao.InvalidDataAccessResourceUsageException
+import static groovy.test.GroovyAssert.shouldFail
 
 @Integration
 @Rollback
@@ -79,7 +80,7 @@ class AuditTrailPropertyIntegrationTest extends BaseIntegrationTestCase {
         assertNotNull facultyScheduleQueryView.id
 
         facultyScheduleQueryView.setMaximumEnrollment(100)
-        shouldFail(InvalidDataAccessResourceUsageException) {
+        shouldFail {
             facultyScheduleQueryView.save(failOnError: true, flush: true)
         }
 

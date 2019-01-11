@@ -21,6 +21,7 @@ import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureExcep
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 
 import java.sql.SQLException
+import static groovy.test.GroovyAssert.shouldFail
 
 /**
  * An integration test for a ApplicationException.
@@ -154,7 +155,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 1L, mmve.getErrorsFor( 'Foo', foo2.id )?.allErrors?.size()
 
         // If we try to add Errors for one of our Foo instances again, we'll get an exception
-        shouldFail( IllegalStateException ) {
+        shouldFail {
             mmve.addErrors( foo1.errors )
         }
     }

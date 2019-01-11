@@ -19,6 +19,9 @@ import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.web.context.request.RequestContextHolder
+import static groovy.test.GroovyAssert.shouldFail
+
+
 
 
 /**
@@ -131,7 +134,7 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
     void testExpiredPin() {
        expireUser(testUser.pidm)
 
-        shouldFail( CredentialsExpiredException ) {
+        shouldFail{
             provider.authenticate( new TestAuthenticationRequest( testUser ) )
         }
 
@@ -169,7 +172,7 @@ class SelfServiceBannerAuthenticationProviderTests extends BaseIntegrationTestCa
             assertNull provider.authenticate( new TestAuthenticationRequest( user) )
         }
 
-        shouldFail( DisabledException) {
+        shouldFail {
             provider.authenticate( new TestAuthenticationRequest( user ) )
         }
         enableUser (sqlObj, testUser.pidm)

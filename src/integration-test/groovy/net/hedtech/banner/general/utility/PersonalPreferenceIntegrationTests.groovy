@@ -12,6 +12,7 @@ import org.junit.Test
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import static groovy.test.GroovyAssert.shouldFail
 
 @Integration
 @Rollback
@@ -121,7 +122,7 @@ class PersonalPreferenceIntegrationTests extends BaseIntegrationTestCase {
 		personalPreference.lastModified= new Date()
 		personalPreference.lastModifiedBy="test"
 		personalPreference.dataOrigin= "Banner"
-        shouldFail( HibernateOptimisticLockingFailureException ) {
+        shouldFail {
             personalPreference.save( flush: true )
         }
     }
