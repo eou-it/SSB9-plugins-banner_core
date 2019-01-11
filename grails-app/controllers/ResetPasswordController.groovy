@@ -17,16 +17,6 @@ import java.sql.SQLException
 
 class ResetPasswordController {
 
-    /**
-     * Dependency injection for the authenticationTrustResolver.
-    */
-    def authenticationTrustResolver
-
-    /**
-     * Dependency injection for the springSecurityService.
-     */
-    def springSecurityService
-
     ResetPasswordService resetPasswordService
 
     def selfServiceBannerAuthenticationProvider
@@ -85,7 +75,11 @@ class ResetPasswordController {
             else{
                 String baseUrl = "${CH?.config.banner.events.resetpassword.guest.url}${request.contextPath}/resetPassword/recovery"
                 String postUrl = "${request.contextPath}/resetPassword/recovery"
-                resetPasswordService.generateResetPasswordURL(id, baseUrl)
+                if (CH?.config.banner.events.resetpassword.guest.url) { // Events App
+                    resetPasswordService.generateResetPasswordURL(id, baseUrl)
+                }else{
+                    resetPasswordService.generateResetPasswordProxyURL(id)  // Proxy App
+                }
                 String view = 'recovery'
                 render view: view, model: [userName: id, postUrl : postUrl, cancelUrl: cancelUrl, infoPage:true]
             }

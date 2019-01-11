@@ -3,7 +3,10 @@
  *******************************************************************************/
 package net.hedtech.banner.testing
 
+import grails.web.servlet.context.GrailsWebApplicationContext
+import net.hedtech.banner.security.BannerAuthenticationProvider
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 
 import static org.junit.Assert.*
 import grails.util.GrailsNameUtils
@@ -92,8 +95,8 @@ class BaseIntegrationTestCase extends Assert {
         renderMap = [:]
         redirectMap = [:]
         flash = [:]
-        GrailsWebMockUtil.bindMockWebRequest(webAppCtx)
-
+        bannerAuthenticationProvider = new BannerAuthenticationProvider()
+        webAppCtx = new GrailsWebApplicationContext()
         if (formContext) {
             FormContext.set( formContext )
         } else if (controller) {
@@ -106,6 +109,8 @@ class BaseIntegrationTestCase extends Assert {
         } else {
             //log.info("Warning: No FormContext has been set, and it cannot be set automatically without knowing the controller...")
         }
+        GrailsWebMockUtil.bindMockWebRequest(webAppCtx)
+        //def webRequest = GrailsWebMockUtil.bindMockWebRequest(webAppCtx,new GrailsMockHttpServletRequest(), new GrailsMockHttpServletResponse())
 
         if (controller) {
             controller.class.metaClass.getParams = { -> params }
@@ -166,7 +171,7 @@ class BaseIntegrationTestCase extends Assert {
      * or omit and accept the default 'grails_user' and 'u_pick_it'.
      **/
     protected void login( userName = "grails_user", password = "u_pick_it" ) {
-        Authentication auth = bannerAuthenticationProvider.authenticate( new UPAT( userName, password ) )
+        Authentication auth = bannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken( userName, password ) )
         SecurityContextHolder.getContext().setAuthentication( auth )
     }
 
@@ -175,7 +180,7 @@ class BaseIntegrationTestCase extends Assert {
      * or omit and accept the default 'HOSWEB002' and '111111'.
      **/
     protected void loginSSB( userName = "HOSWEB002", password = "111111" ) {
-        Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UPAT( userName, password ) )
+        Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken( userName, password ) )
         SecurityContextHolder.getContext().setAuthentication( auth )
     }
 

@@ -2,11 +2,16 @@
  Copyright 2017 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.testing
+
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+@Integration
+@Rollback
 class TelephonicTypeForTestingIntegrationTests extends BaseIntegrationTestCase {
 
     TelephoneTypeForTesting telephoneTypeForTesting

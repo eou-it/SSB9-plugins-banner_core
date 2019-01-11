@@ -2,6 +2,11 @@
  Copyright 2016-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
+
+import grails.core.GrailsApplication
+import grails.gorm.transactions.Rollback
+import grails.plugin.springsecurity.SpringSecurityService
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.AuthorizationException
@@ -17,6 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.context.request.RequestContextHolder
 
+@Integration
+@Rollback
 class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
 
     def controller
@@ -33,13 +40,14 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
     def dataSource
     def conn
     Sql db
-
+    def grailsApplication
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         controller = new LoginController()
+        controller.springSecurityService = new SpringSecurityService()
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("mep", "BANNER")
         Holders.config.ssbEnabled = true
         Holders.config.ssbOracleUsersProxied = false

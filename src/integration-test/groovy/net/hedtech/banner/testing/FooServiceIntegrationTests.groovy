@@ -3,6 +3,8 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.testing
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
@@ -20,7 +22,8 @@ import org.springframework.web.context.request.RequestContextHolder
  * Integration test for the Foo service.
  * This is NOT a model for normal 'service' tests -- it is a framework test.
  **/
-
+@Integration
+@Rollback
 class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 
 

@@ -46,7 +46,7 @@ LOG IN
 }
 
 .splashBg .logIn .textfield-wrapper {
-    width: 480px;
+    margin-top: 0;
 }
 
 .splashBg .logIn div {
@@ -54,10 +54,6 @@ LOG IN
 }
 
 .splashBg div span input {
-    width: 121px;
-    outline: none;
-    border-style: none;
-    border: 0;
     margin-left: -16px;
     direction: rtl;
     padding: 0;
@@ -171,91 +167,81 @@ LOG IN
 }
 
 .splashBg {
-  height: 408px;
-  width: 705px;
-  position: relative;
-  background-color: #ffffff; /* center section background */ /*EDS*/
-  box-shadow: 0 0 10px 0px #CECECE; /*EDS*/
-  top: 155px;
-  margin: auto;
-  right: 0px;
-  border-radius: 6px;/*EDS*/
+    height: 408px;
+    width: 705px;
+    position: relative;
+    background-color: #ffffff; /* center section background */ /*EDS*/
+    box-shadow: 0 0 10px 0px #CECECE; /*EDS*/
+    top: 155px;
+    margin: auto;
+    right: 0px;
+    border-radius: 6px;/*EDS*/
 }
 
 .splashBg:before {
-  /* top section */
-  position: absolute;
-  display: block;
-  top: 0px;
-  height: 156px;
-  width: 100%;
-  background-color: #ffffff; /*EDS*/
+    /* top section */
+    position: absolute;
+    display: block;
+    top: 0px;
+    height: 156px;
+    width: 100%;
+    background-color: #ffffff; /*EDS*/
 }
 
 .splashBg .copyright {
-  /* bottom section */
-  top: 244px;
-  bottom: 0;
-  left:0;
-  right:0;
-  margin: 0;
-  padding: 24px 85px 0 35px;
+    /* bottom section */
+    top: 244px;
+    bottom: 0;
+    left:0;
+    right:0;
+    margin: 0;
+    padding: 24px 85px 0 35px;
 }
 
 .splashBg .appName {
-  /* Banner(R) name */
-  top:55px;
-  left:35px;
-  right:auto;
+    /* Banner(R) name */
+    top:55px;
+    left:35px;
+    right:auto;
+    margin: 0;
 }
 
 .splashBg .loginMsg {
-  /* instructions under banner name */
-  top: 110px;
-  left: 37px;
-  right: auto;
+    /* instructions under banner name */
+    top: 110px;
+    left: 37px;
+    right: auto;
 }
 
 
 .splashBg .ellucianName {
-  /* Ellucian (TM) from auth.gsp patch */
-  position: absolute;
-  right: 81px;
-  left: auto;
-  text-align: right;
-  top: 191px;   /*EDS*/
-  height: 25px; /*EDS*/
-  background-image: url(../images/ellucian_logo.svg); /*EDS*/
-  background-size: cover; /*EDS*/
-  width: 10.875em; /*EDS*/
-  background-position: center center; /*EDS*/
-  background-repeat: no-repeat; /*EDS*/
-  font:normal 66.7% Arial, Helvetica, sans-serif;/*EDS*/
+    /* Ellucian (TM) from auth.gsp patch */
+    left: auto;
 }
 
 .splashBg .ellucianName .trademark {
-  font-size:4px;
+    font-size:4px;
 }
 
 .splashBg .logIn {
-  margin: 36px 248px 0 0;
+    margin: 36px 248px 0 0;
 }
 
 .splashBg .logIn DIV  {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 .splashBg .ie-warning {
-  position: relative;
+    position: relative;
 }
 
 .ie-warning DIV {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 .splashBg .signin-button-wrapper {
-  bottom: 0;
-  top: -.15em;
+    bottom: 0;
+    top: -.15em;
 }
 .splashBg .forgotPasswordDiv {
     left: 195px;

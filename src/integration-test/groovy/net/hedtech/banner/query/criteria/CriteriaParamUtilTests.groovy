@@ -12,7 +12,6 @@ import org.junit.Test
 
 @Integration
 @Rollback
-
 class CriteriaParamUtilTests extends BaseIntegrationTestCase {
 
     private CriteriaParamUtil criteriaParamUtil

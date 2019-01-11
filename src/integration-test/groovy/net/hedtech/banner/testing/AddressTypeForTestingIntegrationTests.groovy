@@ -4,10 +4,14 @@
 
 package net.hedtech.banner.testing
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+@Integration
+@Rollback
 class AddressTypeForTestingIntegrationTests extends BaseIntegrationTestCase{
 
     AddressTypeForTesting addressTypeForTesting

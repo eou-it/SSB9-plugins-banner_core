@@ -22,7 +22,6 @@ import org.springframework.web.context.request.RequestContextHolder
 
 @Integration
 @Rollback
-
 class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCase {
 
     def bannerPreAuthenticatedFilter

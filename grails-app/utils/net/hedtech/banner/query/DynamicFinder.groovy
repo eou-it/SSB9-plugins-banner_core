@@ -3,7 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.query
 
-
+import grails.util.Holders
 import grails.web.context.ServletContextHolder
 import groovy.util.logging.Slf4j
 import net.hedtech.banner.exceptions.ApplicationException
@@ -34,7 +34,7 @@ class DynamicFinder {
 
 
     public static Map getCriteriaParamsFromParams(data) {
-        Map params = new HashMap();
+        Map params = new HashMap()
         Set keys = data.keySet()
         if (keys.size() > 0) {
             keys.each { key ->
@@ -86,7 +86,7 @@ class DynamicFinder {
         def filterDataClone = filterData.clone()
         filterDataClone.params = getCriteriaParamsFromParams(filterData.params)
 
-        def queryString = QueryBuilder.buildQuery(query.flattenString(), tableIdentifier, filterDataClone, pagingAndSortParams, domainClass)
+        String queryString = QueryBuilder.buildQuery(query.flattenString(), tableIdentifier, filterDataClone, pagingAndSortParams, domainClass)
 
         Map params = getParamsFromCriteriaParams(filterDataClone.params)
 
@@ -111,7 +111,7 @@ class DynamicFinder {
         def filterDataClone = filterData.clone()
         filterDataClone.params = getCriteriaParamsFromParams(filterData.params)
 
-        def queryString = QueryBuilder.buildCountQuery(query.flattenString(), tableIdentifier, filterDataClone)
+        String queryString = QueryBuilder.buildCountQuery(query.flattenString(), tableIdentifier, filterDataClone)
 
         Map params = getParamsFromCriteriaParams(filterDataClone.params)
 
@@ -122,7 +122,7 @@ class DynamicFinder {
 
 
     public static def fetchAll(domainClass, query, tableIdentifier, filterData, pagingAndSortParams) {
-        def queryString = QueryBuilder.buildQuery(query.flattenString(), "a", filterData, pagingAndSortParams, domainClass)
+        String queryString = QueryBuilder.buildQuery(query.flattenString(), "a", filterData, pagingAndSortParams, domainClass)
 
         try {
             def list = domainClass.findAll(queryString, filterData.params, pagingAndSortParams)
@@ -142,7 +142,7 @@ class DynamicFinder {
 
 
     public static def countAll(domainClass, query, tableIdentifier, filterData) {
-        def queryString = QueryBuilder.buildCountQuery(query.flattenString(), "a", filterData.criteria)
+        String queryString = QueryBuilder.buildCountQuery(query.flattenString(), "a", filterData.criteria)
 
         def returnListCount = domainClass.executeQuery(queryString, filterData.params)
 
@@ -151,6 +151,6 @@ class DynamicFinder {
 
 
     public static ApplicationContext getApplicationContext() {
-        return (ApplicationContext) ServletContextHolder.getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
+        return Holders.getGrailsApplication().getMainContext()
     }
 }

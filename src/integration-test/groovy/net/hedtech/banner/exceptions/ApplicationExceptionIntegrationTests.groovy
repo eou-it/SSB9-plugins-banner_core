@@ -3,6 +3,8 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.exceptions
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.validation.ValidationException
 import groovy.sql.Sql
 import net.hedtech.banner.testing.Bar
@@ -23,6 +25,8 @@ import java.sql.SQLException
 /**
  * An integration test for a ApplicationException.
  **/
+@Integration
+@Rollback
 class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 
     private validationTagLibInstance

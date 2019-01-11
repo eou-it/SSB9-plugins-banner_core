@@ -1,5 +1,5 @@
 /* ****************************************************************************
-Copyright 2009-2013 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -22,6 +22,8 @@ class AccessControlInterceptor {
     //TODO check the precedence using constants
     int order = HIGHEST_PRECEDENCE + 50
 
+    def springSecurityService
+
     /**
      * Executed before a matched action
      *
@@ -34,8 +36,8 @@ class AccessControlInterceptor {
 
     boolean before() {
         def theUrl
-        if (params?.mepCode){
-            RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep",params?.mepCode?.toUpperCase())
+        if (params?.mepCode && !springSecurityService.isLoggedIn()) {
+            RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep", params?.mepCode?.toUpperCase())
         }
         Map formControllerMap = grailsApplication.config.formControllerMap
         //def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]

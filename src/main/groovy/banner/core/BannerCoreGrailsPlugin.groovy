@@ -13,6 +13,7 @@ import grails.util.Holders
 import grails.util.Holders  as CH
 import grails.util.Metadata
 import groovy.util.logging.Slf4j
+import net.hedtech.banner.configuration.ExternalConfigurationUtils
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.db.BannerDataSourceConnectionSourceFactory
 import net.hedtech.banner.mep.MultiEntityProcessingService
@@ -25,9 +26,7 @@ import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.runtime.GStringImpl
 import org.grails.orm.hibernate.HibernateEventListeners
-import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.event.SimpleApplicationEventMulticaster
-import org.springframework.core.Ordered
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.security.web.access.ExceptionTranslationFilter
@@ -36,9 +35,11 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
-
 import javax.servlet.Filter
 import java.util.concurrent.Executors
+
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
+import net.hedtech.banner.db.DbConnectionCacheSessionListener
 
 /**
  * A Grails Plugin supporting cross cutting concerns.
@@ -75,7 +76,7 @@ class BannerCoreGrailsPlugin extends Plugin {
     Closure doWithSpring() { {->
         String appName = Metadata.current.getApplicationName()
         println "AppName is = ${appName}"
-        setupExternalConfig()
+        ExternalConfigurationUtils.setupExternalConfig()
         String serverType = CH.config.targetServer
         switch (Environment.current) {
             case Environment.PRODUCTION:
@@ -100,6 +101,12 @@ class BannerCoreGrailsPlugin extends Plugin {
                         }
                     }
                 }
+                //new DS
+                if (isCommmgrDataSourceEnabled()) {
+                    underlyingCommmgrDataSource(JndiObjectFactoryBean) {
+                        jndiName = "java:comp/env/${CH.config.bannerCommmgrDataSource.jndiName}"
+                    }
+                }
                 break
             default: // we'll use our locally configured dataSource for development and test environments
                 log.info "Using development/test datasource"
@@ -122,7 +129,19 @@ class BannerCoreGrailsPlugin extends Plugin {
                         password = "${CH.config.bannerSsbDataSource.password}"
                         username = "${CH.config.bannerSsbDataSource.username}"
                     }
-
+                }
+                //ensure both the flag and the datasource have been defined before setting the
+                //underlyingdatasource
+                if (isCommmgrDataSourceEnabled() && CH.config.bannerCommmgrDataSource != [:] ) {
+                    underlyingCommmgrDataSource(BasicDataSource) {
+                        maxActive = 5
+                        maxIdle = 2
+                        defaultAutoCommit = "false"
+                        driverClassName = "${CH.config.bannerCommmgrDataSource.driver}"
+                        url = "${CH.config.bannerCommmgrDataSource.url}"
+                        password = "${CH.config.bannerCommmgrDataSource.password}"
+                        username = "${CH.config.bannerCommmgrDataSource.username}"
+                    }
                 }
                 break
         }
@@ -144,6 +163,10 @@ class BannerCoreGrailsPlugin extends Plugin {
             try {
                 underlyingSsbDataSource = ref(underlyingSsbDataSource)
             } catch (MissingPropertyException) { } // don't inject it if we haven't configured this datasource
+            try {
+                underlyingCommmgrDataSource = ref(underlyingCommmgrDataSource)
+            } catch (MissingPropertyException) { } // don't inject it if we haven't configured this datasource
+
             nativeJdbcExtractor = ref(nativeJdbcExtractor)
         }
 
@@ -292,6 +315,13 @@ class BannerCoreGrailsPlugin extends Plugin {
     }
         */
 
+        /*** Register Http Session Listener ***/
+        dbConnectionCacheSessionListener(DbConnectionCacheSessionListener)
+        servletListenerRegistrationBean(ServletListenerRegistrationBean){
+            name = 'Banner Core Session Listener'
+            listener = ref('dbConnectionCacheSessionListener')
+        }
+
         // Switch to grails.util.Holders in Grails 2.x
         if (!CH.config.privacy?.codes) {
             // Populate with default privacy policy codes
@@ -394,6 +424,10 @@ class BannerCoreGrailsPlugin extends Plugin {
         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
     }
 
+    private def isCommmgrDataSourceEnabled() {
+        CH.config.commmgrDataSourceEnabled instanceof Boolean ? CH.config.commmgrDataSourceEnabled : false
+    }
+
 
     private def getUniqueJmxBeanNameFor(String name) {
         def nameToRegister = CH.config.jmx.exported."$name"
@@ -404,66 +438,9 @@ class BannerCoreGrailsPlugin extends Plugin {
         }
     }
 
-
-    private createBeanList(names, ctx) { names.collect { name -> ctx.getBean(name) } }
-
-
-    private static setupExternalConfig() {
-        def config = CH.config
-        def locations = config.grails.config.locations
-        String filePathName
-        String configText
-
-        locations.each { propertyName,  fileName ->
-            filePathName = getFilePath(System.getProperty(propertyName))
-            if (Environment.getCurrent() != Environment.PRODUCTION) {
-                if (!filePathName) {
-                    filePathName = getFilePath("${System.getProperty('user.home')}/.grails/${fileName}")
-                    if (filePathName) log.info "Using configuration file '\$HOME/.grails/$fileName'"
-                }
-                if (!filePathName) {
-                    filePathName = getFilePath("${fileName}")
-                    if (filePathName) log.info "Using configuration file '$fileName'"
-                }
-                if (!filePathName) {
-                    filePathName = getFilePath("grails-app/conf/$fileName")
-                    if (filePathName) log.info "Using configuration file 'grails-app/conf/$fileName'"
-                }
-                println "External configuration file: " + filePathName
-                configText = new File(filePathName)?.text
-            } else {
-                if (filePathName) {
-                    println "In prod mode using configuration file '$fileName' from the system path"
-                    log.info "In prod mode using configuration file '$fileName' from the system path"
-                    configText = new File(filePathName)?.text
-                } else {
-                    filePathName = Thread.currentThread().getContextClassLoader().getResource( "$fileName" )?.getFile()
-                    configText   = Thread.currentThread().getContextClassLoader().getResource( "$fileName" ).text
-                    println "Using configuration file '$fileName' from the classpath"
-                    log.info "Using configuration file '$fileName' from the classpath (e.g., from within the war file)"
-                }
-            }
-            if(filePathName && configText) {
-                try {
-                    if(filePathName.endsWith('.groovy')){
-                        loadExternalGroovyConfig(configText)
-                    }
-                    else if(filePathName.endsWith('.properties')){
-                        loadExternalPropertiesConfig(filePathName)
-                    }
-                }
-                catch (e) {
-                    println "NOTICE: Caught exception while loading configuration files (depending on current grails target, this may be ok): ${e.message}"
-                }
-            } else {
-                println "Configuration files not found either in system variable or in classpath."
-            }
-        }
-    }
-
-    private static String getFilePath( filePath ) {
-        if (filePath && new File( filePath ).exists()) {
-            "${filePath}"
+    private createBeanList(names, ctx) {
+        names.collect {
+            name -> ctx.getBean(name)
         }
     }
 

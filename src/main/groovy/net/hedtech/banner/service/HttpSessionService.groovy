@@ -36,6 +36,7 @@ class HttpSessionService {
 
         }
         catch (e) {
-			log.trace(e)        }
+			log.trace(e.toString())
+        }
     }
 }

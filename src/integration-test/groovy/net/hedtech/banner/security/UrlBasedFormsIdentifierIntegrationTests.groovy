@@ -16,7 +16,6 @@ import org.junit.Test
  */
 @Integration
 @Rollback
-
 class UrlBasedFormsIdentifierIntegrationTests extends BaseIntegrationTestCase {
 
     private UrlBasedFormsIdentifier urlBasedFormsIdentifier
