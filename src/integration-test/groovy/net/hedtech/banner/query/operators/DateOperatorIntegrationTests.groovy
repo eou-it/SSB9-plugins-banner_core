@@ -15,7 +15,6 @@ import org.junit.Test
 
 @Integration
 @Rollback
-
 class DateOperatorIntegrationTests extends BaseIntegrationTestCase {
 
     def term_start_date = "201610"

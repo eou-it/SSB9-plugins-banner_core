@@ -3,6 +3,8 @@
  *******************************************************************************/
 
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.security.ResetPasswordService
@@ -15,6 +17,8 @@ import org.springframework.web.context.request.RequestContextHolder
 
 import java.sql.SQLException
 
+@Integration
+@Rollback
 class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
 
     ResetPasswordService resetPasswordService
@@ -39,6 +43,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         formContext = ['GUAGMNU']
         super.setUp()
         resetPasswordController = new ResetPasswordController()
+        resetPasswordController.resetPasswordService = new ResetPasswordService()
         conn = dataSource.getSsbConnection()
         conn.setAutoCommit(false)
         db = new Sql(conn)

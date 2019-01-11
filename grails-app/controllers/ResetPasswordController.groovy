@@ -17,16 +17,6 @@ import java.sql.SQLException
 
 class ResetPasswordController {
 
-    /**
-     * Dependency injection for the authenticationTrustResolver.
-    */
-    def authenticationTrustResolver
-
-    /**
-     * Dependency injection for the springSecurityService.
-     */
-    def springSecurityService
-
     ResetPasswordService resetPasswordService
 
     def selfServiceBannerAuthenticationProvider

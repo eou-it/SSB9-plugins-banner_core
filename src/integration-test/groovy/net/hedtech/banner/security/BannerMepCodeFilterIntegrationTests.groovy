@@ -4,7 +4,8 @@ Copyright 2016-2018 Ellucian Company L.P. and its affiliates.
 
 package net.hedtech.banner.security
 
-
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
@@ -16,6 +17,8 @@ import javax.servlet.ServletException
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 
+@Integration
+@Rollback
 class BannerMepCodeFilterIntegrationTests extends BaseIntegrationTestCase {
 
     def bannerMepCodeFilter

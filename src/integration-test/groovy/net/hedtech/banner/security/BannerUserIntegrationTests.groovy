@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -13,6 +15,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.util.SerializationUtils
 import org.springframework.web.context.request.RequestContextHolder
 
+@Integration
+@Rollback
 class BannerUserIntegrationTests extends BaseIntegrationTestCase {
 
     def selfServiceBannerAuthenticationProvider

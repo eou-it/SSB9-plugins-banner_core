@@ -110,7 +110,6 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
         assertNotNull authority
     }
 
-    @Ignore
     @Test
     void testIsReadonlyPattern () {
         login (READONLY_USER, "u_pick_it")
@@ -142,7 +141,6 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
         Set<String> dupRoles = new HashSet<String>(roles)
         assertTrue(dupRoles.size()==roles.size())
     }
-
 }
 
 

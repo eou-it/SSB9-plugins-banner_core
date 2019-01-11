@@ -12,11 +12,6 @@ import org.junit.Before
 import org.junit.Test
 import org.springframework.web.context.request.RequestContextHolder
 
-/**
- * Tests that the ApiUtils is working as expected.
- *
- * Created by arunu on 10/21/2016.
- */
 @Integration
 @Rollback
 class ApiUtilsIntegrationTests extends BaseIntegrationTestCase {

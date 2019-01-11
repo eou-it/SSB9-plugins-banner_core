@@ -21,6 +21,7 @@ import java.sql.SQLException
 /**
  * Integration test for the self service Banner authentication provider.
  **/
+
 @Integration
 @Rollback
 class ChangeExpiredPasswordIntegrationTests extends BaseIntegrationTestCase {

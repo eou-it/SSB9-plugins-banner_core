@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.service
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 //import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
@@ -12,6 +14,8 @@ import org.junit.Test
 
 import javax.servlet.http.HttpSession
 
+@Integration
+@Rollback
 class HttpSessionServiceIntegrationTests extends BaseIntegrationTestCase {
 
     def HttpSessionService
