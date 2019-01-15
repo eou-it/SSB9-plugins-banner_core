@@ -17,7 +17,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.dao.DataIntegrityViolationException as ConstraintException
-import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
+import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException as OptimisticLockException
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 
 import java.sql.SQLException

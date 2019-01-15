@@ -95,7 +95,7 @@ class BaseIntegrationTestCase extends Assert {
         renderMap = [:]
         redirectMap = [:]
         flash = [:]
-        bannerAuthenticationProvider = new BannerAuthenticationProvider()
+        // bannerAuthenticationProvider = new BannerAuthenticationProvider()
         webAppCtx = new GrailsWebApplicationContext()
         if (formContext) {
             FormContext.set( formContext )
