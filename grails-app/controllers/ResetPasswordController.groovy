@@ -19,7 +19,7 @@ class ResetPasswordController {
 
     /**
      * Dependency injection for the authenticationTrustResolver.
-    */
+     */
     def authenticationTrustResolver
 
     /**

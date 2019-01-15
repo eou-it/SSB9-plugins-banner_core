@@ -8,6 +8,7 @@ import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
+import groovy.util.logging.Slf4j
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import oracle.jdbc.OracleConnection
@@ -35,6 +36,7 @@ import java.util.logging.StreamHandler
  */
 @Integration
 @Rollback
+@Slf4j
 public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
 
     def config
@@ -252,7 +254,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         } finally {
             handler.flush();
             String logMsg = out.toString()
-            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
+            log.error ("SQLSyntaxErrorException with "+ logMsg)
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             conn.close()
             sql.close()
@@ -290,7 +292,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         finally {
             handler.flush()
             String logMsg = out.toString()
-            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
+            log.error ("SQLSyntaxErrorException with "+ logMsg)
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             assertTrue(logMsg.toLowerCase().contains("ora-01979: missing or invalid password for role 'ban_default_m'"))
             conn.close()
@@ -330,7 +332,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         finally {
             handler.flush()
             String logMsg = out.toString()
-            log.fatal ("SQLSyntaxErrorException with "+ logMsg)
+            log.error("SQLSyntaxErrorException with "+ logMsg)
             assertFalse(logMsg.toLowerCase().contains("identified by"))
             assertTrue(logMsg.toLowerCase().contains("ora-01924: role 'junk' not granted or does not exist"))
             conn.close()
@@ -455,6 +457,7 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
         login(username, password)
         def user = SecurityContextHolder?.context?.authentication?.principal
         Map unlockedRoles = bannerDS.userRoles(user, user?.authorities)
+        println "unlockedRoles  =" + unlockedRoles
         assert (!unlockedRoles.isEmpty())
 
         assertTrue(unlockedRoles.find {key, value -> key.equals('BAN_DEFAULT_M')}.value)

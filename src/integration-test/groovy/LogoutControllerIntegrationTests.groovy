@@ -2,6 +2,9 @@
  Copyright 2016 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
+
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -12,6 +15,8 @@ import org.junit.Test
 /**
  * Test cases for LogoutController
  */
+@Integration
+@Rollback
 class LogoutControllerIntegrationTests extends BaseIntegrationTestCase {
 
     @Before

@@ -3,6 +3,8 @@ Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.exceptions
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.validation.ValidationException
 import groovy.sql.Sql
 import net.hedtech.banner.testing.Bar
@@ -15,14 +17,17 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.dao.DataIntegrityViolationException as ConstraintException
-import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException as OptimisticLockException
+import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException as OptimisticLockException
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 
 import java.sql.SQLException
+import static groovy.test.GroovyAssert.shouldFail
 
 /**
  * An integration test for a ApplicationException.
  **/
+@Integration
+@Rollback
 class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 
     private validationTagLibInstance
@@ -150,7 +155,7 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
         assertEquals 1L, mmve.getErrorsFor( 'Foo', foo2.id )?.allErrors?.size()
 
         // If we try to add Errors for one of our Foo instances again, we'll get an exception
-        shouldFail( IllegalStateException ) {
+        shouldFail {
             mmve.addErrors( foo1.errors )
         }
     }

@@ -3,6 +3,8 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.framework
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import net.hedtech.banner.configuration.ApplicationConfigurationUtils
 import net.hedtech.banner.testing.BaseIntegrationTestCase
@@ -14,6 +16,8 @@ import org.junit.Test
  * Tests that the release_info.groovy file, when it exists, can be easily accessed
  * through the configuraiton holder.
  */
+@Integration
+@Rollback
 public class ReleaseInfoIntegrationTests extends BaseIntegrationTestCase {
 
     @Before

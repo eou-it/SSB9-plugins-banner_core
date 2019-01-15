@@ -11,7 +11,8 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
+
+import static groovy.test.GroovyAssert.shouldFail
 
 @Integration
 @Rollback
@@ -154,7 +155,7 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
         menuAndToolbarPreference.lastModified = new Date()
         menuAndToolbarPreference.lastModifiedBy = "test"
         menuAndToolbarPreference.dataOrigin = "Banner"
-        shouldFail(HibernateOptimisticLockingFailureException) {
+        shouldFail{
             menuAndToolbarPreference.save(flush: true)
         }
     }

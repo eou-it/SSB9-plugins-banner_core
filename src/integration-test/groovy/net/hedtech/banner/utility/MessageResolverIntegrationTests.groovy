@@ -3,17 +3,16 @@ Copyright 2016 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.utility
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.context.i18n.LocaleContextHolder
 
-/**
- * This integration test class is used to test all methods in MessageResolver.
- *
- * Created by arunu on 11/7/2016.
- */
+@Integration
+@Rollback
 class MessageResolverIntegrationTests extends BaseIntegrationTestCase {
 
     @Before

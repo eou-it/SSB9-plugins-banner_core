@@ -3,6 +3,8 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.testing
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.exceptions.ApplicationException
 import org.junit.Before
 import org.junit.After
@@ -12,6 +14,8 @@ import org.junit.Test
 /**
  * Used to test reporting of an ORA-01465 exception.N
  **/
+@Integration
+@Rollback
 class AreaLibraryIntegrationTests extends BaseIntegrationTestCase {
 
 

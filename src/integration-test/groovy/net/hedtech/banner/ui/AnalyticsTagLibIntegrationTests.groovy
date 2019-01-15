@@ -11,7 +11,6 @@ import org.junit.Test
 
 @Integration
 @Rollback
-
 class AnalyticsTagLibIntegrationTests extends BaseIntegrationTestCase {
     def grailsApplication
     def taglib

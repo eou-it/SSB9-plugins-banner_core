@@ -3,6 +3,8 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.constraints
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.testing.Foo
 import org.codehaus.groovy.runtime.InvokerHelper
@@ -13,6 +15,8 @@ import org.junit.Test
 /**
  * Tests that the ValidPropertyConstraint is working as expected.
  */
+@Integration
+@Rollback
 class ValidPropertyConstraintIntegrationTests extends BaseIntegrationTestCase {
 
     @Before

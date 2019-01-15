@@ -114,7 +114,7 @@ class PreferredNameServiceIntegrationTests extends BaseIntegrationTestCase   {
         pidm = 11111
         params = [pidm:pidm, usage:usage]
         String defaultName
-        shouldFail(ApplicationException) {
+        shouldFail {
             try {
                  defaultName = preferredNameService.getPreferredName(params)
                 } catch (ApplicationException ae) {

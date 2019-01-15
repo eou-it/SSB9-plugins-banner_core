@@ -25,7 +25,6 @@ import org.junit.Test
 
 @Integration
 @Rollback
-
 class CriteriaOperatorFactoryIntegrationTests extends BaseIntegrationTestCase {
 
     def criteriaOperatorFactory

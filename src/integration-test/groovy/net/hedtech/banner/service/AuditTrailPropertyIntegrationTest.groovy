@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.service
 
+import grails.gorm.transactions.Rollback
+import grails.testing.mixin.integration.Integration
 import net.hedtech.banner.testing.AcademicYearForTesting
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import net.hedtech.banner.testing.FacultyScheduleQueryViewForTesting
@@ -13,9 +15,11 @@ import org.junit.Before
 import org.junit.After
 import org.junit.Test
 import org.springframework.dao.InvalidDataAccessResourceUsageException
+import static groovy.test.GroovyAssert.shouldFail
 
+@Integration
+@Rollback
 class AuditTrailPropertyIntegrationTest extends BaseIntegrationTestCase {
-
 
     @Before
     public void setUp() {
@@ -23,12 +27,10 @@ class AuditTrailPropertyIntegrationTest extends BaseIntegrationTestCase {
         super.setUp()
     }
 
-
     @After
     public void tearDown() {
         super.tearDown()
     }
-
 
     @Test
     void testAuditTrailFields () {
@@ -78,7 +80,7 @@ class AuditTrailPropertyIntegrationTest extends BaseIntegrationTestCase {
         assertNotNull facultyScheduleQueryView.id
 
         facultyScheduleQueryView.setMaximumEnrollment(100)
-        shouldFail(InvalidDataAccessResourceUsageException) {
+        shouldFail {
             facultyScheduleQueryView.save(failOnError: true, flush: true)
         }
 

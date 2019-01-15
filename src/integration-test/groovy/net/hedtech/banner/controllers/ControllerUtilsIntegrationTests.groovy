@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.controllers
 
@@ -42,11 +42,11 @@ class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void isLocalLogoutDisabledTest() {
-        def oldlocalLogoutValue = Holders?.config.banner?.sso?.authentication.saml.localLogout
-        Holders?.config.banner?.sso?.authentication.saml.localLogout = 'true'
+        def oldlocalLogoutValue = Holders.config.banner.sso.authentication.saml.localLogout
+        Holders.config.banner.sso.authentication.saml.localLogout = 'true'
         outcome = ControllerUtils.isLocalLogoutEnabled()
         assertTrue(outcome)
-        Holders?.config.banner?.sso?.authentication.saml.localLogout = oldlocalLogoutValue
+        Holders.config.banner.sso.authentication.saml.localLogout = oldlocalLogoutValue
     }
 
     @Test
@@ -57,28 +57,28 @@ class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void isCasEnabledTest() {
-        Holders?.config.banner.sso.authenticationProvider = EXTERNAL
+        Holders.config.banner.sso.authenticationProvider = EXTERNAL
         outcome = ControllerUtils.isCasEnabled();
         assertFalse(outcome);
     }
 
     @Test
     void isCasDisabledTest() {
-        Holders?.config.banner.sso.authenticationProvider = null
+        Holders.config.banner.sso.authenticationProvider = null
         outcome = ControllerUtils.isCasEnabled();
         assertFalse(outcome);
     }
 
     @Test
     void isSamlEnabledTest() {
-        Holders?.config.banner.sso.authenticationProvider = SAML
+        Holders.config.banner.sso.authenticationProvider = SAML
         outcome = ControllerUtils.isSamlEnabled();
         assertNotNull(outcome);
     }
 
     @Test
     void isSamlDisabledTest() {
-        Holders?.config.banner.sso.authenticationProvider = null
+        Holders.config.banner.sso.authenticationProvider = null
         outcome = ControllerUtils.isSamlEnabled();
         assertFalse(outcome)
     }
@@ -119,14 +119,14 @@ class ControllerUtilsIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void buildLogoutRedirectURIWithSamlEnabledTest() {
-        Holders?.config.banner.sso.authenticationProvider = SAML
+        Holders.config.banner.sso.authenticationProvider = SAML
         outcome = ControllerUtils.buildLogoutRedirectURI();
         assertNotNull(outcome);
     }
 
     @Test
     void buildLogoutRedirectURIDefaultTest() {
-        Holders?.config.banner.sso.authenticationProvider = null
+        Holders.config.banner.sso.authenticationProvider = null
         outcome = ControllerUtils.buildLogoutRedirectURI();
         assertNotNull(outcome);
     }

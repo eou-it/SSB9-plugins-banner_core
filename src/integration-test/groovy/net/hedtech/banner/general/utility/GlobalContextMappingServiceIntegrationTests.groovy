@@ -9,6 +9,7 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import static groovy.test.GroovyAssert.shouldFail
 
 /**
  * Tests that the GlobalContextMappingService is working as expected.
@@ -40,7 +41,7 @@ class GlobalContextMappingServiceIntegrationTests extends BaseIntegrationTestCas
         // Fail case
         def sf = globalContextMappingService.sessionFactory
         globalContextMappingService.sessionFactory = null
-        shouldFail(Exception) {
+        shouldFail {
             globalContextMappingService.getGlobalNameByContext('table')
         }
 
@@ -55,7 +56,7 @@ class GlobalContextMappingServiceIntegrationTests extends BaseIntegrationTestCas
         // Fail case
         def sf = globalContextMappingService.sessionFactory
         globalContextMappingService.sessionFactory = null
-        shouldFail(Exception) {
+        shouldFail {
             globalContextMappingService.getContextByGlobalName('global.table.lookup')
         }
 
