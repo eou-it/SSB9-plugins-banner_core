@@ -7,11 +7,10 @@ buildscript {
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.6"
+        classpath "net.saliman:gradle-cobertura-plugin:2.6.0"
     }
 }
-plugins {
-    id 'net.saliman.cobertura' version '2.6.0'
-}
+
 version "9.31"
 group "banner.core"
 
@@ -21,6 +20,7 @@ apply plugin:"org.grails.grails-plugin"
 apply plugin:"org.grails.grails-plugin-publish"
 apply plugin:"asset-pipeline"
 apply plugin:"org.grails.grails-gsp"
+apply plugin: 'net.saliman.cobertura'
 
 repositories {
     mavenLocal()
