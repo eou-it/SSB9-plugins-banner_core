@@ -9,7 +9,9 @@ buildscript {
         classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.6"
     }
 }
-
+plugins {
+    id 'net.saliman.cobertura' version '2.6.0'
+}
 version "9.31"
 group "banner.core"
 
