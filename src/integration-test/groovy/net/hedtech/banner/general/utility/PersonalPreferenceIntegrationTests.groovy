@@ -111,7 +111,7 @@ class PersonalPreferenceIntegrationTests extends BaseIntegrationTestCase {
             sql = new Sql( sessionFactory.getCurrentSession().connection() )
             sql.executeUpdate( "update GURUPRF set GURUPRF_VERSION = 999 where GURUPRF_SURROGATE_ID = ?", [ personalPreference.id ] )
         } finally {
-            sql?.close() // note that the test will close the connection, since it's our current session's connection
+//            sql?.close() // note that the test will close the connection, since it's our current session's connection
         }
 		//Try to update the entity
 		personalPreference.group="UUUUU"
@@ -122,9 +122,11 @@ class PersonalPreferenceIntegrationTests extends BaseIntegrationTestCase {
 		personalPreference.lastModified= new Date()
 		personalPreference.lastModifiedBy="test"
 		personalPreference.dataOrigin= "Banner"
-        shouldFail {
-            personalPreference.save( flush: true )
+
+        shouldFail(HibernateOptimisticLockingFailureException) {
+            personalPreference.save(flush: true)
         }
+
     }
 
     @Test
