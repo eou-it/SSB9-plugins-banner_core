@@ -41,7 +41,7 @@ class ConfigurationUtilsIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void configurationIsNull(){
-        def oldConfigCH = CH.config.clone()
+        def oldConfigCH = CH.config
         CH.config = null
         try{
             def outcome = ConfigurationUtils.getConfiguration()

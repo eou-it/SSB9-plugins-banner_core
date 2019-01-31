@@ -5,6 +5,7 @@ package net.hedtech.banner.testing
 
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import groovy.util.logging.Slf4j
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
@@ -15,7 +16,6 @@ import groovy.sql.Sql
 import grails.util.Holders
 import org.springframework.security.core.context.SecurityContextHolder
 import org.junit.Ignore
-import org.apache.log4j.Logger
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
@@ -24,11 +24,12 @@ import org.springframework.web.context.request.RequestContextHolder
  **/
 @Integration
 @Rollback
+@Slf4j
 class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 
 
     def fooService                     // injected by Spring
-    private static final Logger log = Logger.getLogger(getClass())
+//    private static final Logger log = Logger.getLogger(getClass())
 
 
     @Before
