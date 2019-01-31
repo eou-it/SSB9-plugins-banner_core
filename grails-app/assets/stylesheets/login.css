@@ -455,3 +455,6 @@ LOG IN
     color: #151618;/*EDS*/
     border: 1px solid #FF3030;/*EDS*/
 }
+.error-state .eds-text-field:focus {
+    border:1px solid #FF3030;
+}
