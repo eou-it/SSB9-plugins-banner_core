@@ -55,18 +55,22 @@ public class BannerDS implements DataSource {
     private final static Logger log = Logger.getLogger(BannerDS.class)
 
     public static callNlsUtility(sql,userLocale){
+        log.debug "Setting nls for locale = ${userLocale}"
         try {
             userLocale = userLocale.toString()?.replaceAll('_','-')
             sql.call("""{call g\$_nls_utility.p_set_nls(${userLocale})}""")
         } catch (Exception e) {
-            log.debug "There was an exception while setting nls for locale ${userLocale}:" + e.getMessage()
+            log.error "There was an exception while setting nls for locale ${userLocale}:" + e.getMessage()
         }
     }
 
-    public setLocaleInDatabase(conn) {
-        def sql = new Sql(conn)
-        def locale = LocaleContextHolder?.getLocale()
-        callNlsUtility(sql,locale)
+    public static setLocaleInDatabase(conn) {
+        Boolean nlsEnabled= Holders?.config?.enableNLS instanceof Boolean ? Holders?.config?.enableNLS : false
+        if(nlsEnabled) {
+            def sql = new Sql(conn)
+            def locale = LocaleContextHolder?.getLocale()
+            callNlsUtility(sql, locale)
+        }
     }
 
     /**
