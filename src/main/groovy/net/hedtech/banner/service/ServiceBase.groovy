@@ -606,7 +606,7 @@ class ServiceBase {
     public def assignOrInstantiate( domainClass, Map domainObjectOrProperties ) {
         Map content = extractParams(domainClass, domainObjectOrProperties, log)
         def entity = Holders.getGrailsApplication().getMappingContext().getPersistentEntity(ConverterUtil.trimProxySuffix(getDomainClass().getName()))
-        def propertyNames = entity.getPersistentPropertyNames()
+        def propertyNames = entity.getPersistentProperties().collect{ it.name }
         def properties = content.subMap(propertyNames)
         def domainObject = domainClass.newInstance(properties)
         return domainObject

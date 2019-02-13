@@ -18,7 +18,7 @@ class BindingUtility {
      */
     public static bind(domainObject, Map propertyMap, Map bindOptions = [:]) {
         def entity = Holders.getGrailsApplication().getMappingContext().getPersistentEntity(domainObject.class.name)
-        def propertyNames = bindOptions?.include ?: entity.getPersistentPropertyNames()
+        def propertyNames = bindOptions?.include ?: entity.getPersistentProperties().collect{ it.name }
         def excludeList = bindOptions?.exclude ?: []
 
         if (excludeList) {
