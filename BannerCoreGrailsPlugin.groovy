@@ -43,7 +43,7 @@ import java.util.concurrent.Executors
  * */
 class BannerCoreGrailsPlugin {
 
-    String version = "9.28.4"
+    String version = "9.29"
     private static final Logger staticLogger = Logger.getLogger(BannerCoreGrailsPlugin.class)
 
     // the version or versions of Grails the plugin is designed for
@@ -87,6 +87,12 @@ class BannerCoreGrailsPlugin {
                         jndiName = "java:comp/env/${CH.config.bannerSsbDataSource.jndiName}"
                     }
                 }
+                //new DS
+                if (isCommmgrDataSourceEnabled()) {
+                   underlyingCommmgrDataSource(JndiObjectFactoryBean) {
+                        jndiName = "java:comp/env/${CH.config.bannerCommmgrDataSource.jndiName}"
+                    }
+                }
                 break
             default: // we'll use our locally configured dataSource for development and test environments
                 log.info "Using development/test datasource"
@@ -111,6 +117,20 @@ class BannerCoreGrailsPlugin {
                     }
 
                 }
+                //ensure both the flag and the datasource have been defined before setting the
+                //underlyingdatasource
+                if (isCommmgrDataSourceEnabled() && CH.config.bannerCommmgrDataSource != [:] ) {
+                    underlyingCommmgrDataSource(BasicDataSource) {
+                        maxActive = 5
+                        maxIdle = 2
+                        defaultAutoCommit = "false"
+                        driverClassName = "${CH.config.bannerCommmgrDataSource.driver}"
+                        url = "${CH.config.bannerCommmgrDataSource.url}"
+                        password = "${CH.config.bannerCommmgrDataSource.password}"
+                        username = "${CH.config.bannerCommmgrDataSource.username}"
+                    }
+
+                }
                 break
         }
 
@@ -121,6 +141,10 @@ class BannerCoreGrailsPlugin {
             try {
                 underlyingSsbDataSource = ref(underlyingSsbDataSource)
             } catch (MissingPropertyException) { } // don't inject it if we haven't configured this datasource
+            try {
+                underlyingCommmgrDataSource = ref(underlyingCommmgrDataSource)
+            } catch (MissingPropertyException) { } // don't inject it if we haven't configured this datasource
+
             nativeJdbcExtractor = ref(nativeJdbcExtractor)
         }
 
@@ -362,6 +386,9 @@ class BannerCoreGrailsPlugin {
         CH.config.ssbEnabled instanceof Boolean ? CH.config.ssbEnabled : false
     }
 
+    private def isCommmgrDataSourceEnabled() {
+        CH.config.commmgrDataSourceEnabled instanceof Boolean ? CH.config.commmgrDataSourceEnabled : false
+    }
 
     private def getUniqueJmxBeanNameFor(String name) {
         def nameToRegister = CH.config.jmx.exported."$name"
