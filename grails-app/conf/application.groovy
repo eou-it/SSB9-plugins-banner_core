@@ -85,7 +85,7 @@ grails {
             useRequestMapDomainClass = false
             securityConfigType = grails.plugin.springsecurity.SecurityConfigType.InterceptUrlMap
             interceptUrlMap = [
-                    [pattern:'/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
+                    [pattern:'/', access:['ROLE_GUAGMNU_BAN_DEFAULT_M']],
                     [pattern:'/login/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
                     [pattern:'/logout/**', access:['IS_AUTHENTICATED_ANONYMOUSLY']],
                     [pattern:'/index/', access:['IS_AUTHENTICATED_ANONYMOUSLY']],

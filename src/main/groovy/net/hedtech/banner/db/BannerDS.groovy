@@ -88,6 +88,11 @@ public class BannerDS implements DataSource {
         BannerConnection bannerConnection
         String[] roles
         def user = SecurityContextHolder?.context?.authentication?.principal
+
+        //check for new datasource for transactions that are asynchronous and do not originate from a web request
+        //perform this logic only if configuration commmgrDataSourceEnabled attribute is true
+        //and the commmgr datasource has been defined. Otherwise do regular processing
+        //MEP will have to be set by the calling method
         if( DBUtility.isCommmgrDataSourceEnabled() && (underlyingCommmgrDataSource != null) && (RequestContextHolder.getRequestAttributes() == null) && DBUtility.isAdminOrOracleProxyRequired(user)) {
             conn = underlyingCommmgrDataSource.getConnection()
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
@@ -99,6 +104,13 @@ public class BannerDS implements DataSource {
 
             setFGAC(conn)
             bannerConnection = new BannerConnection(conn, user?.username, this)
+        }
+        else if ( DBUtility.isNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(user) ) {
+            conn = underlyingSsbDataSource.getConnection()
+            setMepSsb(conn)
+            OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
+            bannerConnection = new BannerConnection(conn, null, this)
+            log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
         else if (DBUtility.isAdminOrOracleProxyRequired(user)) {
             bannerConnection = getCachedConnection(user)
