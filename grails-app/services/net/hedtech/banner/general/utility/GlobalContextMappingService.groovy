@@ -4,12 +4,13 @@
 package net.hedtech.banner.general.utility
 
 import groovy.sql.Sql
+import grails.gorm.transactions.Transactional
 /**
  * To change this template use File | Settings | File Templates.
  */
+@Transactional
 class GlobalContextMappingService {
 
-    static transactional = true
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
 

@@ -1,7 +1,6 @@
 /*******************************************************************************
  Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
-
 package net.hedtech.banner.security
 
 import grails.gorm.transactions.Rollback
@@ -20,7 +19,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
-
 
 @Integration
 @Rollback
@@ -79,16 +77,11 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
     private def getBannerPIDM() {
         Sql sqlObj
         def bPIDM = 0
-        try {
             sqlObj = new Sql(sessionFactory.getCurrentSession().connection())
             String pidmQuery = """SELECT GOBEACC_PIDM FROM GOBEACC WHERE GOBEACC_USERNAME = ?"""
-
             sqlObj.eachRow(pidmQuery, [gobeaccUserName]) { row ->
                 bPIDM = row.GOBEACC_PIDM
             }
-        }finally {
-            sqlObj?.close()
-        }
         bPIDM
     }
 }
