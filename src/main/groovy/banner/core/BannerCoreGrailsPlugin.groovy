@@ -276,9 +276,9 @@ class BannerCoreGrailsPlugin extends Plugin {
             key = 'horizon-anon'
         }
 
-        applicationEventMulticaster(SimpleApplicationEventMulticaster) {
-            taskExecutor = Executors.newCachedThreadPool()
-        }
+        /*applicationEventMulticaster(SimpleApplicationEventMulticaster) {
+            //taskExecutor = Executors.newCachedThreadPool()
+        }*/
 
         resetPasswordService(ResetPasswordService) {
             dataSource = ref(dataSource)

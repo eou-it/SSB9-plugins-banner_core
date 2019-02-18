@@ -1,19 +1,20 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
-
-
+Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.service
 
 import groovy.sql.Sql
+import groovy.util.logging.Slf4j
 import net.hedtech.banner.security.BannerAuthenticationEvent
 import org.springframework.context.ApplicationListener
 
+@Slf4j
 public class LoginAuditService implements ApplicationListener<BannerAuthenticationEvent> {
 
     def dataSource // injected by Spring
 
     public void onApplicationEvent( BannerAuthenticationEvent event ) {
+        log.debug "In LoginAuditService  onApplicationEvent with ${event}"
         if (event.isSuccess) {
             userLogin event
         } else {
@@ -23,6 +24,7 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
 
 
     public void userLogin( BannerAuthenticationEvent event ) {
+        log.debug "In LoginAuditService  userLogin with event = ${event}"
         def conn
         def sql
         try {
@@ -33,6 +35,7 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
                 sql.call("begin g\$_security.g\$_check_logon_rules('BAN9',?); commit; end;",[truncateUserName])
             }
         } catch (Exception e) {
+            log.error "Exception occured in userLogin with error = ${e}"
             e.printStackTrace()
         } finally {
             conn?.close()
@@ -40,6 +43,7 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
     }
 
     public void loginViolation( BannerAuthenticationEvent event  ) {
+        log.debug "In LoginAuditService  loginViolation with event = ${event}"
         def conn
         def sql
         try {
@@ -50,6 +54,7 @@ public class LoginAuditService implements ApplicationListener<BannerAuthenticati
                 sql.call("begin g\$_security.g\$_create_log_record(?,?,?,?); commit; end;",[truncateUserName,event.module,event.message, event.severity])
             }
         } catch (Exception e) {
+            log.error "Exception occured in loginViolation with error = ${e}"
             e.printStackTrace()
         } finally {
             conn?.close()

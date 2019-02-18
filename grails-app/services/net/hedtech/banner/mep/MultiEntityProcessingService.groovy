@@ -1,18 +1,17 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.mep
 
-import org.apache.log4j.Logger
+import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
 import oracle.jdbc.OracleTypes
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.web.context.request.RequestContextHolder
 
-
+@Transactional
 class MultiEntityProcessingService {
 
-    static transactional = true
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
 

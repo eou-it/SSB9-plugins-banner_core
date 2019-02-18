@@ -100,7 +100,6 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         def con = sessionFactory.getCurrentSession().connection()
         desc = multiEntityProcessingService.getMepDescription(cccCollege, con)
         assertEquals "Banner College Test3",  desc
-        if (con) con.close()
     }
 
     @Test
@@ -220,7 +219,6 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         multiEntityProcessingService.setHomeContext(aaaCollege, con)
         homeContext = multiEntityProcessingService.getHomeContext(con)
         assertEquals aaaCollege, homeContext
-        if (con) con.close()
     }
 
     @Test
@@ -244,8 +242,6 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         multiEntityProcessingService.setProcessContext(aaaCollege, con)
         processContext = multiEntityProcessingService.getProcessContext()
         assertEquals aaaCollege, processContext
-        if (con) con.close()
-
     }
 
     @Test
@@ -272,7 +268,6 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         multiEntityProcessingService.setMepOnAccess("GRAILS_USER", con)
         homeContext = multiEntityProcessingService.getHomeContext()
         assertEquals bbbCollege, homeContext
-        if (con) con.close()
     }
 
     private setMepLogon(String mepCode) {
@@ -306,15 +301,11 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
 
 
     private void retrieveDefaultInsitution() {
-        def sql
-        try {
-            sql = new Sql(sessionFactory.getCurrentSession().connection())
+        def sql = new Sql(sessionFactory.getCurrentSession().connection())
             sql.eachRow("select * from gtvvpdi where gtvvpdi_sys_def_inst_ind = 'Y'", {this.defaultInstitution = it.GTVVPDI_CODE })
             sql.eachRow("select * from bansecr.gurusri where gurusri_vpdi_user_id = 'GRAILS_USER' and gurusri_user_def_inst_ind='Y'", {this.defaultInstitutionForUser = it.GURUSRI_VPDI_CODE })
             sql.commit()
-        } finally {
-            sql?.close()  // note that the test will close the connection, since it's our current session's connection
-        }
+
     }
 
 }
