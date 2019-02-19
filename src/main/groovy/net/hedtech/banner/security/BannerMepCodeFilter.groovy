@@ -22,6 +22,8 @@ class BannerMepCodeFilter extends GenericFilterBean {
             def springSecurityService = Holders.applicationContext.getBean('springSecurityService')
             if ( springSecurityService?.isLoggedIn() && !mepCodeModified(req)) {
                 req?.getSession()?.setAttribute("mep", req.getParameter("mepCode").toUpperCase())
+            }else if (!springSecurityService?.isLoggedIn()){
+                req?.getSession()?.setAttribute("mep", req.getParameter("mepCode").toUpperCase())
             }
         }
         chain.doFilter( request, response );
