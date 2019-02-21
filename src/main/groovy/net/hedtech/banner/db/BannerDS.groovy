@@ -1,5 +1,5 @@
 /* *****************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2015-2019 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db
 
@@ -58,21 +58,23 @@ public class BannerDS implements DataSource {
 
     MultiEntityProcessingService multiEntityProcessingService
 
-
-
     public static callNlsUtility(sql,userLocale){
+        log.debug "Setting nls for locale = ${userLocale}"
         try {
             userLocale = userLocale.toString()?.replaceAll('_','-')
             sql.call("""{call g\$_nls_utility.p_set_nls(${userLocale})}""")
         } catch (Exception e) {
-            log.debug "There was an exception while setting nls for locale ${userLocale}:" + e.getMessage()
+            log.error "There was an exception while setting nls for locale ${userLocale}:" + e.getMessage()
         }
     }
 
-    public setLocaleInDatabase(conn) {
-        def sql = new Sql(conn)
-        def locale = LocaleContextHolder?.getLocale()
-        callNlsUtility(sql,locale)
+    public static setLocaleInDatabase(conn) {
+        Boolean nlsEnabled= Holders?.config?.enableNLS instanceof Boolean ? Holders?.config?.enableNLS : false
+        if(nlsEnabled) {
+            def sql = new Sql(conn)
+            def locale = LocaleContextHolder?.getLocale()
+            callNlsUtility(sql, locale)
+        }
     }
 
     /**
@@ -88,6 +90,11 @@ public class BannerDS implements DataSource {
         BannerConnection bannerConnection
         String[] roles
         def user = SecurityContextHolder?.context?.authentication?.principal
+
+        //check for new datasource for transactions that are asynchronous and do not originate from a web request
+        //perform this logic only if configuration commmgrDataSourceEnabled attribute is true
+        //and the commmgr datasource has been defined. Otherwise do regular processing
+        //MEP will have to be set by the calling method
         if( DBUtility.isCommmgrDataSourceEnabled() && (underlyingCommmgrDataSource != null) && (RequestContextHolder.getRequestAttributes() == null) && DBUtility.isAdminOrOracleProxyRequired(user)) {
             conn = underlyingCommmgrDataSource.getConnection()
             OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
@@ -99,6 +106,13 @@ public class BannerDS implements DataSource {
 
             setFGAC(conn)
             bannerConnection = new BannerConnection(conn, user?.username, this)
+        }
+        else if ( DBUtility.isNotApiProxiedOrNotOracleMappedSsbOrSsbAnonymous(user) ) {
+            conn = underlyingSsbDataSource.getConnection()
+            setMepSsb(conn)
+            OracleConnection oconn = nativeJdbcExtractor.getNativeConnection(conn)
+            bannerConnection = new BannerConnection(conn, null, this)
+            log.debug "BannerDS.getConnection() has attained connection ${oconn} from underlying dataSource $underlyingSsbDataSource"
         }
         else if (DBUtility.isAdminOrOracleProxyRequired(user)) {
             bannerConnection = getCachedConnection(user)

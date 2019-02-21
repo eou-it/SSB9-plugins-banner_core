@@ -3,6 +3,7 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
+import grails.gorm.transactions.Transactional
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.util.logging.Slf4j
@@ -10,9 +11,9 @@ import java.sql.SQLException
 import java.util.regex.Pattern
 
 @Slf4j
+@Transactional
 class ResetPasswordService {
 
-    static transactional = true
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
     def authenticationDataSource           // injected by Spring

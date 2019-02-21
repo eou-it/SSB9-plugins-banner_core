@@ -238,7 +238,7 @@ class BaseIntegrationTestCase extends Assert {
             sql = new Sql( sessionFactory.getCurrentSession().connection() )
             sql.executeUpdate( updateStatement, [ id ] )
         } finally {
-            sql?.close() // note that the test will close the connection, since it's our current session's connection
+//            sql?.close() // note that the test will close the connection, since it's our current session's connection
         }
     }
 

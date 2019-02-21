@@ -4,6 +4,7 @@
 
 package net.hedtech.banner.general.utility
 
+import grails.gorm.transactions.Transactional
 import org.springframework.context.ApplicationContext
 import grails.util.Holders
 import grails.core.GrailsApplication
@@ -13,9 +14,8 @@ import org.apache.commons.lang.ClassUtils
 
 import groovy.sql.Sql
 
+@Transactional
 class DomainAttributePropertiesService {
-
-    static transactional = true
 
     def dataSource                         // injected by Spring
     def sessionFactory                     // injected by Spring

@@ -28,6 +28,10 @@ import grails.gorm.transactions.Transactional
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.interceptor.TransactionAspectSupport
 import org.springframework.transaction.support.DefaultTransactionStatus
+import java.beans.BeanInfo
+import java.beans.Introspector
+import java.beans.PropertyDescriptor
+import java.lang.reflect.Method
 
 /**
  * Base class for services that provides generic support for CRUD.
@@ -606,7 +610,7 @@ class ServiceBase {
     public def assignOrInstantiate( domainClass, Map domainObjectOrProperties ) {
         Map content = extractParams(domainClass, domainObjectOrProperties, log)
         def entity = Holders.getGrailsApplication().getMappingContext().getPersistentEntity(ConverterUtil.trimProxySuffix(getDomainClass().getName()))
-        def propertyNames = entity.getPersistentPropertyNames()
+        def propertyNames = entity.getPersistentProperties().collect{ it.name }
         def properties = content.subMap(propertyNames)
         def domainObject = domainClass.newInstance(properties)
         return domainObject
@@ -648,7 +652,18 @@ class ServiceBase {
     public static def extractParams( domainClass, domainObject, log = null ) {
 
         if (isDomainModelInstance( domainClass, domainObject )) {
-            def paramsMap = domainObject.properties
+            /*def paramsMap = domainObject.properties*/
+            /*** Replaced above line due to performance issue ***/
+
+            /*** propMap Performance fix start ***/
+            Map<String, Object> paramsMap = new HashMap<String, Object>();
+            BeanInfo info = Introspector.getBeanInfo(domainObject.getClass());
+            for (PropertyDescriptor propertyDescriptor : info.getPropertyDescriptors()) {
+                Method reader = propertyDescriptor.getReadMethod();
+                if (reader != null)
+                    paramsMap.put(propertyDescriptor.getName(),reader.invoke(domainObject));
+            }
+            /*** propMap performance fix end ***/
             if (domainObject.version) paramsMap.version = domainObject.version // version is not included in bulk asisgnments
             paramsMap
         }

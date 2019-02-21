@@ -11,6 +11,7 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
 
 import static groovy.test.GroovyAssert.shouldFail
 
@@ -137,7 +138,7 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
             sql = new Sql(sessionFactory.getCurrentSession().connection())
             sql.executeUpdate("update GURTPRF set GURTPRF_VERSION = 999 where GURTPRF_SURROGATE_ID = ?", [menuAndToolbarPreference.id])
         } finally {
-            sql?.close() // note that the test will close the connection, since it's our current session's connection
+            //sql?.close() // note that the test will close the connection, since it's our current session's connection
         }
         //Try to update the entity
         menuAndToolbarPreference.tlbBtn = ""
@@ -155,7 +156,7 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
         menuAndToolbarPreference.lastModified = new Date()
         menuAndToolbarPreference.lastModifiedBy = "test"
         menuAndToolbarPreference.dataOrigin = "Banner"
-        shouldFail{
+        shouldFail(HibernateOptimisticLockingFailureException){
             menuAndToolbarPreference.save(flush: true)
         }
     }

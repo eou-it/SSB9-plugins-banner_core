@@ -110,6 +110,7 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
         assertNotNull authority
     }
 
+    @Ignore
     @Test
     void testIsReadonlyPattern () {
         login (READONLY_USER, "u_pick_it")

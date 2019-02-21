@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2015-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2015-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.db
@@ -19,6 +19,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.context.ApplicationContext
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
@@ -391,11 +392,12 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testOracleMessageTranslationForCanadianFrench(){
-        def locale = 'fr_CA'
+    public void testOracleMessageTranslationForCanadianFrenchWithNLSTrue(){
+        config.enableNLS=true
+        LocaleContextHolder.setLocale(new Locale('fr', 'CA'))
         def conn = (dataSource as BannerDS).getConnection()
-        def sql = new Sql(conn)
-        BannerDS.callNlsUtility(sql,locale)
+        BannerDS.setLocaleInDatabase(conn)
+        Sql sql = new Sql(conn)
         sql.eachRow("select VALUE from v\$nls_parameters where parameter='NLS_LANGUAGE'"){row->
             assertEquals("CANADIAN FRENCH",row.value)
         }
@@ -405,13 +407,29 @@ public class BannerDataSourceIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    public void testOracleMessageTranslationForMexicanSpanish(){
-        def locale = 'es_MX'
+    public void testOracleMessageTranslationForMexicanSpanishWithNLSTrue(){
+        config.enableNLS=true
+        LocaleContextHolder.setLocale(new Locale('es', 'MX'))
         def conn = (dataSource as BannerDS).getConnection()
-        def sql = new Sql(conn)
-        BannerDS.callNlsUtility(sql,locale)
+        BannerDS.setLocaleInDatabase(conn)
+        Sql sql = new Sql(conn)
         sql.eachRow("select VALUE from v\$nls_parameters where parameter='NLS_LANGUAGE'"){row->
             assertEquals("MEXICAN SPANISH",row.value)
+        }
+        if(sql) sql.close()
+        if(conn) conn.close()
+
+    }
+
+    @Test
+    public void testOracleMessageTranslationForCanadianFrenchWithNLSFalse(){
+        config.enableNLS=false
+        LocaleContextHolder.setLocale(new Locale('fr', 'CA'))
+        def conn = (dataSource as BannerDS).getConnection()
+        BannerDS.setLocaleInDatabase(conn)
+        Sql sql = new Sql(conn)
+        sql.eachRow("select VALUE from v\$nls_parameters where parameter='NLS_LANGUAGE'"){row->
+            assertNotEquals("CANADIAN FRENCH",row.value)
         }
         if(sql) sql.close()
         if(conn) conn.close()
