@@ -10,7 +10,10 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletWebRequest
 
 @Integration
 @Rollback
@@ -37,28 +40,31 @@ class ApiUtilsIntegrationTests extends BaseIntegrationTestCase {
         assertFalse(ApiUtils.shouldCacheConnection())
 
         RequestContextHolder.setRequestAttributes(reqAtt);
-        RequestContextHolder.getRequestAttributes().getRequest().forwardURI = null
+        RequestAttributes mockRequest = new ServletWebRequest(new MockHttpServletRequest("GET", null))
+        RequestContextHolder.setRequestAttributes(mockRequest)
         assertTrue(ApiUtils.shouldCacheConnection())
 
-        RequestContextHolder.getRequestAttributes().getRequest().forwardURI = null
         Holders.config.avoidSessionsFor = ""
         assertTrue(ApiUtils.shouldCacheConnection())
 
-        RequestContextHolder.getRequestAttributes().getRequest().forwardURI = ""
+        RequestAttributes mRequest = new ServletWebRequest(new MockHttpServletRequest("GET", ""))
+        RequestContextHolder.setRequestAttributes(mRequest)
         Holders.config.avoidSessionsFor = ["test"]
         assertTrue(ApiUtils.shouldCacheConnection())
     }
 
     @Test
     public void testShouldCacheConnectionAvoidCachingCase () {
-        RequestContextHolder.getRequestAttributes().getRequest().forwardURI = '/test/'
+        RequestAttributes mockRequest = new ServletWebRequest(new MockHttpServletRequest("GET", "/test/"))
+        RequestContextHolder.setRequestAttributes(mockRequest)
         Holders.config.avoidSessionsFor = ["test"]
         assertFalse(ApiUtils.shouldCacheConnection())
     }
 
     @Test
     public void testShouldCacheConnectionAvoidCachingCase1 () {
-        RequestContextHolder.getRequestAttributes().getRequest().forwardURI = 'test'
+        RequestAttributes mockRequest = new ServletWebRequest(new MockHttpServletRequest("GET", "test"))
+        RequestContextHolder.setRequestAttributes(mockRequest)
         Holders.config.avoidSessionsFor = ['test']
         assertTrue(ApiUtils.shouldCacheConnection())
     }
