@@ -1,7 +1,6 @@
 /* ****************************************************************************
-Copyright 2016-2018 Ellucian Company L.P. and its affiliates.
+Copyright 2016-2019 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
-
 package net.hedtech.banner.security
 
 import grails.gorm.transactions.Rollback
@@ -46,7 +45,6 @@ class BannerMepCodeFilterIntegrationTests extends BaseIntegrationTestCase {
         try {
             bannerMepCodeFilter.doFilter(servletRequest, servletResponse, chain)
             assertNull servletRequest.getSession().getAttribute('mep')
-            assertTrue(true)
         } catch (ServletException se) {
             assertFalse(true)
         }
@@ -73,7 +71,6 @@ class BannerMepCodeFilterIntegrationTests extends BaseIntegrationTestCase {
             assertNotNull servletRequest1.getSession().getAttribute('mep')
             assertNotEquals(mepCode2,servletRequest1.getSession().getAttribute('mep'))
             assertEquals(mepCode1,servletRequest1.getSession().getAttribute('mep'))
-            assertTrue(true)
         } catch (ServletException se) {
             assertFalse(true)
         }
@@ -89,8 +86,7 @@ class BannerMepCodeFilterIntegrationTests extends BaseIntegrationTestCase {
         servletRequest.setParameter("mepCode", mepCode1)
         try {
             bannerMepCodeFilter.doFilter(servletRequest, servletResponse, chain)
-            assertNull servletRequest.getSession().getAttribute('mep')
-            assertTrue(true)
+            assertEquals("BANNER", servletRequest.getSession().getAttribute('mep'))
         } catch (ServletException se) {
             assertFalse(true)
         }
