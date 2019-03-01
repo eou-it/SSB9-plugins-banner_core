@@ -1,17 +1,21 @@
-// Copyright 2013-2016 Ellucian Company L.P. and its affiliates.
+/*******************************************************************************
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.ui
 
 import grails.util.Holders
 
 class AnalyticsTagLib {
-    //GrailsApplication grailsApplication
     def analytics = { attrs, body ->
         def text
         def clientTracker = ""
         def ellucianTracker = ""
         def clientTrackerId
         def allowEllucianTracker
+        def anonymizeIp
+        def anonymizeTracker = ""
         clientTrackerId = Holders.config.banner.analytics.trackerId
+        anonymizeIp = Holders.config.banner.analytics.anonymizeIp instanceof Boolean ? Holders.config.banner.analytics.anonymizeIp : true
         allowEllucianTracker = Holders.config.banner.analytics.allowEllucianTracker instanceof Boolean ? Holders.config.banner.analytics.allowEllucianTracker  : true
         if (!clientTrackerId && allowEllucianTracker == false) {
             out << ""
@@ -34,9 +38,12 @@ class AnalyticsTagLib {
                         " ga('Ellucian.send', 'pageview');";
             }
 
+            anonymizeTracker =  "ga('set', 'anonymizeIp'," +anonymizeIp+");\n"
+
             String scriptClose = "</script>"
             analytics.append(analyticsBody);
             analytics.append(clientTracker);
+            analytics.append(anonymizeTracker);
             analytics.append(ellucianTracker);
             analytics.append(scriptClose);
             out << analytics.toString()
