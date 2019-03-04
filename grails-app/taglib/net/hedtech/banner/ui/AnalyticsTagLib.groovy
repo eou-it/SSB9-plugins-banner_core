@@ -7,13 +7,12 @@ import grails.util.Holders
 
 class AnalyticsTagLib {
     def analytics = { attrs, body ->
-        def text
-        def clientTracker = ""
-        def ellucianTracker = ""
-        def clientTrackerId
-        def allowEllucianTracker
-        def anonymizeIp
-        def anonymizeTracker = ""
+        String clientTracker = ""
+        String ellucianTracker = ""
+        String anonymizeTracker = ""
+        String clientTrackerId
+        Boolean allowEllucianTracker
+        Boolean anonymizeIp
         clientTrackerId = Holders.config.banner.analytics.trackerId
         anonymizeIp = Holders.config.banner.analytics.anonymizeIp instanceof Boolean ? Holders.config.banner.analytics.anonymizeIp : true
         allowEllucianTracker = Holders.config.banner.analytics.allowEllucianTracker instanceof Boolean ? Holders.config.banner.analytics.allowEllucianTracker  : true
