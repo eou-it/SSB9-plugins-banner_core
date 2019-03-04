@@ -16,7 +16,7 @@ class AnalyticsTagLib {
         clientTrackerId = Holders.config.banner.analytics.trackerId
         anonymizeIp = Holders.config.banner.analytics.anonymizeIp instanceof Boolean ? Holders.config.banner.analytics.anonymizeIp : true
         allowEllucianTracker = Holders.config.banner.analytics.allowEllucianTracker instanceof Boolean ? Holders.config.banner.analytics.allowEllucianTracker  : true
-        if (!clientTrackerId && allowEllucianTracker == false) {
+        if (!clientTrackerId && !allowEllucianTracker) {
             out << ""
         } else {
             def analytics = new StringBuffer();
@@ -32,7 +32,7 @@ class AnalyticsTagLib {
                 clientTracker = "ga('create', '" + clientTrackerId + "', 'auto');\n" +
                         " ga('send', 'pageview');";
             }
-            if (allowEllucianTracker != false) {
+            if (!allowEllucianTracker) {
                 ellucianTracker = "ga('create', 'UA-75215910-1', 'auto', 'Ellucian');\n" +
                         " ga('Ellucian.send', 'pageview');";
             }
