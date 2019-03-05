@@ -115,7 +115,7 @@ class Foo implements Serializable { // based on 'College'
 		addressCountry                ( nullable: true,  maxSize: 28 )
 		addressZipCode                ( nullable: true,  maxSize: 10 )
 		systemRequiredIndicator       ( nullable: true,  maxSize: 1, inList:['Y','N'] )
-		voiceResponseMessageNumber    ( nullable: true,  maxSize: 22 )
+		voiceResponseMessageNumber    ( nullable: true)
 		statisticsCanadianInstitution ( nullable: true,  maxSize: 6  )
 		districtDivision              ( nullable: true,  maxSize: 3  )
 		houseNumber                   ( nullable: true,  maxSize:10  )

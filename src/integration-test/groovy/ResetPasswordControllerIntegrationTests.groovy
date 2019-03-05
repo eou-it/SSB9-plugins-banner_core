@@ -43,7 +43,8 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         formContext = ['GUAGMNU']
         super.setUp()
         resetPasswordController = new ResetPasswordController()
-        resetPasswordController.resetPasswordService = new ResetPasswordService()
+        resetPasswordController.resetPasswordService = resetPasswordService
+        resetPasswordController.selfServiceBannerAuthenticationProvider = selfServiceBannerAuthenticationProvider
         conn = dataSource.getSsbConnection()
         conn.setAutoCommit(false)
         db = new Sql(conn)
