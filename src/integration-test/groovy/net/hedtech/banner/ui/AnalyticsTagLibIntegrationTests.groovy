@@ -34,6 +34,7 @@ class AnalyticsTagLibIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testTagLibWithNoTracking() {
         def thisTagArgs = [:]
+        Holders.config.banner.analytics.trackerId = null
         Holders.config.banner.analytics.allowEllucianTracker = false
         assertEquals '',taglib.analytics(thisTagArgs).toString()
         Holders.config.banner.analytics.remove("allowEllucianTracker")
@@ -44,7 +45,7 @@ class AnalyticsTagLibIntegrationTests extends BaseIntegrationTestCase {
     void testTagLibWithClientTrackerAndEllucianTracker() {
         def thisTagArgs = [:]
         Holders.config.banner.analytics.trackerId = "UA-84226422-1"
-        assertEquals '<script>\n' +
+        def expectedContent = '<script>\n' +
                 '\n' +
                 '(function(i,s,o,g,r,a,m){i[\'GoogleAnalyticsObject\']=r;i[r]=i[r]||function(){\n' +
                 '                        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n' +
@@ -52,12 +53,9 @@ class AnalyticsTagLibIntegrationTests extends BaseIntegrationTestCase {
                 '            })(window,document,\'script\',\'https://www.google-analytics.com/analytics.js\',\'ga\');\n' +
                 'ga(\'create\', \'UA-84226422-1\', \'auto\');\n' +
                 ' ga(\'send\', \'pageview\');ga(\'set\', \'anonymizeIp\',true);\n'+
-                'ga(\'create\', \'UA-75215910-1\', \'auto\', \'Ellucian\');\n' +
-                ' ga(\'Ellucian.send\', \'pageview\');</script>',taglib.analytics(thisTagArgs).toString()
-
+                '</script>'
+        assertEquals expectedContent ,taglib.analytics(thisTagArgs).toString()
         Holders.config.banner.analytics.remove("trackerId")
-
-
     }
 
     @Test
@@ -73,6 +71,8 @@ class AnalyticsTagLibIntegrationTests extends BaseIntegrationTestCase {
                 '            })(window,document,\'script\',\'https://www.google-analytics.com/analytics.js\',\'ga\');\n' +
                 'ga(\'create\', \'UA-84226422-1\', \'auto\');\n' +
                 ' ga(\'send\', \'pageview\');ga(\'set\', \'anonymizeIp\',true);\n' +
+                'ga(\'create\', \'UA-75215910-1\', \'auto\', \'Ellucian\');\n' +
+                ' ga(\'Ellucian.send\', \'pageview\');' +
                 '</script>'
         assertEquals expectedContent , taglib.analytics(thisTagArgs).toString()
         Holders.config.banner.analytics.remove("trackerId")
@@ -93,6 +93,8 @@ class AnalyticsTagLibIntegrationTests extends BaseIntegrationTestCase {
                 '            })(window,document,\'script\',\'https://www.google-analytics.com/analytics.js\',\'ga\');\n' +
                 'ga(\'create\', \'UA-84226422-1\', \'auto\');\n' +
                 ' ga(\'send\', \'pageview\');ga(\'set\', \'anonymizeIp\',false);\n' +
+                'ga(\'create\', \'UA-75215910-1\', \'auto\', \'Ellucian\');\n' +
+                ' ga(\'Ellucian.send\', \'pageview\');' +
                 '</script>'
         assertEquals expectedContent , taglib.analytics(thisTagArgs).toString()
         Holders.config.banner.analytics.remove("trackerId")
@@ -110,8 +112,6 @@ class AnalyticsTagLibIntegrationTests extends BaseIntegrationTestCase {
                 '                    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n' +
                 '            })(window,document,\'script\',\'https://www.google-analytics.com/analytics.js\',\'ga\');\n' +
                 'ga(\'set\', \'anonymizeIp\',true);\n'+
-                'ga(\'create\', \'UA-75215910-1\', \'auto\', \'Ellucian\');\n' +
-                ' ga(\'Ellucian.send\', \'pageview\');' +
                 '</script>'
         assertEquals expectedContent ,taglib.analytics(thisTagArgs).toString()
     }
