@@ -11,7 +11,7 @@ buildscript {
     }
 }
 
-version "9.31.1"
+version "9.31.2"
 group "banner.core"
 
 apply plugin:"eclipse"
