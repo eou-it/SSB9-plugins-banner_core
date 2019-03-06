@@ -32,7 +32,7 @@ class AnalyticsTagLib {
                 clientTracker = "ga('create', '" + clientTrackerId + "', 'auto');\n" +
                         " ga('send', 'pageview');";
             }
-            if (!allowEllucianTracker) {
+            if (allowEllucianTracker != false) {
                 ellucianTracker = "ga('create', 'UA-75215910-1', 'auto', 'Ellucian');\n" +
                         " ga('Ellucian.send', 'pageview');";
             }
