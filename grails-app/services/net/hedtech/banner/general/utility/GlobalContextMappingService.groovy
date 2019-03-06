@@ -26,7 +26,7 @@ class GlobalContextMappingService {
         } catch (e) {
             throw e
         } finally {
-            sql?.close()
+            //sql?.close()
         }
     }
 
@@ -42,7 +42,7 @@ class GlobalContextMappingService {
         } catch (e) {
             throw e
         } finally {
-            sql?.close()
+           // sql?.close()
         }
     }
 }
