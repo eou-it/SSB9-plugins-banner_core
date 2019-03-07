@@ -158,7 +158,10 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
     </form>
 
     <div class="copyright">
-        <p>&copy; <g:message code="default.copyright.startyear"/><g:message code="default.copyright.endyear"/> <g:message code="default.copyright.message"/></p>
+        <p>&copy; <g:message code="default.copyright.message"
+                   args="${[g.message(code:'default.copyright.startyear'),
+                            g.message(code:'default.copyright.endyear')]}"/>
+        </p>
 
         <p><g:message code="net.hedtech.banner.login.copyright2"/></p>
     </div>
