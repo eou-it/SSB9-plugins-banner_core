@@ -27,6 +27,7 @@ class AnalyticsTagLib {
                     "                    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n" +
                     "            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');\n";
 
+            anonymizeTracker =  "ga('set', 'anonymizeIp'," +anonymizeIp+");\n"
 
             if (clientTrackerId) {
                 clientTracker = "ga('create', '" + clientTrackerId + "', 'auto');\n" +
@@ -37,12 +38,11 @@ class AnalyticsTagLib {
                         " ga('Ellucian.send', 'pageview');";
             }
 
-            anonymizeTracker =  "ga('set', 'anonymizeIp'," +anonymizeIp+");\n"
 
             String scriptClose = "</script>"
             analytics.append(analyticsBody);
-            analytics.append(clientTracker);
             analytics.append(anonymizeTracker);
+            analytics.append(clientTracker);
             analytics.append(ellucianTracker);
             analytics.append(scriptClose);
             out << analytics.toString()

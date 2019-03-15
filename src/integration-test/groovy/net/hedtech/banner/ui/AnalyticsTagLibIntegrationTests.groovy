@@ -50,8 +50,9 @@ class AnalyticsTagLibIntegrationTests extends BaseIntegrationTestCase {
                 '                        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n' +
                 '                    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n' +
                 '            })(window,document,\'script\',\'https://www.google-analytics.com/analytics.js\',\'ga\');\n' +
+                'ga(\'set\', \'anonymizeIp\',true);\n'+
                 'ga(\'create\', \'UA-84226422-1\', \'auto\');\n' +
-                ' ga(\'send\', \'pageview\');ga(\'set\', \'anonymizeIp\',true);\n'+
+                ' ga(\'send\', \'pageview\');'+
                 'ga(\'create\', \'UA-75215910-1\', \'auto\', \'Ellucian\');\n' +
                 ' ga(\'Ellucian.send\', \'pageview\');</script>',taglib.analytics(thisTagArgs).toString()
 
@@ -71,8 +72,9 @@ class AnalyticsTagLibIntegrationTests extends BaseIntegrationTestCase {
                 '                        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n' +
                 '                    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n' +
                 '            })(window,document,\'script\',\'https://www.google-analytics.com/analytics.js\',\'ga\');\n' +
+                'ga(\'set\', \'anonymizeIp\',true);\n'+
                 'ga(\'create\', \'UA-84226422-1\', \'auto\');\n' +
-                ' ga(\'send\', \'pageview\');ga(\'set\', \'anonymizeIp\',true);\n' +
+                ' ga(\'send\', \'pageview\');' +
                 '</script>'
         assertEquals expectedContent , taglib.analytics(thisTagArgs).toString()
         Holders.config.banner.analytics.remove("trackerId")
@@ -91,8 +93,9 @@ class AnalyticsTagLibIntegrationTests extends BaseIntegrationTestCase {
                 '                        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n' +
                 '                    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n' +
                 '            })(window,document,\'script\',\'https://www.google-analytics.com/analytics.js\',\'ga\');\n' +
+                'ga(\'set\', \'anonymizeIp\',false);\n'+
                 'ga(\'create\', \'UA-84226422-1\', \'auto\');\n' +
-                ' ga(\'send\', \'pageview\');ga(\'set\', \'anonymizeIp\',false);\n' +
+                ' ga(\'send\', \'pageview\');' +
                 '</script>'
         assertEquals expectedContent , taglib.analytics(thisTagArgs).toString()
         Holders.config.banner.analytics.remove("trackerId")
