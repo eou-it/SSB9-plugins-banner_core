@@ -31,34 +31,6 @@ class LogoutControllerIntegrationTests extends BaseIntegrationTestCase {
         super.tearDown()
     }
 
-    @Test
-    public void testIndex() {
-        controller.index()
-        assertEquals 302, controller.response.status
-        assertEquals(controller.response.redirectedUrl, ControllerUtils.buildLogoutRedirectURI())
-    }
-
-    @Test
-    public void testTimeout() {
-        controller.request.addHeader(controller.HTTP_REQUEST_REFERER_STRING, '/test/' + controller.LOGIN_AUTH_ACTION_URI)
-        controller.timeout()
-        assertEquals 200, controller.response.status
-        assertEquals(controller.response.forwardedUrl, '/login')
-    }
-
-    @Test
-    public void testTimoutWithoutReferer() {
-        def sessionBackup
-        try {
-            controller.request.addHeader(controller.HTTP_REQUEST_REFERER_STRING, '/test/')
-            sessionBackup = controller.session
-            controller.timeout()
-            assertEquals 302, controller.response.status
-            assertEquals(controller.response.redirectedUrl, controller.createLink([action: controller.ACTION_TIMEOUT_PAGE, absolute: true]))
-        } finally {
-            controller.request.setSession(sessionBackup)
-        }
-    }
 
     @Test
     public void testTimoutPage() {
@@ -74,19 +46,6 @@ class LogoutControllerIntegrationTests extends BaseIntegrationTestCase {
         controller.logoutPage()
         assertEquals 200, controller.response.status
         assertEquals(controller.modelAndView.viewName, '/logout/' + controller.VIEW_LOGOUT_PAGE)
-    }
-
-    @Test
-    public void testIndexWithSaml() {
-        def samlBackup = Holders?.config.banner.sso.authenticationProvider
-        try {
-            Holders?.config.banner.sso.authenticationProvider = 'saml'
-            controller.index()
-            assertTrue(controller.request.isRequestedSessionIdValid())
-            assertEquals(controller.response.redirectedUrl, ControllerUtils.buildLogoutRedirectURI())
-        } finally {
-            Holders?.config.banner.sso.authenticationProvider = samlBackup
-        }
     }
 
     @Test
