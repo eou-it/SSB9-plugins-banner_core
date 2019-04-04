@@ -1,37 +1,30 @@
 /*******************************************************************************
- Copyright 2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.testing
 
-import grails.web.servlet.context.GrailsWebApplicationContext
-import net.hedtech.banner.security.BannerAuthenticationProvider
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-
-import static org.junit.Assert.*
 import grails.util.GrailsNameUtils
+import grails.util.GrailsWebMockUtil
+import grails.web.servlet.context.GrailsWebApplicationContext
 import groovy.sql.Sql
 import net.hedtech.banner.configuration.ConfigurationUtils
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.security.FormContext
-import org.apache.log4j.Logger
+import org.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.grails.plugins.web.taglib.ValidationTagLib
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken as UPAT
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
-
-import grails.util.GrailsWebMockUtil
-import org.grails.plugins.testing.GrailsMockHttpServletRequest
-import org.grails.plugins.testing.GrailsMockHttpServletResponse
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.WebApplicationContext
-import org.springframework.web.context.request.RequestContextHolder
 
-
+import static org.junit.Assert.*
 
 /**
  * Base class for integration tests, that sets the FormContext and logs in 'GRAILS_USER' if necessary
@@ -109,7 +102,11 @@ class BaseIntegrationTestCase extends Assert {
         } else {
             //log.info("Warning: No FormContext has been set, and it cannot be set automatically without knowing the controller...")
         }
-        GrailsWebMockUtil.bindMockWebRequest(webAppCtx)
+
+        MockHttpServletRequest request = new GrailsMockHttpServletRequest(webAppCtx.servletContext)
+        MockHttpServletResponse response = new GrailsMockHttpServletResponse()
+        GrailsWebMockUtil.bindMockWebRequest(webAppCtx, request, response)
+
         //def webRequest = GrailsWebMockUtil.bindMockWebRequest(webAppCtx,new GrailsMockHttpServletRequest(), new GrailsMockHttpServletResponse())
 
         if (controller) {

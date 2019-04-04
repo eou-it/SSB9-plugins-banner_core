@@ -13,6 +13,7 @@ import org.apache.commons.codec.binary.Base64
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.context.request.RequestContextHolder
 
 import java.sql.SQLException
@@ -35,6 +36,8 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     public static final String PERSON_ESSREG03 = 'ESSREG03'
     public static final String GUEST1 = 'sss04@ssb.com'
     def selfServiceBannerAuthenticationProvider
+
+    @Autowired
     ResetPasswordController resetPasswordController
 
 
@@ -42,7 +45,6 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        resetPasswordController = new ResetPasswordController()
         resetPasswordController.resetPasswordService = resetPasswordService
         resetPasswordController.selfServiceBannerAuthenticationProvider = selfServiceBannerAuthenticationProvider
         conn = dataSource.getSsbConnection()
@@ -91,7 +93,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testWithResetPasswordDisabled() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", PERSON_RESP001)
+        resetPasswordController.request.setParameter("username", PERSON_RESP001)
         def oldIsResetSsbPasswordEnabled = Holders?.config.ssbPassword.reset.enabled
         Holders?.config.ssbPassword.reset.enabled = false
         resetPasswordController.questans()
@@ -103,7 +105,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testWithResetPasswordNoQuestionMap() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", PERSON_ESSREG03)
+        resetPasswordController.request.setParameter("username", PERSON_ESSREG03)
         def oldIsResetSsbPasswordEnabled = Holders?.config.ssbPassword.reset.enabled
         Holders?.config.ssbPassword.reset.enabled = true
         resetPasswordController.questans()
@@ -115,7 +117,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testWithResetPasswordNull() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", PERSON_RESP001)
+        resetPasswordController.request.setParameter("username", PERSON_RESP001)
         def oldIsResetSsbPasswordEnabled = Holders?.config.ssbPassword.reset.enabled
         Holders?.config.ssbPassword.reset.enabled = null
         resetPasswordController.questans()
@@ -128,7 +130,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testWithQuestionInfoMapAndUserName() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", PERSON_RESP003)
+        resetPasswordController.request.setParameter("username", PERSON_RESP003)
         resetPasswordController.questans()
         assertEquals(302, resetPasswordController.response.status)
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("requestPage")
@@ -138,7 +140,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testWithNoQuestionInfoMapAndUserName() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", PERSON_RESP002)
+        resetPasswordController.request.setParameter("username", PERSON_RESP002)
         resetPasswordController.questans()
         assertEquals(302, resetPasswordController.response.status)
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("requestPage")
@@ -148,7 +150,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testQuestionsWithDisabledAccount() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", PERSON_RESP003)
+        resetPasswordController.request.setParameter("username", PERSON_RESP003)
         resetPasswordController.questans()
         assertEquals(302, resetPasswordController.response.status)
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("requestPage")
@@ -158,7 +160,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testQuestionsWithNonPidmUser() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", PERSON_RESP004)
+        resetPasswordController.request.setParameter("username", PERSON_RESP004)
         def oldIsResetSsbPasswordEnabled = Holders?.config.ssbPassword.guest.reset.enabled
         Holders?.config.ssbPassword.guest.reset.enabled = true
         try {
@@ -174,7 +176,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testQuestionsWithNonPidmUserWithResetPasswordNull() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", PERSON_RESP004)
+        resetPasswordController.request.setParameter("username", PERSON_RESP004)
         def oldIsResetSsbPasswordEnabled = Holders?.config.ssbPassword.guest.reset.enabled
         Holders?.config.ssbPassword.guest.reset.enabled = null
         resetPasswordController.questans()
@@ -187,7 +189,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testQuestionsWithNonPidmUserWithResetPasswordFalse() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", PERSON_RESP004)
+        resetPasswordController.request.setParameter("username", PERSON_RESP004)
         def oldIsResetSsbPasswordEnabled = Holders?.config.ssbPassword.guest.reset.enabled
         Holders?.config.ssbPassword.guest.reset.enabled = false
         resetPasswordController.questans()
@@ -200,7 +202,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testQuestionsWithUser() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", "RES004")
+        resetPasswordController.request.setParameter("username", "RES004")
         resetPasswordController.questans()
         assertEquals(302, resetPasswordController.response.status)
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("requestPage")
