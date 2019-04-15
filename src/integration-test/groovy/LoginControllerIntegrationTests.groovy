@@ -31,6 +31,9 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
     def msg
 
     def selfServiceBannerAuthenticationProvider
+    def authenticationTrustResolver
+
+    def springSecurityService
 
     private static final String PERSON_HOSWEB001 = 'HOSWEB001'
 
@@ -47,7 +50,8 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
         formContext = ['GUAGMNU']
         super.setUp()
         controller = new LoginController()
-        controller.springSecurityService = new SpringSecurityService()
+        controller.springSecurityService = springSecurityService
+        controller.authenticationTrustResolver = authenticationTrustResolver
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("mep", "BANNER")
         Holders.config.ssbEnabled = true
         Holders.config.ssbOracleUsersProxied = false

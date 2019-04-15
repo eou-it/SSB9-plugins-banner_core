@@ -52,9 +52,10 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
     void testSelfServiceDoFilter() {
         Holders.config.ssbEnabled = true
         Holders.config.ssbOracleUsersProxied = true
-        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove("/**")
-        Holders.config.grails.plugin.springsecurity.interceptUrlMap.put('/ssb/**', ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
-
+        Map roleMap = new LinkedHashMap()
+        roleMap.put('pattern','/ssb/**')
+        roleMap.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(roleMap)
 
         MockHttpServletRequest request = new MockHttpServletRequest()
         request.setRequestURI("/ssb/foo")
