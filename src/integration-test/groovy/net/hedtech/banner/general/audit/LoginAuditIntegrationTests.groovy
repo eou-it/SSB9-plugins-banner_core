@@ -68,6 +68,11 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
     void testCreateLoginAudit() {
         LoginAudit loginAudit = newLoginAudit()
         loginAudit.save(failOnError: true, flush: true)
+        assertNotNull loginAudit?.id
+
+        loginAudit = loginAudit.refresh()
+        assertEquals 0L, loginAudit.version
+        assertNotNull loginAudit.appId
     }
 
     @Test
@@ -95,15 +100,15 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
 
         assertNotNull loginAudit.id
         assertEquals 0L, loginAudit.version
-        assertEquals "Banner", loginAudit.dataOrigin
 
-        //Update the Version entity
-        loginAudit.version = 123L
+        //Update the entity
+        loginAudit.loginId = "PSA 2"
         loginAudit = loginAudit.save(failOnError: true, flush: true)
 
 
         loginAudit = loginAudit.get(loginAudit.id)
-        assertEquals 123L, loginAudit.version
+        assertEquals "PSA 2", loginAudit.loginId
+
     }
 
 
