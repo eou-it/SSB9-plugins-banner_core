@@ -107,8 +107,6 @@ class BaseIntegrationTestCase extends Assert {
         MockHttpServletResponse response = new GrailsMockHttpServletResponse()
         GrailsWebMockUtil.bindMockWebRequest(webAppCtx, request, response)
 
-        //def webRequest = GrailsWebMockUtil.bindMockWebRequest(webAppCtx,new GrailsMockHttpServletRequest(), new GrailsMockHttpServletResponse())
-
         if (controller) {
             controller.class.metaClass.getParams = { -> params }
             controller.class.metaClass.getFlash = { -> flash  }
