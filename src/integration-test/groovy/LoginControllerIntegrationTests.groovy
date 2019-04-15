@@ -1,21 +1,18 @@
 /*******************************************************************************
- Copyright 2016-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2016-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
-
-import grails.core.GrailsApplication
 import grails.gorm.transactions.Rollback
-import grails.plugin.springsecurity.SpringSecurityService
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.AuthorizationException
 import net.hedtech.banner.i18n.MessageHelper
-import net.hedtech.banner.security.SelfServiceBannerAuthenticationProvider
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder as SCH
@@ -26,7 +23,8 @@ import org.springframework.web.context.request.RequestContextHolder
 @Rollback
 class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
 
-    def controller
+    @Autowired
+    LoginController controller
 
     def msg
 
@@ -49,7 +47,6 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        controller = new LoginController()
         controller.springSecurityService = springSecurityService
         controller.authenticationTrustResolver = authenticationTrustResolver
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("mep", "BANNER")
@@ -263,7 +260,7 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testForgotPassword() {
-        controller.request.setParameter("j_username", "TEST_USER")
+        controller.request.setParameter("username", "TEST_USER")
         controller.forgotpassword()
         assertEquals(200, controller.response.status)
     }
@@ -271,7 +268,7 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
 
     @Test
     void testForgotPasswordUserNameEmpty() {
-        controller.request.setParameter("j_username", "  ")
+        controller.request.setParameter("username", "  ")
         controller.forgotpassword()
         assertEquals(200, controller.response.status)
     }

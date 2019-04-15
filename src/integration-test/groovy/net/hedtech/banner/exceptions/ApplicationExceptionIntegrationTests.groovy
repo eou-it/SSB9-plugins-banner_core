@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.exceptions
 
@@ -16,6 +16,7 @@ import org.grails.plugins.web.taglib.ValidationTagLib
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DataIntegrityViolationException as ConstraintException
 import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException as OptimisticLockException
 import org.springframework.security.core.context.SecurityContextHolder as SCH
@@ -32,11 +33,13 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 
     private validationTagLibInstance
 
+	@Autowired
+	TermController controller
+
     @Before
 	public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        controller = new TermController()
     }
 
     @After
