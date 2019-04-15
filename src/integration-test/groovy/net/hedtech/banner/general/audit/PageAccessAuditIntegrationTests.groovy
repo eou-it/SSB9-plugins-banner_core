@@ -3,7 +3,6 @@
  *******************************************************************************/
 package net.hedtech.banner.general.audit
 
-import grails.config.ConfigProperties
 import grails.gorm.transactions.Rollback
 import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
@@ -16,6 +15,7 @@ import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
 import org.springframework.web.context.request.RequestContextHolder
+import net.hedtech.banner.general.utility.PersonalPreference
 
 @Integration
 @Rollback
@@ -143,8 +143,8 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testEqualsClass() {
         PageAccessAudit selfServicePageAccess = new PageAccessAudit()
-        ConfigProperties configProperties=new ConfigProperties()
-        assertFalse selfServicePageAccess.equals(configProperties)
+        PersonalPreference personalPreference=new PersonalPreference()
+        assertFalse selfServicePageAccess.equals(personalPreference)
     }
 
     @Test
