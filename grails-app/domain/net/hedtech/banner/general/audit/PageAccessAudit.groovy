@@ -14,12 +14,7 @@ import javax.persistence.*
         @NamedQuery(name = 'PageAccessAudit.fetchByAppId',
                 query = """ FROM PageAccessAudit pageAccessAudit WHERE pageAccessAudit.appId = :appId """),
 ])
-
-
-
 class PageAccessAudit implements Serializable{
-
-
     @Id
     @Column(name = 'GURASSA_SURROGATE_ID')
     @SequenceGenerator(name = "GURASSA_SEQ_GEN", sequenceName = "GURASSA_SURROGATE_ID_SEQUENCE",allocationSize=1)
@@ -63,15 +58,17 @@ class PageAccessAudit implements Serializable{
 
 
     static constraints = {
-        auditTime(nullable: false)
-        loginId(nullable: false,maxSize: 256)
-        pageUrl(nullable: false,maxSize: 2000)
-        appId(nullable: false,maxSize:10)
-        ipAddress(nullable: false,maxSize: 50)
-        vpdiCode(nullable: true,maxSize: 6)
+        auditTime(nullable:false)
+        loginId(nullable:false, maxSize: 256)
+        pageUrl(nullable:false, maxSize: 2000)
+        appId(nullable:false, maxSize:10)
+        ipAddress(nullable:false, maxSize: 50)
+        pidm(nullable:true)
         dataOrigin(nullable: true, maxSize: 30)
-        lastModified(nullable: true)
-        lastModifiedBy(nullable: true, maxSize: 30)
+        lastModified(nullable:true)
+        lastModifiedBy(nullable:true, maxSize: 30)
+        version(nullable:true)
+        vpdiCode(nullable:true, maxSize: 6)
     }
 
     int hashCode() {

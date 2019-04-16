@@ -22,16 +22,15 @@ class PageAccessAuditService extends ServiceBase {
     public def createPageAudit() {
         try {
             def user = BannerGrantedAuthorityService.getUser()
-            pidm = user.pidm
+            if (user.hasProperty('pidm')) {
+                pidm = user?.pidm
+            }
             auditTime = new Date()
-            loginId = user.username
+            loginId = user?.username
             def request = RequestContextHolder.getRequestAttributes()?.request
-            ipAddress = request.getRemoteAddr()
-            println request.getRequestURI()
-            //ipAddress = InetAddress.getLocalHost().getHostAddress()
+            ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
             appId = Holders.config.app.appId
-            pageUrl = "test Pageid"
-
+            pageUrl = request.getRequestURI()
             PageAccessAudit pageAccessAudit = new PageAccessAudit()
             pageAccessAudit.setAuditTime(new Date())
             pageAccessAudit.setLoginId(loginId)
@@ -39,9 +38,10 @@ class PageAccessAuditService extends ServiceBase {
             pageAccessAudit.setAppId(appId)
             pageAccessAudit.setPageUrl(pageUrl)
             pageAccessAudit.setIpAddress(ipAddress)
+            pageAccessAudit.setVersion(0L)
             this.create(pageAccessAudit)
         }catch (Exception ex) {
-            log.error("Exception occured while creating PageAudit " + ex.getMessage())
+            log.error("Exception occured while creating PageAccess Audit ${ex.getMessage()}")
         }
     }
 
