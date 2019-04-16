@@ -23,7 +23,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     private Date auditTime
     private String loginId
     private String ipAddress
-    private String osUser
+    private String userAgent
     private Date lastModified
     private String lastModifiedBy
     private Long id
@@ -59,9 +59,9 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         appName = Holders.grailsApplication.config.info.app.name
         dataOrigin = Holders.config.dataOrigin
         lastModifiedBy = Holders.config.info.app.appId
-        osUser = System.getProperty('os.name')
+        userAgent = System.getProperty('os.name')
         logonComment = 'Test Comment'
-        LoginAudit loginAudit = newLoginAudit(loginId,pidm,appId,lastModifiedBy,osUser,dataOrigin,ipAddress,logonComment)
+        LoginAudit loginAudit = newLoginAudit(loginId,pidm,appId,lastModifiedBy,userAgent,dataOrigin,ipAddress,logonComment)
         loginAudit.save(failOnError: true, flush: true)
         def  LoginAuditObject = LoginAuditService.getDataByLoginID(loginAudit.loginId)
 
@@ -74,7 +74,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
 
     }
 
-    private LoginAudit newLoginAudit(loginId, pidm, appId,lastModifiedBy,osUser, dataOrigin, ipAddress,logonComment) {
+    private LoginAudit newLoginAudit(loginId, pidm, appId,lastModifiedBy,userAgent, dataOrigin, ipAddress,logonComment) {
 
         LoginAudit loginAudit = new LoginAudit(
                 auditTime: new Date(),
@@ -85,7 +85,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
                 lastModifiedBy: lastModifiedBy,
                 dataOrigin: dataOrigin,
                 ipAddress: ipAddress,
-                userAgent: osUser,
+                userAgent: userAgent,
                 logonComment: logonComment
 
         )

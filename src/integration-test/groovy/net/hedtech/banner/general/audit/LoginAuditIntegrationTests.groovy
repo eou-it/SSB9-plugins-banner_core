@@ -7,32 +7,22 @@ package net.hedtech.banner.general.audit
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
+import groovy.sql.Sql
+import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
+import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
 import org.springframework.web.context.request.RequestContextHolder
 import net.hedtech.banner.general.utility.PersonalPreference
+
+import static groovy.test.GroovyAssert.shouldFail
 
 @Integration
 @Rollback
 class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
-
-    private String appName
-    private String appId
-    private Date auditTime
-    private String loginId
-    private String ipAddress
-    private String userAgent
-    private Date lastModified
-    private String lastModifiedBy
-    private Long id
-    private Long version
-    private Integer pidm
-    private String logonComment
-    private String dataOrigin
-
 
     @Before
     public void setUp() {
@@ -40,18 +30,6 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
         super.setUp()
         logout()
         loginSSB('HOSH00001', '111111')
-        appName = Holders.grailsApplication.config.info.app.name
-        appId = Holders.config.info.app.appId
-        auditTime = new Date()
-        loginId = 'HOSH00010'
-        ipAddress = InetAddress.getLocalHost().getHostAddress()
-        userAgent = System.getProperty('os.name')
-        lastModified =  new Date()
-        lastModifiedBy = 'Test User'
-        pidm = 49436
-        logonComment = 'Test Comment'
-        dataOrigin = 'Banner'
-
     }
 
     @After
@@ -116,7 +94,7 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
     void testToString() {
         LoginAudit loginAudit = newLoginAudit()
         loginAudit.save(failOnError: true, flush: true)
-        LoginAudit loginAudit1 = LoginAudit.fetchByLoginId(loginId)
+        LoginAudit loginAudit1 = LoginAudit.fetchByLoginId(loginAudit.loginId)
         String LoginIdToString = loginAudit1.toString()
         assertNotNull LoginIdToString
         
@@ -139,7 +117,7 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
     void testFetchByValidLoginId() {
         LoginAudit loginAudit = newLoginAudit()
         loginAudit.save(failOnError: true, flush: true)
-        LoginAudit auditPage = LoginAudit.fetchByLoginId(loginId)
+        LoginAudit auditPage = LoginAudit.fetchByLoginId(loginAudit.loginId)
         assertNotNull auditPage
     }
 
@@ -147,7 +125,7 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
     void testFetchByValidAppId() {
         LoginAudit loginAudit = newLoginAudit()
         loginAudit.save(failOnError: true, flush: true)
-        LoginAudit auditPage = LoginAudit.fetchByAppId(appId)
+        LoginAudit auditPage = LoginAudit.fetchByAppId(loginAudit.appId)
         assertNotNull auditPage
     }
 
@@ -163,28 +141,92 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
     void testHashCode() {
         LoginAudit loginAudit = newLoginAudit()
         loginAudit.save(failOnError: true, flush: true)
-        LoginAudit loginAudit1 = LoginAudit.fetchByLoginId(loginId)
+        LoginAudit loginAudit1 = LoginAudit.fetchByLoginId(loginAudit.loginId)
         int LoginIdHashCode = loginAudit1.hashCode()
         assertNotNull LoginIdHashCode
     }
 
+    @Test
+    public void testSerialization() {
+        try {
+            LoginAudit loginAudit = newLoginAudit()
+            loginAudit.save(failOnError: true, flush: true)
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            ObjectOutputStream oos = new ObjectOutputStream(out)
+            oos.writeObject(loginAudit)
+            oos.close()
+
+            byte[] bytes = out.toByteArray()
+            LoginAudit loginAudit1
+            new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
+                configApplication2 = (LoginAudit) is.readObject()
+                is.close()
+            }
+            assertEquals loginAudit1, loginAudit
+
+        } catch (e) {
+            e.printStackTrace()
+        }
+    }
+
+    @Test
+    void testEqualsLastModifiedEqual() {
+        LoginAudit loginAudit1 = new LoginAudit(appId: "TestId",lastModified: new Date(12,2,12))
+        LoginAudit loginAudit2 = new LoginAudit(appId: "TestId1",lastModified: new Date(12,2,14))
+        assertFalse loginAudit2==loginAudit1
+    }
+
+    @Test
+    void testEqualsLastModifiedNotEqual() {
+        LoginAudit loginAudit1 = new LoginAudit(appId: "TestId",lastModified: new Date(12,2,12))
+        LoginAudit loginAudit2 = new LoginAudit(appId: "TestId1",lastModified: new Date(12,2,12))
+        assertFalse loginAudit2==loginAudit1
+    }
+
+    @Test
+    void testEqualsLastModifiedAppNameNotEqual() {
+        LoginAudit loginAudit1 = new LoginAudit(appId: "TestId",lastModified: new Date(12,2,12))
+        LoginAudit loginAudit2 = new LoginAudit(appId: "TestId",lastModified: new Date(12,2,12))
+        assertTrue loginAudit2==loginAudit1
+    }
+
+    @Test
+    void testEqualsDataOriginNotEqual() {
+        LoginAudit loginAudit1 = new LoginAudit(appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "GENERAL")
+        LoginAudit loginAudit2 = new LoginAudit(appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER")
+        assertFalse loginAudit2==loginAudit1
+    }
+
+/*
+    @Test
+    void testOptimisticLock() {
+        LoginAudit loginAudit = newLoginAudit()
+        save loginAudit
+
+        def sql= new Sql(sessionFactory.getCurrentSession().connection())
+        sql.executeUpdate("update general.GURASSL set GURASSL_PIDM = 999 where GURASSL_SURROGATE_ID = ?", [loginAudit.id])
+
+        //Try to update the entity
+        loginAudit.loginId = "UUUUU"
+        shouldFail(HibernateOptimisticLockingFailureException) {
+            loginAudit.save(failOnError: true, flush: true)
+        }
+    }
+*/
 
     private LoginAudit newLoginAudit() {
+        def user = BannerGrantedAuthorityService.getUser()
         LoginAudit loginAudit = new LoginAudit(
-
-                auditTime: auditTime,
-                loginId: loginId,
-                pidm:pidm,
-                appId:appId,
-                lastModified: lastModified,
-                lastModifiedBy: lastModifiedBy,
-                dataOrigin: dataOrigin,
-
-                ipAddress: ipAddress,
-                logonComment: logonComment,
-                userAgent: userAgent,
-                id: id
-
+                auditTime: new Date(),
+                loginId: user.username,
+                pidm: user.pidm,
+                appId: Holders.config.app.appId,
+                lastModified: new Date(),
+                lastModifiedBy: Holders.config.app.appId,
+                dataOrigin: Holders.config.dataOrigin,
+                ipAddress: InetAddress.getLocalHost().getHostAddress(),
+                logonComment: 'Test Comment',
+                userAgent: System.getProperty('os.name')
         )
         return loginAudit
     }

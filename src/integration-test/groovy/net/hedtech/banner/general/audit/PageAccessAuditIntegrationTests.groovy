@@ -4,10 +4,8 @@
 package net.hedtech.banner.general.audit
 
 import grails.gorm.transactions.Rollback
-import grails.gorm.transactions.Transactional
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
-import net.hedtech.banner.general.audit.PageAccessAudit
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
@@ -21,29 +19,12 @@ import net.hedtech.banner.general.utility.PersonalPreference
 @Rollback
 class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
 
-    private String appName
-    private String appId
-    private String loginId
-    private String pageUrl
-    private Integer pidm
-    private String dataOrigin
-    private String lastModifiedBy
-    private String ipAddress
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         logout()
         loginSSB('HOSH00001', '111111')
-        def user = BannerGrantedAuthorityService.getUser()
-        pidm = user.pidm
-        loginId = user.username
-        ipAddress = InetAddress.getLocalHost().getHostAddress()
-        appId = Holders.config.app.appId
-        appName = Holders.config.info.app.name
-        dataOrigin = Holders.config.dataOrigin
-        lastModifiedBy = Holders.config.app.appId
-        pageUrl = "test Pageid"
     }
 
     @After
@@ -90,12 +71,12 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
         assertEquals "Banner", pageAccessAudit.dataOrigin
 
         //Update the Version entity
-        pageAccessAudit.version = 123L
+        pageAccessAudit.loginId = "PSA 2"
         pageAccessAudit = pageAccessAudit.save(failOnError: true, flush: true)
 
 
         pageAccessAudit = pageAccessAudit.get(pageAccessAudit.id)
-        assertEquals 123L, pageAccessAudit.version
+        assertEquals "PSA 2", pageAccessAudit.loginId
     }
 
 
@@ -104,7 +85,7 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
         PageAccessAudit pageAccessAudit = getPageAccessAudit()
         pageAccessAudit.save(failOnError: true, flush: true)
 
-        PageAccessAudit pageAccessAudit1 = PageAccessAudit.fetchByLoginId(loginId)
+        PageAccessAudit pageAccessAudit1 = PageAccessAudit.fetchByLoginId(pageAccessAudit.loginId)
         String pageAccessAuditToString = pageAccessAudit1.toString()
         assertNotNull pageAccessAuditToString
     }
@@ -126,7 +107,7 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
         PageAccessAudit pageAccessAudit = getPageAccessAudit()
         pageAccessAudit.save(failOnError: true, flush: true)
 
-        PageAccessAudit pageAccessAudit1 = PageAccessAudit.fetchByLoginId(loginId)
+        PageAccessAudit pageAccessAudit1 = PageAccessAudit.fetchByLoginId(pageAccessAudit.loginId)
         assertNotNull pageAccessAudit1
     }
 
@@ -135,7 +116,7 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
         PageAccessAudit selfServicePageAccess = getPageAccessAudit()
         selfServicePageAccess.save(failOnError: true, flush: true)
 
-        PageAccessAudit selfServicePage = PageAccessAudit.fetchByAppId(appId)
+        PageAccessAudit selfServicePage = PageAccessAudit.fetchByAppId(selfServicePageAccess.appId)
         assertNotNull selfServicePage
     }
 
@@ -148,33 +129,78 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
     }
 
     @Test
-    void testEqualsIs() {
-        PageAccessAudit selfServicePageAccess = new PageAccessAudit()
-        assertTrue selfServicePageAccess.equals(selfServicePageAccess)
-    }
-
-    @Test
     void testHashCode() {
         PageAccessAudit pageAccessAudit = getPageAccessAudit()
         pageAccessAudit.save(failOnError: true, flush: true)
-        PageAccessAudit pageAccessAudit1 = PageAccessAudit.fetchByLoginId(loginId)
+        PageAccessAudit pageAccessAudit1 = PageAccessAudit.fetchByLoginId(pageAccessAudit.loginId)
         int pageAccessAuditToHash = pageAccessAudit1.hashCode()
         assertNotNull pageAccessAuditToHash
     }
 
+    @Test
+    public void testSerialization() {
+        try {
+            PageAccessAudit pageAccessAudit = getPageAccessAudit()
+            pageAccessAudit.save(failOnError: true, flush: true)
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+            ObjectOutputStream oos = new ObjectOutputStream(out)
+            oos.writeObject(pageAccessAudit)
+            oos.close()
+
+            byte[] bytes = out.toByteArray()
+            PageAccessAudit pageAccessAudit1
+            new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
+                pageAccessAudit1 = (PageAccessAudit) is.readObject()
+                is.close()
+            }
+            assertEquals pageAccessAudit1, pageAccessAudit
+
+        } catch (e) {
+            e.printStackTrace()
+        }
+    }
+
+    @Test
+    void testEqualsLastModifiedEqual() {
+        PageAccessAudit pageAccessAudit1 = new PageAccessAudit(appId: "TestId",lastModified: new Date(12,2,12))
+        PageAccessAudit pageAccessAudit2 = new PageAccessAudit(appId: "TestId1",lastModified: new Date(12,2,14))
+        assertFalse pageAccessAudit2==pageAccessAudit1
+    }
+
+    @Test
+    void testEqualsLastModifiedNotEqual() {
+        PageAccessAudit pageAccessAudit1 = new PageAccessAudit(appId: "TestId",lastModified: new Date(12,2,12))
+        PageAccessAudit pageAccessAudit2 = new PageAccessAudit(appId: "TestId1",lastModified: new Date(12,2,12))
+        assertFalse pageAccessAudit2==pageAccessAudit1
+    }
+
+    @Test
+    void testEqualsLastModifiedAppNameNotEqual() {
+        PageAccessAudit pageAccessAudit1 = new PageAccessAudit(appId: "TestId",lastModified: new Date(12,2,12))
+        PageAccessAudit pageAccessAudit2 = new PageAccessAudit(appId: "TestId",lastModified: new Date(12,2,12))
+        assertTrue pageAccessAudit2==pageAccessAudit1
+    }
+
+    @Test
+    void testEqualsDataOriginNotEqual() {
+        PageAccessAudit pageAccessAudit1 = new PageAccessAudit(appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "GENERAL")
+        PageAccessAudit pageAccessAudit2 = new PageAccessAudit(appId: "TestId",lastModified: new Date(12,2,12),dataOrigin: "BANNER")
+        assertFalse pageAccessAudit2==pageAccessAudit1
+    }
+
 
     private PageAccessAudit getPageAccessAudit() {
+        def user = BannerGrantedAuthorityService.getUser()
         PageAccessAudit selfServicePageAccess = new PageAccessAudit(
                 auditTime: new Date(),
-                loginId: loginId,
-                pidm:pidm,
-                appId:appId,
+                loginId: user.username,
+                pidm: user.pidm,
+                appId: Holders.config.app.appId,
                 lastModified: new Date(),
-                lastModifiedBy: lastModifiedBy,
-                dataOrigin: dataOrigin,
-                ipAddress: ipAddress,
-                pageUrl: pageUrl
-
+                lastModifiedBy: Holders.config.app.appId,
+                dataOrigin: Holders.config.dataOrigin,
+                ipAddress: InetAddress.getLocalHost().getHostAddress(),
+                pageUrl: "test Pageid"
         )
         return selfServicePageAccess
     }
