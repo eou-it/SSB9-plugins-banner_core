@@ -77,7 +77,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
             setTransactionTimeout( authenticationResults['transactionTimeout'] )
 
-            if(authenticationResults!= null && Holders.config.EnableLoginAudit){
+            if(authenticationResults!= null && Holders.config.EnableLoginAudit == "Y"){
                 loginAuditService.createLoginAudit(authenticationResults)
             }
 
