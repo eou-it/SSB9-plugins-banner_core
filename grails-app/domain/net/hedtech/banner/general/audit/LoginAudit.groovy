@@ -74,16 +74,18 @@ class LoginAudit implements Serializable{
 
 
     static constraints = {
-        auditTime(nullable: false)
-        loginId(nullable: false,maxSize: 256)
-        appId(nullable: false,maxSize: 10)
-        ipAddress(nullable: false,maxSize: 50)
-        userAgent(nullable: false,maxSize: 512)
-        logonComment(nullable: true,maxSize: 256)
-        dataOrigin(nullable: true, maxSize: 30)
-        vpdiCode(nullable: true,maxSize: 6)
-        lastModified(nullable: true)
-        lastModifiedBy(nullable: true, maxSize: 30)
+        auditTime(nullable:false)
+        loginId(nullable:false, maxSize: 256)
+        appId(nullable:false, maxSize: 10)
+        ipAddress(nullable:false, maxSize: 50)
+        userAgent(nullable:false, maxSize: 512)
+        logonComment(nullable:true, maxSize: 256)
+        pidm(nullable:true)
+        lastModified(nullable:true)
+        lastModifiedBy(nullable:true, maxSize: 30)
+        dataOrigin(nullable:true, maxSize: 30)
+        version(nullable:true)
+        vpdiCode(nullable:true, maxSize: 6)
     }
 
 
