@@ -19,12 +19,14 @@ import net.hedtech.banner.general.utility.PersonalPreference
 @Rollback
 class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
 
+    def appId
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         logout()
         loginSSB('HOSH00001', '111111')
+        appId="Test PSA"
     }
 
     @After
@@ -195,9 +197,9 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
                 auditTime: new Date(),
                 loginId: user.username,
                 pidm: user.pidm,
-                appId: Holders.config.app.appId,
+                appId: appId,
                 lastModified: new Date(),
-                lastModifiedBy: Holders.config.app.appId,
+                lastModifiedBy: appId,
                 dataOrigin: Holders.config.dataOrigin,
                 ipAddress: InetAddress.getLocalHost().getHostAddress(),
                 pageUrl: "test Pageid"

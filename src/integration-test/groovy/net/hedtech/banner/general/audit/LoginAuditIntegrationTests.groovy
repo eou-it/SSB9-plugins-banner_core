@@ -24,12 +24,16 @@ import static groovy.test.GroovyAssert.shouldFail
 @Rollback
 class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
 
+    def appId
+
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
         logout()
         loginSSB('HOSH00001', '111111')
+        appId="Test PSA"
+
     }
 
     @After
@@ -216,15 +220,16 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
 
     private LoginAudit newLoginAudit() {
         def user = BannerGrantedAuthorityService.getUser()
+        def request = RequestContextHolder.getRequestAttributes()?.request
         LoginAudit loginAudit = new LoginAudit(
                 auditTime: new Date(),
                 loginId: user.username,
                 pidm: user.pidm,
-                appId: Holders.config.app.appId,
+                appId: appId,
                 lastModified: new Date(),
-                lastModifiedBy: Holders.config.app.appId,
+                lastModifiedBy: appId,
                 dataOrigin: Holders.config.dataOrigin,
-                ipAddress: InetAddress.getLocalHost().getHostAddress(),
+                ipAddress: request.getRemoteAddr(),
                 logonComment: 'Test Comment',
                 userAgent: System.getProperty('os.name')
         )

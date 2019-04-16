@@ -92,7 +92,7 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
             loginId = authenticationResults.name
             def request = RequestContextHolder.getRequestAttributes()?.request
             ipAddress = request.getRemoteAddr()
-            userAgent = request.getHeader("User-Agent");
+            userAgent = request.getHeader("User-Agent")
             lastModified =  new Date()
             lastModifiedBy = authenticationResults.fullName
             pidm = authenticationResults.pidm
