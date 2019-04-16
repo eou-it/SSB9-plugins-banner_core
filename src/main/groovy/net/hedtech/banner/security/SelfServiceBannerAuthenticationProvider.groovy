@@ -24,6 +24,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
 
     def dataSource	// injected by Spring
+    def loginAuditService = new LoginAuditService()
 
 
     public boolean supports( Class clazz ) {
