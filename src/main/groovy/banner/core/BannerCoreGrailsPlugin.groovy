@@ -20,13 +20,12 @@ import net.hedtech.banner.mep.MultiEntityProcessingService
 import net.hedtech.banner.security.*
 import net.hedtech.banner.service.DefaultLoaderService
 import net.hedtech.banner.service.HttpSessionService
-import net.hedtech.banner.service.LoginAuditService
+import net.hedtech.banner.general.audit.LoginAuditService
 import net.hedtech.banner.service.ServiceBase
 import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.runtime.GStringImpl
 import org.grails.orm.hibernate.HibernateEventListeners
-import org.springframework.context.event.SimpleApplicationEventMulticaster
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.security.web.access.ExceptionTranslationFilter
@@ -36,7 +35,6 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
 import javax.servlet.Filter
-import java.util.concurrent.Executors
 
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
 import net.hedtech.banner.db.DbConnectionCacheSessionListener
