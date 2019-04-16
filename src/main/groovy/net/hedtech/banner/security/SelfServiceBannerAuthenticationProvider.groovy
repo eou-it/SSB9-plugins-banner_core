@@ -3,9 +3,11 @@
  *******************************************************************************/
 package net.hedtech.banner.security
 
+import grails.util.Holders
 import grails.util.Holders  as CH
 import groovy.sql.Sql
 import groovy.util.logging.Slf4j
+import net.hedtech.banner.general.audit.LoginAuditService
 import org.springframework.security.authentication.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
@@ -22,7 +24,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
 
     def dataSource	// injected by Spring
-    def preferredNameService
 
 
     public boolean supports( Class clazz ) {
@@ -75,7 +76,12 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
             setTransactionTimeout( authenticationResults['transactionTimeout'] )
 
+            if(authenticationResults!= null && Holders.config.EnableLoginAudit){
+                loginAuditService.createLoginAudit(authenticationResults)
+            }
+
             newAuthenticationToken( authenticationResults )
+
         }
         catch (DisabledException de)           { throw de }
         catch (CredentialsExpiredException ce) { throw ce }
