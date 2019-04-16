@@ -12,25 +12,39 @@ import org.springframework.web.context.request.RequestContextHolder
 @Transactional
 class PageAccessAuditService extends ServiceBase {
 
-    private String auditTime
-    private String appId
-    private String loginId
-    private String pageUrl
-    private Integer pidm
-    private String ipAddress
+    def springSecurityService
 
-    public def createPageAudit() {
+    def checkAndCreatePageAudit(){
+        def request = RequestContextHolder.getRequestAttributes()?.request
+        String enablePageAudit = Holders.config.EnablePageAudit
+        String pageUrl = request.getRequestURI()
+        println "enablePageAudit = ${enablePageAudit}"
+        println "pageUrl = ${pageUrl}"
+        println "pageUrl conatins= ${pageUrl?.contains(enablePageAudit)}"
+        if( enablePageAudit != "N" && (enablePageAudit == '%' || pageUrl?.contains(enablePageAudit))){
+            createPageAudit()
+        } else {
+            println "doesnot matched "
+        }
+    }
+
+    def createPageAudit() {
         try {
+            String loginId
+            Integer pidm
             def user = BannerGrantedAuthorityService.getUser()
-            if (user.hasProperty('pidm')) {
-                pidm = user?.pidm
+            def userLoginId
+            if (springSecurityService.isLoggedIn()){
+                if (user.hasProperty('pidm')) {
+                    pidm = user?.pidm
+                }
+                userLoginId = user?.username
             }
-            auditTime = new Date()
-            loginId = user?.username
+            loginId = userLoginId?:'ANONYMOUS'
             def request = RequestContextHolder.getRequestAttributes()?.request
-            ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
-            appId = Holders.config.app.appId
-            pageUrl = request.getRequestURI()
+            String ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
+            String appId = Holders.config.app.appId
+            String pageUrl = request.getRequestURI()
             PageAccessAudit pageAccessAudit = new PageAccessAudit()
             pageAccessAudit.setAuditTime(new Date())
             pageAccessAudit.setLoginId(loginId)

@@ -66,6 +66,7 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
         <asset:link rel="shortcut icon" href="eds/favicon.ico" type="image/x-icon"/>
 
 </head>
+<g:pageAccessAudit/>
 
 <body>
 

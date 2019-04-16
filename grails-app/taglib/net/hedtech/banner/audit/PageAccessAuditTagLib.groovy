@@ -11,7 +11,7 @@ class PageAccessAuditTagLib {
 
     def pageAccessAudit = {
         try{
-            PageAccessAudit pageAccessAudit = pageAccessAuditService.createPageAudit()
+            PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
             log.debug("PageAccess Audit created successfully with id ${pageAccessAudit.id}")
         } catch (ex){
             log.error("Exception occured while executing pageAccessAudit " + ex.getMessage())
