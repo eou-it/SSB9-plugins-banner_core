@@ -1,7 +1,12 @@
 /*******************************************************************************
  Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
+
+import grails.util.Holders
 import net.hedtech.banner.controllers.ControllerUtils
+import net.hedtech.banner.general.audit.LoginAuditService
+import net.hedtech.banner.security.BannerGrantedAuthorityService
+
 import javax.servlet.http.Cookie
 
 /**
@@ -18,12 +23,23 @@ class LogoutController {
     public static final String LOGIN_CONTROLLER = "login"
     public static final String ACTION_TIMEOUT_PAGE = 'timeoutPage'
     public static final String JSESSIONID_COOKIE_NAME = "JSESSIONID"
+    def loginAuditService =  new LoginAuditService()
+    def user
+    String logoutComment
 
-    /**
+    /*
      * Index action. Redirects to the Spring security logout uri.
      */
     def index() {
+
         if (!ControllerUtils.isSamlEnabled()) {
+
+            user = BannerGrantedAuthorityService.getUser()
+
+            if(user!= null && Holders.config.EnableLoginAudit == "Y"){
+            logoutComment = "Logout Sucessful"
+            loginAuditService.createLoginAudit(user,logoutComment)
+          }
             invalidateSession(response)
         }
         redirect uri: ControllerUtils.buildLogoutRedirectURI()

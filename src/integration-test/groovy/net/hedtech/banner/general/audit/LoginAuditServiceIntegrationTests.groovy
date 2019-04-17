@@ -18,7 +18,7 @@ import org.junit.Test
 @Rollback
 class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
 
-    private String appName
+
     private String appId
     private Date auditTime
     private String loginId
@@ -56,11 +56,10 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         loginId = user.username
         ipAddress = InetAddress.getLocalHost().getHostAddress()
         appId = Holders.config.info.app.appId
-        appName = Holders.grailsApplication.config.info.app.name
         dataOrigin = Holders.config.dataOrigin
         lastModifiedBy = Holders.config.info.app.appId
         userAgent = System.getProperty('os.name')
-        logonComment = 'Test Comment'
+        logonComment = 'Login SuccessFul'
         LoginAudit loginAudit = newLoginAudit(loginId,pidm,appId,lastModifiedBy,userAgent,dataOrigin,ipAddress,logonComment)
         loginAudit.save(failOnError: true, flush: true)
         def  LoginAuditObject = LoginAuditService.getDataByLoginID(loginAudit.loginId)

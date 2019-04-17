@@ -25,6 +25,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
     def dataSource	// injected by Spring
     def loginAuditService = new LoginAuditService()
+    String loginComment
 
 
     public boolean supports( Class clazz ) {
@@ -77,8 +78,9 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
             setTransactionTimeout( authenticationResults['transactionTimeout'] )
 
-            if(authenticationResults!= null && Holders.config.EnableLoginAudit == "Y"){
-                loginAuditService.createLoginAudit(authenticationResults)
+             if(authenticationResults!= null && Holders.config.EnableLoginAudit == "Y"){
+                 loginComment= "LOGIN SUCCESSFUL"
+                 loginAuditService.createLoginAudit(authenticationResults,loginComment)
             }
 
             newAuthenticationToken( authenticationResults )
