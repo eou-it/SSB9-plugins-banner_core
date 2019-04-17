@@ -14,18 +14,20 @@ class PageAccessAuditService extends ServiceBase {
 
     def springSecurityService
 
-    def checkAndCreatePageAudit(){
-        def request = RequestContextHolder.getRequestAttributes()?.request
-        String enablePageAudit = Holders.config.EnablePageAudit
-        String pageUrl = request.getRequestURI()
-        println "enablePageAudit = ${enablePageAudit}"
-        println "pageUrl = ${pageUrl}"
-        println "pageUrl conatins= ${pageUrl?.contains(enablePageAudit)}"
-        if( enablePageAudit != "N" && (enablePageAudit == '%' || pageUrl?.contains(enablePageAudit))){
-            createPageAudit()
-        } else {
-            println "doesnot matched "
+    PageAccessAudit checkAndCreatePageAudit(){
+        PageAccessAudit pageAccessAudit
+        try {
+            def request = RequestContextHolder.getRequestAttributes()?.request
+            String enablePageAudit = Holders.config.EnablePageAudit instanceof String ? (Holders.config.EnablePageAudit).toLowerCase() : 'N'
+            String pageUrl = (request.getRequestURI())?.toLowerCase()
+            if (enablePageAudit?.toLowerCase() != 'N' && (enablePageAudit == '%' || pageUrl?.contains(enablePageAudit))) {
+                pageAccessAudit = createPageAudit() as PageAccessAudit
+            }
         }
+        catch (ex){
+            log.error("Exception occured while executing pageAccessAudit " + ex.getMessage())
+        }
+        pageAccessAudit
     }
 
     def createPageAudit() {
@@ -52,6 +54,7 @@ class PageAccessAuditService extends ServiceBase {
             pageAccessAudit.setAppId(appId)
             pageAccessAudit.setPageUrl(pageUrl)
             pageAccessAudit.setIpAddress(ipAddress)
+            pageAccessAudit.setLastModifiedBy('BANNER')
             pageAccessAudit.setVersion(0L)
             this.create(pageAccessAudit)
         }catch (Exception ex) {

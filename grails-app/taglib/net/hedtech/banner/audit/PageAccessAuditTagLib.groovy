@@ -6,14 +6,17 @@ package net.hedtech.banner.audit
 import net.hedtech.banner.general.audit.PageAccessAudit
 
 class PageAccessAuditTagLib {
-    def springSecurityService
     def pageAccessAuditService
 
     def pageAccessAudit = {
-        try{
+        try {
             PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
-            log.debug("PageAccess Audit created successfully with id ${pageAccessAudit.id}")
-        } catch (ex){
+            if (pageAccessAudit) {
+                log.debug("PageAccess Audit created for = ${pageAccessAudit.pageUrl}")
+            } else {
+                log.debug("PageAccess Audit not created as EnablePageAudit is not enabled or matching")
+            }
+        } catch (ex) {
             log.error("Exception occured while executing pageAccessAudit " + ex.getMessage())
         }
     }
