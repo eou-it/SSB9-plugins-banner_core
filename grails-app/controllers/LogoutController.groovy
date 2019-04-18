@@ -33,22 +33,18 @@ class LogoutController {
     def index() {
 
         if (!ControllerUtils.isSamlEnabled()) {
-
-            user = BannerGrantedAuthorityService.getUser()
-
-            if(user!= null && Holders.config.EnableLoginAudit == "Y"){
-            logoutComment = "Logout Sucessful"
-            loginAuditService.createLoginAudit(user,logoutComment)
-          }
+            checkLoginAudit()
             invalidateSession(response)
         }
         redirect uri: ControllerUtils.buildLogoutRedirectURI()
     }
 
     def timeout() {
+
         if (request?.getHeader(HTTP_REQUEST_REFERER_STRING)?.endsWith(LOGIN_AUTH_ACTION_URI)) {
             forward(controller: LOGIN_CONTROLLER)
         } else {
+            checkLoginAudit()
             def mepCode = session.mep
             def uri = createLink([uri: '/ssb/logout/timeoutPage', action: ACTION_TIMEOUT_PAGE, absolute: true])
             invalidateSession(response)
@@ -85,5 +81,16 @@ class LogoutController {
             render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show]
         }
 
+    }
+
+    def checkLoginAudit(){
+        user = response?.authBeforeExecution?.user
+        /*user = BannerGrantedAuthorityService.getUser()*/
+        if(user!= null && Holders.config.EnableLoginAudit == "Y"){
+            logoutComment = "Logout Sucessful"
+            loginAuditService.createLoginAudit(user,logoutComment)
+        }else{
+            println("User Info Not Present")
+        }
     }
 }
