@@ -18,7 +18,6 @@ import org.junit.Test
 @Rollback
 class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
 
-    private String appName
     private String appId
     private Date auditTime
     private String loginId
@@ -33,13 +32,13 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     private String dataOrigin
     private String vpdiCode
 
-    def LoginAuditService
+    def loginAuditService = new LoginAuditService()
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        LoginAuditService = new LoginAuditService()
-
+        logout()
+        loginSSB('HOSH00001', '111111')
     }
 
     @After
@@ -50,43 +49,36 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     @Test
     void testFetchByLoginId() {
         loginSSB('HOSH00001', '111111')
-        def user = BannerGrantedAuthorityService.getUser()
-        pidm = user.pidm
-        auditTime = new Date()
-        loginId = user.username
-        ipAddress = InetAddress.getLocalHost().getHostAddress()
-        appId = Holders.config.info.app.appId
-        appName = Holders.grailsApplication.config.info.app.name
-        dataOrigin = Holders.config.dataOrigin
-        lastModifiedBy = Holders.config.info.app.appId
-        userAgent = System.getProperty('os.name')
-        logonComment = 'Test Comment'
-        LoginAudit loginAudit = newLoginAudit(loginId,pidm,appId,lastModifiedBy,userAgent,dataOrigin,ipAddress,logonComment)
+        LoginAudit loginAudit = newLoginAudit()
         loginAudit.save(failOnError: true, flush: true)
-        def  LoginAuditObject = LoginAuditService.getDataByLoginID(loginAudit.loginId)
+        def  loginAuditObject = loginAuditService.getDataByLoginID(loginAudit.loginId)
+        assertEquals loginAuditObject.loginId , loginAudit.loginId
 
     }
 
     @Test
     void testCreateLoginAudit(){
         loginSSB('HOSH00001', '111111')
-        def  LoginAuditObject = LoginAuditService.createLoginAudit()
+        def  loginAuditObject = loginAuditService.createLoginAudit()
+        assertNotNull loginAuditObject
 
     }
 
-    private LoginAudit newLoginAudit(loginId, pidm, appId,lastModifiedBy,userAgent, dataOrigin, ipAddress,logonComment) {
+    private LoginAudit newLoginAudit() {
 
+        def user = BannerGrantedAuthorityService.getUser()
         LoginAudit loginAudit = new LoginAudit(
                 auditTime: new Date(),
-                loginId: loginId,
-                pidm:pidm,
-                appId:appId,
+                loginId: user.username,
+                pidm: user.pidm,
+                appId: 'PSA',
                 lastModified: new Date(),
-                lastModifiedBy: lastModifiedBy,
-                dataOrigin: dataOrigin,
-                ipAddress: ipAddress,
-                userAgent: userAgent,
-                logonComment: logonComment
+                lastModifiedBy: 'PSA',
+                dataOrigin: Holders.config.dataOrigin,
+                ipAddress: InetAddress.getLocalHost().getHostAddress(),
+                userAgent: System.getProperty('os.name'),
+                logonComment: 'Test Comment',
+                version: 0L
 
         )
         return loginAudit

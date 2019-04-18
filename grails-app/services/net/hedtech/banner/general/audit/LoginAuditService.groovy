@@ -82,20 +82,20 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
 
 
 
-    public def createLoginAudit(authenticationResults) {
+    public def createLoginAudit() {
 
         try {
 
             def user = BannerGrantedAuthorityService.getUser()
-            appId = Holders.config.app.appId
+            appId = 'PSA'
             auditTime = new Date()
-            loginId = authenticationResults.name
+            loginId = user.username
             def request = RequestContextHolder.getRequestAttributes()?.request
             ipAddress = request.getRemoteAddr()
-            userAgent = request.getHeader("User-Agent")
+            userAgent = System.getProperty('os.name')//request.getHeader("User-Agent")
             lastModified =  new Date()
-            lastModifiedBy = authenticationResults.fullName
-            pidm = authenticationResults.pidm
+            lastModifiedBy = 'PSA'
+            pidm = user.pidm
             dataOrigin = Holders.config.dataOrigin
             version = 0L
 

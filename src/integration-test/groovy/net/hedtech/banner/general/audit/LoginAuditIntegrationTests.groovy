@@ -14,11 +14,10 @@ import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
+import static groovy.test.GroovyAssert.shouldFail
 import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
 import org.springframework.web.context.request.RequestContextHolder
 import net.hedtech.banner.general.utility.PersonalPreference
-
-import static groovy.test.GroovyAssert.shouldFail
 
 @Integration
 @Rollback
@@ -201,23 +200,21 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
         assertFalse loginAudit2==loginAudit1
     }
 
-/*
-    @Test
+    /*@Test
     void testOptimisticLock() {
         LoginAudit loginAudit = newLoginAudit()
         save loginAudit
 
         def sql= new Sql(sessionFactory.getCurrentSession().connection())
-        sql.executeUpdate("update general.GURASSL set GURASSL_PIDM = 999 where GURASSL_SURROGATE_ID = ?", [loginAudit.id])
+        sql.executeUpdate("update general.GURASSL set GURASSL_VERSION = 999 where GURASSL_SURROGATE_ID = ?", [loginAudit.id])
 
         //Try to update the entity
-        loginAudit.loginId = "UUUUU"
+        loginAudit.appId = 'Test AppId'
         shouldFail(HibernateOptimisticLockingFailureException) {
-            loginAudit.save(failOnError: true, flush: true)
+            loginAudit.save(flush: true)
         }
     }
 */
-
     private LoginAudit newLoginAudit() {
         def user = BannerGrantedAuthorityService.getUser()
         def request = RequestContextHolder.getRequestAttributes()?.request
@@ -231,7 +228,8 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
                 dataOrigin: Holders.config.dataOrigin,
                 ipAddress: request.getRemoteAddr(),
                 logonComment: 'Test Comment',
-                userAgent: System.getProperty('os.name')
+                userAgent: System.getProperty('os.name'),
+                version: 0L
         )
         return loginAudit
     }

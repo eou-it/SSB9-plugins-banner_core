@@ -6,14 +6,18 @@ package net.hedtech.banner.general.audit
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
+import groovy.sql.Sql
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
+import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException
 import org.springframework.web.context.request.RequestContextHolder
 import net.hedtech.banner.general.utility.PersonalPreference
+
+import static groovy.test.GroovyAssert.shouldFail
 
 @Integration
 @Rollback
@@ -190,6 +194,21 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
         assertFalse pageAccessAudit2==pageAccessAudit1
     }
 
+/*    @Test
+    void testOptimisticLock() {
+        PageAccessAudit pageAccessAudit = getPageAccessAudit()
+        save pageAccessAudit
+
+        def sql= new Sql(sessionFactory.getCurrentSession().connection())
+        sql.executeUpdate("update general.GURASSA set GURASSA_VERSION = 999 where GURASSA_SURROGATE_ID = ?", [pageAccessAudit.id])
+
+        //Try to update the entity
+        pageAccessAudit.appId = 'Test AppId'
+        shouldFail(HibernateOptimisticLockingFailureException) {
+            pageAccessAudit.save(flush: true)
+        }
+    }*/
+
 
     private PageAccessAudit getPageAccessAudit() {
         def user = BannerGrantedAuthorityService.getUser()
@@ -202,7 +221,8 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
                 lastModifiedBy: appId,
                 dataOrigin: Holders.config.dataOrigin,
                 ipAddress: InetAddress.getLocalHost().getHostAddress(),
-                pageUrl: "test Pageid"
+                pageUrl: "test Pageid",
+                version: 1
         )
         return selfServicePageAccess
     }
