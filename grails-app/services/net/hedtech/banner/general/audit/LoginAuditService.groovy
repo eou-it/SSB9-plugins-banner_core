@@ -98,6 +98,7 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
             pidm = user.pidm
             dataOrigin = Holders.config.dataOrigin
             version = 0L
+            logonComment = comment
 
 
             LoginAudit loginAudit = new LoginAudit()
@@ -114,7 +115,7 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
             loginAudit.setLogonComment(logonComment)
             this.create(loginAudit)
         }catch (InvalidDataAccessResourceUsageException ex) {
-            log.error("Exception occured while executing seedUserPreferenceConfig " + ex.getMessage())
+            log.error("Exception occured while executing loginAudit " + ex.getMessage())
         }
     }
 
