@@ -33,7 +33,7 @@ class LogoutController {
     def index() {
 
         if (!ControllerUtils.isSamlEnabled()) {
-            checkLoginAudit()
+            checkLoginAudit(response)
             invalidateSession(response)
         }
         redirect uri: ControllerUtils.buildLogoutRedirectURI()
@@ -44,7 +44,7 @@ class LogoutController {
         if (request?.getHeader(HTTP_REQUEST_REFERER_STRING)?.endsWith(LOGIN_AUTH_ACTION_URI)) {
             forward(controller: LOGIN_CONTROLLER)
         } else {
-            checkLoginAudit()
+            checkLoginAudit(response)
             def mepCode = session.mep
             def uri = createLink([uri: '/ssb/logout/timeoutPage', action: ACTION_TIMEOUT_PAGE, absolute: true])
             invalidateSession(response)
@@ -83,7 +83,7 @@ class LogoutController {
 
     }
 
-    def checkLoginAudit(){
+    def checkLoginAudit(response){
         user = response?.authBeforeExecution?.user
         /*user = BannerGrantedAuthorityService.getUser()*/
         if(user!= null && Holders.config.EnableLoginAudit == "Y"){
