@@ -95,7 +95,7 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
         try {
             if (SCH.context?.authentication?.principal instanceof BannerUser)
                 lastModifiedBy = SCH.context?.authentication?.principal?.username
-            else if(!(SCH.context?.authentication?.principal?.username).equalsIgnoreCase("__grails.anonymous.user__")) {
+            else if(!((SCH.context?.authentication?.principal?.username)?.equalsIgnoreCase("__grails.anonymous.user__"))) {
                 lastModifiedBy = SCH.context?.authentication?.principal
             }
 
