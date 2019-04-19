@@ -51,7 +51,9 @@ class PageAccessAuditService extends ServiceBase {
             def request = RequestContextHolder.getRequestAttributes()?.request
             String ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
             String appId = Holders.config.app.appId
-            String pageUrl = request.getRequestURI()
+            String requestURI = request.getRequestURI()
+            String queryString = request.getQueryString()
+            String pageUrl = queryString ? "${requestURI}?${queryString}" : requestURI
             PageAccessAudit pageAccessAudit = new PageAccessAudit()
             pageAccessAudit.setAuditTime(new Date())
             pageAccessAudit.setLoginId(loginId)
