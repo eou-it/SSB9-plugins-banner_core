@@ -227,7 +227,7 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
                 lastModifiedBy: appId,
                 dataOrigin: Holders.config.dataOrigin,
                 ipAddress: request.getRemoteAddr(),
-                logonComment: 'Login SuccessFul',
+                logonComment: 'Login successful.',
                 userAgent: System.getProperty('os.name'),
                 version: 0L
         )

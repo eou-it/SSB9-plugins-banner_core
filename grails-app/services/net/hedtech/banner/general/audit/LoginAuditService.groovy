@@ -15,22 +15,11 @@ import org.springframework.context.ApplicationListener
 import org.springframework.dao.InvalidDataAccessResourceUsageException
 import org.springframework.web.context.request.RequestContextHolder
 
-@Slf4j
+
 @Transactional
 public class LoginAuditService extends ServiceBase implements ApplicationListener<BannerAuthenticationEvent>  {
 
     def dataSource // injected by Spring
-    private String appId
-    private Date auditTime
-    private String loginId
-    private String ipAddress
-    private String userAgent
-    private Date lastModified
-    private String lastModifiedBy
-    private Integer pidm
-    private String logonComment
-    private String dataOrigin
-    private Long version
 
     public void onApplicationEvent( BannerAuthenticationEvent event ) {
         log.debug "In LoginAuditService  onApplicationEvent with ${event}"
@@ -82,23 +71,21 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
 
 
 
-    public def createLoginLogoutAudit() {
+    public def createLoginLogoutAudit(authenticationResults,comment) {
 
         try {
-
-            def user = BannerGrantedAuthorityService.getUser()
-            appId = 'PSA'
-            auditTime = new Date()
-            loginId = user.username
+            String appId = Holders.config.app.appId
+            Date auditTime = new Date()
+            String loginId =  authenticationResults.username ? authenticationResults.username : authenticationResults.name ? authenticationResults.name : 'ANONYMOUS'
             def request = RequestContextHolder.getRequestAttributes()?.request
-            ipAddress = request.getRemoteAddr()
-            userAgent = System.getProperty('os.name')//request.getHeader("User-Agent")
-            lastModified =  new Date()
-            lastModifiedBy = 'PSA'
-            pidm = user.pidm
-            dataOrigin = Holders.config.dataOrigin
-            version = 0L
-            logonComment = "comment"
+            String ipAddress = request.getRemoteAddr()
+            String userAgent = request.getHeader("User-Agent")
+            Date lastModified =  new Date()
+            String lastModifiedBy = 'Banner'
+            Integer pidm = authenticationResults.pidm
+            String dataOrigin = Holders.config.dataOrigin
+            Long version = 0L
+            String logonComment = comment
 
 
             LoginAudit loginAudit = new LoginAudit()

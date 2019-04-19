@@ -22,9 +22,9 @@ class LogoutController {
     public static final String LOGIN_CONTROLLER = "login"
     public static final String ACTION_TIMEOUT_PAGE = 'timeoutPage'
     public static final String JSESSIONID_COOKIE_NAME = "JSESSIONID"
-    def loginAuditService =  new LoginAuditService()
-    def user
-    String logoutComment
+
+
+
 
     /*
      * Index action. Redirects to the Spring security logout uri.
@@ -32,7 +32,6 @@ class LogoutController {
     def index() {
 
         if (!ControllerUtils.isSamlEnabled()) {
-            captureLogoutInformation(response)
             invalidateSession(response)
         }
         redirect uri: ControllerUtils.buildLogoutRedirectURI()
@@ -43,7 +42,6 @@ class LogoutController {
         if (request?.getHeader(HTTP_REQUEST_REFERER_STRING)?.endsWith(LOGIN_AUTH_ACTION_URI)) {
             forward(controller: LOGIN_CONTROLLER)
         } else {
-            captureLogoutInformation(response)
             def mepCode = session.mep
             def uri = createLink([uri: '/ssb/logout/timeoutPage', action: ACTION_TIMEOUT_PAGE, absolute: true])
             invalidateSession(response)
@@ -84,13 +82,14 @@ class LogoutController {
     }
 
     def captureLogoutInformation(response){
-        user = response?.authBeforeExecution?.user
+        def userInfo = response?.authBeforeExecution?.user
+        def loginAuditService =  new LoginAuditService()
         /*user = BannerGrantedAuthorityService.getUser()*/
-        if(user!= null && Holders.config.EnableLoginAudit == "Y"){
-            logoutComment = "Logout Sucessful"
-            loginAuditService.createLoginLogoutAudit(user,logoutComment)
+        if(userInfo!= null && Holders.config.EnableLoginAudit == "Y"){
+            String logoutComment  = "Logout successful."
+            loginAuditService.createLoginLogoutAudit(userInfo,logoutComment)
         }else{
-            println("User Info Not Present")
+            log.debug "User Information Not Present."
         }
     }
 }
