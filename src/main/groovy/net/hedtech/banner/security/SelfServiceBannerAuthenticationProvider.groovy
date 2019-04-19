@@ -80,7 +80,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
              if(authenticationResults!= null && Holders.config.EnableLoginAudit == "Y"){
                  loginComment= "Login SuccessFul"
-                 loginAuditService.createLoginAudit(authenticationResults,loginComment)
+                 loginAuditService.createLoginLogoutAudit(authenticationResults,loginComment)
             }
 
             newAuthenticationToken( authenticationResults )

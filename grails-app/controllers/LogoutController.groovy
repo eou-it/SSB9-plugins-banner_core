@@ -5,7 +5,6 @@
 import grails.util.Holders
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.general.audit.LoginAuditService
-import net.hedtech.banner.security.BannerGrantedAuthorityService
 
 import javax.servlet.http.Cookie
 
@@ -33,7 +32,7 @@ class LogoutController {
     def index() {
 
         if (!ControllerUtils.isSamlEnabled()) {
-            checkLoginAudit(response)
+            captureLogoutInformation(response)
             invalidateSession(response)
         }
         redirect uri: ControllerUtils.buildLogoutRedirectURI()
@@ -44,7 +43,7 @@ class LogoutController {
         if (request?.getHeader(HTTP_REQUEST_REFERER_STRING)?.endsWith(LOGIN_AUTH_ACTION_URI)) {
             forward(controller: LOGIN_CONTROLLER)
         } else {
-            checkLoginAudit(response)
+            captureLogoutInformation(response)
             def mepCode = session.mep
             def uri = createLink([uri: '/ssb/logout/timeoutPage', action: ACTION_TIMEOUT_PAGE, absolute: true])
             invalidateSession(response)
@@ -62,6 +61,7 @@ class LogoutController {
     }
 
     private void invalidateSession(response) {
+        captureLogoutInformation(response)
         session.invalidate()
         Cookie cookie = new Cookie(JSESSIONID_COOKIE_NAME, null);
         cookie.setPath(request.getContextPath());
@@ -83,12 +83,12 @@ class LogoutController {
 
     }
 
-    def checkLoginAudit(response){
+    def captureLogoutInformation(response){
         user = response?.authBeforeExecution?.user
         /*user = BannerGrantedAuthorityService.getUser()*/
         if(user!= null && Holders.config.EnableLoginAudit == "Y"){
             logoutComment = "Logout Sucessful"
-            loginAuditService.createLoginAudit(user,logoutComment)
+            loginAuditService.createLoginLogoutAudit(user,logoutComment)
         }else{
             println("User Info Not Present")
         }

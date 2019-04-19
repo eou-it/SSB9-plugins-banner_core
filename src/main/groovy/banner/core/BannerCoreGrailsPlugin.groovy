@@ -319,12 +319,6 @@ class BannerCoreGrailsPlugin extends Plugin {
             name = 'Banner Core Session Listener'
             listener = ref('dbConnectionCacheSessionListener')
         }
-
-        // Switch to grails.util.Holders in Grails 2.x
-        if (!CH.config.privacy?.codes) {
-            // Populate with default privacy policy codes
-            CH.config.privacy.codes = "INT NAV UNI"
-        }
     }
     }
 
@@ -440,17 +434,5 @@ class BannerCoreGrailsPlugin extends Plugin {
         names.collect {
             name -> ctx.getBean(name)
         }
-    }
-
-    private static void loadExternalPropertiesConfig(String filePathName) {
-        FileInputStream inputStream = new FileInputStream(filePathName)
-        Properties prop = new Properties()
-        prop.load(inputStream)
-        Holders.config.merge(prop)
-    }
-
-    private static void loadExternalGroovyConfig(String configText) {
-        Map properties = configText ? new ConfigSlurper(Environment.current.name).parse(configText)?.flatten() : [:]
-        Holders.config.merge(properties)
     }
 }

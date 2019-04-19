@@ -82,7 +82,7 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
 
 
 
-    public def createLoginAudit() {
+    public def createLoginLogoutAudit() {
 
         try {
 
@@ -98,7 +98,7 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
             pidm = user.pidm
             dataOrigin = Holders.config.dataOrigin
             version = 0L
-            logonComment = comment
+            logonComment = "comment"
 
 
             LoginAudit loginAudit = new LoginAudit()

@@ -59,7 +59,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     @Test
     void testCreateLoginAudit(){
         loginSSB('HOSH00001', '111111')
-        def  loginAuditObject = loginAuditService.createLoginAudit()
+        def  loginAuditObject = loginAuditService.createLoginLogoutAudit()
         assertNotNull loginAuditObject
 
     }

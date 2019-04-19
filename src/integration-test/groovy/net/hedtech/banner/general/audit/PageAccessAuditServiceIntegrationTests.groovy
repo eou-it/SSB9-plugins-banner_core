@@ -4,6 +4,7 @@
 package net.hedtech.banner.general.audit
 
 import grails.gorm.transactions.Rollback
+import grails.plugin.springsecurity.SpringSecurityService
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 
@@ -12,76 +13,98 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import net.hedtech.banner.general.audit.PageAccessAuditService
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.context.request.RequestContextHolder
 
 @Integration
 @Rollback
 class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
 
-    private String appName
-    private String appId
-    private String loginId
-    public String pageUrl
-    private String pidm
-    private String dataOrigin
-    private String lastModifiedBy
-    private String ipAddress
-    private String auditTime
+    def pageAccessAuditService
+    @Autowired
+    SpringSecurityService springSecurityService
 
-    def pageAccessAuditService = new PageAccessAuditService()
     @Before
     public void setUp() {
-        formContext = ['GUAGMNU']
+        formContext = ['SELFSERVICE']
         super.setUp()
+        pageAccessAuditService = new PageAccessAuditService()
+        pageAccessAuditService.springSecurityService = springSecurityService
+        Holders.config.app.appId = 'TESTAPP'
     }
+
 
     @After
     public void tearDown() {
         super.tearDown()
     }
 
+
     @Test
     void testFetchByLoginId() {
+         String appId
+         String loginId
+         String pageUrl
+         String pidm
+         String ipAddress
          loginSSB('HOSH00001', '111111')
-
-         PageAccessAudit pageAccessAudit = getSelfServiceAccess()
+         def user = BannerGrantedAuthorityService.getUser()
+         pidm = user.pidm
+         loginId = user.username
+         ipAddress = InetAddress.getLocalHost().getHostAddress()
+         appId = Holders.config.app.appId
+         pageUrl = "/testPageid/"
+         PageAccessAudit pageAccessAudit = createPageAccessAudit(loginId,pidm,appId,pageUrl,ipAddress)
          pageAccessAudit.save(failOnError: true, flush: true)
-         def  SelfServicePageAccessObject = pageAccessAuditService.getDataByLoginID(pageAccessAudit.loginId)
-         assertEquals SelfServicePageAccessObject.loginId , pageAccessAudit.loginId
-
+         def  pageAccessAuditObject = pageAccessAuditService.getDataByLoginID(pageAccessAudit.loginId)
+         assertEquals pageAccessAuditObject.loginId , pageAccessAudit.loginId
     }
+
 
     @Test
     void testCreatePageAudit(){
         loginSSB('HOSH00001', '111111')
-        def  SelfServicePageAccessObject = pageAccessAuditService.createPageAudit()
-        //assertNotNull  SelfServicePageAccessObject              /* need to check why its returning null*/
+        RequestContextHolder?.currentRequestAttributes()?.request.setRequestURI('/ssb/home')
+        def  pageAccessAuditObject = pageAccessAuditService.createPageAudit()
+        //assertNotNull  pageAccessAuditObject              /* need to check why its returning null*/
     }
+
+
+    @Test
+    void testCheckAndCreatePageAuditWithURLPattern(){
+        loginSSB('HOSH00001', '111111')
+        Holders.config.EnablePageAudit= 'homepage'
+        RequestContextHolder?.currentRequestAttributes()?.request.setRequestURI('/ssb/homepage')
+        def  pageAccessAuditObject = pageAccessAuditService.createPageAudit()
+        //assertNotNull  pageAccessAuditObject              /* need to check why its returning null*/
+
+
+        RequestContextHolder?.currentRequestAttributes()?.request.setRequestURI('/ssb/dummy')
+
+        def  pageAccessAuditObject1 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNull pageAccessAuditObject1
+    }
+
+
+
+
 
     @Test
     void testToCheckEnablePageAuditFailureFlow(){
         loginSSB('HOSH00001', '111111')
-        PageAccessAudit pageAccessAudit = getSelfServiceAccess()
-        Holders.config.EnablePageAudit= 'Y'
-        pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
+        Holders.config.EnablePageAudit= 'N'
+        PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
         assertNull pageAccessAudit
     }
 
-
-    private PageAccessAudit getSelfServiceAccess() {
-        def user = BannerGrantedAuthorityService.getUser()
+    private PageAccessAudit createPageAccessAudit(loginId, pidm, appId, pageUrl, ipAddress) {
         PageAccessAudit pageAccessAudit = new PageAccessAudit(
-
                 auditTime: new Date(),
-                loginId: user.username,
-                pidm: user.pidm,
-                appId: 'PSA',
-                pageUrl: "test Pageid",
-                lastModified: new Date(),
-                lastModifiedBy: 'PSA',
-                dataOrigin: Holders.config.dataOrigin,
-                ipAddress: InetAddress.getLocalHost().getHostAddress(),
-                version: 0L
+                loginId: loginId,
+                pidm:pidm,
+                appId: appId,
+                pageUrl: pageUrl,
+                ipAddress: ipAddress
         )
         return pageAccessAudit
     }

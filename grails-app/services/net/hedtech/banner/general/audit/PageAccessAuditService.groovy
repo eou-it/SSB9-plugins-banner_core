@@ -3,19 +3,23 @@
  *******************************************************************************/
 package net.hedtech.banner.general.audit
 
+import grails.plugin.springsecurity.SpringSecurityService
 import grails.util.Holders
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.service.ServiceBase
 import grails.gorm.transactions.Transactional
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.context.request.RequestContextHolder
 
 @Transactional
 class PageAccessAuditService extends ServiceBase {
 
-    def springSecurityService
+    @Autowired
+    SpringSecurityService springSecurityService
+
 
     PageAccessAudit checkAndCreatePageAudit(){
-        PageAccessAudit pageAccessAudit
+        PageAccessAudit pageAccessAudit = null
         try {
             def request = RequestContextHolder.getRequestAttributes()?.request
             String enablePageAudit = Holders.config.EnablePageAudit instanceof String ? (Holders.config.EnablePageAudit).toLowerCase() : 'N'
@@ -25,10 +29,11 @@ class PageAccessAuditService extends ServiceBase {
             }
         }
         catch (ex){
-            log.error("Exception occured while executing pageAccessAudit " + ex.getMessage())
+            log.error("Exception occurred while executing pageAccessAudit " + ex.getMessage())
         }
-        pageAccessAudit
+        return pageAccessAudit
     }
+
 
     def createPageAudit() {
         try {
@@ -45,7 +50,7 @@ class PageAccessAuditService extends ServiceBase {
             loginId = userLoginId?:'ANONYMOUS'
             def request = RequestContextHolder.getRequestAttributes()?.request
             String ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
-            String appId = 'PSA'
+            String appId = Holders.config.app.appId
             String pageUrl = request.getRequestURI()
             PageAccessAudit pageAccessAudit = new PageAccessAudit()
             pageAccessAudit.setAuditTime(new Date())

@@ -24,9 +24,10 @@ import static groovy.test.GroovyAssert.shouldFail
 class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
 
     def appId
+
     @Before
     public void setUp() {
-        formContext = ['GUAGMNU']
+        formContext = ['SELFSERVICE']
         super.setUp()
         logout()
         loginSSB('HOSH00001', '111111')
@@ -194,21 +195,6 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
         assertFalse pageAccessAudit2==pageAccessAudit1
     }
 
-/*    @Test
-    void testOptimisticLock() {
-        PageAccessAudit pageAccessAudit = getPageAccessAudit()
-        save pageAccessAudit
-
-        def sql= new Sql(sessionFactory.getCurrentSession().connection())
-        sql.executeUpdate("update general.GURASSA set GURASSA_VERSION = 999 where GURASSA_SURROGATE_ID = ?", [pageAccessAudit.id])
-
-        //Try to update the entity
-        pageAccessAudit.appId = 'Test AppId'
-        shouldFail(HibernateOptimisticLockingFailureException) {
-            pageAccessAudit.save(flush: true)
-        }
-    }*/
-
 
     private PageAccessAudit getPageAccessAudit() {
         def user = BannerGrantedAuthorityService.getUser()
@@ -221,8 +207,8 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
                 lastModifiedBy: appId,
                 dataOrigin: Holders.config.dataOrigin,
                 ipAddress: InetAddress.getLocalHost().getHostAddress(),
-                pageUrl: "test Pageid",
-                version: 1
+                pageUrl: "/testPageid",
+                version: 0
         )
         return selfServicePageAccess
     }

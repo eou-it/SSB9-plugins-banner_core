@@ -160,9 +160,9 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
             oos.close()
 
             byte[] bytes = out.toByteArray()
-            LoginAudit loginAudit1
+            LoginAudit loginAudit1 = null
             new ByteArrayInputStream(bytes).withObjectInputStream(getClass().classLoader) { is ->
-                configApplication2 = (LoginAudit) is.readObject()
+                loginAudit1 = (LoginAudit) is.readObject()
                 is.close()
             }
             assertEquals loginAudit1, loginAudit

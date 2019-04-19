@@ -121,7 +121,7 @@ class PageAccessAudit implements Serializable{
                 pidm=$pidm,
                 appId=$appId,
                 pageUrl=$pageUrl,                
-    `           ipAddress=$ipAddress, 
+                ipAddress=$ipAddress, 
                 activityDate=$lastModified,               
                 userId='$lastModifiedBy',                
                 dataOrigin='$dataOrigin',
