@@ -93,8 +93,16 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     @Test
     void testCheckEnablePageAuditWithFailureFlow(){
         loginSSB('HOSH00001', '111111')
-        Holders.config.EnablePageAudit= 'N'
+        Holders.config.EnablePageAudit = 'N'
         PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNull pageAccessAudit
+
+        Holders.config.EnablePageAudit = 'n'
+        pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNull pageAccessAudit
+
+        Holders.config.EnablePageAudit = null
+        pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
         assertNull pageAccessAudit
 
         Holders.config.EnablePageAudit= 'homepage'

@@ -79,6 +79,7 @@ class PageAccessAuditService extends ServiceBase {
 
 
     private static String getPageAuditConfiguration(){
-        Holders.config.EnablePageAudit instanceof String ? (Holders.config.EnablePageAudit).toLowerCase() : 'n'
+        String pageAuditConfiguration = (Holders.config.EnablePageAudit instanceof String && Holders.config.EnablePageAudit.size() > 0)  ? (Holders.config.EnablePageAudit).toLowerCase() : 'n'
+        return pageAuditConfiguration
     }
 }
