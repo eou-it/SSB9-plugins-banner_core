@@ -64,7 +64,7 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     @Test
     void testCreatePageAudit(){
         loginSSB('HOSH00001', '111111')
-        RequestContextHolder?.currentRequestAttributes()?.request.setRequestURI('/ssb/home')
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/home')
         def  pageAccessAuditObject = pageAccessAuditService.createPageAudit()
         //assertNotNull  pageAccessAuditObject              /* need to check why its returning null*/
     }
@@ -74,30 +74,36 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     void testCheckAndCreatePageAuditWithURLPattern(){
         loginSSB('HOSH00001', '111111')
         Holders.config.EnablePageAudit= 'homepage'
-        RequestContextHolder?.currentRequestAttributes()?.request.setRequestURI('/ssb/homepage')
-        def  pageAccessAuditObject = pageAccessAuditService.createPageAudit()
-        //assertNotNull  pageAccessAuditObject              /* need to check why its returning null*/
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/homepage')
+        def  pageAccessAuditObject = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNotNull  pageAccessAuditObject
 
+        Holders.config.EnablePageAudit= '%home'
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/homepage')
+        def  pageAccessAuditObject2 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNotNull  pageAccessAuditObject2
 
-        RequestContextHolder?.currentRequestAttributes()?.request.setRequestURI('/ssb/dummy')
-
-        def  pageAccessAuditObject1 = pageAccessAuditService.checkAndCreatePageAudit()
-        assertNull pageAccessAuditObject1
+        Holders.config.EnablePageAudit= 'home%'
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/homepage')
+        def  pageAccessAuditObject3 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNotNull  pageAccessAuditObject3
     }
 
 
-
-
-
     @Test
-    void testToCheckEnablePageAuditFailureFlow(){
+    void testCheckEnablePageAuditWithFailureFlow(){
         loginSSB('HOSH00001', '111111')
         Holders.config.EnablePageAudit= 'N'
         PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
         assertNull pageAccessAudit
+
+        Holders.config.EnablePageAudit= 'homepage'
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/dummy')
+        def  pageAccessAuditObject1 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNull pageAccessAuditObject1
     }
 
-    private PageAccessAudit createPageAccessAudit(loginId, pidm, appId, pageUrl, ipAddress) {
+    private static PageAccessAudit createPageAccessAudit(loginId, pidm, appId, pageUrl, ipAddress) {
         PageAccessAudit pageAccessAudit = new PageAccessAudit(
                 auditTime: new Date(),
                 loginId: loginId,

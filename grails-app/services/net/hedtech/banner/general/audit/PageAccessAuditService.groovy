@@ -22,9 +22,11 @@ class PageAccessAuditService extends ServiceBase {
         PageAccessAudit pageAccessAudit = null
         try {
             def request = RequestContextHolder.getRequestAttributes()?.request
-            String enablePageAudit = Holders.config.EnablePageAudit instanceof String ? (Holders.config.EnablePageAudit).toLowerCase() : 'N'
-            String pageUrl = (request.getRequestURI())?.toLowerCase()
-            if (enablePageAudit?.toLowerCase() != 'N' && (enablePageAudit == '%' || pageUrl?.contains(enablePageAudit))) {
+            String pageAuditConfiguration = getPageAuditConfiguration()
+            String requestedPageUrl = (request.getRequestURI())?.toLowerCase()
+            if (pageAuditConfiguration?.toLowerCase() != 'n' && (pageAuditConfiguration == '%' || requestedPageUrl?.contains(pageAuditConfiguration))) {
+                pageAccessAudit = createPageAudit() as PageAccessAudit
+            } else if(pageAuditConfiguration?.length() >= 1 && pageAuditConfiguration.findAll('%').size() > 0 && requestedPageUrl?.contains(pageAuditConfiguration.replaceAll('%',''))){
                 pageAccessAudit = createPageAudit() as PageAccessAudit
             }
         }
@@ -75,4 +77,8 @@ class PageAccessAuditService extends ServiceBase {
         return selfServicePage;
     }
 
+
+    private static String getPageAuditConfiguration(){
+        Holders.config.EnablePageAudit instanceof String ? (Holders.config.EnablePageAudit).toLowerCase() : 'n'
+    }
 }

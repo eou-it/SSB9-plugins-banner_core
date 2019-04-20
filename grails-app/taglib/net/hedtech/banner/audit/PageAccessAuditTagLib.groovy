@@ -14,7 +14,7 @@ class PageAccessAuditTagLib {
             if (pageAccessAudit) {
                 log.debug("PageAccess Audit created for = ${pageAccessAudit.pageUrl}")
             } else {
-                log.debug("PageAccess Audit not created as EnablePageAudit is not enabled or matching")
+                log.debug("PageAccess Audit not created as EnablePageAudit is not enabled or doesnot matched.")
             }
         } catch (ex) {
             log.error("Exception occured while executing pageAccessAudit " + ex.getMessage())
