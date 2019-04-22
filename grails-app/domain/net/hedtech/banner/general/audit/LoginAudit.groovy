@@ -153,24 +153,14 @@ class LoginAudit implements Serializable{
             }"""
     }
 
-    public static LoginAudit fetchByLoginId(String loginId) {
-        LoginAudit loginAudit
+    public static List fetchByLoginId(String loginId) {
+        List loginAuditList = []
         if (loginId) {
-            loginAudit = LoginAudit.withSession { session ->
-                loginAudit = session.getNamedQuery('LoginAudit.fetchByLoginId').setString('loginId',loginId).uniqueResult()
+            loginAuditList = LoginAudit.withSession { session ->
+                loginAuditList = session.getNamedQuery('LoginAudit.fetchByLoginId').setString('loginId',loginId).list()
             }
         }
-        return loginAudit
-    }
-
-    public static LoginAudit fetchByAppId(String appId) {
-        LoginAudit loginAudit
-        if (appId) {
-            loginAudit = LoginAudit.withSession { session ->
-                loginAudit = session.getNamedQuery('LoginAudit.fetchByAppId').setString('appId',appId).uniqueResult()
-            }
-        }
-        return loginAudit
+        return loginAuditList
     }
 
 }

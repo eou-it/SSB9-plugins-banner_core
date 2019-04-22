@@ -6,14 +6,11 @@ package net.hedtech.banner.general.audit
 import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import groovy.sql.Sql
-import groovy.util.logging.Slf4j
-import net.hedtech.banner.general.audit.LoginAudit
 import net.hedtech.banner.security.BannerAuthenticationEvent
-import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.service.ServiceBase
 import org.springframework.context.ApplicationListener
-import org.springframework.dao.InvalidDataAccessResourceUsageException
 import org.springframework.web.context.request.RequestContextHolder
+import javax.servlet.http.HttpServletRequest
 
 
 @Transactional
@@ -71,11 +68,12 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
 
 
 
-    public def createLoginLogoutAudit(authenticationResults,comment) {
+    public def createLoginLogoutAudit(authenticationResults, comment) {
         try {
+            log.debug "In LoginAuditService createLoginLogoutAudit "
             String appId = Holders.config.app.appId
             String loginId =  authenticationResults.username ? authenticationResults.username : authenticationResults.name ? authenticationResults.name : 'ANONYMOUS'
-            def request = RequestContextHolder.getRequestAttributes()?.request
+            HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
             String ipAddress = request.getRemoteAddr()
             String userAgent = request.getHeader("User-Agent")
             Integer pidm = authenticationResults.pidm
@@ -91,14 +89,14 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
             loginAudit.setVersion(0L)
             loginAudit.setLogonComment(comment)
             this.create(loginAudit)
-        }catch (InvalidDataAccessResourceUsageException ex) {
-            log.error("Exception occured while executing loginAudit " + ex.getMessage())
+        }catch (Exception ex) {
+            log.error("Exception occured while creating loginAudit ${ex.getMessage()}")
         }
     }
 
-    public def getDataByLoginID(getDataByLoginID) {
-        LoginAudit loginAuditPage = LoginAudit.fetchByLoginId(getDataByLoginID)
-        return loginAuditPage;
+    public def getDataByLoginID(loginId) {
+        LoginAudit loginAuditPage = LoginAudit.fetchByLoginId(loginId)
+        return loginAuditPage
     }
 }
 

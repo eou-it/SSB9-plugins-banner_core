@@ -10,11 +10,14 @@ import grails.util.Holders
 
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.testing.BaseIntegrationTestCase
+import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.context.request.RequestContextHolder
+
+import javax.servlet.ServletRequest
 
 @Integration
 @Rollback
@@ -107,6 +110,19 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
 
         Holders.config.EnablePageAudit= 'homepage'
         RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/dummy')
+        def  pageAccessAuditObject1 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNull pageAccessAuditObject1
+    }
+
+    @Test
+    void testCheckWithSecureParameter(){
+        loginSSB('HOSH00001', '111111')
+
+        Holders.config.EnablePageAudit= '%'
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
+        request.setQueryString('username=HOSH00001&password=111111')
+        //RequestContextHolder?.currentRequestAttributes()?.request?.setRequestU('/ssb/home?username=HOSH00001&password=111111')
         def  pageAccessAuditObject1 = pageAccessAuditService.checkAndCreatePageAudit()
         assertNull pageAccessAuditObject1
     }

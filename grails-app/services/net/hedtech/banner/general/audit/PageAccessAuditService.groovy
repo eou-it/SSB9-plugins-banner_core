@@ -8,8 +8,11 @@ import grails.util.Holders
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.service.ServiceBase
 import grails.gorm.transactions.Transactional
+import javax.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.context.request.RequestContextHolder
+
+import javax.servlet.ServletRequest
 
 @Transactional
 class PageAccessAuditService extends ServiceBase {
@@ -42,7 +45,7 @@ class PageAccessAuditService extends ServiceBase {
             String loginId
             Integer pidm
             def user = BannerGrantedAuthorityService.getUser()
-            def userLoginId
+            String userLoginId =  null
             if (springSecurityService.isLoggedIn()){
                 if (user.hasProperty('pidm')) {
                     pidm = user?.pidm
@@ -50,11 +53,15 @@ class PageAccessAuditService extends ServiceBase {
                 userLoginId = user?.username
             }
             loginId = userLoginId?:'ANONYMOUS'
-            def request = RequestContextHolder.getRequestAttributes()?.request
+            HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
             String ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
             String appId = Holders.config.app.appId
             String requestURI = request.getRequestURI()
-            String queryString = request.getQueryString()
+            String queryString = null
+            def unsecureQueryParameter = getUnsecureQueryParameter(request.getParameterMap())
+            if(!unsecureQueryParameter){
+                queryString = request.getQueryString()
+            }
             String pageUrl = queryString ? "${requestURI}?${queryString}" : requestURI
             PageAccessAudit pageAccessAudit = new PageAccessAudit()
             pageAccessAudit.setAuditTime(new Date())
@@ -82,4 +89,12 @@ class PageAccessAuditService extends ServiceBase {
         String pageAuditConfiguration = (Holders.config.EnablePageAudit instanceof String && Holders.config.EnablePageAudit.size() > 0)  ? (Holders.config.EnablePageAudit).toLowerCase() : 'n'
         return pageAuditConfiguration
     }
+
+    private static def getUnsecureQueryParameter(Map parameterMap){
+        def unsecureQueryParameter = parameterMap.find{it ->
+            it.key?.equalsIgnoreCase('username') || it.key?.equalsIgnoreCase('password')
+        }
+        return unsecureQueryParameter
+    }
 }
+

@@ -97,22 +97,14 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
     void testToString() {
         LoginAudit loginAudit = newLoginAudit()
         loginAudit.save(failOnError: true, flush: true)
-        LoginAudit loginAudit1 = LoginAudit.fetchByLoginId(loginAudit.loginId)
-        String LoginIdToString = loginAudit1.toString()
-        assertNotNull LoginIdToString
-        
-
+        List loginAuditList = LoginAudit.fetchByLoginId(loginAudit.loginId)
+        assertNotNull loginAuditList
+       assertTrue(loginAuditList.size() >= 1 )
     }
 
     @Test
     void testFetchByNullLoginId() {
-        LoginAudit loginAudit = LoginAudit.fetchByLoginId(null)
-        assertNull loginAudit
-    }
-
-    @Test
-    void testFetchByNullAppId() {
-        LoginAudit loginAudit = LoginAudit.fetchByAppId(null)
+        List loginAudit = LoginAudit.fetchByLoginId(null)
         assertNull loginAudit
     }
 
@@ -120,18 +112,9 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
     void testFetchByValidLoginId() {
         LoginAudit loginAudit = newLoginAudit()
         loginAudit.save(failOnError: true, flush: true)
-        LoginAudit auditPage = LoginAudit.fetchByLoginId(loginAudit.loginId)
+        List auditPage = LoginAudit.fetchByLoginId(loginAudit.loginId)
         assertNotNull auditPage
     }
-
-    @Test
-    void testFetchByValidAppId() {
-        LoginAudit loginAudit = newLoginAudit()
-        loginAudit.save(failOnError: true, flush: true)
-        LoginAudit auditPage = LoginAudit.fetchByAppId(loginAudit.appId)
-        assertNotNull auditPage
-    }
-
 
     @Test
     void testEqualsClass() {
