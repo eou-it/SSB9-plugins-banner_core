@@ -72,34 +72,24 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
 
 
     public def createLoginLogoutAudit(authenticationResults,comment) {
-
         try {
             String appId = Holders.config.app.appId
-            Date auditTime = new Date()
             String loginId =  authenticationResults.username ? authenticationResults.username : authenticationResults.name ? authenticationResults.name : 'ANONYMOUS'
             def request = RequestContextHolder.getRequestAttributes()?.request
             String ipAddress = request.getRemoteAddr()
             String userAgent = request.getHeader("User-Agent")
-            Date lastModified =  new Date()
-            String lastModifiedBy = 'Banner'
             Integer pidm = authenticationResults.pidm
-            String dataOrigin = Holders.config.dataOrigin
-            Long version = 0L
-            String logonComment = comment
-
 
             LoginAudit loginAudit = new LoginAudit()
             loginAudit.setAppId(appId)
-            loginAudit.setAuditTime(auditTime)
+            loginAudit.setAuditTime(new Date())
             loginAudit.setLoginId(loginId)
             loginAudit.setIpAddress(ipAddress)
             loginAudit.setUserAgent(userAgent)
-            loginAudit.setLastModified(lastModified)
-            loginAudit.setLastModifiedBy(lastModifiedBy)
+            loginAudit.setLastModifiedBy(loginId)
             loginAudit.setPidm(pidm)
-            loginAudit.setDataOrigin(dataOrigin)
-            loginAudit.setVersion(version)
-            loginAudit.setLogonComment(logonComment)
+            loginAudit.setVersion(0L)
+            loginAudit.setLogonComment(comment)
             this.create(loginAudit)
         }catch (InvalidDataAccessResourceUsageException ex) {
             log.error("Exception occured while executing loginAudit " + ex.getMessage())

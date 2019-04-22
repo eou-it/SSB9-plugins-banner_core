@@ -22,9 +22,8 @@ import java.sql.SQLException
 @Slf4j
 public class SelfServiceBannerAuthenticationProvider implements AuthenticationProvider {
 
-
     def dataSource	// injected by Spring
-    def loginAuditService = new LoginAuditService()
+    def loginAuditService
 
 
 
@@ -78,8 +77,11 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
 
             setTransactionTimeout( authenticationResults['transactionTimeout'] )
 
-             if(authenticationResults!= null && Holders.config.EnableLoginAudit == "Y"){
-                 String loginComment = "Login successful."
+             if(authenticationResults!= null && (Holders.config.EnableLoginAudit)?.equalsIgnoreCase('Y')){
+                 String loginComment = "Login successful"
+                 if (!loginAuditService) {
+                     loginAuditService = Holders.grailsApplication.mainContext.getBean("loginAuditService")
+                 }
                  loginAuditService.createLoginLogoutAudit(authenticationResults,loginComment)
             }
 

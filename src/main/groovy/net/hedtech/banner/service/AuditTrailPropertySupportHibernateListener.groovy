@@ -100,7 +100,7 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
             }
 
             if (lastModifiedBy == null) {
-                lastModifiedBy = (existingLastModifiedBy?.equalsIgnoreCase('BANNER')) ? existingLastModifiedBy : 'anonymous'
+                lastModifiedBy = (existingLastModifiedBy) ? existingLastModifiedBy : 'anonymous'
             }
 
             if (lastModifiedBy?.length() > 30) {
