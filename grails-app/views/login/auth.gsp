@@ -58,6 +58,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 
 <body class="pageBg">
 <g:analytics/>
+<g:pageAccessAudit/>
 <div class="splashBg">
     <div class="ie-warning" id="ieWarningMessage">
         <div>
