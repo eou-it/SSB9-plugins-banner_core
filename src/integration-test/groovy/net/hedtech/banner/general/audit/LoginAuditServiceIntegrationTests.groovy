@@ -12,25 +12,14 @@ import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.web.context.request.RequestContextHolder
+
+import javax.servlet.http.HttpServletRequest
 
 
 @Integration
 @Rollback
 class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
-
-    private String appId
-    private Date auditTime
-    private String loginId
-    private String ipAddress
-    private String userAgent
-    private Date lastModified
-    private String lastModifiedBy
-    private Long id
-    private Long version
-    private Integer pidm
-    private String logonComment
-    private String dataOrigin
-    private String vpdiCode
 
     def loginAuditService = new LoginAuditService()
     @Before
@@ -39,6 +28,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         super.setUp()
         logout()
         loginSSB('HOSH00001', '111111')
+        Holders.config.app.appId = 'TESTAPP'
     }
 
     @After
@@ -71,9 +61,9 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
                 auditTime: new Date(),
                 loginId: user.username,
                 pidm: user.pidm,
-                appId: 'PSA',
+                appId: Holders.config.app.appId ,
                 lastModified: new Date(),
-                lastModifiedBy: 'PSA',
+                lastModifiedBy: Holders.config.app.appId ,
                 dataOrigin: Holders.config.dataOrigin,
                 ipAddress: InetAddress.getLocalHost().getHostAddress(),
                 userAgent: System.getProperty('os.name'),
