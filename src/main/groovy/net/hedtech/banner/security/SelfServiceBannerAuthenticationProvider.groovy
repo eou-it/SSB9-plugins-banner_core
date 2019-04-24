@@ -76,15 +76,14 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             }
 
             setTransactionTimeout( authenticationResults['transactionTimeout'] )
-
-             if(authenticationResults!= null && (Holders.config.EnableLoginAudit)?.equalsIgnoreCase('Y')){
+            String loginAuditConfiguration = AuthenticationProviderUtility.getLoginAuditConfiguration()
+            if (authenticationResults != null && loginAuditConfiguration?.equalsIgnoreCase('Y')){
                  String loginComment = "Login successful"
                  if (!loginAuditService) {
                      loginAuditService = Holders.grailsApplication.mainContext.getBean("loginAuditService")
                  }
                  loginAuditService.createLoginLogoutAudit(authenticationResults,loginComment)
             }
-
             newAuthenticationToken( authenticationResults )
 
         }
@@ -103,8 +102,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             conn?.close()
         }
     }
-
-
 
 
 // ------------------------------- Helper Methods ------------------------------
