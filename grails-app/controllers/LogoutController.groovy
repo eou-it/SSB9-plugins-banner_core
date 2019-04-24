@@ -5,6 +5,7 @@
 import grails.util.Holders
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.general.audit.LoginAuditService
+import net.hedtech.banner.security.AuthenticationProviderUtility
 
 import javax.servlet.http.Cookie
 
@@ -81,11 +82,12 @@ class LogoutController {
     def captureLogoutInformation(response){
         def userInfo = response?.authBeforeExecution?.user
         LoginAuditService loginAuditService = null
-        if (!loginAuditService) {
-            loginAuditService = Holders.grailsApplication.mainContext.getBean("loginAuditService")
-        }
         /*user = BannerGrantedAuthorityService.getUser()*/
-        if(userInfo!= null && (Holders.config.EnableLoginAudit)?.equalsIgnoreCase('Y')){
+        String loginAuditConfiguration = AuthenticationProviderUtility.getLoginAuditConfiguration()
+        if(userInfo!= null && loginAuditConfiguration?.equalsIgnoreCase('Y')){
+            if (!loginAuditService) {
+                loginAuditService = Holders.grailsApplication.mainContext.getBean("loginAuditService")
+            }
             String logoutComment  = "Logout successful"
             loginAuditService.createLoginLogoutAudit(userInfo,logoutComment)
         }else{
