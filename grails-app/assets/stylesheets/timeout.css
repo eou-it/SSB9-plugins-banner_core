@@ -15,7 +15,7 @@
     font-size: .875em
 }
 .dialog {
-    background: #F5F2E7 url("../images/info-CO.png") no-repeat 1em 1em; /*EDS*/
+    background: #F5F2E7 url("../images/info-co.png") no-repeat 1em 1em; /*EDS*/
 }
 .custom-logout-dialog {
     background: #F5F2E7 url("../images/check-mark-sm.svg") no-repeat 1em 1em; /*EDS*/

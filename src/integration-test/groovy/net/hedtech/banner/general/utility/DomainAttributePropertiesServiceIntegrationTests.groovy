@@ -33,7 +33,7 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
     void testExtractClassWithDomainName() {
 
         def classMetadata
-        classMetadata = domainAttributePropertiesService.extractClass("academicYearForTesting")
+        classMetadata = domainAttributePropertiesService.extractClass("net.hedtech.banner.testing.AcademicYearForTesting")
         assertNotNull classMetadata
         }
 
@@ -80,7 +80,7 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
 
          def classMetadata
          // academicYearForTesting
-         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("academicYearForTesting")
+         classMetadata = domainAttributePropertiesService.extractClassMetadataByName("net.hedtech.banner.testing.AcademicYearForTesting")
 
          assertNotNull classMetadata
          assertEquals "STVACYR_CODE", classMetadata.attributes.code.columnName
@@ -134,7 +134,7 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
     void testGetClassMetadataByEntityName() {
         def classMetadata
         // zip
-        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("zipForTesting")
+        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("net.hedtech.banner.testing.ZipForTesting")
 
         assertNotNull classMetadata
         assertEquals "GTVZIPC_CODE", classMetadata.attributes.code.columnName
@@ -146,7 +146,7 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertEquals "String", classMetadata.attributes.city.propertyType
 
         // CourseLaborDistribution
-        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("courseLaborDistributionForTesting")
+        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("net.hedtech.banner.testing.CourseLaborDistributionForTesting")
         assertNotNull classMetadata
         assertEquals "SCRCLBD_SEQ_NO", classMetadata.attributes.sequenceNumber.columnName
         assertEquals new Integer(999), classMetadata.attributes.sequenceNumber.max
@@ -157,7 +157,7 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertEquals "String", classMetadata.attributes.courseNumber.propertyType
 
         // Term
-        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("termForTesting")
+        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("net.hedtech.banner.testing.TermForTesting")
         assertNotNull classMetadata
         assertEquals "STVTERM_CODE", classMetadata.attributes.code.columnName
         assertEquals 6, classMetadata.attributes.code.maxSize
@@ -175,16 +175,10 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertEquals "Integer", classMetadata?.attributes?.financialEndPeriod?.propertyType
         assertNull classMetadata.attributes.financialEndPeriod?.max
         assertNull classMetadata.attributes.financialEndPeriod?.min
-        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("foo")
+        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("net.hedtech.banner.testing.Foo")
         assertNotNull classMetadata
-        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("courseLaborDistributionForTesting")
+        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("net.hedtech.banner.testing.CourseLaborDistributionForTesting")
         assertNotNull classMetadata
-
-        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("myZip")
-        assertNull classMetadata
-
-        classMetadata = domainAttributePropertiesService.extractClassMetadataByName("studentBlock")
-        assertNull classMetadata
 
     }
 
@@ -207,42 +201,4 @@ class DomainAttributePropertiesServiceIntegrationTests extends BaseIntegrationTe
         assertNull classMetadata
     }
 
-    @Test
-    void testGetClassMetadataById() {
-        def classMetadata
-
-        // Zip
-        classMetadata = domainAttributePropertiesService.extractClassMetadataById("zipForTestingBlock")
-        assertNotNull classMetadata
-        assertEquals "GTVZIPC_CODE", classMetadata.attributes.code.columnName
-        assertEquals "GTVZIPC_CITY", classMetadata.attributes.city.columnName
-        assertFalse "GTVZIPC_CODE", classMetadata.attributes.city.nullable
-        assertEquals 50, classMetadata.attributes.city.maxSize
-        assertEquals "String", classMetadata.attributes.city.propertyType
-
-        // Term
-        classMetadata = domainAttributePropertiesService.extractClassMetadataById("termForTestingBlock")
-        assertNotNull classMetadata
-        assertEquals "STVTERM_CODE", classMetadata.attributes.code.columnName
-        assertEquals 6, classMetadata.attributes.code.maxSize
-
-        assertEquals "STVTERM_ACYR_CODE", classMetadata.attributes.academicYear.columnName
-        assertEquals 4, classMetadata?.attributes?.academicYear?.maxSize, 1e-8
-        assertEquals "AcademicYearForTesting", classMetadata?.attributes?.academicYear?.propertyType
-
-        classMetadata = domainAttributePropertiesService.extractClassMetadataById("fooBlock")
-        assertNotNull classMetadata
-        assertEquals "STVCOLL_ADDR_STREET_LINE2", classMetadata.attributes.addressStreetLine2.columnName
-        assertEquals 75, classMetadata.attributes.addressStreetLine2.maxSize
-
-        classMetadata = domainAttributePropertiesService.extractClassMetadataById("courseLaborDistributionForTestingBlock")
-        assertNotNull classMetadata
-
-        classMetadata = domainAttributePropertiesService.extractClassMetadataById("zipForTesting")
-        assertNull classMetadata
-
-        classMetadata = domainAttributePropertiesService.extractClassMetadataById("studentBlock")
-        assertNull classMetadata
-
-    }
 }

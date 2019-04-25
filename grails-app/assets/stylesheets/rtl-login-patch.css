@@ -2,7 +2,7 @@
  Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 .splashBg .logIn {
-	margin: 28px 0 0 160px;
+	margin: 28px 205px 0 160px;
 }
 
 .splashBg .logIn.sign-in {
@@ -20,6 +20,9 @@
 .splashBg .forgotPasswordDiv {
 	left: 195px;
 	right: auto;
+}
+.splashBg .appName {
+	direction: ltr;
 }
 
 @media screen and (max-width: 568px) {

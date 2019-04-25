@@ -7,17 +7,18 @@ import net.hedtech.banner.testing.TermController
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 @Integration
 @Rollback
 class TermControllerIntegrationTests extends BaseIntegrationTestCase{
-    def termController
+    @Autowired
+    TermController termController
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        termController= new TermController()
     }
 
     @After

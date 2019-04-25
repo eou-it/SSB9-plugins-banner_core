@@ -133,13 +133,9 @@ class MenuAndToolbarPreferenceIntegrationTests extends BaseIntegrationTestCase {
         def menuAndToolbarPreference = newMenuAndToolbarPreference()
         save menuAndToolbarPreference
 
-        def sql
-        try {
-            sql = new Sql(sessionFactory.getCurrentSession().connection())
-            sql.executeUpdate("update GURTPRF set GURTPRF_VERSION = 999 where GURTPRF_SURROGATE_ID = ?", [menuAndToolbarPreference.id])
-        } finally {
-            //sql?.close() // note that the test will close the connection, since it's our current session's connection
-        }
+        def sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.executeUpdate("update GURTPRF set GURTPRF_VERSION = 999 where GURTPRF_SURROGATE_ID = ?", [menuAndToolbarPreference.id])
+
         //Try to update the entity
         menuAndToolbarPreference.tlbBtn = ""
         menuAndToolbarPreference.displayHtCb = "U"

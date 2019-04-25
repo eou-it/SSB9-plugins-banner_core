@@ -1,19 +1,22 @@
-// Copyright 2013-2016 Ellucian Company L.P. and its affiliates.
+/*******************************************************************************
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.ui
 
 import grails.util.Holders
 
 class AnalyticsTagLib {
-    //GrailsApplication grailsApplication
     def analytics = { attrs, body ->
-        def text
-        def clientTracker = ""
-        def ellucianTracker = ""
-        def clientTrackerId
-        def allowEllucianTracker
+        String clientTracker = ""
+        String ellucianTracker = ""
+        String anonymizeTracker = ""
+        String clientTrackerId
+        Boolean allowEllucianTracker
+        Boolean anonymizeIp
         clientTrackerId = Holders.config.banner.analytics.trackerId
+        anonymizeIp = Holders.config.banner.analytics.anonymizeIp instanceof Boolean ? Holders.config.banner.analytics.anonymizeIp : true
         allowEllucianTracker = Holders.config.banner.analytics.allowEllucianTracker instanceof Boolean ? Holders.config.banner.analytics.allowEllucianTracker  : true
-        if (!clientTrackerId && allowEllucianTracker == false) {
+        if (!clientTrackerId && !allowEllucianTracker) {
             out << ""
         } else {
             def analytics = new StringBuffer();
@@ -24,6 +27,7 @@ class AnalyticsTagLib {
                     "                    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n" +
                     "            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');\n";
 
+            anonymizeTracker =  "ga('set', 'anonymizeIp'," +anonymizeIp+");\n"
 
             if (clientTrackerId) {
                 clientTracker = "ga('create', '" + clientTrackerId + "', 'auto');\n" +
@@ -34,8 +38,10 @@ class AnalyticsTagLib {
                         " ga('Ellucian.send', 'pageview');";
             }
 
+
             String scriptClose = "</script>"
             analytics.append(analyticsBody);
+            analytics.append(anonymizeTracker);
             analytics.append(clientTracker);
             analytics.append(ellucianTracker);
             analytics.append(scriptClose);

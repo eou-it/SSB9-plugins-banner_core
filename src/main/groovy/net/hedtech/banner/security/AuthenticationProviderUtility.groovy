@@ -437,4 +437,9 @@ class AuthenticationProviderUtility {
         RequestContextHolder.currentRequestAttributes().session.setAttribute("usersPidm",pidm)
     }
 
+    public static String getLoginAuditConfiguration(){
+        String loginAuditConfiguration = (Holders.config.EnableLoginAudit instanceof String && Holders.config.EnableLoginAudit.size() > 0)  ? (Holders.config.EnableLoginAudit).toLowerCase() : 'n'
+        return loginAuditConfiguration
+    }
+
 }
