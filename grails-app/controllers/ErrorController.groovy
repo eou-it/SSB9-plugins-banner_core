@@ -45,8 +45,8 @@ class ErrorController {
         if (mepCodeException instanceof MepCodeNotFoundException) {
             returnHomeLinkAddress = VIEW_LOGOUT_PAGE
         }
-        String username = (SCH.context?.authentication instanceof BannerUser) ? SCH.context.authentication.user.username : 'ANONYMOUS'
-        Integer pidm = (SCH.context?.authentication instanceof BannerUser) ? SCH.context.authentication.user.pidm : null
+        String username = (SCH.context.authentication.user instanceof BannerUser) ? SCH.context.authentication.user.username : 'ANONYMOUS'
+        Integer pidm = (SCH.context.authentication.user instanceof BannerUser) ? SCH.context.authentication.user.pidm : null
         AuthenticationProviderUtility.captureLogoutInformation(username, pidm)
         logoutHandlers.each { handler ->
             if (handler instanceof LogoutHandler) {
