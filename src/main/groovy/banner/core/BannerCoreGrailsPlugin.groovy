@@ -198,7 +198,7 @@ class BannerCoreGrailsPlugin extends Plugin {
             dataSource = ref(dataSource)
         }
 
-        loginAuditService(LoginAuditService)
+        //loginAuditService(LoginAuditService)
 
         defaultLoaderService(DefaultLoaderService) {
             dataSource = ref(dataSource)
@@ -212,7 +212,7 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         selfServiceBannerAuthenticationProvider(SelfServiceBannerAuthenticationProvider) {
             dataSource = ref(dataSource)
-            loginAuditService = ref(loginAuditService)
+            //loginAuditService = ref(loginAuditService)
         }
 
         bannerPreAuthenticatedFilter(BannerPreAuthenticatedFilter) {

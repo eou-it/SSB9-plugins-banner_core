@@ -1,25 +1,25 @@
 /*******************************************************************************
-Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+Copyright 2019 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.general.audit
 
-
+import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import net.hedtech.banner.service.ServiceBase
 import org.springframework.web.context.request.RequestContextHolder
 import javax.servlet.http.HttpServletRequest
 
-public class LoginAuditService extends ServiceBase{
+@Transactional
+class LoginAuditService extends ServiceBase{
 
-    public def createLoginLogoutAudit(authenticationResults, comment) {
+    public def createLoginLogoutAudit(username, userpidm, comment) {
         try {
             log.debug "In LoginAuditService createLoginLogoutAudit "
             String appId = Holders.config.app.appId
-            String loginId =  authenticationResults.username ? authenticationResults.username : authenticationResults.name ? authenticationResults.name : 'ANONYMOUS'
+            String loginId =  username?: 'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
             String ipAddress = request.getRemoteAddr()
             String userAgent = request.getHeader("User-Agent")
-            Integer pidm = authenticationResults.pidm
 
             LoginAudit loginAudit = new LoginAudit()
             loginAudit.setAppId(appId)
@@ -28,7 +28,7 @@ public class LoginAuditService extends ServiceBase{
             loginAudit.setIpAddress(ipAddress)
             loginAudit.setUserAgent(userAgent)
             loginAudit.setLastModifiedBy(loginId)
-            loginAudit.setPidm(pidm)
+            loginAudit.setPidm(userpidm)
             loginAudit.setVersion(0L)
             loginAudit.setLogonComment(comment)
             this.create(loginAudit)
@@ -37,8 +37,8 @@ public class LoginAuditService extends ServiceBase{
         }
     }
 
-    public def getDataByLoginID(loginId) {
-        LoginAudit loginAuditPage = LoginAudit.fetchByLoginId(loginId)
+    public List getDataByLoginID(loginId) {
+        List loginAuditPage = LoginAudit.fetchByLoginId(loginId)
         return loginAuditPage
     }
 }

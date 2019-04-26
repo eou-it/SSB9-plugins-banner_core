@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 import grails.util.Holders
@@ -28,7 +28,7 @@ class LogoutController {
      * Index action. Redirects to the Spring security logout uri.
      */
     def index() {
-        captureLogoutInformation(response)
+        AuthenticationProviderUtility.captureLogoutInformation(response?.authBeforeExecution.user.username, response?.authBeforeExecution.user.pidm)
         if (!ControllerUtils.isSamlEnabled()) {
             invalidateSession(response)
         }
@@ -36,13 +36,12 @@ class LogoutController {
     }
 
     def timeout() {
-
         if (request?.getHeader(HTTP_REQUEST_REFERER_STRING)?.endsWith(LOGIN_AUTH_ACTION_URI)) {
             forward(controller: LOGIN_CONTROLLER)
         } else {
             def mepCode = session.mep
             def uri = createLink([uri: '/ssb/logout/timeoutPage', action: ACTION_TIMEOUT_PAGE, absolute: true])
-            captureLogoutInformation(response)
+            AuthenticationProviderUtility.captureLogoutInformation(response?.authBeforeExecution.user.username, response?.authBeforeExecution.user.pidm)
             invalidateSession(response)
             redirect uri: uri, params: mepCode?[ mep: mepCode]:[]
         }
@@ -70,28 +69,11 @@ class LogoutController {
         if (request.getParameter("error") || ControllerUtils.isCasEnabled()) {
             show = false
         }
-
         if (ControllerUtils.isCasEnabled()) {
             render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show]
         } else {
             render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show]
         }
 
-    }
-
-    def captureLogoutInformation(response){
-        def userInfo = response?.authBeforeExecution?.user
-        LoginAuditService loginAuditService = null
-        /*user = BannerGrantedAuthorityService.getUser()*/
-        String loginAuditConfiguration = AuthenticationProviderUtility.getLoginAuditConfiguration()
-        if(userInfo!= null && loginAuditConfiguration?.equalsIgnoreCase('Y')){
-            if (!loginAuditService) {
-                loginAuditService = Holders.grailsApplication.mainContext.getBean("loginAuditService")
-            }
-            String logoutComment  = "Logout successful"
-            loginAuditService.createLoginLogoutAudit(userInfo,logoutComment)
-        }else{
-            log.debug "User Information Not Present."
-        }
     }
 }

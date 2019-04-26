@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -82,7 +82,7 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                  if (!loginAuditService) {
                      loginAuditService = Holders.grailsApplication.mainContext.getBean("loginAuditService")
                  }
-                 loginAuditService.createLoginLogoutAudit(authenticationResults,loginComment)
+                 loginAuditService.createLoginLogoutAudit(authenticationResults.name, authenticationResults.pidm, loginComment)
             }
             newAuthenticationToken( authenticationResults )
 

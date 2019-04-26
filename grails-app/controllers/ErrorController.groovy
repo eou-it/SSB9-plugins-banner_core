@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 
@@ -7,7 +7,8 @@ import grails.util.Environment
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
 import grails.plugin.springsecurity.SpringSecurityUtils
-
+import net.hedtech.banner.security.AuthenticationProviderUtility
+import net.hedtech.banner.security.BannerUser
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler
@@ -44,7 +45,9 @@ class ErrorController {
         if (mepCodeException instanceof MepCodeNotFoundException) {
             returnHomeLinkAddress = VIEW_LOGOUT_PAGE
         }
-        //SCH.context?.authentication is passed and logout is fired on the logout handlers registered
+        String username = (SCH.context?.authentication instanceof BannerUser) ? SCH.context.authentication.user.username : 'ANONYMOUS'
+        Integer pidm = (SCH.context?.authentication instanceof BannerUser) ? SCH.context.authentication.user.pidm : null
+        AuthenticationProviderUtility.captureLogoutInformation(username, pidm)
         logoutHandlers.each { handler ->
             if (handler instanceof LogoutHandler) {
                 handler.logout(request, response, SCH.context?.authentication)
@@ -73,7 +76,6 @@ class ErrorController {
 
     def accessForbidden(){
         def uri = ControllerUtils.buildLogoutRedirectURI()
-
         render view: VIEW_FORBIDDEN, model: [uri: uri]
     }
 }
