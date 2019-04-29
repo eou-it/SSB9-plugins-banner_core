@@ -6,6 +6,9 @@ import grails.util.Holders
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.general.audit.LoginAuditService
 import net.hedtech.banner.security.AuthenticationProviderUtility
+import net.hedtech.banner.security.BannerUser
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 
 import javax.servlet.http.Cookie
 
@@ -41,7 +44,14 @@ class LogoutController {
         } else {
             def mepCode = session.mep
             def uri = createLink([uri: '/ssb/logout/timeoutPage', action: ACTION_TIMEOUT_PAGE, absolute: true])
-            AuthenticationProviderUtility.captureLogoutInformation(response?.authBeforeExecution.user.username, response?.authBeforeExecution.user.pidm)
+            String username = 'ANONYMOUS'
+            String pidm = null
+            def authentication = response?.authBeforeExecution
+            if (authentication && authentication.hasProperty('user') && authentication.user instanceof BannerUser){
+                username = authentication.user.username
+                pidm = authentication.user.pidm
+            }
+            AuthenticationProviderUtility.captureLogoutInformation(username, pidm)
             invalidateSession(response)
             redirect uri: uri, params: mepCode?[ mep: mepCode]:[]
         }

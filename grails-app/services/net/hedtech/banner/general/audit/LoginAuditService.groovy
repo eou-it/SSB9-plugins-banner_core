@@ -28,7 +28,7 @@ class LoginAuditService extends ServiceBase{
             loginAudit.setIpAddress(ipAddress)
             loginAudit.setUserAgent(userAgent)
             loginAudit.setLastModifiedBy(loginId)
-            loginAudit.setPidm(userpidm)
+            loginAudit.setPidm(userpidm as Integer)
             loginAudit.setVersion(0L)
             loginAudit.setLogonComment(comment)
             this.create(loginAudit)
