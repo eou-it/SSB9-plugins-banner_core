@@ -1,5 +1,5 @@
 <!-- ********************************************************************
-     Copyright 2013-2014 Ellucian Company L.P. and its affiliates.
+     Copyright 2013-2018 Ellucian Company L.P. and its affiliates.
 ******************************************************************** -->
 
 #Banner Core Grails Plugin
@@ -33,26 +33,45 @@ To add the plugin as a Git submodule under a 'plugins' directory:
         Receiving objects: 100% (1585/1585), 294.45 KiB | 215 KiB/s, done.
         Resolving deltas: 100% (545/545), done.
 
-Then add the in-place plugin definition to BuildConfig.groovy:
+Then add the in-place plugin definition to build.gradle:
 
-        grails.plugin.location.'banner-core' = "plugins/banner_core.git"
+        compile project(":banner-core")
+        
+And update the setting.gradle :
+
+        include ':banner-core'
+        project(':banner-core').projectDir = new File('../banner_core.git')
 
 Note that adding the plugin this way will the latest commit on the master branch at the time you ran the submodule command.  If you want to use an official release instead, go to the plugin directory and checkout a specific version, e.g.:
 
     cd plugins/banner_core.git
-    git checkout pub-2.7.3
+    git checkout pub-9.28
 
 Don't forget to go back to your project root and commit the change, as this will establish your project's git submodule dependency to the desired commit of the plugin.
 
 
 ##2. Configure plugin dependencies
-The plugin depends on spring-security-cas, banner-codenarc, and i18n-core plugins.  These dependencies are configured in BuildConfig.groovy and are expected to be 'sibling' git submodule dependencies for your project.  That is, it is the containing project's responsibility to ensure these plugin dependencies are available on the file system.  If you adopt a different approach, you will need to modify the location of these dependencies by editing BuildConfig.groovy:
+This plugin depends on grails-constraints, banner-codenarc, and i18n-core plugins. These dependencies are configured in build.gradle and 
+are expected to be 'sibling' git submodule dependencies for your project. That is, it is the containing project's responsibility to 
+ensure these plugin dependencies are available on the file system. 
+If you adopt a different approach, you will need to modify the location of these dependencies by editing build.gradle:
 
-        grails.plugin.location.'spring-security-cas' = "../spring_security_cas.git"
-        grails.plugin.location.'banner-codenarc'     = "../banner_codenarc.git"
-        grails.plugin.location.'i18n-core'           = "../i18n_core.git"
-
-
+    compile project(":banner-codenarc")
+    compile project(":i18n-core")
+    compile project(":grails-constraints")
+    
+ And update the setting.gradle:
+ 
+    include ':i18n-core'
+    project(':i18n-core').projectDir = new File('../i18n_core.git')
+    
+    include ':grails-constraints'
+    project(':grails-constraints').projectDir = new File('../grails_constraints.git')
+    
+    include ':banner-codenarc'
+    project(':banner-codenarc').projectDir = new File('../banner_codenarc.git')
+  
+  
 ###Configure UrlMappings
 Edit the UrlMappings.groovy to include appropriate mappings.  The below mappings may be considered:
 

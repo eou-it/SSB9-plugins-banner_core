@@ -7,17 +7,13 @@ package net.hedtech.banner.general.utility
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
-import net.hedtech.banner.i18n.MessageHelper
-import org.apache.log4j.Logger
 import java.sql.Connection
 import java.sql.SQLException
-import java.util.logging.Level
+import grails.gorm.transactions.Transactional
 
-
+@Transactional
 class PreferredNameService {
 
-    static transactional = true
-    private final Logger log = Logger.getLogger(PreferredNameService.class)
     def dataSource //injected by Spring
 
     def config = Holders.getConfig()

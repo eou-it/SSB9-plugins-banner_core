@@ -1,25 +1,18 @@
 /*******************************************************************************
- Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.mep
 
-import org.apache.log4j.Logger
+
 import groovy.sql.Sql
 import oracle.jdbc.OracleTypes
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.web.context.request.RequestContextHolder
 
-/**
- * Created by IntelliJ IDEA.
- * User: mhitrik
- * Date: 7/6/11
- * Time: 10:17 AM
- * To change this template use File | Settings | File Templates.
- */
+
 class MultiEntityProcessingService {
 
     static transactional = true
-    private final Logger log = Logger.getLogger(getClass())
     def sessionFactory                     // injected by Spring
     def dataSource                         // injected by Spring
 
@@ -207,9 +200,20 @@ class MultiEntityProcessingService {
 
     def getUserHomeCodes(userName) {
 
+        return getUserHomeCodesHelper(userName, new Sql(sessionFactory.getCurrentSession().connection()))
+
+    }
+
+
+    def getUserHomeCodes(userName, con) {
+        return getUserHomeCodesHelper(userName, new Sql(con))
+    }
+
+
+    def getUserHomeCodesHelper(userName, Sql sql) {
+
         def mepHomes = []
 
-        Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         sql.call("""
           declare
             c_cursor SYS_REFCURSOR;
@@ -359,6 +363,7 @@ class MultiEntityProcessingService {
 
 
     private void setUserDefault(home) {
+
         Sql sql = new Sql(sessionFactory.getCurrentSession().connection())
         try {
             sql.call("{call g\$_vpdi_security.g\$_vpdi_set_user_default(${home})}")

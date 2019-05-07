@@ -4,18 +4,20 @@
 
 package net.hedtech.banner.general.utility
 
-import org.springframework.context.ApplicationContext
+import grails.core.GrailsApplication
+import grails.gorm.transactions.Transactional
 import grails.util.Holders
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import net.hedtech.banner.configuration.SupplementalDataUtils
-import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
-import org.apache.commons.lang.ClassUtils
-
 import groovy.sql.Sql
+import net.hedtech.banner.configuration.SupplementalDataUtils
+import org.apache.commons.lang.ClassUtils
+import org.grails.core.DefaultGrailsDomainClass
+import org.grails.core.io.support.GrailsFactoriesLoader
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.validation.discovery.ConstrainedDiscovery
+import org.springframework.context.ApplicationContext
 
+@Transactional
 class DomainAttributePropertiesService {
-
-    static transactional = true
 
     def dataSource                         // injected by Spring
     def sessionFactory                     // injected by Spring
@@ -30,9 +32,9 @@ class DomainAttributePropertiesService {
         ApplicationContext ctx = (ApplicationContext) Holders.grailsApplication.getMainContext()
         grailsApplication = (GrailsApplication) ctx.getBean("grailsApplication")
 
-        def domainClass = grailsApplication.getArtefactByLogicalPropertyName("Domain", domainName)
+        def domainClass = Holders.getGrailsApplication().getMappingContext().getPersistentEntity(domainName)
 
-        domainClass.getClazz()
+        sessionFactory.getClassMetadata(Class.forName(domainName, true, Thread.currentThread().getContextClassLoader()))
 
     }
 
@@ -43,20 +45,19 @@ class DomainAttributePropertiesService {
 
         ApplicationContext ctx = (ApplicationContext) Holders.grailsApplication.getMainContext()
         grailsApplication = (GrailsApplication) ctx.getBean("grailsApplication")
-
-        def domainClass = grailsApplication.getArtefactByLogicalPropertyName("Domain", domainName)
+        def domainClass = Holders.getGrailsApplication().getMappingContext().getPersistentEntity(domainName)
 
         if (domainClass == null)
             return null
 
-        def tableName = SupplementalDataUtils.getTableName(sessionFactory.getClassMetadata(domainClass?.getClazz())?.tableName?.toUpperCase())
+        def clazz = sessionFactory.getClassMetadata(Class.forName(domainName, true, Thread.currentThread().getContextClassLoader()))
+        def tableName = SupplementalDataUtils.getTableName(clazz?.tableName?.toUpperCase())
 
-        def clazz = sessionFactory.getClassMetadata(domainClass?.getClazz().name)
         def entityMap = [:]
 
-        entityMap.class = domainClass?.getClazz()
-        entityMap.className = domainClass?.getClazz().name
-        entityMap.entityName = domainClass?.getName()
+        entityMap.class = domainClass?clazz:null
+        entityMap.className = domainClass?domainName:null
+        entityMap.entityName = domainClass?domainName:null
         entityMap.tableName = tableName
 
         def mapAttributes = [:]
@@ -77,14 +78,16 @@ class DomainAttributePropertiesService {
 
         entityMap.attributes = mapAttributes
 
-        def grailsDomainClass = new DefaultGrailsDomainClass(domainClass?.getClazz())
+        PersistentEntity grailsDomainClass =grailsApplication.mappingContext.getPersistentEntity(domainName)
+        ConstrainedDiscovery constrainedDiscovery = GrailsFactoriesLoader.loadFactory(ConstrainedDiscovery.class);
+        List propertyList = grailsDomainClass.getPersistentProperties()
+        Map constrainedProperties = constrainedDiscovery.findConstrainedProperties(grailsDomainClass);
+        constrainedProperties.entrySet().each {
 
-        grailsDomainClass.properties.each {
-
-            def propName = it.name
             def maxSize
 
-            def constraintProperty = grailsDomainClass.constrainedProperties."$propName"
+
+            def constraintProperty =it.value
             if (constraintProperty?.propertyName) {
 
                 if (constraintProperty?.maxSize) {
@@ -210,7 +213,7 @@ class DomainAttributePropertiesService {
             log.error("Error:  Data failed to be selected from ALL TAB COLUMNS for item properties due to exception $e")
             throw e
         } finally {
-            sql?.close()
+            //sql?.close()
         }
 
         maxSize
@@ -236,7 +239,7 @@ class DomainAttributePropertiesService {
             log.error("Error:  Data failed to be selected from ALL TAB COLUMNS for item properties due to exception $e")
             throw e
         } finally {
-            sql?.close()
+            //sql?.close()
         }
 
         maxSize
@@ -261,7 +264,7 @@ class DomainAttributePropertiesService {
             log.error("Error:  Data failed to be selected from ALL TAB COLUMNS for item properties due to exception $e")
             throw e
         } finally {
-            sql?.close()
+            //sql?.close()
         }
 
         maxSize
@@ -280,7 +283,6 @@ class DomainAttributePropertiesService {
                 sql.eachRow("""
                     select length(g\$_date.get_nls_date_format) from dual
                    """) {
-
                     defaultDateFormat = it[0]
 
                 };
@@ -288,7 +290,7 @@ class DomainAttributePropertiesService {
                 log.error("ERROR: Incorrect Default Date Format. $e")
                 throw e
             } finally {
-                sql?.close()
+                //sql?.close()
             }
             defaultDateFormat
         }

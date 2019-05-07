@@ -23,3 +23,5 @@ plugin.xml
 messages_ar_SA.properties
 lib/bannerTransform.jar
 *.ser
+build/
+.gradle/**/*

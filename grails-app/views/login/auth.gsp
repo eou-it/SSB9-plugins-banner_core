@@ -9,18 +9,26 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
     <meta name="viewport" content="width=device-width, height=device-height,  initial-scale=1.0"/>
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
 
-    <script>
+    <asset:script>
         window.mepCode='${session.mep}';
-    </script>
+    </asset:script>
+    <asset:stylesheet href="login.css"/>
+    <asset:stylesheet href="login-responsive.css"/>
+    <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
+        <asset:stylesheet href="rtl-login.css"/>
+        <asset:stylesheet href="login-rtl.css"/>
+        <asset:stylesheet href="rtl-login-patch.css"/>
+        <asset:stylesheet href="login-responsive-rtl.css"/>
+    </g:if>
     <title><g:message code="net.hedtech.banner.login.title"/></title>
-    <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login.css')}"/>
+   %{-- <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login.css')}"/>
     <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login-responsive.css')}"/>
     <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login.css')}"/>
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login-rtl.css')}"/>
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'rtl-login-patch.css')}"/>
         <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'login-responsive-rtl.css')}"/>
-    </g:if>
+    </g:if>--}%
     <g:set var="themeConfig" value="${grails.util.Holders.config.banner.theme}"/>
     <g:if test="${themeConfig.url}">
         <g:if test="${session.mep}">
@@ -31,25 +39,26 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
         </g:else>
     </g:if>
 
-    <link rel="apple-touch-icon" sizes="57x57" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-57x57.png')}"/>
-    <link rel="apple-touch-icon" sizes="60x60" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-60x60.png')}"/>
-    <link rel="apple-touch-icon" sizes="72x72" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-72x72.png')}"/>
-    <link rel="apple-touch-icon" sizes="76x76" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-76x76.png')}"/>
-    <link rel="apple-touch-icon" sizes="114x114" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-114x114.png')}"/>
-    <link rel="apple-touch-icon" sizes="120x120" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-120x120.png')}"/>
-    <link rel="apple-touch-icon" sizes="144x144" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-144x144.png')}"/>
-    <link rel="apple-touch-icon" sizes="152x152" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-152x152.png')}"/>
-    <link rel="apple-touch-icon" sizes="180x180" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'apple-touch-icon-180x180.png')}"/>
-    <link rel="shortcut icon" type="image/png" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'favicon-32x32.png')}" sizes="32x32"/>
-    <link rel="shortcut icon" type="image/png" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'android-chrome-192x192.png')}" sizes="192x192"/>
-    <link rel="shortcut icon" type="image/png" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'favicon-96x96.png')}" sizes="96x96"/>
-    <link rel="shortcut icon" type="image/png" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'favicon-16x16.png')}" sizes="16x16"/>
-    <link rel="shortcut icon" href="${resource(plugin: 'bannerCore', dir:'images/eds/',file:'favicon.ico')}" type="image/x-icon" />
+    <asset:link rel="apple-touch-icon" sizes="57x57" href="eds/apple-touch-icon-57x57.png"/>
+    <asset:link rel="apple-touch-icon" sizes="60x60" href="eds/apple-touch-icon-60x60.png"/>
+    <asset:link rel="apple-touch-icon" sizes="72x72" href="eds/apple-touch-icon-72x72.png"/>
+    <asset:link rel="apple-touch-icon" sizes="76x76" href="eds/apple-touch-icon-76x76.png"/>
+    <asset:link rel="apple-touch-icon" sizes="114x114" href="eds/apple-touch-icon-114x114.png"/>
+    <asset:link rel="apple-touch-icon" sizes="120x120" href="eds/apple-touch-icon-120x120.png"/>
+    <asset:link rel="apple-touch-icon" sizes="144x144" href="eds/apple-touch-icon-144x144.png"/>
+    <asset:link rel="apple-touch-icon" sizes="152x152" href="eds/apple-touch-icon-152x152.png"/>
+    <asset:link rel="apple-touch-icon" sizes="180x180" href="eds/apple-touch-icon-180x180.png"/>
+    <asset:link rel="shortcut icon" type="image/png" href="eds/favicon-32x32.png" sizes="32x32"/>
+    <asset:link rel="shortcut icon" type="image/png" href="eds/android-chrome-192x192.png" sizes="192x192"/>
+    <asset:link rel="shortcut icon" type="image/png" href="eds/favicon-96x96.png" sizes="96x96"/>
+    <asset:link rel="shortcut icon" type="image/png" href="eds/favicon-16x16.png" sizes="16x16"/>
+    <asset:link rel="shortcut icon"  sizes="57x57" href="eds/favicon.ico" type="image/x-icon"/>
 
 </head>
 
 <body class="pageBg">
 <g:analytics/>
+<g:pageAccessAudit/>
 <div class="splashBg">
     <div class="ie-warning" id="ieWarningMessage">
         <div>
@@ -83,48 +92,48 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
             <div class="textfield-wrapper">
                 <g:if test='${userNameRequired}'>
                     <div class="error-state">
-                        <span><input type='text' name='j_username' id='j_username' class="eds-text-field"
-                                    placeholder="<g:message code="net.hedtech.banner.login.username"/>"
-                                   aria-labelledby='userNameTxt'
-                                   aria-describedby='loginMsg'/>
+                        <span><input type='text' name='username' id='username' class="eds-text-field"
+                                     placeholder="<g:message code="net.hedtech.banner.login.username"/>"
+                                     aria-labelledby='userNameTxt'
+                                     aria-describedby='loginMsg'/>
                         </span>
                     </div>
 
                     <div class="">
-                        <span><input type='password' name='j_password' id='j_password' class="eds-text-field"
+                        <span><input type='password' name='password' id='password' class="eds-text-field"
                                      placeholder="<g:message code="net.hedtech.banner.login.password"/>"
-                                   autocomplete="off" aria-labelledby='passwordTxt'/>
+                                     autocomplete="off" aria-labelledby='passwordTxt'/>
                         </span>
                     </div>
                 </g:if>
                 <g:elseif test='${flash.message}'>
                     <div class="error-state">
-                        <span><input type='text' name='j_username' id='j_username' class="eds-text-field"
+                        <span><input type='text' name='username' id='username' class="eds-text-field"
                                      placeholder="<g:message code="net.hedtech.banner.login.username"/>"
-                                   aria-labelledby='userNameTxt'
-                                   aria-describedby='loginMsg'/>
+                                     aria-labelledby='userNameTxt'
+                                     aria-describedby='loginMsg'/>
                         </span>
                     </div>
 
                     <div class="error-state">
-                        <span><input type='password' name='j_password' id='j_password' class="eds-text-field"
+                        <span><input type='password' name='password' id='password' class="eds-text-field"
                                      placeholder="<g:message code="net.hedtech.banner.login.password"/>"
-                                   autocomplete="off" aria-labelledby='passwordTxt'/>
+                                     autocomplete="off" aria-labelledby='passwordTxt'/>
                         </span>
                     </div>
                 </g:elseif>
                 <g:else>
                     <div class="">
-                        <span><input type='text' id="userName" name='j_username' id='j_username' class="eds-text-field"
+                        <span><input type='text' id="userName" name='username' id='username' class="eds-text-field"
                                      placeholder="<g:message code="net.hedtech.banner.login.username"/>"
-                                  aria-labelledby='userNameTxt' aria-describedby='loginMsg'/>
+                                     aria-labelledby='userNameTxt' aria-describedby='loginMsg'/>
                         </span>
                     </div>
 
                     <div class="">
-                        <span><input type='password' name='j_password' id='j_password' class="eds-text-field"
+                        <span><input type='password' name='password' id='password' class="eds-text-field"
                                      placeholder="<g:message code="net.hedtech.banner.login.password"/>"
-                               autocomplete="off" aria-labelledby='passwordTxt'/></span>
+                                     autocomplete="off" aria-labelledby='passwordTxt'/></span>
                     </div>
                 </g:else>
 
@@ -150,7 +159,10 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
     </form>
 
     <div class="copyright">
-        <p>&copy; <g:message code="default.copyright.startyear"/><g:message code="default.copyright.endyear"/> <g:message code="default.copyright.message"/></p>
+        <p>&copy; <g:message code="default.copyright.message"
+                   args="${[g.message(code:'default.copyright.startyear'),
+                            g.message(code:'default.copyright.endyear')]}"/>
+        </p>
 
         <p><g:message code="net.hedtech.banner.login.copyright2"/></p>
     </div>
@@ -158,7 +170,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 
 <script type='text/javascript'>
     (function () {
-        document.forms['loginForm'].elements['j_username'].focus();
+        document.forms['loginForm'].elements['username'].focus();
 
         if (isIe() && (getIEDocMode() < 8)) {
             document.getElementById("ieWarningMessage").style.visibility = "visible";
@@ -174,14 +186,14 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
         // If we are in IE 8 (any mode) or previous versions of IE,
         // we check for the documentMode or compatMode for pre 8 versions
         return (document.documentMode)
-                ? document.documentMode
-                : (document.compatMode && document.compatMode == "CSS1Compat")
+            ? document.documentMode
+            : (document.compatMode && document.compatMode == "CSS1Compat")
                 ? 7
                 : 5; // default to quirks mode IE5
     }
 
     function openWindow() {
-    <g:set var="onLineHelpUrl" value="${grails.util.Holders.config.onLineHelp.url}" />
+        <g:set var="onLineHelpUrl" value="${grails.util.Holders.config.onLineHelp.url}" />
 
         window.open("${onLineHelpUrl}?productName=general&formName=login", '_blank');
         return false;
