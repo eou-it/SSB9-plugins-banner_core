@@ -31,14 +31,14 @@ class DateInOperator extends InOperator {
     }
 
     public boolean isTimeEntered(CriteriaParam param) {
-       List criteriaParams = param.data
-       CriteriaParam innerParam = criteriaParams.get(0)
+        List criteriaParams = param.data
+        CriteriaParam innerParam = criteriaParams.get(0)
 
-       boolean timeEntered = super.isTimeEntered(innerParam);
+        boolean timeEntered = super.isTimeEntered(innerParam);
 
-      /* if(innerParam.getAttribute("timeEntered") && true.equals(innerParam.getAttribute("timeEntered"))) {
-          timeEntered = true
-       }*/
-       return timeEntered
+        /* if(innerParam.getAttribute("timeEntered") && true.equals(innerParam.getAttribute("timeEntered"))) {
+            timeEntered = true
+         }*/
+        return timeEntered
     }
 }

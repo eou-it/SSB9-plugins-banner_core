@@ -24,7 +24,7 @@ class ConfigurationUtils {
             // result in the configuration holder being null when running all, or all integration, tests. The holder is available
             // when running tests individually. To workaround this, we'll use the ConfigSlurper to read the configuration.
             //new ConfigSlurper().parse( new File( 'grails-app/conf/Config.groovy' ).toURL() )
-            new ConfigSlurper().parse(new File("${System.getProperty('base.dir')}/grails-app/conf/Config.groovy").toURL())
+            new ConfigSlurper().parse(new File("${System.getProperty('user.dir')}/grails-app/conf/application.groovy").toURL())
         }
     }
 

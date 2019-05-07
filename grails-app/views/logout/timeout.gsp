@@ -4,14 +4,15 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <%@ page contentType="text/html;charset=UTF-8" defaultCodec="none" %>
-<html>
+<!DOCTYPE html>
+<html lang="${message(code: 'default.language.locale')}">
 <head>
    <meta name="layout" content="bannerCommonPage"/>
     <g:set var="actionLabel" value="${g.message(code: 'net.hedtech.banner.logout.timeout.dialog.action')}"/>
     <g:set var="target" value="${request.contextPath}${uri}"/>
 </head>
 
-<body>
+<body dir="auto">
     <div class="dialog-mask">
         <div class="dialog-wrapper">
             <div class="dialog">

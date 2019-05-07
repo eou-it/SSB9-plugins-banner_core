@@ -1,10 +1,13 @@
 /*******************************************************************************
-Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 
+
+import grails.util.Environment
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.MepCodeNotFoundException
 import grails.plugin.springsecurity.SpringSecurityUtils
+
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler
@@ -20,28 +23,44 @@ class ErrorController {
     public static final String VIEW_FORBIDDEN = "forbidden"
     def logoutHandlers
 
-    def internalServerError = {
+    def internalServerError () {
         def exception = request.exception
-        if (exception?.cause instanceof MepCodeNotFoundException) {
+        def targetException
+        def mepCodeException
+
+        if (Environment.current == Environment.PRODUCTION || Environment.current == Environment.TEST) {
+            targetException = exception
+            mepCodeException = exception?.cause
+        } else if (Environment.current == Environment.DEVELOPMENT) {
+            if (exception?.cause?.hasProperty('target')) {
+                targetException = exception?.cause?.target
+                mepCodeException = exception?.cause?.target
+            } else {
+                targetException = exception?.cause
+                mepCodeException = exception?.cause
+            }
+        }
+
+        if (mepCodeException instanceof MepCodeNotFoundException) {
             returnHomeLinkAddress = VIEW_LOGOUT_PAGE
         }
-         //SCH.context?.authentication is passed and logout is fired on the logout handlers registered
+        //SCH.context?.authentication is passed and logout is fired on the logout handlers registered
         logoutHandlers.each { handler ->
-            if(handler instanceof LogoutHandler) {
+            if (handler instanceof LogoutHandler) {
                 handler.logout(request, response, SCH.context?.authentication)
             } else if (handler instanceof LogoutSuccessHandler) {
                 handler.onLogoutSuccess(request, response, SCH.context?.authentication)
             }
         }
         def model = [
-            exception: exception,
-            returnHomeLinkAddress : returnHomeLinkAddress
+                exception            : targetException,
+                returnHomeLinkAddress: returnHomeLinkAddress
         ]
 
         render view: VIEW_ERROR_PAGE, model: model
     }
 
-    def pageNotFoundError = {
+    def pageNotFoundError() {
         def model = [
                 exception: request.exception,
                 request:   request,
@@ -52,7 +71,7 @@ class ErrorController {
     }
 
 
-    def accessForbidden = {
+    def accessForbidden(){
         def uri = ControllerUtils.buildLogoutRedirectURI()
 
         render view: VIEW_FORBIDDEN, model: [uri: uri]

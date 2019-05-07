@@ -1,22 +1,23 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.query
 
+import grails.util.Holders
+import grails.web.context.ServletContextHolder
+import groovy.util.logging.Slf4j
+import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.i18n.MessageHelper
 import net.hedtech.banner.query.criteria.CriteriaParam
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.hibernate.hql.ast.QuerySyntaxException
+import org.grails.web.util.GrailsApplicationAttributes
+import org.hibernate.hql.internal.ast.QuerySyntaxException
 import org.springframework.context.ApplicationContext
-import org.apache.log4j.Logger
-import net.hedtech.banner.exceptions.ApplicationException
 
 /**
  *
  */
+@Slf4j
 class DynamicFinder {
-    private static final def log = Logger.getLogger( 'net.hedtech.banner.query.DynamicFinder' )
 
     def domainClass
     def query
@@ -33,7 +34,7 @@ class DynamicFinder {
 
 
     public static Map getCriteriaParamsFromParams(data) {
-        Map params = new HashMap();
+        Map params = new HashMap()
         Set keys = data.keySet()
         if (keys.size() > 0) {
             keys.each { key ->
@@ -85,7 +86,7 @@ class DynamicFinder {
         def filterDataClone = filterData.clone()
         filterDataClone.params = getCriteriaParamsFromParams(filterData.params)
 
-        def queryString = QueryBuilder.buildQuery(query.flattenString(), tableIdentifier, filterDataClone, pagingAndSortParams, domainClass)
+        String queryString = QueryBuilder.buildQuery(query.flattenString(), tableIdentifier, filterDataClone, pagingAndSortParams, domainClass)
 
         Map params = getParamsFromCriteriaParams(filterDataClone.params)
 
@@ -94,7 +95,7 @@ class DynamicFinder {
             return list
         }  catch(Exception e){
             if (e?.cause instanceof QuerySyntaxException) {
-                log.error "Error message: " + e.stackTrace
+                log.error "Error message: " + e.stackTrace.toString()
                 def message = MessageHelper.message("net.hedtech.banner.query.DynamicFinder.QuerySyntaxException")
                 throw new ApplicationException(DynamicFinder, message);
 
@@ -110,7 +111,7 @@ class DynamicFinder {
         def filterDataClone = filterData.clone()
         filterDataClone.params = getCriteriaParamsFromParams(filterData.params)
 
-        def queryString = QueryBuilder.buildCountQuery(query.flattenString(), tableIdentifier, filterDataClone)
+        String queryString = QueryBuilder.buildCountQuery(query.flattenString(), tableIdentifier, filterDataClone)
 
         Map params = getParamsFromCriteriaParams(filterDataClone.params)
 
@@ -121,7 +122,7 @@ class DynamicFinder {
 
 
     public static def fetchAll(domainClass, query, tableIdentifier, filterData, pagingAndSortParams) {
-        def queryString = QueryBuilder.buildQuery(query.flattenString(), "a", filterData, pagingAndSortParams, domainClass)
+        String queryString = QueryBuilder.buildQuery(query.flattenString(), "a", filterData, pagingAndSortParams, domainClass)
 
         try {
             def list = domainClass.findAll(queryString, filterData.params, pagingAndSortParams)
@@ -141,7 +142,7 @@ class DynamicFinder {
 
 
     public static def countAll(domainClass, query, tableIdentifier, filterData) {
-        def queryString = QueryBuilder.buildCountQuery(query.flattenString(), "a", filterData.criteria)
+        String queryString = QueryBuilder.buildCountQuery(query.flattenString(), "a", filterData.criteria)
 
         def returnListCount = domainClass.executeQuery(queryString, filterData.params)
 
@@ -150,6 +151,6 @@ class DynamicFinder {
 
 
     public static ApplicationContext getApplicationContext() {
-        return (ApplicationContext) ServletContextHolder.getServletContext().getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT);
+        return Holders.getGrailsApplication().getMainContext()
     }
 }
