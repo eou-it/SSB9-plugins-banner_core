@@ -25,11 +25,9 @@ class PageAccessAuditService extends ServiceBase {
         PageAccessAudit pageAccessAudit = null
         try {
             def request = RequestContextHolder.getRequestAttributes()?.request
-            String pageAuditConfiguration = getPageAuditConfiguration()
+            List<String> pageAuditConfigList =new ArrayList(Arrays.asList(getPageAuditConfiguration().split("\\s*,\\s*")));
             String requestedPageUrl = (request.getRequestURI())?.toLowerCase()
-            if (pageAuditConfiguration?.toLowerCase() != 'n' && (pageAuditConfiguration == '%' || requestedPageUrl?.contains(pageAuditConfiguration))) {
-                pageAccessAudit = createPageAudit() as PageAccessAudit
-            } else if(pageAuditConfiguration?.length() >= 1 && pageAuditConfiguration.findAll('%').size() > 0 && requestedPageUrl?.contains(pageAuditConfiguration.replaceAll('%',''))){
+            if (pageAuditConfiguration?.toLowerCase() != 'n' && (pageAuditConfiguration == '%' || isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList,requestedPageUrl))) {
                 pageAccessAudit = createPageAudit() as PageAccessAudit
             }
         }
@@ -95,6 +93,17 @@ class PageAccessAuditService extends ServiceBase {
             it.key?.equalsIgnoreCase('username') || it.key?.equalsIgnoreCase('password')
         }
         return unsecureQueryParameter
+    }
+
+    private boolean isPageAuditConfigAvailableInRequestPageUrl(List<String> pageAuditConfigList, String requestedPageUrl){
+        def isPageAuditConfigAvailable = false
+        for (String pageAuditConfiguration: pageAuditConfigList){
+            if(requestedPageUrl?.contains(pageAuditConfiguration.replaceAll('%',''))){
+                isPageAuditConfigAvailable = true
+                break
+            }
+        }
+        return isPageAuditConfigAvailable
     }
 }
 
