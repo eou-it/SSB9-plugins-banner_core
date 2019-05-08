@@ -1,0 +1,117 @@
+/** *****************************************************************************
+ Copyright 2018 Ellucian Company L.P. and its affiliates.
+ ****************************************************************************** */
+/*Mobile device*/
+@media screen and (max-width: 568px) {
+
+    .splashBg {
+        height: unset;
+        width: unset;
+        top: unset;
+        margin: 2em;
+        padding: 2em 1em;
+        left: unset;
+    }
+
+    .splashBg .ellucianName {
+        position: unset;
+        left: unset;
+        top: unset;
+        height: 2em;
+        width: 10em;
+    }
+
+    .splashBg .appName {
+        font-size: 2em;
+        padding-bottom: 1em;
+        position: unset;
+        top: unset;
+        right: unset;
+    }
+
+    .splashBg .loginMsg {
+        top: unset;
+        right: unset;
+        position: relative;
+        font-weight: bold;
+        text-align: left;
+        padding: 1em 0 2em;
+        font-size: 1.5em;
+        float: none;
+        margin: 0;
+    }
+
+    .splashBg .logIn {
+        float: none;
+        margin: 53px 0 0 263px;
+        position: relative;
+        top: unset;
+    }
+
+    .splashBg .logIn {
+        margin: 0;
+    }
+
+    .splashBg .logIn DIV {
+        float: none;
+        margin-bottom: 10px;
+    }
+
+    .splashBg .userName, .splashBg .userName-error-state,
+    .splashBg .password, .splashBg .password-error-state {
+        margin: 1.5em 0;
+    }
+
+    .splashBg .forgotPasswordDiv {
+        left: unset;
+        right: unset;
+        position: relative;
+        top: unset;
+    }
+
+    .splashBg A.forgotpassword:link {
+        background: none;
+        display: block;
+        width: unset !important;
+        height: unset;
+        text-align: center;
+        color: #FFF;
+        text-decoration: none;
+        font-size: 0.75em;
+        font-weight: bold;
+        position: relative;
+        top: unset;
+        padding-top: 0px;
+    }
+
+    .splashBg .forgotpassword {
+        padding: 1em 0;
+    }
+
+    .login-primary {
+        width: 100%;
+        margin-top: 1em;
+    }
+
+    .splashBg .logIn.sign-in {
+        margin: 0;
+    }
+
+    .splashBg .copyright {
+        top: unset;
+        bottom: unset;
+        left: unset;
+        right: unset;
+        margin: 1em 0;
+        padding: 1em 0 0;
+        position: relative;
+    }
+
+    .eds-text-field {
+        width: 100%;
+    }
+
+    .splashBg DIV SPAN INPUT {
+        margin: 0;
+    }
+}

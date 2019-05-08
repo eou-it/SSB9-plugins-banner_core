@@ -54,6 +54,8 @@ class UrlMappings {
             }
         }
 
+        "/login/auth/$id?" (controller: "error", action: "pageNotFoundError")
+
         "/login/auth" {
             controller = "login"
             action = "auth"
