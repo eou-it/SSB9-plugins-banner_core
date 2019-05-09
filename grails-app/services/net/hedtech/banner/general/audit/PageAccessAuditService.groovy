@@ -27,7 +27,9 @@ class PageAccessAuditService extends ServiceBase {
             def request = RequestContextHolder.getRequestAttributes()?.request
             List<String> pageAuditConfigList =new ArrayList(Arrays.asList(getPageAuditConfiguration().split("\\s*,\\s*")));
             String requestedPageUrl = (request.getRequestURI())?.toLowerCase()
-            if (pageAuditConfiguration?.toLowerCase() != 'n' && (pageAuditConfiguration == '%' || isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList,requestedPageUrl))) {
+            if (pageAuditConfigList.size() == 1 && pageAuditConfigList[0].length() == 1 && pageAuditConfigList[0]?.toLowerCase() != 'n' && pageAuditConfigList[0] == '%') {
+                pageAccessAudit = createPageAudit() as PageAccessAudit
+            }else if (isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList,requestedPageUrl)){
                 pageAccessAudit = createPageAudit() as PageAccessAudit
             }
         }
