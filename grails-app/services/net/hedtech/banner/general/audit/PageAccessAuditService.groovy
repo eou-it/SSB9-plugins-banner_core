@@ -56,7 +56,8 @@ class PageAccessAuditService extends ServiceBase {
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
             String ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
             String appId = Holders.config.app.appId
-            String requestURI = request.getRequestURI()
+            String requestURI = (request?.getForwardURI() != request?.getRequestURI() ? request?.getForwardURI() : request?.getRequestURI())
+
             String queryString = null
             def unsecureQueryParameter = getUnsecureQueryParameter(request.getParameterMap())
             if(!unsecureQueryParameter){
