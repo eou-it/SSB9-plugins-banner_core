@@ -25,11 +25,9 @@ class PageAccessAuditService extends ServiceBase {
         PageAccessAudit pageAccessAudit = null
         try {
             def request = RequestContextHolder.getRequestAttributes()?.request
-            List<String> pageAuditConfigList =new ArrayList(Arrays.asList(getPageAuditConfiguration().split("\\s*,\\s*")));
+            List<String> pageAuditConfigList =getPageAuditConfiguration().split("\\s*,\\s*") as ArrayList<String>
             String requestedPageUrl = (request.getRequestURI())?.toLowerCase()
-            if (pageAuditConfigList.size() == 1 && pageAuditConfigList[0].length() == 1 && pageAuditConfigList[0]?.toLowerCase() != 'n' && pageAuditConfigList[0] == '%') {
-                pageAccessAudit = createPageAudit() as PageAccessAudit
-            }else if (isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList,requestedPageUrl)){
+            if (isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList,requestedPageUrl)){
                 pageAccessAudit = createPageAudit() as PageAccessAudit
             }
         }
@@ -97,12 +95,16 @@ class PageAccessAuditService extends ServiceBase {
         return unsecureQueryParameter
     }
 
-    private boolean isPageAuditConfigAvailableInRequestPageUrl(List<String> pageAuditConfigList, String requestedPageUrl){
-        def isPageAuditConfigAvailable = false
-        for (String pageAuditConfiguration: pageAuditConfigList){
-            if(requestedPageUrl?.contains(pageAuditConfiguration.replaceAll('%',''))){
-                isPageAuditConfigAvailable = true
-                break
+    private Boolean isPageAuditConfigAvailableInRequestPageUrl(List<String> pageAuditConfigList, String requestedPageUrl){
+        Boolean isPageAuditConfigAvailable = false
+        if (pageAuditConfigList.find{it == '%'}.length()>0){
+            isPageAuditConfigAvailable = true
+        }else{
+            for (String pageAuditConfiguration: pageAuditConfigList){
+                if(requestedPageUrl?.contains(pageAuditConfiguration.replaceAll('%',''))){
+                    isPageAuditConfigAvailable = true
+                    break
+                }
             }
         }
         return isPageAuditConfigAvailable
