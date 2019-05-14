@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.security
@@ -38,8 +38,8 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
         RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
         Authentication auth = selfServiceBannerAuthenticationProvider.authenticate( new UsernamePasswordAuthenticationToken('INTGRN',111111))
         SecurityContextHolder.getContext().setAuthentication( auth )
-        Holders?.config.banner.sso.authenticationAssertionAttribute = "UDC_IDENTIFIER"
-        Holders?.config.banner.sso.authenticationProvider = "external"
+        Holders.config.banner.sso.authenticationAssertionAttribute = "UDC_IDENTIFIER"
+        Holders.config.banner.sso.authenticationProvider = "external"
         bannerPIDM = getBannerPIDM()
     }
 
@@ -51,8 +51,10 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
 
     @Test
     void testAdminDoFilter() {
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.remove("/**")
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.put('/ssb/**', ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Map roleMap = new LinkedHashMap()
+        roleMap.put('pattern','/ssb/**')
+        roleMap.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(roleMap)
 
         MockHttpServletRequest request = new MockHttpServletRequest()
         request.setRequestURI("/ssb/foo")
@@ -71,8 +73,12 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
 
     @Test
     void testAttributeNull() {
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.remove("/**")
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.put('/ssb/**', ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Map roleMap = new LinkedHashMap()
+        roleMap.put('pattern','/ssb/**')
+        roleMap.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(roleMap)
+
+        //Holders.config.grails.plugin.springsecurity.interceptUrlMap.put('/ssb/**', ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
 
         MockHttpServletRequest request = new MockHttpServletRequest()
         request.setRequestURI("/ssb/foo")
@@ -90,9 +96,13 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
 
     @Test
     void testBannerUserNotFound() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.remove("/**")
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.put('/ssb/**', ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        MockHttpServletRequest request = new MockHttpServletRequest()
+        Map roleMap = new LinkedHashMap()
+        roleMap.put('pattern','/ssb/**')
+        roleMap.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(roleMap)
+
+        //Holders.config.grails.plugin.springsecurity.interceptUrlMap.put('/ssb/**', ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
 
         def udc_identifier = "2"
         request.addHeader("UDC_IDENTIFIER", udc_identifier)
@@ -114,19 +124,21 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
 
     @Test
     void testFilterSkip() {
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.remove("/**")
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.put('/ssb/**', ['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Map roleMap = new LinkedHashMap()
+        roleMap.put('pattern','/ssb/**')
+        roleMap.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(roleMap)
 
-        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletRequest request = new MockHttpServletRequest()
 
         request.setRequestURI("/ssb/foo");
         request.addHeader("UDC_IDENTIFIER", UDC_IDENTIFIER)
 
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        MockFilterChain chain = new MockFilterChain();
-        SecurityContextHolder.context?.authentication = null  //clear context
+        MockHttpServletResponse response = new MockHttpServletResponse()
+        MockFilterChain chain = new MockFilterChain()
+        SecurityContextHolder.context.authentication = null  //clear context
 
-        bannerPreAuthenticatedFilter.doFilter(request, response, chain);
+        bannerPreAuthenticatedFilter.doFilter(request, response, chain)
 
         assertNull(SecurityContextHolder.context.getAuthentication())
     }
@@ -134,9 +146,15 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
 
     @Test
     void testFilterMultiAntUrlMatch() {
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.remove("/**")
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.put('/external/test/**', ['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
-        Holders?.config.grails.plugin.springsecurity.interceptUrlMap.put('/external/**', ['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Map roleMap = new LinkedHashMap()
+        roleMap.put('pattern','/external/test/**')
+        roleMap.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(roleMap)
+
+        roleMap.put('pattern','/external/**')
+        roleMap.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(roleMap)
+
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI("/external/test/foo/super/somefile2.html");
 
@@ -159,17 +177,11 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
     private def getBannerPIDM() {
         Sql sqlObj
         def bPIDM = 0
-        try {
-            sqlObj = new Sql(sessionFactory.getCurrentSession().connection())
-            String pidmQuery = """SELECT GOBEACC_PIDM FROM GOBEACC WHERE GOBEACC_USERNAME = ?"""
-            sqlObj.eachRow(pidmQuery, [gobeaccUserName]) { row ->
-                bPIDM = row.GOBEACC_PIDM
-            }
-        }
-        finally {
-            sqlObj?.close()
+        sqlObj = new Sql(sessionFactory.getCurrentSession().connection())
+        String pidmQuery = """SELECT GOBEACC_PIDM FROM GOBEACC WHERE GOBEACC_USERNAME = ?"""
+        sqlObj.eachRow(pidmQuery, [gobeaccUserName]) { row ->
+            bPIDM = row.GOBEACC_PIDM
         }
         bPIDM
     }
-
 }

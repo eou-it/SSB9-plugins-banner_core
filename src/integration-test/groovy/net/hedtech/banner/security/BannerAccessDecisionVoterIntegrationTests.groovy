@@ -12,6 +12,7 @@ import org.junit.Before
 import org.junit.Test
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import org.springframework.security.core.context.SecurityContextHolder
 
 @Integration
 @Rollback
@@ -48,6 +49,7 @@ class BannerAccessDecisionVoterIntegrationTests extends BaseIntegrationTestCase 
     void testExtractUrl() {
         def bannerAccessDecisionVoter = new BannerAccessDecisionVoter()
         auth = provider.authenticate(new TestAuthenticationRequest(testUser))
+        SecurityContextHolder.getContext().setAuthentication( auth )
         bannerAccessDecisionVoter.isUserAuthorized("home")
     }
 

@@ -1,7 +1,12 @@
 /*******************************************************************************
  Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
+
+import grails.util.Holders
 import net.hedtech.banner.controllers.ControllerUtils
+import net.hedtech.banner.general.audit.LoginAuditService
+import net.hedtech.banner.security.AuthenticationProviderUtility
+
 import javax.servlet.http.Cookie
 
 /**
@@ -19,10 +24,11 @@ class LogoutController {
     public static final String ACTION_TIMEOUT_PAGE = 'timeoutPage'
     public static final String JSESSIONID_COOKIE_NAME = "JSESSIONID"
 
-    /**
+    /*
      * Index action. Redirects to the Spring security logout uri.
      */
     def index() {
+        captureLogoutInformation(response)
         if (!ControllerUtils.isSamlEnabled()) {
             invalidateSession(response)
         }
@@ -30,11 +36,13 @@ class LogoutController {
     }
 
     def timeout() {
+
         if (request?.getHeader(HTTP_REQUEST_REFERER_STRING)?.endsWith(LOGIN_AUTH_ACTION_URI)) {
             forward(controller: LOGIN_CONTROLLER)
         } else {
             def mepCode = session.mep
             def uri = createLink([uri: '/ssb/logout/timeoutPage', action: ACTION_TIMEOUT_PAGE, absolute: true])
+            captureLogoutInformation(response)
             invalidateSession(response)
             redirect uri: uri, params: mepCode?[ mep: mepCode]:[]
         }
@@ -69,5 +77,21 @@ class LogoutController {
             render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show]
         }
 
+    }
+
+    def captureLogoutInformation(response){
+        def userInfo = response?.authBeforeExecution?.user
+        LoginAuditService loginAuditService = null
+        /*user = BannerGrantedAuthorityService.getUser()*/
+        String loginAuditConfiguration = AuthenticationProviderUtility.getLoginAuditConfiguration()
+        if(userInfo!= null && loginAuditConfiguration?.equalsIgnoreCase('Y')){
+            if (!loginAuditService) {
+                loginAuditService = Holders.grailsApplication.mainContext.getBean("loginAuditService")
+            }
+            String logoutComment  = "Logout successful"
+            loginAuditService.createLoginLogoutAudit(userInfo,logoutComment)
+        }else{
+            log.debug "User Information Not Present."
+        }
     }
 }
