@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -8,6 +8,7 @@ import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.exceptions.AuthorizationException
 import grails.util.Holders
+import net.hedtech.banner.general.audit.LoginAuditService
 import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.BadCredentialsException
@@ -442,4 +443,17 @@ class AuthenticationProviderUtility {
         return loginAuditConfiguration
     }
 
+    public static captureLogoutInformation(userName,userPidm){
+        LoginAuditService loginAuditService = null
+        String loginAuditConfiguration = getLoginAuditConfiguration()
+        if(loginAuditConfiguration?.equalsIgnoreCase('Y')){
+            if (!loginAuditService) {
+                loginAuditService = Holders.grailsApplication.mainContext.getBean("loginAuditService")
+            }
+            String logoutComment  = "Logout successful"
+            loginAuditService.createLoginLogoutAudit(userName, userPidm, logoutComment)
+        }else{
+            log.debug "User Information Not Present."
+        }
+    }
 }

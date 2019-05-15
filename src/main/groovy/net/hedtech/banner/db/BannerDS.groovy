@@ -25,6 +25,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
 
+import javax.servlet.http.HttpServletRequest
 import javax.sql.DataSource
 import java.sql.Connection
 import java.sql.SQLException
@@ -166,6 +167,9 @@ public class BannerDS implements DataSource {
         }
 
         if (user instanceof BannerUser){
+            if(!bannerConnection) {
+                bannerConnection = new BannerConnection(conn, user?.username, this)
+            }
             setLocaleInDatabase(bannerConnection.underlyingConnection)
             return bannerConnection
         }
