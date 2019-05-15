@@ -20,7 +20,6 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
-import javax.servlet.http.HttpServletRequest
 
 
 @Integration
@@ -63,6 +62,28 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         def  loginAuditObject = loginAuditService.createLoginLogoutAudit(user.username, user.pidm, 'Login Successful')
         assertNotNull loginAuditObject
 
+    }
+
+    @Test
+    void testLoginEnableLoginAuditSetY() {
+        Holders.config.EnableLoginAudit = 'Y'
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
+        def  loginAuditObject = loginAuditService.getDataByLoginID('HOSH00001')
+        loginSSB('HOSH00001', '111111')
+        def  loginAuditObject1 = loginAuditService.getDataByLoginID('HOSH00001')
+        assertEquals loginAuditObject.size() , loginAuditObject1.size()-1
+    }
+
+    @Test
+    void testLoginEnableLoginAuditSetN() {
+        Holders.config.EnableLoginAudit = 'N'
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
+        def  loginAuditObject = loginAuditService.getDataByLoginID('HOSH00001')
+        loginSSB('HOSH00001', '111111')
+        def  loginAuditObject1 = loginAuditService.getDataByLoginID('HOSH00001')
+        assertEquals loginAuditObject.size() , loginAuditObject1.size()
     }
 
     private LoginAudit newLoginAudit() {
