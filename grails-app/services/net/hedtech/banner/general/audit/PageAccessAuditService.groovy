@@ -97,7 +97,7 @@ class PageAccessAuditService extends ServiceBase {
 
     private Boolean isPageAuditConfigAvailableInRequestPageUrl(List<String> pageAuditConfigList, String requestedPageUrl){
         Boolean isPageAuditConfigAvailable = false
-        if (pageAuditConfigList.find{it == '%'}.length()>0){
+        if (pageAuditConfigList.find{it == '%'}?.length()>0){
             isPageAuditConfigAvailable = true
         }else{
             for (String pageAuditConfiguration: pageAuditConfigList){
