@@ -26,7 +26,7 @@ class PageAccessAuditService extends ServiceBase {
         try {
             def request = RequestContextHolder.getRequestAttributes()?.request
             List<String> pageAuditConfigList =getPageAuditConfiguration().split("\\s*,\\s*") as ArrayList<String>
-            String requestedPageUrl = (request.getRequestURI())?.toLowerCase()
+            String requestedPageUrl = (request?.getForwardURI())?.toLowerCase()
             if (isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList,requestedPageUrl)){
                 pageAccessAudit = createPageAudit() as PageAccessAudit
             }
