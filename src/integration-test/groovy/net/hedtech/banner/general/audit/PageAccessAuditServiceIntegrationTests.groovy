@@ -69,16 +69,19 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/homepage')
         def  pageAccessAuditObject = pageAccessAuditService.checkAndCreatePageAudit()
         assertNotNull  pageAccessAuditObject
+        assertEquals(pageAccessAuditObject.pageUrl, "/ssb/homepage")
 
         Holders.config.EnablePageAudit= '%home'
         RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/homepage')
         def  pageAccessAuditObject2 = pageAccessAuditService.checkAndCreatePageAudit()
         assertNotNull  pageAccessAuditObject2
+        assertEquals(pageAccessAuditObject2.pageUrl, "/ssb/homepage")
 
         Holders.config.EnablePageAudit= 'home%'
         RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/homepage')
         def  pageAccessAuditObject3 = pageAccessAuditService.checkAndCreatePageAudit()
         assertNotNull  pageAccessAuditObject3
+        assertEquals(pageAccessAuditObject3.pageUrl, "/ssb/homepage")
     }
 
     @Test
