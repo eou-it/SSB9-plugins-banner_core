@@ -52,7 +52,8 @@ class PageAccessAuditService extends ServiceBase {
             }
             loginId = userLoginId?:'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
-            String ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
+            //String ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
+            String ipAddress = getClientIpAdress(request);
             String appId = Holders.config.app.appId
             String requestURI = request.getRequestURI()
             String queryString = null
@@ -108,6 +109,24 @@ class PageAccessAuditService extends ServiceBase {
             }
         }
         return isPageAuditConfigAvailable
+    }
+
+    private static String getClientIpAdress(request){
+        String ipAddressList = request.getHeader("X-FORWARDED-FOR");
+        //String ipAddressList = "2001:db8:85a3:8d3:1319:8a2e, 70.41.3.18, 150.172.238.178"
+        String clientIpAddress
+        if (ipAddressList?.length() > 0)  {
+            String ipAddress = ipAddressList.split(",")[0];
+            if ( ipAddress.length() <= PageAccessAudit.getConstrainedProperties().get('ipAddress').getMaxSize() ) {
+                clientIpAddress =  ipAddress
+            } else {
+                clientIpAddress = request.getRemoteAddr();
+                log.error("Exception occured while getting clientIpAddress:Ip Address too long.")
+            }
+        }else{
+            clientIpAddress = request.getRemoteAddr();
+        }
+        return clientIpAddress;
     }
 }
 
