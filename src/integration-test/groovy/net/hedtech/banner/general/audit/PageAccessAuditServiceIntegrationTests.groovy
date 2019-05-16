@@ -81,6 +81,50 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         assertNotNull  pageAccessAuditObject3
     }
 
+    @Test
+    void testCheckAndCreatePageAuditMultipleWithURLPattern(){
+        loginSSB('HOSH00001', '111111')
+        Holders.config.EnablePageAudit= 'homepage, platformutilities'
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/homepage')
+        def  pageAccessAuditObject = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNotNull  pageAccessAuditObject
+        assertEquals(pageAccessAuditObject.pageUrl, "/ssb/homepage")
+
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/uiCatalog/platformUtilities')
+        def  pageAccessAuditObject2 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNotNull  pageAccessAuditObject2
+        assertEquals(pageAccessAuditObject2.pageUrl, "/ssb/uiCatalog/platformUtilities")
+
+        Holders.config.EnablePageAudit= '%home, %utilities'
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/homepage')
+        def  pageAccessAuditObject3 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNotNull  pageAccessAuditObject3
+        assertEquals(pageAccessAuditObject3.pageUrl, "/ssb/homepage")
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/uiCatalog/platformUtilities')
+        def  pageAccessAuditObject4 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNotNull  pageAccessAuditObject4
+        assertEquals(pageAccessAuditObject4.pageUrl, "/ssb/uiCatalog/platformUtilities")
+
+        Holders.config.EnablePageAudit= 'home%, platform%'
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/homepage')
+        def  pageAccessAuditObject5 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNotNull  pageAccessAuditObject5
+        assertEquals(pageAccessAuditObject5.pageUrl, "/ssb/homepage")
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/uiCatalog/platformUtilities')
+        def  pageAccessAuditObject6 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNotNull  pageAccessAuditObject6
+        assertEquals(pageAccessAuditObject6.pageUrl, "/ssb/uiCatalog/platformUtilities")
+
+        Holders.config.EnablePageAudit= '%, platform%'
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/homepage')
+        def  pageAccessAuditObject7 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNotNull  pageAccessAuditObject7
+        assertEquals(pageAccessAuditObject7.pageUrl, "/ssb/homepage")
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/uiCatalog/platformUtilities')
+        def  pageAccessAuditObject8 = pageAccessAuditService.checkAndCreatePageAudit()
+        assertNotNull  pageAccessAuditObject8
+        assertEquals(pageAccessAuditObject8.pageUrl, "/ssb/uiCatalog/platformUtilities")
+    }
 
     @Test
     void testCheckEnablePageAuditWithFailureFlow(){
