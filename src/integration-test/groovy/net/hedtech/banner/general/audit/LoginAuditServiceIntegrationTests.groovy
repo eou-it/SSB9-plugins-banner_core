@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.apache.http.conn.util.InetAddressUtils
 
 
 
@@ -84,6 +85,38 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         loginSSB('HOSH00001', '111111')
         def  loginAuditObject1 = loginAuditService.getDataByLoginID('HOSH00001')
         assertEquals loginAuditObject.size() , loginAuditObject1.size()
+    }
+
+    @Test
+    void testgetloadBalancerIpAddress() {
+        loginSSB('HOSH00001', '111111')
+        LoginAudit loginAudit = newLoginAudit()
+        loginAudit.save(failOnError: true, flush: true)
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        def ipAddress = loginAuditService.getClientIpAddress(request)
+        assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
+    }
+
+    @Test
+    void testgetValidClientIpAddress() {
+        loginSSB('HOSH00001', '111111')
+        LoginAudit loginAudit = newLoginAudit()
+        loginAudit.save(failOnError: true, flush: true)
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
+        def ipAddress = loginAuditService.getClientIpAddress(request)
+        assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
+    }
+
+    @Test
+    void testgetInValidClientIpAddress() {
+        loginSSB('HOSH00001', '111111')
+        LoginAudit loginAudit = newLoginAudit()
+        loginAudit.save(failOnError: true, flush: true)
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348:2001:db8:85a3:8d3:1319:8a2e')
+        def ipAddress = loginAuditService.getClientIpAddress(request)
+        assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
     }
 
     private LoginAudit newLoginAudit() {
