@@ -53,7 +53,7 @@ class PageAccessAuditService extends ServiceBase {
             loginId = userLoginId?:'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
             //String ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
-            String ipAddress = getClientIpAdress(request);
+            String ipAddress = getClientIpAddress(request)
             String appId = Holders.config.app.appId
             String requestURI = request.getRequestURI()
             String queryString = null
