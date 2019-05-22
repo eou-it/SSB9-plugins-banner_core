@@ -26,7 +26,7 @@ class PageAccessAuditService extends ServiceBase {
         try {
             def request = RequestContextHolder.getRequestAttributes()?.request
             List<String> pageAuditConfigList =getPageAuditConfiguration().split("\\s*,\\s*") as ArrayList<String>
-            String requestedPageUrl = (request.getRequestURI())?.toLowerCase()
+            String requestedPageUrl = (request?.getForwardURI())?.toLowerCase()
             if (isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList,requestedPageUrl)){
                 pageAccessAudit = createPageAudit() as PageAccessAudit
             }
@@ -54,7 +54,8 @@ class PageAccessAuditService extends ServiceBase {
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
             String ipAddress = getClientIpAddress(request);
             String appId = Holders.config.app.appId
-            String requestURI = request.getRequestURI()
+            String requestURI = request?.getForwardURI()
+
             String queryString = null
             def unsecureQueryParameter = getUnsecureQueryParameter(request.getParameterMap())
             if(!unsecureQueryParameter){
