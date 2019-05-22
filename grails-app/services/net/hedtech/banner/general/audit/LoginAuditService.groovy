@@ -18,7 +18,6 @@ class LoginAuditService extends ServiceBase{
             String appId = Holders.config.app.appId
             String loginId =  username?: 'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
-            //String ipAddress = request.getRemoteAddr()
             String ipAddress = getClientIpAdress(request);
             String userAgent = request.getHeader("User-Agent")
 
@@ -45,7 +44,6 @@ class LoginAuditService extends ServiceBase{
 
     public static String getClientIpAddress(request){
         String ipAddressList = request.getHeader("X-FORWARDED-FOR");
-        //String ipAddressList = "2001:db8:85a3:8d3:1319:8a2e, 70.41.3.18, 150.172.238.178"
         String clientIpAddress
         if (ipAddressList?.length() > 0)  {
             String ipAddress = ipAddressList.split(",")[0];
