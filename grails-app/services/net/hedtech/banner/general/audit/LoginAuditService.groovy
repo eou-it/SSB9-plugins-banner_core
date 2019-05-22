@@ -18,7 +18,7 @@ class LoginAuditService extends ServiceBase{
             String appId = Holders.config.app.appId
             String loginId =  username?: 'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
-            String ipAddress = getClientIpAdress(request);
+            String ipAddress = getClientIpAddress(request);
             String userAgent = request.getHeader("User-Agent")
 
             LoginAudit loginAudit = new LoginAudit()
