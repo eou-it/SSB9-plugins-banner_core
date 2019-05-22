@@ -226,6 +226,12 @@ class ServiceBase {
                 domainObject[it.name] = content[it.name]
             }
         }
+
+        d.parentEntity?.getAssociations()?.each { it ->
+            if(content.containsKey(it.name))   {
+                domainObject[it.name] = content[it.name]
+            }
+        }
     }
 
     /**
