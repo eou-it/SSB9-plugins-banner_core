@@ -160,7 +160,7 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         request.setQueryString('username=HOSH00001&password=111111')
         //RequestContextHolder?.currentRequestAttributes()?.request?.setRequestU('/ssb/home?username=HOSH00001&password=111111')
         def  pageAccessAuditObject1 = pageAccessAuditService.checkAndCreatePageAudit()
-        assertNull pageAccessAuditObject1
+        assertNotNull pageAccessAuditObject1
     }
 
     @Test
