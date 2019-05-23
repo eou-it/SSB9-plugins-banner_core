@@ -10,11 +10,13 @@ import grails.util.Holders
 
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.testing.BaseIntegrationTestCase
+import org.apache.http.conn.util.InetAddressUtils
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 
 import javax.servlet.ServletRequest
@@ -180,6 +182,38 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         Holders.config.EnablePageAudit=''
         String  pageAuditConfiguration3 = pageAccessAuditService.getPageAuditConfiguration()
         assertEquals pageAuditConfiguration3 , 'n'
+    }
+    
+    @Test
+    void testgetloadBalancerIpAddress() {
+        loginSSB('HOSH00001', '111111')
+        PageAccessAudit pageAccessAudit = createPageAccessAudit()
+        pageAccessAudit.save(failOnError: true, flush: true)
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        String ipAddress = pageAccessAuditService.getClientIpAddress(request)
+        assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
+    }
+
+    @Test
+    void testgetValidClientIpAddress() {
+        loginSSB('HOSH00001', '111111')
+        PageAccessAudit pageAccessAudit = createPageAccessAudit()
+        pageAccessAudit.save(failOnError: true, flush: true)
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
+        String ipAddress = pageAccessAuditService.getClientIpAddress(request)
+        assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
+    }
+
+    @Test
+    void testgetInValidClientIpAddress() {
+        loginSSB('HOSH00001', '111111')
+        PageAccessAudit pageAccessAudit = createPageAccessAudit()
+        pageAccessAudit.save(failOnError: true, flush: true)
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348:2001:db8:85a3:8d3:1319:8a2e')
+        String ipAddress = pageAccessAuditService.getClientIpAddress(request)
+        assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
     }
 
     private static PageAccessAudit createPageAccessAudit() {
