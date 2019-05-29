@@ -68,7 +68,12 @@ class PageAccessAuditService extends ServiceBase {
             pageAccessAudit.setPidm(pidm)
             pageAccessAudit.setAppId(appId)
             pageAccessAudit.setPageUrl(pageUrl)
-            pageAccessAudit.setIpAddress(ipAddress)
+            if(getAuditIpAddressConfigration()=='y'){
+                pageAccessAudit.setIpAddress(ipAddress)
+            }
+            else {
+                pageAccessAudit.setIpAddress("xx:xx:xx:xx")
+            }
             pageAccessAudit.setLastModifiedBy('BANNER')
             pageAccessAudit.setVersion(0L)
             this.create(pageAccessAudit)
@@ -126,6 +131,11 @@ class PageAccessAuditService extends ServiceBase {
             clientIpAddress = request.getRemoteAddr();
         }
         return clientIpAddress;
+    }
+
+    public String getAuditIpAddressConfigration() {
+        String auditIpAddressConfiguration = (Holders.config.AuditIPAddress instanceof String && Holders.config.AuditIPAddress.size() > 0) ? (Holders.config.AuditIPAddress).toLowerCase() : 'n'
+        return auditIpAddressConfiguration
     }
 }
 

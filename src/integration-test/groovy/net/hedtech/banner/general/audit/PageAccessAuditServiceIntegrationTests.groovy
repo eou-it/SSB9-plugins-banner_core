@@ -216,6 +216,32 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
     }
 
+    @Test
+    void testsetAuditIpAddressToN() {
+        Holders.config.EnablePageAudit='%'
+        Holders.config.AuditIPAddress='N'
+        loginSSB('HOSH00001', '111111')
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
+        request.setQueryString('username=HOSH00001&password=111111')
+        PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
+        assertEquals pageAccessAudit.ipAddress , "xx:xx:xx:xx"
+    }
+
+    @Test
+    void testsetAuditIpAddressToY() {
+        Holders.config.EnablePageAudit='%'
+        Holders.config.AuditIPAddress='Y'
+        loginSSB('HOSH00001', '111111')
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
+        request.setQueryString('username=HOSH00001&password=111111')
+        //HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
+        String ipAddressTest = request.getRemoteAddr()
+        PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
+        assertEquals pageAccessAudit.ipAddress , ipAddressTest
+    }
+    
     private static PageAccessAudit createPageAccessAudit() {
         def user = BannerGrantedAuthorityService.getUser()
         PageAccessAudit pageAccessAudit = new PageAccessAudit(
