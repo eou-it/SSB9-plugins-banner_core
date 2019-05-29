@@ -23,16 +23,26 @@ class LogoutController {
     public static final String LOGIN_CONTROLLER = "login"
     public static final String ACTION_TIMEOUT_PAGE = 'timeoutPage'
     public static final String JSESSIONID_COOKIE_NAME = "JSESSIONID"
-
+    public static boolean GUEST_USER = false
     /*
      * Index action. Redirects to the Spring security logout uri.
      */
     def index() {
         captureLogoutInformation(response)
+        boolean isGuestUser = response?.authBeforeExecution?.user?.gidm ? true : false
         if (!ControllerUtils.isSamlEnabled()) {
             invalidateSession(response)
         }
-        redirect uri: ControllerUtils.buildLogoutRedirectURI()
+        if(isGuestUser && (ControllerUtils.isCasEnabled() )){
+            request.setAttribute('guestUser',true)
+            println request.getAttribute('guestUser')
+            GUEST_USER = true
+            redirect (uri: '/logout/customLogout')
+        }else{
+            redirect uri: ControllerUtils.buildLogoutRedirectURI()
+
+        }
+
     }
 
     def timeout() {
@@ -59,10 +69,10 @@ class LogoutController {
 
     private void invalidateSession(response) {
         session.invalidate()
-        Cookie cookie = new Cookie(JSESSIONID_COOKIE_NAME, null);
-        cookie.setPath(request.getContextPath());
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        Cookie cookie = new Cookie(JSESSIONID_COOKIE_NAME, null)
+        cookie.setPath(request.getContextPath())
+        cookie.setMaxAge(0)
+        response.addCookie(cookie)
     }
 
     def customLogout() {
@@ -71,8 +81,10 @@ class LogoutController {
             show = false
         }
 
-        if (ControllerUtils.isCasEnabled()) {
+        if (ControllerUtils.isCasEnabled() && !GUEST_USER) {
             render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show]
+        }else if(ControllerUtils.isCasEnabled() && GUEST_USER){
+            render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: true]
         } else {
             render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show]
         }
