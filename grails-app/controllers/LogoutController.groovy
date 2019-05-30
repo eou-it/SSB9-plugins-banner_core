@@ -34,8 +34,6 @@ class LogoutController {
             invalidateSession(response)
         }
         if(isGuestUser && (ControllerUtils.isCasEnabled() )){
-            request.setAttribute('guestUser',true)
-            println request.getAttribute('guestUser')
             GUEST_USER = true
             redirect (uri: '/logout/customLogout')
         }else{
