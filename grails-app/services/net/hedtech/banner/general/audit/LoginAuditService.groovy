@@ -1,82 +1,25 @@
 /*******************************************************************************
-Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+Copyright 2019 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.general.audit
 
 import grails.gorm.transactions.Transactional
 import grails.util.Holders
-import groovy.sql.Sql
-import net.hedtech.banner.security.BannerAuthenticationEvent
 import net.hedtech.banner.service.ServiceBase
-import org.springframework.context.ApplicationListener
 import org.springframework.web.context.request.RequestContextHolder
 import javax.servlet.http.HttpServletRequest
 
-
 @Transactional
-public class LoginAuditService extends ServiceBase implements ApplicationListener<BannerAuthenticationEvent>  {
+class LoginAuditService extends ServiceBase{
 
-    def dataSource // injected by Spring
-
-    public void onApplicationEvent( BannerAuthenticationEvent event ) {
-        log.debug "In LoginAuditService  onApplicationEvent with ${event}"
-        if (event.isSuccess) {
-            userLogin event
-        } else {
-           loginViolation event
-        }
-    }
-
-
-    public void userLogin( BannerAuthenticationEvent event ) {
-        log.debug "In LoginAuditService  userLogin with event = ${event}"
-        def conn
-        def sql
-        try {
-            conn = dataSource.unproxiedConnection
-            sql = new Sql( conn )
-            if (event.userName?.size() > 0)  {
-                def truncateUserName = event.userName[0..(event.userName.size() > 29 ? 29 : event.userName.size() - 1)]
-                sql.call("begin g\$_security.g\$_check_logon_rules('BAN9',?); commit; end;",[truncateUserName])
-            }
-        } catch (Exception e) {
-            log.error "Exception occured in userLogin with error = ${e}"
-            e.printStackTrace()
-        } finally {
-            conn?.close()
-        }
-    }
-
-    public void loginViolation( BannerAuthenticationEvent event  ) {
-        log.debug "In LoginAuditService  loginViolation with event = ${event}"
-        def conn
-        def sql
-        try {
-            conn = dataSource.unproxiedConnection
-            sql = new Sql( conn )
-            if (event.userName?.size() > 0 && event.module?.size() > 0 )  {
-                def truncateUserName = event.userName[0..(event.userName.size() > 29 ? 29 : event.userName.size() - 1)]
-                sql.call("begin g\$_security.g\$_create_log_record(?,?,?,?); commit; end;",[truncateUserName,event.module,event.message, event.severity])
-            }
-        } catch (Exception e) {
-            log.error "Exception occured in loginViolation with error = ${e}"
-            e.printStackTrace()
-        } finally {
-            conn?.close()
-        }
-    }
-
-
-
-    public def createLoginLogoutAudit(authenticationResults, comment) {
+    public def createLoginLogoutAudit(username, userpidm, comment) {
         try {
             log.debug "In LoginAuditService createLoginLogoutAudit "
             String appId = Holders.config.app.appId
-            String loginId =  authenticationResults.username ? authenticationResults.username : authenticationResults.name ? authenticationResults.name : 'ANONYMOUS'
+            String loginId =  username?: 'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
-            String ipAddress = request.getRemoteAddr()
+            String ipAddress = getClientIpAddress(request);
             String userAgent = request.getHeader("User-Agent")
-            Integer pidm = authenticationResults.pidm
 
             LoginAudit loginAudit = new LoginAudit()
             loginAudit.setAppId(appId)
@@ -85,7 +28,7 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
             loginAudit.setIpAddress(ipAddress)
             loginAudit.setUserAgent(userAgent)
             loginAudit.setLastModifiedBy(loginId)
-            loginAudit.setPidm(pidm)
+            loginAudit.setPidm(userpidm as Integer)
             loginAudit.setVersion(0L)
             loginAudit.setLogonComment(comment)
             this.create(loginAudit)
@@ -94,9 +37,26 @@ public class LoginAuditService extends ServiceBase implements ApplicationListene
         }
     }
 
-    public def getDataByLoginID(loginId) {
-        LoginAudit loginAuditPage = LoginAudit.fetchByLoginId(loginId)
+    public List getDataByLoginID(loginId) {
+        List loginAuditPage = LoginAudit.fetchByLoginId(loginId)
         return loginAuditPage
+    }
+
+    public static String getClientIpAddress(request){
+        String ipAddressList = request.getHeader("X-FORWARDED-FOR");
+        String clientIpAddress
+        if (ipAddressList?.length() > 0)  {
+            String ipAddress = ipAddressList.split(",")[0];
+            if ( ipAddress.length() <= LoginAudit.getConstrainedProperties().get('ipAddress').getMaxSize() ) {
+                clientIpAddress =  ipAddress
+            } else {
+                clientIpAddress = request.getRemoteAddr();
+                log.error("Exception occured while getting clientIpAddress:Ip Address too long.")
+            }
+        }else{
+            clientIpAddress = request.getRemoteAddr();
+        }
+        return clientIpAddress;
     }
 }
 

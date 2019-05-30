@@ -25,11 +25,9 @@ class PageAccessAuditService extends ServiceBase {
         PageAccessAudit pageAccessAudit = null
         try {
             def request = RequestContextHolder.getRequestAttributes()?.request
-            String pageAuditConfiguration = getPageAuditConfiguration()
-            String requestedPageUrl = (request.getRequestURI())?.toLowerCase()
-            if (pageAuditConfiguration?.toLowerCase() != 'n' && (pageAuditConfiguration == '%' || requestedPageUrl?.contains(pageAuditConfiguration))) {
-                pageAccessAudit = createPageAudit() as PageAccessAudit
-            } else if(pageAuditConfiguration?.length() >= 1 && pageAuditConfiguration.findAll('%').size() > 0 && requestedPageUrl?.contains(pageAuditConfiguration.replaceAll('%',''))){
+            List<String> pageAuditConfigList =getPageAuditConfiguration().split("\\s*,\\s*") as ArrayList<String>
+            String requestedPageUrl = (request?.getForwardURI())?.toLowerCase()
+            if (isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList,requestedPageUrl)){
                 pageAccessAudit = createPageAudit() as PageAccessAudit
             }
         }
@@ -54,9 +52,10 @@ class PageAccessAuditService extends ServiceBase {
             }
             loginId = userLoginId?:'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
-            String ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
+            String ipAddress = getClientIpAddress(request);
             String appId = Holders.config.app.appId
-            String requestURI = request.getRequestURI()
+            String requestURI = request?.getForwardURI()
+
             String queryString = null
             def unsecureQueryParameter = getUnsecureQueryParameter(request.getParameterMap())
             if(!unsecureQueryParameter){
@@ -69,7 +68,12 @@ class PageAccessAuditService extends ServiceBase {
             pageAccessAudit.setPidm(pidm)
             pageAccessAudit.setAppId(appId)
             pageAccessAudit.setPageUrl(pageUrl)
-            pageAccessAudit.setIpAddress(ipAddress)
+            if(getAuditIpAddressConfigration()=='y'){
+                pageAccessAudit.setIpAddress(ipAddress)
+            }
+            else {
+                pageAccessAudit.setIpAddress("xx:xx:xx:xx")
+            }
             pageAccessAudit.setLastModifiedBy('BANNER')
             pageAccessAudit.setVersion(0L)
             this.create(pageAccessAudit)
@@ -95,6 +99,43 @@ class PageAccessAuditService extends ServiceBase {
             it.key?.equalsIgnoreCase('username') || it.key?.equalsIgnoreCase('password')
         }
         return unsecureQueryParameter
+    }
+
+    private Boolean isPageAuditConfigAvailableInRequestPageUrl(List<String> pageAuditConfigList, String requestedPageUrl){
+        Boolean isPageAuditConfigAvailable = false
+        if (pageAuditConfigList.find{it == '%'}?.length()>0){
+            isPageAuditConfigAvailable = true
+        }else{
+            for (String pageAuditConfiguration: pageAuditConfigList){
+                if(requestedPageUrl?.contains(pageAuditConfiguration.replaceAll('%',''))){
+                    isPageAuditConfigAvailable = true
+                    break
+                }
+            }
+        }
+        return isPageAuditConfigAvailable
+    }
+
+    private static String getClientIpAddress(request){
+        String ipAddressList = request.getHeader("X-FORWARDED-FOR");
+        String clientIpAddress
+        if (ipAddressList?.length() > 0)  {
+            String ipAddress = ipAddressList.split(",")[0];
+            if ( ipAddress.length() <= PageAccessAudit.getConstrainedProperties().get('ipAddress').getMaxSize() ) {
+                clientIpAddress =  ipAddress
+            } else {
+                clientIpAddress = request.getRemoteAddr();
+                log.error("Exception occured while getting clientIpAddress:Ip Address too long.")
+            }
+        }else{
+            clientIpAddress = request.getRemoteAddr();
+        }
+        return clientIpAddress;
+    }
+
+    public String getAuditIpAddressConfigration() {
+        String auditIpAddressConfiguration = (Holders.config.AuditIPAddress instanceof String && Holders.config.AuditIPAddress.size() > 0) ? (Holders.config.AuditIPAddress).toLowerCase() : 'n'
+        return auditIpAddressConfiguration
     }
 }
 
