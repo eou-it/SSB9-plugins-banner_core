@@ -23,7 +23,7 @@ class LogoutController {
     public static final String LOGIN_CONTROLLER = "login"
     public static final String ACTION_TIMEOUT_PAGE = 'timeoutPage'
     public static final String JSESSIONID_COOKIE_NAME = "JSESSIONID"
-    public static boolean GUEST_USER = false
+    private boolean GUEST_USER = false
     /*
      * Index action. Redirects to the Spring security logout uri.
      */
@@ -37,6 +37,7 @@ class LogoutController {
             GUEST_USER = true
             redirect (uri: '/logout/customLogout')
         }else{
+            GUEST_USER = false
             redirect uri: ControllerUtils.buildLogoutRedirectURI()
 
         }
@@ -92,7 +93,6 @@ class LogoutController {
     def captureLogoutInformation(response){
         def userInfo = response?.authBeforeExecution?.user
         LoginAuditService loginAuditService = null
-        /*user = BannerGrantedAuthorityService.getUser()*/
         String loginAuditConfiguration = AuthenticationProviderUtility.getLoginAuditConfiguration()
         if(userInfo!= null && loginAuditConfiguration?.equalsIgnoreCase('Y')){
             if (!loginAuditService) {
