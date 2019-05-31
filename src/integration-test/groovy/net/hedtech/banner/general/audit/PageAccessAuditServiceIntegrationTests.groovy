@@ -217,31 +217,41 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     }
 
     @Test
-    void testsetAuditIpAddressToN() {
+    void testAuditIpAddressSetNForIPV4() {
         Holders.config.EnablePageAudit='%'
         Holders.config.AuditIPAddress='N'
         loginSSB('HOSH00001', '111111')
         GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
         request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
-        request.setQueryString('username=HOSH00001&password=111111')
+        request.addHeader('X-FORWARDED-FOR','127.0.0.1')
         PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
-        assertEquals pageAccessAudit.ipAddress , "xx:xx:xx:xx"
+        assertEquals pageAccessAudit.ipAddress , "127.0.0.x"
     }
 
     @Test
-    void testsetAuditIpAddressToY() {
+    void testAuditIpAddressSetNForIPV6() {
+        Holders.config.EnablePageAudit='%'
+        Holders.config.AuditIPAddress='N'
+        loginSSB('HOSH00001', '111111')
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
+        request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
+        PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
+        assertEquals pageAccessAudit.ipAddress , "2001:db8:85a3:8d3:1319:8a2e:370:xxxx"
+    }
+
+    @Test
+    void testAuditIpAddressSetY() {
         Holders.config.EnablePageAudit='%'
         Holders.config.AuditIPAddress='Y'
         loginSSB('HOSH00001', '111111')
         GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
         request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
-        request.setQueryString('username=HOSH00001&password=111111')
-        //HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
         String ipAddressTest = request.getRemoteAddr()
         PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
         assertEquals pageAccessAudit.ipAddress , ipAddressTest
     }
-    
+
     private static PageAccessAudit createPageAccessAudit() {
         def user = BannerGrantedAuthorityService.getUser()
         PageAccessAudit pageAccessAudit = new PageAccessAudit(
