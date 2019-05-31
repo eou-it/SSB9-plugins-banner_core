@@ -72,7 +72,7 @@ class PageAccessAuditService extends ServiceBase {
                 pageAccessAudit.setIpAddress(ipAddress)
             }
             else {
-                pageAccessAudit.setIpAddress("xx:xx:xx:xx")
+                pageAccessAudit.setIpAddress(getMaskedIpAddress(ipAddress))
             }
             pageAccessAudit.setLastModifiedBy('BANNER')
             pageAccessAudit.setVersion(0L)
@@ -136,6 +136,29 @@ class PageAccessAuditService extends ServiceBase {
     public String getAuditIpAddressConfigration() {
         String auditIpAddressConfiguration = (Holders.config.AuditIPAddress instanceof String && Holders.config.AuditIPAddress.size() > 0) ? (Holders.config.AuditIPAddress).toLowerCase() : 'n'
         return auditIpAddressConfiguration
+    }
+
+    public String getMaskedIpAddress(String ipAddress) {
+            String maskedIpAddress
+            boolean isIPV4 = ipAddress.contains('.')
+            if (!isIPV4) {
+                int LastIndexOfColon = ipAddress.lastIndexOf(':')
+                maskedIpAddress = ipAddress.substring(0, LastIndexOfColon + 1) + appendX(ipAddress,LastIndexOfColon)
+            } else {
+                int LastIndexOfDot = ipAddress.lastIndexOf('.')
+                maskedIpAddress = ipAddress.substring(0, LastIndexOfDot + 1) + appendX(ipAddress,LastIndexOfDot)
+            }
+            return maskedIpAddress;
+
+    }
+
+    public String appendX(String ipAddress,int lastIndexOfCh) {
+        String X=""
+        int StartMasking = ipAddress.substring(lastIndexOfCh+1).length()
+        for (int i = 0; i < StartMasking; i++) {
+            X+="x"
+        }
+        return X
     }
 }
 
