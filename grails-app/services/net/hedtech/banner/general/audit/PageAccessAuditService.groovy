@@ -140,16 +140,10 @@ class PageAccessAuditService extends ServiceBase {
 
     public String getMaskedIpAddress(String ipAddress) {
             String maskedIpAddress
-            boolean isIPV4 = ipAddress.contains('.')
-            if (!isIPV4) {
-                int LastIndexOfColon = ipAddress.lastIndexOf(':')
-                maskedIpAddress = ipAddress.substring(0, LastIndexOfColon + 1) + appendX(ipAddress,LastIndexOfColon)
-            } else {
-                int LastIndexOfDot = ipAddress.lastIndexOf('.')
-                maskedIpAddress = ipAddress.substring(0, LastIndexOfDot + 1) + appendX(ipAddress,LastIndexOfDot)
-            }
-            return maskedIpAddress;
-
+            String Ipv6orIpv4Separator = ipAddress.contains(':')? ":" : "."
+            int LastIndexOfIpv6orIpv4Separator= ipAddress.lastIndexOf(Ipv6orIpv4Separator)
+            maskedIpAddress = ipAddress.substring(0, LastIndexOfIpv6orIpv4Separator + 1) + appendX(ipAddress,LastIndexOfIpv6orIpv4Separator)
+            return maskedIpAddress
     }
 
     public String appendX(String ipAddress,int lastIndexOfCh) {
