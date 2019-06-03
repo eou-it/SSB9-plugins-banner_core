@@ -26,16 +26,26 @@ class LogoutController {
     public static final String LOGIN_CONTROLLER = "login"
     public static final String ACTION_TIMEOUT_PAGE = 'timeoutPage'
     public static final String JSESSIONID_COOKIE_NAME = "JSESSIONID"
-
+    private boolean GUEST_USER = false
     /*
      * Index action. Redirects to the Spring security logout uri.
      */
+
     def index() {
         AuthenticationProviderUtility.captureLogoutInformation(response?.authBeforeExecution.user.username, response?.authBeforeExecution.user.pidm)
+        boolean isGuestUser = response?.authBeforeExecution?.user?.gidm ? true : false
         if (!ControllerUtils.isSamlEnabled()) {
             invalidateSession(response)
         }
-        redirect uri: ControllerUtils.buildLogoutRedirectURI()
+        if (isGuestUser && (ControllerUtils.isCasEnabled())) {
+            GUEST_USER = true
+            redirect(uri: '/logout/customLogout')
+        } else {
+            GUEST_USER = false
+            redirect uri: ControllerUtils.buildLogoutRedirectURI()
+
+        }
+
     }
 
     def timeout() {
@@ -47,13 +57,13 @@ class LogoutController {
             String username = 'ANONYMOUS'
             String pidm = null
             def authentication = response?.authBeforeExecution
-            if (authentication && authentication.hasProperty('user') && authentication.user instanceof BannerUser){
+            if (authentication && authentication.hasProperty('user') && authentication.user instanceof BannerUser) {
                 username = authentication.user.username
                 pidm = authentication.user.pidm
             }
             AuthenticationProviderUtility.captureLogoutInformation(username, pidm)
             invalidateSession(response)
-            redirect uri: uri, params: mepCode?[ mep: mepCode]:[]
+            redirect uri: uri, params: mepCode ? [mep: mepCode] : []
         }
     }
 
@@ -68,10 +78,10 @@ class LogoutController {
 
     private void invalidateSession(response) {
         session.invalidate()
-        Cookie cookie = new Cookie(JSESSIONID_COOKIE_NAME, null);
-        cookie.setPath(request.getContextPath());
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        Cookie cookie = new Cookie(JSESSIONID_COOKIE_NAME, null)
+        cookie.setPath(request.getContextPath())
+        cookie.setMaxAge(0)
+        response.addCookie(cookie)
     }
 
     def customLogout() {
@@ -79,11 +89,16 @@ class LogoutController {
         if (request.getParameter("error") || ControllerUtils.isCasEnabled()) {
             show = false
         }
-        if (ControllerUtils.isCasEnabled()) {
-            render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show]
-        } else {
-            render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show]
-        }
 
+        if (ControllerUtils.isCasEnabled() && !GUEST_USER) {
+            if (ControllerUtils.isCasEnabled()) {
+                render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show]
+            } else if (ControllerUtils.isCasEnabled() && GUEST_USER) {
+                render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: true]
+            } else {
+                render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show]
+            }
+
+        }
     }
 }
