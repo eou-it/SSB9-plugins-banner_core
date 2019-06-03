@@ -32,7 +32,7 @@ class LoginAuditService extends ServiceBase{
                 loginAudit.setIpAddress(getMaskedIpAddress(ipAddress))
             }
             else {
-                loginAudit.setIpAddress("NA")
+                loginAudit.setIpAddress("Not Available")
             }
             loginAudit.setUserAgent(userAgent)
             loginAudit.setLastModifiedBy(loginId)

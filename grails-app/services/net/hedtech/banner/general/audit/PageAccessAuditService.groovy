@@ -75,7 +75,7 @@ class PageAccessAuditService extends ServiceBase {
                 pageAccessAudit.setIpAddress(getMaskedIpAddress(ipAddress))
             }
             else {
-                pageAccessAudit.setIpAddress("NA")
+                pageAccessAudit.setIpAddress("Not Available")
             }
             pageAccessAudit.setLastModifiedBy('BANNER')
             pageAccessAudit.setVersion(0L)

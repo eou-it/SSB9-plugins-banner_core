@@ -130,7 +130,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
         request.addHeader('X-FORWARDED-FOR','127.0.0.1')
         def  loginAuditObject = loginAuditService.createLoginLogoutAudit(user.username, user.pidm, 'Login Successful')
-        assertEquals loginAuditObject.ipAddress , "NA"
+        assertEquals loginAuditObject.ipAddress , "Not Available"
     }
 
     @Test
@@ -143,7 +143,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
         request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
         def  loginAuditObject = loginAuditService.createLoginLogoutAudit(user.username, user.pidm, 'Login Successful')
-        assertEquals loginAuditObject.ipAddress , "NA"
+        assertEquals loginAuditObject.ipAddress , "Not Available"
     }
 
 
