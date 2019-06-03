@@ -71,8 +71,11 @@ class PageAccessAuditService extends ServiceBase {
             if(getAuditIpAddressConfigration()=='y'){
                 pageAccessAudit.setIpAddress(ipAddress)
             }
-            else {
+            else if(getAuditIpAddressConfigration()=='mask'){
                 pageAccessAudit.setIpAddress(getMaskedIpAddress(ipAddress))
+            }
+            else {
+                pageAccessAudit.setIpAddress("NA")
             }
             pageAccessAudit.setLastModifiedBy('BANNER')
             pageAccessAudit.setVersion(0L)
@@ -150,7 +153,7 @@ class PageAccessAuditService extends ServiceBase {
         String X=""
         int StartMasking = ipAddress.substring(lastIndexOfCh+1).length()
         for (int i = 0; i < StartMasking; i++) {
-            X+="x"
+            X+="X"
         }
         return X
     }
