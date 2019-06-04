@@ -243,7 +243,7 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     @Test
     void testAuditIpAddressSetMaskForIPV4() {
         Holders.config.EnablePageAudit='%'
-        Holders.config.AuditIPAddress='MASK'
+        Holders.config.AuditIPAddress='M'
         loginSSB('HOSH00001', '111111')
         GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
         request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
@@ -255,7 +255,7 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     @Test
     void testAuditIpAddressSetMaskForIPV6() {
         Holders.config.EnablePageAudit='%'
-        Holders.config.AuditIPAddress='MASK'
+        Holders.config.AuditIPAddress='M'
         loginSSB('HOSH00001', '111111')
         GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
         request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')

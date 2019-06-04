@@ -150,7 +150,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     @Test
     void testAuditIpAddressSetMaskForIPV4() {
         Holders.config.EnableLoginAudit='Y'
-        Holders.config.AuditIPAddress='MASK'
+        Holders.config.AuditIPAddress='M'
         loginSSB('HOSH00001', '111111')
         def user = BannerGrantedAuthorityService.getUser()
         GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
@@ -163,7 +163,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     @Test
     void testAuditIpAddressSetMaskForIPV6() {
         Holders.config.EnableLoginAudit='Y'
-        Holders.config.AuditIPAddress='MASK'
+        Holders.config.AuditIPAddress='M'
         loginSSB('HOSH00001', '111111')
         def user = BannerGrantedAuthorityService.getUser()
         GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request

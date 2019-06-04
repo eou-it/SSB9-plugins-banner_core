@@ -28,7 +28,7 @@ class LoginAuditService extends ServiceBase{
             if(getAuditIpAddressConfigration()=='y'){
                 loginAudit.setIpAddress(ipAddress)
             }
-            else if(getAuditIpAddressConfigration()=='mask'){
+            else if(getAuditIpAddressConfigration()=='m'){
                 loginAudit.setIpAddress(getMaskedIpAddress(ipAddress))
             }
             else {

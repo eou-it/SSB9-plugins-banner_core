@@ -71,7 +71,7 @@ class PageAccessAuditService extends ServiceBase {
             if(getAuditIpAddressConfigration()=='y'){
                 pageAccessAudit.setIpAddress(ipAddress)
             }
-            else if(getAuditIpAddressConfigration()=='mask'){
+            else if(getAuditIpAddressConfigration()=='m'){
                 pageAccessAudit.setIpAddress(getMaskedIpAddress(ipAddress))
             }
             else {
