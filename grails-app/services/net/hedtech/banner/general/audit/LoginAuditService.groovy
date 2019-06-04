@@ -25,7 +25,15 @@ class LoginAuditService extends ServiceBase{
             loginAudit.setAppId(appId)
             loginAudit.setAuditTime(new Date())
             loginAudit.setLoginId(loginId)
-            loginAudit.setIpAddress(ipAddress)
+            if(getAuditIpAddressConfigration()=='y'){
+                loginAudit.setIpAddress(ipAddress)
+            }
+            else if(getAuditIpAddressConfigration()=='m'){
+                loginAudit.setIpAddress(getMaskedIpAddress(ipAddress))
+            }
+            else {
+                loginAudit.setIpAddress("Not Available")
+            }
             loginAudit.setUserAgent(userAgent)
             loginAudit.setLastModifiedBy(loginId)
             loginAudit.setPidm(userpidm as Integer)
@@ -57,6 +65,27 @@ class LoginAuditService extends ServiceBase{
             clientIpAddress = request.getRemoteAddr();
         }
         return clientIpAddress;
+    }
+    public String getAuditIpAddressConfigration() {
+        String auditIpAddressConfiguration = (Holders.config.AuditIPAddress instanceof String && Holders.config.AuditIPAddress.size() > 0) ? (Holders.config.AuditIPAddress).toLowerCase() : 'n'
+        return auditIpAddressConfiguration
+    }
+
+    public String getMaskedIpAddress(String ipAddress) {
+        String maskedIpAddress
+        String Ipv6orIpv4Separator = ipAddress.contains(':')? ":" : "."
+        int LastIndexOfIpv6orIpv4Separator= ipAddress.lastIndexOf(Ipv6orIpv4Separator)
+        maskedIpAddress = ipAddress.substring(0, LastIndexOfIpv6orIpv4Separator + 1) + appendX(ipAddress,LastIndexOfIpv6orIpv4Separator)
+        return maskedIpAddress
+    }
+
+    public String appendX(String ipAddress,int lastIndexOfCh) {
+        String X=""
+        int StartMasking = ipAddress.substring(lastIndexOfCh+1).length()
+        for (int i = 0; i < StartMasking; i++) {
+            X+="X"
+        }
+        return X
     }
 }
 
