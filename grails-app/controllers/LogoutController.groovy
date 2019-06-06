@@ -91,14 +91,12 @@ class LogoutController {
         }
 
         if (ControllerUtils.isCasEnabled() && !GUEST_USER) {
-            if (ControllerUtils.isCasEnabled()) {
-                render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show]
-            } else if (ControllerUtils.isCasEnabled() && GUEST_USER) {
-                render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: true]
-            } else {
-                render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show]
-            }
-
+            render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show]
+        } else if (ControllerUtils.isCasEnabled() && GUEST_USER) {
+            render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: true]
+        } else {
+            render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show]
         }
+
     }
 }
