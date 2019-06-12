@@ -310,7 +310,7 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         sql = Sql.newInstance(URL,   //  db =  new Sql( connectInfo.url,
                 BANSECR_USERNAME,
                 BANSECR_PASSWORD,
-                'oracle.jdbc.driver.OracleDriver')
+                Holders.config.bannerDataSource.driver)
         sql.eachRow("select * from gtvvpdi where gtvvpdi_sys_def_inst_ind = 'Y'", {this.defaultInstitution = it.GTVVPDI_CODE })
         sql.eachRow("select * from bansecr.gurusri where gurusri_vpdi_user_id = 'GRAILS_USER' and gurusri_user_def_inst_ind='Y'", {this.defaultInstitutionForUser = it.GURUSRI_VPDI_CODE })
         sql.commit()
