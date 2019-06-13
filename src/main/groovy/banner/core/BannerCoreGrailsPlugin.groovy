@@ -16,11 +16,12 @@ import groovy.util.logging.Slf4j
 import net.hedtech.banner.configuration.ExternalConfigurationUtils
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.db.BannerDataSourceConnectionSourceFactory
+import net.hedtech.banner.general.audit.LoginAuditService
 import net.hedtech.banner.mep.MultiEntityProcessingService
 import net.hedtech.banner.security.*
 import net.hedtech.banner.service.DefaultLoaderService
 import net.hedtech.banner.service.HttpSessionService
-import net.hedtech.banner.general.audit.LoginAuditService
+import net.hedtech.banner.service.BannerLoginAuditService
 import net.hedtech.banner.service.ServiceBase
 import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
@@ -193,9 +194,11 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         authenticationDataSource(OracleDataSource)
 
-        loginAuditService(LoginAuditService) {
+        bannerLoginAuditService(BannerLoginAuditService) {
             dataSource = ref(dataSource)
         }
+
+        //loginAuditService(LoginAuditService)
 
         defaultLoaderService(DefaultLoaderService) {
             dataSource = ref(dataSource)
@@ -209,7 +212,6 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         selfServiceBannerAuthenticationProvider(SelfServiceBannerAuthenticationProvider) {
             dataSource = ref(dataSource)
-            loginAuditService = ref(loginAuditService)
         }
 
         bannerPreAuthenticatedFilter(BannerPreAuthenticatedFilter) {
