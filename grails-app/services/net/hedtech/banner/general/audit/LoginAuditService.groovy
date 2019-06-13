@@ -75,16 +75,43 @@ class LoginAuditService extends ServiceBase{
         String maskedIpAddress
         String Ipv6orIpv4Separator = ipAddress.contains(':')? ":" : "."
         int LastIndexOfIpv6orIpv4Separator= ipAddress.lastIndexOf(Ipv6orIpv4Separator)
-        maskedIpAddress = ipAddress.substring(0, LastIndexOfIpv6orIpv4Separator + 1) + appendX(ipAddress,LastIndexOfIpv6orIpv4Separator)
+        if(Ipv6orIpv4Separator==".")
+            maskedIpAddress = ipAddress.substring(0, LastIndexOfIpv6orIpv4Separator + 1) + appendX(ipAddress,LastIndexOfIpv6orIpv4Separator,Ipv6orIpv4Separator)
+        else
+            maskedIpAddress = appendX(ipAddress,LastIndexOfIpv6orIpv4Separator,Ipv6orIpv4Separator)
         return maskedIpAddress
     }
 
-    public String appendX(String ipAddress,int lastIndexOfCh) {
+    public String appendX(String ipAddress,int lastIndexOfCh, String Ipv6orIpv4Separator) {
         String X=""
-        int StartMasking = ipAddress.substring(lastIndexOfCh+1).length()
-        for (int i = 0; i < StartMasking; i++) {
-            X+="X"
+        int pos,count=0
+        if(Ipv6orIpv4Separator==".") {
+            int StartMasking = ipAddress.substring(lastIndexOfCh+1).length()
+            for (int i = 0; i < StartMasking; i++) {
+                X+="X"
+            }
         }
+        else {
+            char colon=':'
+            for (int i = 0; i < ipAddress.length(); i++) {
+               if(ipAddress.charAt(i)==':' as char)
+               {
+                   count++;
+               }
+                if(count==3){
+                    pos=i;
+                    break;
+                }
+            }
+            X=ipAddress.substring(0,pos)
+            for (int i = pos; i < ipAddress.length(); i++) {
+                if(ipAddress.charAt(i)==':')
+                    X+=":"
+                else
+                    X+="X"
+            }
+        }
+
         return X
     }
 }

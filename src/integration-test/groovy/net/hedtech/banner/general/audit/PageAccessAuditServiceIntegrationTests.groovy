@@ -261,7 +261,7 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
         request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
         PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
-        assertEquals pageAccessAudit.ipAddress , "2001:db8:85a3:8d3:1319:8a2e:370:XXXX"
+        assertEquals pageAccessAudit.ipAddress , "2001:db8:85a3:XXX:XXXX:XXXX:XXX:XXXX"
     }
     @Test
     void testAuditIpAddressSetY() {
