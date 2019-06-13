@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 
 .dialog-mask {
@@ -15,10 +15,13 @@
     font-size: .875em
 }
 .dialog {
-    background: #F5F2E7 url("../images/info-co.png") no-repeat 1em 1em; /*EDS*/
+    background: #F5F2E7 url("../images/info-co.png") no-repeat; /*EDS*/
+    background-position: left 14px bottom 85%;
 }
+
 .custom-logout-dialog {
-    background: #F5F2E7 url("../images/check-mark-sm.svg") no-repeat 1em 1em; /*EDS*/
+    background: #F5F2E7 url("../images/check-mark-sm.svg") no-repeat; /*EDS*/
+    background-position: left 14px bottom 85%;
 }
 .dialog,
 .custom-logout-dialog {

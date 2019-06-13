@@ -105,7 +105,7 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testFetchByNullLoginId() {
         List loginAudit = LoginAudit.fetchByLoginId(null)
-        assertNull loginAudit
+        assertEquals loginAudit.size() , 0
     }
 
     @Test
@@ -113,7 +113,7 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
         LoginAudit loginAudit = newLoginAudit()
         loginAudit.save(failOnError: true, flush: true)
         List auditPage = LoginAudit.fetchByLoginId(loginAudit.loginId)
-        assertNotNull auditPage
+        assertEquals auditPage.size() , 1
     }
 
     @Test
@@ -127,7 +127,7 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
     void testHashCode() {
         LoginAudit loginAudit = newLoginAudit()
         loginAudit.save(failOnError: true, flush: true)
-        LoginAudit loginAudit1 = LoginAudit.fetchByLoginId(loginAudit.loginId)
+        List loginAudit1 = LoginAudit.fetchByLoginId(loginAudit.loginId)
         int LoginIdHashCode = loginAudit1.hashCode()
         assertNotNull LoginIdHashCode
     }
