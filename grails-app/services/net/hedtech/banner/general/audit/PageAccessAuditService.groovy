@@ -26,7 +26,7 @@ class PageAccessAuditService extends ServiceBase {
         try {
             def request = RequestContextHolder.getRequestAttributes()?.request
             List<String> pageAuditConfigList =getPageAuditConfiguration().split("\\s*,\\s*") as ArrayList<String>
-            String requestedPageUrl = (request.getRequestURI())?.toLowerCase()
+            String requestedPageUrl = (request?.getForwardURI())?.toLowerCase()
             if (isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList,requestedPageUrl)){
                 pageAccessAudit = createPageAudit() as PageAccessAudit
             }
@@ -52,10 +52,10 @@ class PageAccessAuditService extends ServiceBase {
             }
             loginId = userLoginId?:'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
-            //String ipAddress = request.getRemoteAddr() // returns 0:0:0:0:0:0:0:1 if executed from localhost
-            String ipAddress = getClientIpAddress(request)
+            String ipAddress = getClientIpAddress(request);
             String appId = Holders.config.app.appId
-            String requestURI = request.getRequestURI()
+            String requestURI = request?.getForwardURI()
+
             String queryString = null
             def unsecureQueryParameter = getUnsecureQueryParameter(request.getParameterMap())
             if(!unsecureQueryParameter){
@@ -68,7 +68,15 @@ class PageAccessAuditService extends ServiceBase {
             pageAccessAudit.setPidm(pidm)
             pageAccessAudit.setAppId(appId)
             pageAccessAudit.setPageUrl(pageUrl)
-            pageAccessAudit.setIpAddress(ipAddress)
+            if(getAuditIpAddressConfigration()=='y'){
+                pageAccessAudit.setIpAddress(ipAddress)
+            }
+            else if(getAuditIpAddressConfigration()=='m'){
+                pageAccessAudit.setIpAddress(getMaskedIpAddress(ipAddress))
+            }
+            else {
+                pageAccessAudit.setIpAddress("Not Available")
+            }
             pageAccessAudit.setLastModifiedBy('BANNER')
             pageAccessAudit.setVersion(0L)
             this.create(pageAccessAudit)
@@ -113,7 +121,6 @@ class PageAccessAuditService extends ServiceBase {
 
     private static String getClientIpAddress(request){
         String ipAddressList = request.getHeader("X-FORWARDED-FOR");
-        //String ipAddressList = "2001:db8:85a3:8d3:1319:8a2e, 70.41.3.18, 150.172.238.178"
         String clientIpAddress
         if (ipAddressList?.length() > 0)  {
             String ipAddress = ipAddressList.split(",")[0];
@@ -127,6 +134,28 @@ class PageAccessAuditService extends ServiceBase {
             clientIpAddress = request.getRemoteAddr();
         }
         return clientIpAddress;
+    }
+
+    public String getAuditIpAddressConfigration() {
+        String auditIpAddressConfiguration = (Holders.config.AuditIPAddress instanceof String && Holders.config.AuditIPAddress.size() > 0) ? (Holders.config.AuditIPAddress).toLowerCase() : 'n'
+        return auditIpAddressConfiguration
+    }
+
+    public String getMaskedIpAddress(String ipAddress) {
+            String maskedIpAddress
+            String Ipv6orIpv4Separator = ipAddress.contains(':')? ":" : "."
+            int LastIndexOfIpv6orIpv4Separator= ipAddress.lastIndexOf(Ipv6orIpv4Separator)
+            maskedIpAddress = ipAddress.substring(0, LastIndexOfIpv6orIpv4Separator + 1) + appendX(ipAddress,LastIndexOfIpv6orIpv4Separator)
+            return maskedIpAddress
+    }
+
+    public String appendX(String ipAddress,int lastIndexOfCh) {
+        String X=""
+        int StartMasking = ipAddress.substring(lastIndexOfCh+1).length()
+        for (int i = 0; i < StartMasking; i++) {
+            X+="X"
+        }
+        return X
     }
 }
 

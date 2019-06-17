@@ -11,6 +11,7 @@ import grails.web.http.HttpHeaders
 import grails.web.servlet.context.GrailsWebApplicationContext
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.testing.BaseIntegrationTestCase
+import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.web.util.GrailsApplicationAttributes
 import org.junit.After
 import org.junit.Before
@@ -118,6 +119,73 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         def ipAddress = loginAuditService.getClientIpAddress(request)
         assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
     }
+
+    @Test
+    void testAuditIpAddressSetNForIPV4() {
+        Holders.config.EnableLoginAudit='Y'
+        Holders.config.AuditIPAddress='N'
+        loginSSB('HOSH00001', '111111')
+        def user = BannerGrantedAuthorityService.getUser()
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
+        request.addHeader('X-FORWARDED-FOR','127.0.0.1')
+        def  loginAuditObject = loginAuditService.createLoginLogoutAudit(user.username, user.pidm, 'Login Successful')
+        assertEquals loginAuditObject.ipAddress , "Not Available"
+    }
+
+    @Test
+    void testAuditIpAddressSetNForIPV6() {
+        Holders.config.EnableLoginAudit='Y'
+        Holders.config.AuditIPAddress='N'
+        loginSSB('HOSH00001', '111111')
+        def user = BannerGrantedAuthorityService.getUser()
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
+        request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
+        def  loginAuditObject = loginAuditService.createLoginLogoutAudit(user.username, user.pidm, 'Login Successful')
+        assertEquals loginAuditObject.ipAddress , "Not Available"
+    }
+
+
+    @Test
+    void testAuditIpAddressSetMaskForIPV4() {
+        Holders.config.EnableLoginAudit='Y'
+        Holders.config.AuditIPAddress='M'
+        loginSSB('HOSH00001', '111111')
+        def user = BannerGrantedAuthorityService.getUser()
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
+        request.addHeader('X-FORWARDED-FOR','127.0.0.1')
+        def  loginAuditObject = loginAuditService.createLoginLogoutAudit(user.username, user.pidm, 'Login Successful')
+        assertEquals loginAuditObject.ipAddress , "127.0.0.X"
+    }
+
+    @Test
+    void testAuditIpAddressSetMaskForIPV6() {
+        Holders.config.EnableLoginAudit='Y'
+        Holders.config.AuditIPAddress='M'
+        loginSSB('HOSH00001', '111111')
+        def user = BannerGrantedAuthorityService.getUser()
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
+        request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
+        def  loginAuditObject = loginAuditService.createLoginLogoutAudit(user.username, user.pidm, 'Login Successful')
+        assertEquals loginAuditObject.ipAddress , "2001:db8:85a3:8d3:1319:8a2e:370:XXXX"
+    }
+
+    @Test
+    void testAuditIpAddressSetY() {
+        Holders.config.EnableLoginAudit='Y'
+        Holders.config.AuditIPAddress='Y'
+        loginSSB('HOSH00001', '111111')
+        def user = BannerGrantedAuthorityService.getUser()
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
+        String ipAddressTest = request.getRemoteAddr()
+        def  loginAuditObject = loginAuditService.createLoginLogoutAudit(user.username, user.pidm, 'Login Successful')
+        assertEquals loginAuditObject.ipAddress , ipAddressTest
+    }
+
 
     private LoginAudit newLoginAudit() {
 

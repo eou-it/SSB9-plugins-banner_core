@@ -162,7 +162,7 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         request.setQueryString('username=HOSH00001&password=111111')
         //RequestContextHolder?.currentRequestAttributes()?.request?.setRequestU('/ssb/home?username=HOSH00001&password=111111')
         def  pageAccessAuditObject1 = pageAccessAuditService.checkAndCreatePageAudit()
-        assertNull pageAccessAuditObject1
+        assertNotNull pageAccessAuditObject1
     }
 
     @Test
@@ -214,6 +214,65 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348:2001:db8:85a3:8d3:1319:8a2e')
         String ipAddress = pageAccessAuditService.getClientIpAddress(request)
         assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
+    }
+
+    @Test
+    void testAuditIpAddressSetNForIPV4() {
+        Holders.config.EnablePageAudit='%'
+        Holders.config.AuditIPAddress='N'
+        loginSSB('HOSH00001', '111111')
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
+        request.addHeader('X-FORWARDED-FOR','127.0.0.1')
+        PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
+        assertEquals pageAccessAudit.ipAddress , "Not Available"
+    }
+
+    @Test
+    void testAuditIpAddressSetNForIPV6() {
+        Holders.config.EnablePageAudit='%'
+        Holders.config.AuditIPAddress='N'
+        loginSSB('HOSH00001', '111111')
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
+        request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
+        PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
+        assertEquals pageAccessAudit.ipAddress , "Not Available"
+    }
+
+    @Test
+    void testAuditIpAddressSetMaskForIPV4() {
+        Holders.config.EnablePageAudit='%'
+        Holders.config.AuditIPAddress='M'
+        loginSSB('HOSH00001', '111111')
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
+        request.addHeader('X-FORWARDED-FOR','127.0.0.1')
+        PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
+        assertEquals pageAccessAudit.ipAddress , "127.0.0.X"
+    }
+
+    @Test
+    void testAuditIpAddressSetMaskForIPV6() {
+        Holders.config.EnablePageAudit='%'
+        Holders.config.AuditIPAddress='M'
+        loginSSB('HOSH00001', '111111')
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
+        request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
+        PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
+        assertEquals pageAccessAudit.ipAddress , "2001:db8:85a3:8d3:1319:8a2e:370:XXXX"
+    }
+    @Test
+    void testAuditIpAddressSetY() {
+        Holders.config.EnablePageAudit='%'
+        Holders.config.AuditIPAddress='Y'
+        loginSSB('HOSH00001', '111111')
+        GrailsMockHttpServletRequest request = RequestContextHolder?.currentRequestAttributes()?.request
+        request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
+        String ipAddressTest = request.getRemoteAddr()
+        PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
+        assertEquals pageAccessAudit.ipAddress , ipAddressTest
     }
 
     private static PageAccessAudit createPageAccessAudit() {

@@ -18,15 +18,22 @@ class LoginAuditService extends ServiceBase{
             String appId = Holders.config.app.appId
             String loginId =  username?: 'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
-            //String ipAddress = request.getRemoteAddr()
-            String ipAddress = getClientIpAddress(request)
+            String ipAddress = getClientIpAddress(request);
             String userAgent = request.getHeader("User-Agent")
 
             LoginAudit loginAudit = new LoginAudit()
             loginAudit.setAppId(appId)
             loginAudit.setAuditTime(new Date())
             loginAudit.setLoginId(loginId)
-            loginAudit.setIpAddress(ipAddress)
+            if(getAuditIpAddressConfigration()=='y'){
+                loginAudit.setIpAddress(ipAddress)
+            }
+            else if(getAuditIpAddressConfigration()=='m'){
+                loginAudit.setIpAddress(getMaskedIpAddress(ipAddress))
+            }
+            else {
+                loginAudit.setIpAddress("Not Available")
+            }
             loginAudit.setUserAgent(userAgent)
             loginAudit.setLastModifiedBy(loginId)
             loginAudit.setPidm(userpidm as Integer)
@@ -45,7 +52,6 @@ class LoginAuditService extends ServiceBase{
 
     public static String getClientIpAddress(request){
         String ipAddressList = request.getHeader("X-FORWARDED-FOR");
-        //String ipAddressList = "2001:db8:85a3:8d3:1319:8a2e, 70.41.3.18, 150.172.238.178"
         String clientIpAddress
         if (ipAddressList?.length() > 0)  {
             String ipAddress = ipAddressList.split(",")[0];
@@ -59,6 +65,27 @@ class LoginAuditService extends ServiceBase{
             clientIpAddress = request.getRemoteAddr();
         }
         return clientIpAddress;
+    }
+    public String getAuditIpAddressConfigration() {
+        String auditIpAddressConfiguration = (Holders.config.AuditIPAddress instanceof String && Holders.config.AuditIPAddress.size() > 0) ? (Holders.config.AuditIPAddress).toLowerCase() : 'n'
+        return auditIpAddressConfiguration
+    }
+
+    public String getMaskedIpAddress(String ipAddress) {
+        String maskedIpAddress
+        String Ipv6orIpv4Separator = ipAddress.contains(':')? ":" : "."
+        int LastIndexOfIpv6orIpv4Separator= ipAddress.lastIndexOf(Ipv6orIpv4Separator)
+        maskedIpAddress = ipAddress.substring(0, LastIndexOfIpv6orIpv4Separator + 1) + appendX(ipAddress,LastIndexOfIpv6orIpv4Separator)
+        return maskedIpAddress
+    }
+
+    public String appendX(String ipAddress,int lastIndexOfCh) {
+        String X=""
+        int StartMasking = ipAddress.substring(lastIndexOfCh+1).length()
+        for (int i = 0; i < StartMasking; i++) {
+            X+="X"
+        }
+        return X
     }
 }
 
