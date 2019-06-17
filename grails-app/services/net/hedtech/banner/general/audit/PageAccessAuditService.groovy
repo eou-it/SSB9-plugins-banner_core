@@ -21,17 +21,17 @@ class PageAccessAuditService extends ServiceBase {
     SpringSecurityService springSecurityService
 
 
-    PageAccessAudit checkAndCreatePageAudit(){
+    PageAccessAudit checkAndCreatePageAudit() {
         PageAccessAudit pageAccessAudit = null
         try {
             def request = RequestContextHolder.getRequestAttributes()?.request
-            List<String> pageAuditConfigList =getPageAuditConfiguration().split("\\s*,\\s*") as ArrayList<String>
+            List<String> pageAuditConfigList = getPageAuditConfiguration().split("\\s*,\\s*") as ArrayList<String>
             String requestedPageUrl = (request?.getForwardURI())?.toLowerCase()
-            if (isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList,requestedPageUrl)){
+            if (isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList, requestedPageUrl)) {
                 pageAccessAudit = createPageAudit() as PageAccessAudit
             }
         }
-        catch (ex){
+        catch (ex) {
             log.error("Exception occurred while executing pageAccessAudit " + ex.getMessage())
         }
         return pageAccessAudit
@@ -43,22 +43,22 @@ class PageAccessAuditService extends ServiceBase {
             String loginId
             Integer pidm
             def user = BannerGrantedAuthorityService.getUser()
-            String userLoginId =  null
-            if (springSecurityService.isLoggedIn()){
+            String userLoginId = null
+            if (springSecurityService.isLoggedIn()) {
                 if (user.hasProperty('pidm')) {
                     pidm = user?.pidm
                 }
                 userLoginId = user?.username
             }
-            loginId = userLoginId?:'ANONYMOUS'
+            loginId = userLoginId ?: 'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
-            String ipAddress = getClientIpAddress(request);
+            String ipAddress = getClientIpAddress(request)
             String appId = Holders.config.app.appId
             String requestURI = request?.getForwardURI()
 
             String queryString = null
             def unsecureQueryParameter = getUnsecureQueryParameter(request.getParameterMap())
-            if(!unsecureQueryParameter){
+            if (!unsecureQueryParameter) {
                 queryString = request.getQueryString()
             }
             String pageUrl = queryString ? "${requestURI}?${queryString}" : requestURI
@@ -68,19 +68,17 @@ class PageAccessAuditService extends ServiceBase {
             pageAccessAudit.setPidm(pidm)
             pageAccessAudit.setAppId(appId)
             pageAccessAudit.setPageUrl(pageUrl)
-            if(getAuditIpAddressConfigration()=='y'){
+            if (getAuditIpAddressConfigration() == 'y') {
                 pageAccessAudit.setIpAddress(ipAddress)
-            }
-            else if(getAuditIpAddressConfigration()=='m'){
+            } else if (getAuditIpAddressConfigration() == 'm') {
                 pageAccessAudit.setIpAddress(getMaskedIpAddress(ipAddress))
-            }
-            else {
+            } else {
                 pageAccessAudit.setIpAddress("Not Available")
             }
             pageAccessAudit.setLastModifiedBy('BANNER')
             pageAccessAudit.setVersion(0L)
             this.create(pageAccessAudit)
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             log.error("Exception occured while creating PageAccess Audit ${ex.getMessage()}")
         }
     }
@@ -88,29 +86,29 @@ class PageAccessAuditService extends ServiceBase {
 
     public def getDataByLoginID(getDataByLoginID) {
         PageAccessAudit selfServicePage = PageAccessAudit.fetchByLoginId(getDataByLoginID)
-        return selfServicePage;
+        return selfServicePage
     }
 
 
-    private static String getPageAuditConfiguration(){
-        String pageAuditConfiguration = (Holders.config.EnablePageAudit instanceof String && Holders.config.EnablePageAudit.size() > 0)  ? (Holders.config.EnablePageAudit).toLowerCase() : 'n'
+    private static String getPageAuditConfiguration() {
+        String pageAuditConfiguration = (Holders.config.EnablePageAudit instanceof String && Holders.config.EnablePageAudit.size() > 0) ? (Holders.config.EnablePageAudit).toLowerCase() : 'n'
         return pageAuditConfiguration
     }
 
-    private static def getUnsecureQueryParameter(Map parameterMap){
-        def unsecureQueryParameter = parameterMap.find{it ->
+    private static def getUnsecureQueryParameter(Map parameterMap) {
+        def unsecureQueryParameter = parameterMap.find { it ->
             it.key?.equalsIgnoreCase('username') || it.key?.equalsIgnoreCase('password')
         }
         return unsecureQueryParameter
     }
 
-    private Boolean isPageAuditConfigAvailableInRequestPageUrl(List<String> pageAuditConfigList, String requestedPageUrl){
+    private Boolean isPageAuditConfigAvailableInRequestPageUrl(List<String> pageAuditConfigList, String requestedPageUrl) {
         Boolean isPageAuditConfigAvailable = false
-        if (pageAuditConfigList.find{it == '%'}?.length()>0){
+        if (pageAuditConfigList.find { it == '%' }?.length() > 0) {
             isPageAuditConfigAvailable = true
-        }else{
-            for (String pageAuditConfiguration: pageAuditConfigList){
-                if(requestedPageUrl?.contains(pageAuditConfiguration.replaceAll('%',''))){
+        } else {
+            for (String pageAuditConfiguration : pageAuditConfigList) {
+                if (requestedPageUrl?.contains(pageAuditConfiguration.replaceAll('%', ''))) {
                     isPageAuditConfigAvailable = true
                     break
                 }
@@ -119,21 +117,21 @@ class PageAccessAuditService extends ServiceBase {
         return isPageAuditConfigAvailable
     }
 
-    private static String getClientIpAddress(request){
-        String ipAddressList = request.getHeader("X-FORWARDED-FOR");
+    private static String getClientIpAddress(request) {
+        String ipAddressList = request.getHeader("X-FORWARDED-FOR")
         String clientIpAddress
-        if (ipAddressList?.length() > 0)  {
-            String ipAddress = ipAddressList.split(",")[0];
-            if ( ipAddress.length() <= PageAccessAudit.getConstrainedProperties().get('ipAddress').getMaxSize() ) {
-                clientIpAddress =  ipAddress
+        if (ipAddressList?.length() > 0) {
+            String ipAddress = ipAddressList.split(",")[0]
+            if (ipAddress.length() <= PageAccessAudit.getConstrainedProperties().get('ipAddress').getMaxSize()) {
+                clientIpAddress = ipAddress
             } else {
-                clientIpAddress = request.getRemoteAddr();
+                clientIpAddress = request.getRemoteAddr()
                 log.error("Exception occured while getting clientIpAddress:Ip Address too long.")
             }
-        }else{
-            clientIpAddress = request.getRemoteAddr();
+        } else {
+            clientIpAddress = request.getRemoteAddr()
         }
-        return clientIpAddress;
+        return clientIpAddress
     }
 
     public String getAuditIpAddressConfigration() {
@@ -143,46 +141,37 @@ class PageAccessAuditService extends ServiceBase {
 
     public String getMaskedIpAddress(String ipAddress) {
         String maskedIpAddress
-        String Ipv6orIpv4Separator = ipAddress.contains(':')? ":" : "."
-        int LastIndexOfIpv6orIpv4Separator= ipAddress.lastIndexOf(Ipv6orIpv4Separator)
-        if(Ipv6orIpv4Separator==".")
-            maskedIpAddress = ipAddress.substring(0, LastIndexOfIpv6orIpv4Separator + 1) + appendX(ipAddress,LastIndexOfIpv6orIpv4Separator,Ipv6orIpv4Separator)
+        String ipv6orIpv4Separator = ipAddress.contains(':') ? ":" : "."
+        int lastIndexOfIpv6orIpv4Separator = ipAddress.lastIndexOf(ipv6orIpv4Separator)
+        if (ipv6orIpv4Separator == ".")
+            maskedIpAddress = ipAddress.substring(0, lastIndexOfIpv6orIpv4Separator + 1) + appendX(ipAddress, lastIndexOfIpv6orIpv4Separator, ipv6orIpv4Separator)
         else
-            maskedIpAddress = appendX(ipAddress,LastIndexOfIpv6orIpv4Separator,Ipv6orIpv4Separator)
+            maskedIpAddress = appendX(ipAddress, lastIndexOfIpv6orIpv4Separator, ipv6orIpv4Separator)
         return maskedIpAddress
     }
 
-    public String appendX(String ipAddress,int lastIndexOfCh, String Ipv6orIpv4Separator) {
-        String X=""
-        int pos,count=0
-        if(Ipv6orIpv4Separator==".") {
-            int StartMasking = ipAddress.substring(lastIndexOfCh+1).length()
-            for (int i = 0; i < StartMasking; i++) {
-                X+="X"
+    public String appendX(String ipAddress, int lastIndexOfCh, String ipv6orIpv4Separator) {
+        String masked = ""
+        if (ipv6orIpv4Separator == ".") {
+            int startMasking = ipAddress.substring(lastIndexOfCh + 1).length()
+            for (int i = 0; i < startMasking; i++) {
+                masked += "X"
             }
-        }
-        else {
-            char colon=':'
-            for (int i = 0; i < ipAddress.length(); i++) {
-                if(ipAddress.charAt(i)==':' as char)
-                {
-                    count++;
+        } else {
+            int counter = 0
+            ipAddress.eachWithIndex { it, index ->
+                if (it == ':') {
+                    counter = counter + 1
                 }
-                if(count==3){
-                    pos=i;
-                    break;
+                if (counter > 2 && it != ':') {
+                    it = it.replaceAll(it, 'X')
                 }
+                masked = masked + it
             }
-            X=ipAddress.substring(0,pos)
-            for (int i = pos; i < ipAddress.length(); i++) {
-                if(ipAddress.charAt(i)==':')
-                    X+=":"
-                else
-                    X+="X"
-            }
-        }
 
-        return X
+        }
+        return masked
+        }
     }
-}
+
 

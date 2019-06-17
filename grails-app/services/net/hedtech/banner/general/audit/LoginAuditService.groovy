@@ -18,7 +18,7 @@ class LoginAuditService extends ServiceBase{
             String appId = Holders.config.app.appId
             String loginId =  username?: 'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
-            String ipAddress = getClientIpAddress(request);
+            String ipAddress = getClientIpAddress(request)
             String userAgent = request.getHeader("User-Agent")
 
             LoginAudit loginAudit = new LoginAudit()
@@ -51,20 +51,20 @@ class LoginAuditService extends ServiceBase{
     }
 
     public static String getClientIpAddress(request){
-        String ipAddressList = request.getHeader("X-FORWARDED-FOR");
+        String ipAddressList = request.getHeader("X-FORWARDED-FOR")
         String clientIpAddress
         if (ipAddressList?.length() > 0)  {
-            String ipAddress = ipAddressList.split(",")[0];
+            String ipAddress = ipAddressList.split(",")[0]
             if ( ipAddress.length() <= LoginAudit.getConstrainedProperties().get('ipAddress').getMaxSize() ) {
                 clientIpAddress =  ipAddress
             } else {
-                clientIpAddress = request.getRemoteAddr();
+                clientIpAddress = request.getRemoteAddr()
                 log.error("Exception occured while getting clientIpAddress:Ip Address too long.")
             }
         }else{
-            clientIpAddress = request.getRemoteAddr();
+            clientIpAddress = request.getRemoteAddr()
         }
-        return clientIpAddress;
+        return clientIpAddress
     }
     public String getAuditIpAddressConfigration() {
         String auditIpAddressConfiguration = (Holders.config.AuditIPAddress instanceof String && Holders.config.AuditIPAddress.size() > 0) ? (Holders.config.AuditIPAddress).toLowerCase() : 'n'
@@ -73,46 +73,37 @@ class LoginAuditService extends ServiceBase{
 
     public String getMaskedIpAddress(String ipAddress) {
         String maskedIpAddress
-        String Ipv6orIpv4Separator = ipAddress.contains(':')? ":" : "."
-        int LastIndexOfIpv6orIpv4Separator= ipAddress.lastIndexOf(Ipv6orIpv4Separator)
-        if(Ipv6orIpv4Separator==".")
-            maskedIpAddress = ipAddress.substring(0, LastIndexOfIpv6orIpv4Separator + 1) + appendX(ipAddress,LastIndexOfIpv6orIpv4Separator,Ipv6orIpv4Separator)
+        String ipv6orIpv4Separator = ipAddress.contains(':')? ":" : "."
+        int lastIndexOfIpv6orIpv4Separator= ipAddress.lastIndexOf(ipv6orIpv4Separator)
+        if(ipv6orIpv4Separator==".")
+            maskedIpAddress = ipAddress.substring(0, lastIndexOfIpv6orIpv4Separator + 1) + appendX(ipAddress,lastIndexOfIpv6orIpv4Separator,ipv6orIpv4Separator)
         else
-            maskedIpAddress = appendX(ipAddress,LastIndexOfIpv6orIpv4Separator,Ipv6orIpv4Separator)
+            maskedIpAddress = appendX(ipAddress,lastIndexOfIpv6orIpv4Separator,ipv6orIpv4Separator)
         return maskedIpAddress
     }
 
-    public String appendX(String ipAddress,int lastIndexOfCh, String Ipv6orIpv4Separator) {
-        String X=""
-        int pos,count=0
-        if(Ipv6orIpv4Separator==".") {
+    public String appendX(String ipAddress,int lastIndexOfCh, String ipv6orIpv4Separator) {
+        String masked=""
+        if(ipv6orIpv4Separator==".") {
             int StartMasking = ipAddress.substring(lastIndexOfCh+1).length()
             for (int i = 0; i < StartMasking; i++) {
-                X+="X"
+                masked+="X"
             }
         }
         else {
-            char colon=':'
-            for (int i = 0; i < ipAddress.length(); i++) {
-               if(ipAddress.charAt(i)==':' as char)
-               {
-                   count++;
-               }
-                if(count==3){
-                    pos=i;
-                    break;
+            int counter = 0
+            ipAddress.eachWithIndex {it, index ->
+                if (it == ':') {
+                    counter = counter + 1
                 }
+                if(counter > 2 && it != ':'){
+                    it = it.replaceAll(it,'X')
+                }
+                masked = masked + it
             }
-            X=ipAddress.substring(0,pos)
-            for (int i = pos; i < ipAddress.length(); i++) {
-                if(ipAddress.charAt(i)==':')
-                    X+=":"
-                else
-                    X+="X"
-            }
-        }
 
-        return X
+        }
+        return masked
     }
 }
 
