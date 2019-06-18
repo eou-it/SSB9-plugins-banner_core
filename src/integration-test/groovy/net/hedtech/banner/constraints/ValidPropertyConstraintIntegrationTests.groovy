@@ -37,7 +37,7 @@ class ValidPropertyConstraintIntegrationTests extends BaseIntegrationTestCase {
 
         def nonSavedChild = createBadFooChild()
         testObject.childByDefault = nonSavedChild
-        assertFalse "The child has an invalid child code and should of not been validated", testObject.validate()
+        assertFalse "The child has an invalid child code and should of not been validated", testObject.validate() == null
 
         testObject.childByDefault = null
         validate( testObject )
@@ -51,7 +51,7 @@ class ValidPropertyConstraintIntegrationTests extends BaseIntegrationTestCase {
 
         def nonSavedChild = createBadFooChild()
         testObject.childByCode = nonSavedChild
-        assertFalse "The child has an invalid child code and should of not been validated", testObject.validate()
+        assertFalse "The child has an invalid child code and should of not been validated", testObject.validate() == null
 
         testObject.childByCode = null
         validate( testObject )
@@ -66,7 +66,7 @@ class ValidPropertyConstraintIntegrationTests extends BaseIntegrationTestCase {
         def nonSavedChild = createBadFooChild()
         nonSavedChild.id = -1
         testObject.childById = nonSavedChild
-        assertFalse "This is not a valid id and should of been rejected", testObject.validate()
+        assertFalse "This is not a valid id and should of been rejected", testObject.validate() == null
 
         testObject.childById = null
         validate( testObject )
