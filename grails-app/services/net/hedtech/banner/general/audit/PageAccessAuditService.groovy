@@ -5,14 +5,13 @@ package net.hedtech.banner.general.audit
 
 import grails.plugin.springsecurity.SpringSecurityService
 import grails.util.Holders
+import net.hedtech.banner.audit.AuditUtility
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.service.ServiceBase
 import grails.gorm.transactions.Transactional
 import javax.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.context.request.RequestContextHolder
-
-import javax.servlet.ServletRequest
 
 @Transactional
 class PageAccessAuditService extends ServiceBase {
@@ -52,7 +51,7 @@ class PageAccessAuditService extends ServiceBase {
             }
             loginId = userLoginId ?: 'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
-            String ipAddress = getClientIpAddress(request)
+            String ipAddress = AuditUtility.getClientIpAddress(request,PageAccessAudit.getConstrainedProperties().get('ipAddress').getMaxSize())
             String appId = Holders.config.app.appId
             String requestURI = request?.getForwardURI()
 
@@ -68,10 +67,11 @@ class PageAccessAuditService extends ServiceBase {
             pageAccessAudit.setPidm(pidm)
             pageAccessAudit.setAppId(appId)
             pageAccessAudit.setPageUrl(pageUrl)
-            if (getAuditIpAddressConfigration() == 'y') {
+            String ipAddressConfiguration = AuditUtility.getAuditIpAddressConfiguration()
+            if (ipAddressConfiguration == 'y') {
                 pageAccessAudit.setIpAddress(ipAddress)
-            } else if (getAuditIpAddressConfigration() == 'm') {
-                pageAccessAudit.setIpAddress(getMaskedIpAddress(ipAddress))
+            } else if (ipAddressConfiguration == 'm') {
+                pageAccessAudit.setIpAddress(AuditUtility.getMaskedIpAddress(ipAddress))
             } else {
                 pageAccessAudit.setIpAddress("Not Available")
             }
@@ -117,61 +117,6 @@ class PageAccessAuditService extends ServiceBase {
         return isPageAuditConfigAvailable
     }
 
-    private static String getClientIpAddress(request) {
-        String ipAddressList = request.getHeader("X-FORWARDED-FOR")
-        String clientIpAddress
-        if (ipAddressList?.length() > 0) {
-            String ipAddress = ipAddressList.split(",")[0]
-            if (ipAddress.length() <= PageAccessAudit.getConstrainedProperties().get('ipAddress').getMaxSize()) {
-                clientIpAddress = ipAddress
-            } else {
-                clientIpAddress = request.getRemoteAddr()
-                log.error("Exception occured while getting clientIpAddress:Ip Address too long.")
-            }
-        } else {
-            clientIpAddress = request.getRemoteAddr()
-        }
-        return clientIpAddress
-    }
-
-    public String getAuditIpAddressConfigration() {
-        String auditIpAddressConfiguration = (Holders.config.AuditIPAddress instanceof String && Holders.config.AuditIPAddress.size() > 0) ? (Holders.config.AuditIPAddress).toLowerCase() : 'n'
-        return auditIpAddressConfiguration
-    }
-
-    public String getMaskedIpAddress(String ipAddress) {
-        String maskedIpAddress
-        String ipv6orIpv4Separator = ipAddress.contains(':') ? ":" : "."
-        int lastIndexOfIpv6orIpv4Separator = ipAddress.lastIndexOf(ipv6orIpv4Separator)
-        if (ipv6orIpv4Separator == ".")
-            maskedIpAddress = ipAddress.substring(0, lastIndexOfIpv6orIpv4Separator + 1) + appendX(ipAddress, lastIndexOfIpv6orIpv4Separator, ipv6orIpv4Separator)
-        else
-            maskedIpAddress = appendX(ipAddress, lastIndexOfIpv6orIpv4Separator, ipv6orIpv4Separator)
-        return maskedIpAddress
-    }
-
-    public String appendX(String ipAddress, int lastIndexOfCh, String ipv6orIpv4Separator) {
-        String masked = ""
-        if (ipv6orIpv4Separator == ".") {
-            int startMasking = ipAddress.substring(lastIndexOfCh + 1).length()
-            for (int i = 0; i < startMasking; i++) {
-                masked += "X"
-            }
-        } else {
-            int counter = 0
-            ipAddress.eachWithIndex { it, index ->
-                if (it == ':') {
-                    counter = counter + 1
-                }
-                if (counter > 2 && it != ':') {
-                    it = it.replaceAll(it, 'X')
-                }
-                masked = masked + it
-            }
-
-        }
-        return masked
-        }
-    }
+}
 
 

@@ -9,6 +9,7 @@ import grails.util.GrailsWebMockUtil
 import grails.util.Holders
 import grails.web.http.HttpHeaders
 import grails.web.servlet.context.GrailsWebApplicationContext
+import net.hedtech.banner.audit.AuditUtility
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
@@ -94,7 +95,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         LoginAudit loginAudit = newLoginAudit()
         loginAudit.save(failOnError: true, flush: true)
         MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
-        def ipAddress = loginAuditService.getClientIpAddress(request)
+        def ipAddress = AuditUtility.getClientIpAddress(request,LoginAudit.getConstrainedProperties().get('ipAddress').getMaxSize())
         assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
     }
 
@@ -105,7 +106,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         loginAudit.save(failOnError: true, flush: true)
         MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
         request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
-        def ipAddress = loginAuditService.getClientIpAddress(request)
+        def ipAddress = AuditUtility.getClientIpAddress(request,LoginAudit.getConstrainedProperties().get('ipAddress').getMaxSize())
         assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
     }
 
@@ -116,7 +117,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         loginAudit.save(failOnError: true, flush: true)
         MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
         request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348:2001:db8:85a3:8d3:1319:8a2e')
-        def ipAddress = loginAuditService.getClientIpAddress(request)
+        def ipAddress = AuditUtility.getClientIpAddress(request,LoginAudit.getConstrainedProperties().get('ipAddress').getMaxSize())
         assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
     }
 
