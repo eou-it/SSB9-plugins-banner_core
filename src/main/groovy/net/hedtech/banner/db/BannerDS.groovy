@@ -652,6 +652,7 @@ public class BannerDS implements DataSource {
 
             def session = RequestContextHolder.currentRequestAttributes()?.request?.session
             def mepCode = session?.getAttribute("mep")
+            println "mepCode in setMepSsb=" + mepCode
 
             if (mepCode == "FORCE_MEPCODENOTFOUND" && Environment.current == Environment.TEST) {
                 log.warn "**** FORCING a MepCodeNotFoundException"

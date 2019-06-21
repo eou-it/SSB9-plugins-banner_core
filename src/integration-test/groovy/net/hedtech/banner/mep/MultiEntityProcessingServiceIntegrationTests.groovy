@@ -9,6 +9,7 @@ import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
+import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
 import org.springframework.security.core.context.SecurityContextHolder as SCH
@@ -42,14 +43,28 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
         RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
     }
 
+
     @After
     public void tearDown() {
         RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
-        sql.rollback()
-        sql.close()
-        sessionFactory.currentSession.connection().rollback()
+        //sql.rollback()
+        //sql.close()
+       // sessionFactory.currentSession.connection().rollback()
         super.tearDown()
     }
+
+    @AfterClass
+    public static void cleanMepCode() {
+        println "____________________________________"
+        println "Before RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled') = ${RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')} "
+        println "Before RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mep') = ${RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mep')} "
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
+        RequestContextHolder.currentRequestAttributes()?.request?.session?.removeAttribute("mep")
+        println "After  RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled') = ${RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')} "
+        println "After  RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mep') = ${RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mep')} "
+        println "____________________________________"
+    }
+
 
     @Test
     void testChangeProcessContext() {

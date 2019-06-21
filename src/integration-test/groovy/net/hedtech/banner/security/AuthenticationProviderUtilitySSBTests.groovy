@@ -12,6 +12,7 @@ import org.junit.Ignore
 import org.junit.Test
 import grails.gorm.transactions.Rollback
 import grails.testing.mixin.integration.Integration
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * Integration test for the AuthenticationProviderUtility class.
@@ -25,13 +26,16 @@ class AuthenticationProviderUtilitySSBTests  extends BaseIntegrationTestCase{
 
     @Before
     public void setUp() {
-        formContext = ['GUAGMNU']
+        formContext = ['SELFSERVICE']
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
+        RequestContextHolder.currentRequestAttributes().request?.session?.removeAttribute("mep")
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
         super.setUp()
     }
 
     @After
     public void tearDown() {
-        super.tearDown();
+        super.tearDown()
     }
 
     @Test

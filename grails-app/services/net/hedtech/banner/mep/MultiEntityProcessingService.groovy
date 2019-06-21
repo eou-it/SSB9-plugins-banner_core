@@ -25,12 +25,14 @@ class MultiEntityProcessingService {
 
     def isMEP(con = null) {
         def mepEnabled = RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')
+        println "mepEnabled from servletContext= " + mepEnabled
         if (mepEnabled == null) {
             if (!con)
                 con = new Sql(sessionFactory.getCurrentSession().connection())
             Sql sql = new Sql(con)
             try {
                 sql.call("{$Sql.VARCHAR = call g\$_vpdi_security.g\$_is_mif_enabled_str()}") { mifEnabled -> mif = mifEnabled.toLowerCase().toBoolean() }
+                println "mepEnabled from mif= " + mif
                 RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', mif)
                 mepEnabled = mif
             } catch (e) {
@@ -40,6 +42,7 @@ class MultiEntityProcessingService {
                 //sql?.close()
             }
         }
+        println "mepEnabled = " + mepEnabled
         return mepEnabled
     }
 
