@@ -20,6 +20,9 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
 
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
 @Integration
 @Rollback
 class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCase {
@@ -57,11 +60,11 @@ class BannerSelfServicePreAuthenticatedFilterIntegrationTests extends BaseIntegr
         roleMap.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
         Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(roleMap)
 
-        MockHttpServletRequest request = new MockHttpServletRequest()
+        HttpServletRequest request = new MockHttpServletRequest()
         request.setRequestURI("/ssb/foo")
 
         request.addHeader("UDC_IDENTIFIER", UDC_IDENTIFIER)
-        MockHttpServletResponse response = new MockHttpServletResponse()
+        HttpServletResponse response = new MockHttpServletResponse()
         MockFilterChain chain = new MockFilterChain()
 
         bannerPreAuthenticatedFilter.doFilter(request, response, chain)

@@ -139,11 +139,6 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 
             </div>
         </div>
-        <g:if test="${grails.util.Holders.config.ssbPassword.reset.enabled == true || grails.util.Holders.config.ssbPassword.guest.reset.enabled == true}">
-            <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" id="forgotpasswordLink"
-                                              class="forgotpassword">${message(code: 'net.hedtech.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')}</a>
-            </div>
-        </g:if>
 
         <div class="logIn sign-in">
             <div class="textfield-wrapper">
@@ -155,6 +150,11 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                 </div>
             </div>
         </div>
+        <g:if test="${grails.util.Holders.config.ssbPassword.reset.enabled == true || grails.util.Holders.config.ssbPassword.guest.reset.enabled == true}">
+            <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" id="forgotpasswordLink"
+                                              class="forgotpassword">${message(code: 'net.hedtech.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')}</a>
+            </div>
+        </g:if>
 
     </form>
 
