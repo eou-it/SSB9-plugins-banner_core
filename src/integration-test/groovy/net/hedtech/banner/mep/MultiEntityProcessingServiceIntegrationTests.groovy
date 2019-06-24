@@ -12,11 +12,13 @@ import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
+import org.junit.Ignore
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.web.context.request.RequestContextHolder
 
 @Integration
 @Rollback
+@Ignore
 class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestCase {
 
     def multiEntityProcessingService
