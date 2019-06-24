@@ -1,5 +1,5 @@
 /* *****************************************************************************
- Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.service
 
@@ -218,7 +218,7 @@ class ServiceBase {
         }
     }
 
-    private void updateDomainProperties(domainObject, content) {
+    public void updateDomainProperties(domainObject, content) {
 
         def d = Holders.getGrailsApplication().getMappingContext().getPersistentEntity( ConverterUtil.trimProxySuffix(getDomainClass().getName()))
         d.getPersistentProperties().each { it ->
