@@ -91,7 +91,7 @@ class BannerCoreGrailsPlugin extends Plugin {
                     }
                     if (isCommmgrDataSourceEnabled()) {
                         underlyingCommmgrDataSource(JndiObjectFactoryBean) {
-                            jndiName = "${Holders.config.bannerSsbDataSource.jndiName}"
+                            jndiName = "${Holders.config.bannerCommmgrDataSource.jndiName}"
                         }
                     }
                 } else {
