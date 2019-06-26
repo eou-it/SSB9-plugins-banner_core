@@ -24,10 +24,14 @@ class PageAccessAuditService extends ServiceBase {
         PageAccessAudit pageAccessAudit = null
         try {
             def request = RequestContextHolder.getRequestAttributes()?.request
-            List<String> pageAuditConfigList = getPageAuditConfiguration().split("\\s*,\\s*") as ArrayList<String>
+            List<String> pageAuditConfigList
             String requestedPageUrl = (request?.getForwardURI())?.toLowerCase()
-            if (isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList, requestedPageUrl)) {
-                pageAccessAudit = createPageAudit() as PageAccessAudit
+            String pageAuditConfiguration = getPageAuditConfiguration()
+            if (pageAuditConfiguration.toLowerCase() != 'n'){
+                pageAuditConfigList = pageAuditConfiguration.split("\\s*,\\s*") as ArrayList<String>
+                if (isPageAuditConfigAvailableInRequestPageUrl(pageAuditConfigList, requestedPageUrl)) {
+                    pageAccessAudit = createPageAudit() as PageAccessAudit
+                }
             }
         }
         catch (ex) {
