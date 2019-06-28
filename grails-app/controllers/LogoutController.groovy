@@ -32,7 +32,7 @@ class LogoutController {
      */
 
     def index() {
-        AuthenticationProviderUtility.captureLogoutInformation(response?.authBeforeExecution.user.username, response?.authBeforeExecution.user.pidm)
+        AuthenticationProviderUtility.captureLogoutInformation(response?.authBeforeExecution?.user?.username, response?.authBeforeExecution?.user?.pidm)
         boolean isGuestUser = response?.authBeforeExecution?.user?.gidm ? true : false
         if (!ControllerUtils.isSamlEnabled()) {
             invalidateSession(response)
@@ -63,13 +63,13 @@ class LogoutController {
             }
             AuthenticationProviderUtility.captureLogoutInformation(username, pidm)
             invalidateSession(response)
-            redirect uri: uri, params: mepCode ? [mep: mepCode] : []
+            redirect uri: uri, params: mepCode ? [mepCode: mepCode] : []
         }
     }
 
     def timeoutPage() {
         def mep = params.mep
-        render view: VIEW_TIMEOUT, model: [uri: ControllerUtils.buildLogoutRedirectURI(), mep: mep]
+        render view: VIEW_TIMEOUT, model: [uri: ControllerUtils.buildLogoutRedirectURI(), mepCode: mep]
     }
 
     def logoutPage() {
