@@ -9,41 +9,64 @@ import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
+import org.junit.AfterClass
 import org.junit.Before
 import org.junit.Test
+import org.junit.Ignore
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.web.context.request.RequestContextHolder
 
 @Integration
 @Rollback
+@Ignore
 class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestCase {
 
     def multiEntityProcessingService
     String aaaCollege = "Test1"
     String bbbCollege = "Test2"
     String cccCollege = "Test3"
-    final String URL=Holders.config.bannerDataSource.url
-    final String BANSECR_USERNAME="bansecr"
-    final String BANSECR_PASSWORD="u_pick_it"
+    String URL
+    String BANSECR_USERNAME
+    String BANSECR_PASSWORD
     String defaultInstitution
     String defaultInstitutionForUser
+    def sql
 
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
+        URL=Holders.config.bannerDataSource.url
+        BANSECR_USERNAME="bansecr"
+        BANSECR_PASSWORD="u_pick_it"
         retrieveDefaultInsitution()
         setMepLogon(aaaCollege)
         //remove the mepEnabled indicator from the session
         RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
     }
 
+
     @After
     public void tearDown() {
         RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled')
-        sessionFactory.currentSession.connection().rollback()
+        //sql.rollback()
+        //sql.close()
+       // sessionFactory.currentSession.connection().rollback()
         super.tearDown()
     }
+
+    @AfterClass
+    public static void cleanMepCode() {
+        println "____________________________________"
+        println "Before RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled') = ${RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')} "
+        println "Before RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mep') = ${RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mep')} "
+        RequestContextHolder.currentRequestAttributes().request.session.servletContext.setAttribute('mepEnabled', false)
+        RequestContextHolder.currentRequestAttributes()?.request?.session?.removeAttribute("mep")
+        println "After  RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mepEnabled') = ${RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mepEnabled')} "
+        println "After  RequestContextHolder.currentRequestAttributes().request.session.servletContext.removeAttribute('mep') = ${RequestContextHolder.currentRequestAttributes().request.session.servletContext.getAttribute('mep')} "
+        println "____________________________________"
+    }
+
 
     @Test
     void testChangeProcessContext() {
@@ -301,10 +324,17 @@ class MultiEntityProcessingServiceIntegrationTests  extends BaseIntegrationTestC
 
 
     private void retrieveDefaultInsitution() {
-        def sql = new Sql(sessionFactory.getCurrentSession().connection())
-            sql.eachRow("select * from gtvvpdi where gtvvpdi_sys_def_inst_ind = 'Y'", {this.defaultInstitution = it.GTVVPDI_CODE })
-            sql.eachRow("select * from bansecr.gurusri where gurusri_vpdi_user_id = 'GRAILS_USER' and gurusri_user_def_inst_ind='Y'", {this.defaultInstitutionForUser = it.GURUSRI_VPDI_CODE })
-            sql.commit()
+        sql = Sql.newInstance(URL,   //  db =  new Sql( connectInfo.url,
+                BANSECR_USERNAME,
+                BANSECR_PASSWORD,
+                Holders.config.bannerDataSource.driver)
+        sql.eachRow("select * from gtvvpdi where gtvvpdi_sys_def_inst_ind = 'Y'", {this.defaultInstitution = it.GTVVPDI_CODE })
+        sql.eachRow("select * from bansecr.gurusri where gurusri_vpdi_user_id = 'GRAILS_USER' and gurusri_user_def_inst_ind='Y'", {this.defaultInstitutionForUser = it.GURUSRI_VPDI_CODE })
+        sql.commit()
+        /*def sql = new Sql(sessionFactory.getCurrentSession().connection())
+        sql.eachRow("select * from gtvvpdi where gtvvpdi_sys_def_inst_ind = 'Y'", {it -> this.defaultInstitution=it.GTVVPDI_CODE })
+        sql.eachRow("select * from bansecr.gurusri where gurusri_vpdi_user_id = 'GRAILS_USER' and gurusri_user_def_inst_ind='Y'", {it -> this.defaultInstitutionForUser=it.GURUSRI_VPDI_CODE})
+        sql.commit()*/
 
     }
 

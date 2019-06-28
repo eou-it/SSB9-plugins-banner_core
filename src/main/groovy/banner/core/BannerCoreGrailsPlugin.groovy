@@ -89,6 +89,11 @@ class BannerCoreGrailsPlugin extends Plugin {
                             jndiName = "${Holders.config.bannerSsbDataSource.jndiName}"
                         }
                     }
+                    if (isCommmgrDataSourceEnabled()) {
+                        underlyingCommmgrDataSource(JndiObjectFactoryBean) {
+                            jndiName = "${Holders.config.bannerCommmgrDataSource.jndiName}"
+                        }
+                    }
                 } else {
                     log.info "Tomcat Will use a dataSource configured via JNDI"
                     underlyingDataSource(JndiObjectFactoryBean) {
@@ -99,11 +104,10 @@ class BannerCoreGrailsPlugin extends Plugin {
                             jndiName = "java:comp/env/${CH.config.bannerSsbDataSource.jndiName}"
                         }
                     }
-                }
-                //new DS
-                if (isCommmgrDataSourceEnabled()) {
-                    underlyingCommmgrDataSource(JndiObjectFactoryBean) {
-                        jndiName = "java:comp/env/${CH.config.bannerCommmgrDataSource.jndiName}"
+                    if (isCommmgrDataSourceEnabled()) {
+                        underlyingCommmgrDataSource(JndiObjectFactoryBean) {
+                            jndiName = "java:comp/env/${CH.config.bannerCommmgrDataSource.jndiName}"
+                        }
                     }
                 }
                 break

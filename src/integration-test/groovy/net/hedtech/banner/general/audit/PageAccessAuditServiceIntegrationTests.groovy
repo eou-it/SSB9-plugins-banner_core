@@ -7,7 +7,7 @@ import grails.gorm.transactions.Rollback
 import grails.plugin.springsecurity.SpringSecurityService
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
-
+import net.hedtech.banner.audit.AuditUtility
 import net.hedtech.banner.security.BannerGrantedAuthorityService
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.apache.http.conn.util.InetAddressUtils
@@ -190,7 +190,7 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         PageAccessAudit pageAccessAudit = createPageAccessAudit()
         pageAccessAudit.save(failOnError: true, flush: true)
         MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
-        String ipAddress = pageAccessAuditService.getClientIpAddress(request)
+        String ipAddress = AuditUtility.getClientIpAddress(request,PageAccessAudit.getConstrainedProperties().get('ipAddress').getMaxSize())
         assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
     }
 
@@ -201,7 +201,7 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         pageAccessAudit.save(failOnError: true, flush: true)
         MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
         request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
-        String ipAddress = pageAccessAuditService.getClientIpAddress(request)
+        String ipAddress = AuditUtility.getClientIpAddress(request,PageAccessAudit.getConstrainedProperties().get('ipAddress').getMaxSize())
         assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
     }
 
@@ -212,7 +212,7 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         pageAccessAudit.save(failOnError: true, flush: true)
         MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
         request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348:2001:db8:85a3:8d3:1319:8a2e')
-        String ipAddress = pageAccessAuditService.getClientIpAddress(request)
+        String ipAddress = AuditUtility.getClientIpAddress(request,PageAccessAudit.getConstrainedProperties().get('ipAddress').getMaxSize())
         assertTrue(InetAddressUtils.isIPv4Address(ipAddress) || InetAddressUtils.isIPv6Address(ipAddress))
     }
 
@@ -261,7 +261,7 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         request.setRequestURI('/ssb/home?username=HOSH00001&password=111111')
         request.addHeader('X-FORWARDED-FOR','2001:db8:85a3:8d3:1319:8a2e:370:7348')
         PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
-        assertEquals pageAccessAudit.ipAddress , "2001:db8:85a3:8d3:1319:8a2e:370:XXXX"
+        assertEquals pageAccessAudit.ipAddress , "2001:db8:85a3:XXX:XXXX:XXXX:XXX:XXXX"
     }
     @Test
     void testAuditIpAddressSetY() {
