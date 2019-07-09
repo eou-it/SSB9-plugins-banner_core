@@ -128,9 +128,8 @@ def generatePropertiesFile( args = null ) {
 	String filename
 
     def dirPath = System.getProperty('user.dir')
-    def dir = new File(dirPath)
 
-    dir.traverse(type: FileType.FILES, nameFilter: "grails-app/i18n/" + params.filter) { source ->
+    new File(dirPath).traverse(type: FileType.FILES, nameFilter: params.filter) { source ->
 		filename = source.canonicalFile
 		if ( StringUtils.contains(filename,"i18n_core.git") ) {
 		    generatedProps = []
