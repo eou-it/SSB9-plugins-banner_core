@@ -224,10 +224,6 @@ class ServiceBase {
     public void updateDomainProperties(domainObject, content) {
 
         def d = Holders.getGrailsApplication().getMappingContext().getPersistentEntity( ConverterUtil.trimProxySuffix(getDomainClass().getName()))
-
-        PersistentProperty idProp = d.getIdentity()
-        PersistentProperty versionProp = d.getVersion()
-
         d.getPersistentProperties().each { it ->
             if(content.containsKey(it.name))   {
                 //Do not copy ID and Version values

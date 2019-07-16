@@ -7,13 +7,10 @@ package net.hedtech.banner.service
 import grails.validation.ValidationException
 import grails.util.GrailsNameUtils
 import groovy.util.logging.Slf4j
-
 import org.grails.datastore.mapping.model.AbstractPersistentEntity
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
-
 import org.grails.web.converters.ConverterUtil
-import org.hibernate.StaleObjectStateException
 
 import groovy.sql.Sql
 import net.hedtech.banner.exceptions.ApplicationException
@@ -800,14 +797,7 @@ class ServiceBase {
         if (domainObject.hasProperty( 'version' )) {
             if (content.version != null) {
                 int ver = content.version instanceof String ? content.version.toInteger() : content.version
-
-                PersistentEntity entity = Holders.getGrailsApplication().getMappingContext().getPersistentEntity( ConverterUtil.trimProxySuffix(getDomainClass().getName()))
-                AbstractPersistentEntity parentEntity = entity?.parentEntity
-                if(parentEntity?.abstract) {
-                    if (ver != domainObject.getParentVersion()) {
-                        throw exceptionForOptimisticLock( domainObject, content, log )
-                    }
-                } else if (ver != domainObject.version) {
+                if (ver != domainObject.version) {
                     throw exceptionForOptimisticLock( domainObject, content, log )
                 }
             }
