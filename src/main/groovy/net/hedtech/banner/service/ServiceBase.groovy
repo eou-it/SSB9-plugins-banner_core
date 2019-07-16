@@ -7,6 +7,8 @@ package net.hedtech.banner.service
 import grails.validation.ValidationException
 import grails.util.GrailsNameUtils
 import groovy.util.logging.Slf4j
+import org.grails.datastore.mapping.model.AbstractPersistentEntity
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.web.converters.ConverterUtil
 
@@ -226,7 +228,7 @@ class ServiceBase {
         d.getPersistentProperties().each { it ->
             if(content.containsKey(it.name))   {
                 //Do not copy ID and Version values
-                if(! (it.name.equalsIgnoreCase(idProp.name) || it.name.equalsIgnoreCase(versionProp.name))) {
+                if(! (it.name.equalsIgnoreCase(idProp?.name) || it.name.equalsIgnoreCase(versionProp?.name))) {
                     domainObject[it.name] = content[it.name]
                 }
             }
