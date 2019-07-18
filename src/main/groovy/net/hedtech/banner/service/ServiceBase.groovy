@@ -790,7 +790,14 @@ class ServiceBase {
         if (domainObject.hasProperty( 'version' )) {
             if (content.version != null) {
                 int ver = content.version instanceof String ? content.version.toInteger() : content.version
-                if (ver != domainObject.version) {
+
+                PersistentEntity entity = Holders.getGrailsApplication().getMappingContext().getPersistentEntity( ConverterUtil.trimProxySuffix(getDomainClass().getName()))
+                AbstractPersistentEntity parentEntity = entity?.parentEntity
+                if(parentEntity?.abstract) {
+                    if (ver != domainObject.getParentVersion()) {
+                        throw exceptionForOptimisticLock( domainObject, content, log )
+                    }
+                } else if (ver != domainObject.version) {
                     throw exceptionForOptimisticLock( domainObject, content, log )
                 }
             }
