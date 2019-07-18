@@ -1,14 +1,6 @@
-/*********************************************************************************
- Copyright 2009-2012 SunGard Higher Education. All Rights Reserved.
- This copyrighted software contains confidential and proprietary information of
- SunGard Higher Education and its subsidiaries. Any use of this software is limited
- solely to SunGard Higher Education licensees, and is further subject to the terms
- and conditions of one or more written license agreements between SunGard Higher
- Education and the licensee in question. SunGard is either a registered trademark or
- trademark of SunGard Data Systems in the U.S.A. and/or other regions and/or countries.
- Banner and Luminis are either registered trademarks or trademarks of SunGard Higher
- Education in the U.S.A. and/or other regions and/or countries.
- **********************************************************************************/
+/*******************************************************************************
+ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 package net.hedtech.banner.ui
 
 /**
@@ -33,19 +25,19 @@ class CustomResourcesTagLib {
         def action = attrs.action ?: actionName
 
 //        // Check to see bannerSelfService-custom.css exists\r
-        writeCssIfExists( out, "css/bannerSelfService-custom.css" )
+        writeCssIfExists( out, "stylesheets/bannerSelfService-custom.css" )
         // Determine the current page
-        writeCssIfExists( out, "css/views/$controller/${action}-custom.css" )
+        writeCssIfExists( out, "stylesheets/views/$controller/${action}-custom.css" )
     }
 
     def customJavaScriptIncludes = { attrs ->
         def controller = attrs.controller ?: controllerName
         def action = attrs.action ?: actionName
 //        // Check to see bannerSelfService-custom.js exists\r
-        writeJavaScriptIfExists( out, "js/bannerSelfService-custom.js" )
+        writeJavaScriptIfExists( out, "javascripts/bannerSelfService-custom.js" )
 
         // Determine the current page
-        writeJavaScriptIfExists( out, "js/views/$controller/${action}-custom.js" )
+        writeJavaScriptIfExists( out, "javascripts/views/$controller/${action}-custom.js" )
     }
 
 

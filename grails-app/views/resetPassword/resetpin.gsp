@@ -10,11 +10,11 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
       <title><g:message code="net.hedtech.banner.resetpassword.resetpassword.title"/></title>
        <meta name="layout" content="bannerSelfServicePage"/>
        <meta name="menuBaseURL" content="${createLink(uri: '/ssb')}" />
-        <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
-            <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword-rtl.css')}"/>
-        </g:if>
+      <g:if test="${message(code: 'default.language.direction') == 'rtl'}">
+          <asset:stylesheet src="resetpassword-rtl.css"/>
+      </g:if>
       <g:else>
-          <link rel="stylesheet" href="${resource(plugin: 'bannerCore', dir: 'css', file: 'resetpassword.css')}"/>
+          <asset:stylesheet src="resetpassword.css"/>
       </g:else>
       <meta name="headerAttributes" content=""/>
        <script language="javascript">

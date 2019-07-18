@@ -20,7 +20,7 @@ class InOperator extends CriteriaOperator{
 
             List params = getParamsFromCriteriaParams(param.data)
             if(params.get(0) instanceof Date) {
-               return new DateInOperator().getQueryString(data)
+                return new DateInOperator().getQueryString(data)
             }
 
             return "${data.tableAlias}.${data.tableBindingAttribute} IN (:${param.paramKey})"

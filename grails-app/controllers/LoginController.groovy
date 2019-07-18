@@ -2,18 +2,16 @@
  Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
+
 import grails.converters.JSON
+import grails.plugin.springsecurity.SpringSecurityUtils
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.exceptions.AuthorizationException
-import grails.plugin.springsecurity.SpringSecurityUtils
-import org.springframework.security.authentication.AccountExpiredException
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.authentication.CredentialsExpiredException
-import org.springframework.security.authentication.DisabledException
-import org.springframework.security.authentication.LockedException
+import org.springframework.security.authentication.*
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
+import org.springframework.security.web.WebAttributes
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.context.request.RequestContextHolder
 
 class LoginController {
@@ -31,7 +29,7 @@ class LoginController {
     /**
      * Default action; redirects to 'defaultTargetUrl' if logged in, /login/auth otherwise.
      */
-    def index = {
+    def index() {
         if (springSecurityService.isLoggedIn()) {
             redirect uri: SpringSecurityUtils.securityConfig.successHandler.defaultTargetUrl
         }
@@ -43,7 +41,7 @@ class LoginController {
     /**
      * Show the login page.
      */
-    def auth = {
+    def auth() {
 
         def config = SpringSecurityUtils.securityConfig
         String forgotPasswordUrl =  "${request.contextPath}/login/resetPassword"
@@ -55,15 +53,22 @@ class LoginController {
         String view = 'auth'
         String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
 
+        /*
         render view: view, plugin: "bannerCore", model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
                 rememberMeParameter: config.rememberMe.parameter]
+        */
+
+        render view: view,  model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl,
+                                    rememberMeParameter: config.rememberMe.parameter]
+
+
     }
 
     /**
      * Called when making ajax request and being redirected to authenticate.  We are informing the client that the user is not authenticated
      * and sending a request for a login page by sending a response header down under the key 'X-Login-Page'.
      */
-    def authAjax = {
+    def authAjax() {
 
         def config = SpringSecurityUtils.securityConfig
 
@@ -82,22 +87,22 @@ class LoginController {
     /**
      * Show denied page.
      */
-    def denied = {
+    def denied() {
         if (springSecurityService.isLoggedIn() &&
                 authenticationTrustResolver.isRememberMe(SCH.context?.authentication)) {
             // have cookie but the page is guarded with IS_AUTHENTICATED_FULLY
             redirect action: full, params: params
         }
 
-        render view: "denied", plugin: "bannerCore", model: [uri: ControllerUtils.buildLogoutRedirectURI()]
+        render view: "denied",  model: [uri: ControllerUtils.buildLogoutRedirectURI()]
     }
 
     /**
      * Login page for users with a remember-me cookie but accessing a IS_AUTHENTICATED_FULLY page.
      */
-    def full = {
+    def full() {
         def config = SpringSecurityUtils.securityConfig
-        render view: 'auth', plugin: "bannerCore", params: params,
+        render view: 'auth', params: params,
                 model: [hasCookie: authenticationTrustResolver.isRememberMe(SCH.context?.authentication),
                         postUrl: "${request.contextPath}${config.apf.filterProcessesUrl}"]
     }
@@ -105,9 +110,13 @@ class LoginController {
     /**
      * Callback after a failed login. forwards to the auth page with a warning message.
      */
-    def authfail = {
+    def authfail() {
 
-        def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+        //def username = session[UsernamePasswordAuthenticationFilter.SPRING_SECURITY_LAST_USERNAME_KEY]
+        def username = session[UsernamePasswordAuthenticationFilter.SPRING_SECURITY_FORM_USERNAME_KEY]
+
+        //def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+        def exception = session[WebAttributes.AUTHENTICATION_EXCEPTION]
 
         if(exception instanceof CredentialsExpiredException  && !RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("guestUser")){
             forward controller : "resetPassword", action: "changePassword", params : params
@@ -163,7 +172,7 @@ class LoginController {
     /**
      * The Ajax success redirect url.
      */
-    def ajaxSuccess = {
+    def ajaxSuccess() {
         render([success: true, username: springSecurityService.authentication.name] as JSON)
     }
 
@@ -171,24 +180,24 @@ class LoginController {
     /**
      * The Ajax denied redirect url.
      */
-    def ajaxDenied = {
+    def ajaxDenied() {
         render([error: 'access denied'] as JSON)
     }
 
     /**
      * When user clicks on forgot password URL.
      */
-    def forgotpassword ={
+    def forgotpassword() {
         def config = SpringSecurityUtils.securityConfig
 
-        String userName = request.getParameter("j_username")
+        String userName = request.getParameter("username")
         if(userName == null || userName.trim().length() == 0){
             flash.message =  message( code: "net.hedtech.banner.resetpassword.username.required.error")
             String view = 'auth'
             String postUrl = "${request.contextPath}${config.apf.filterProcessesUrl}"
             String forgotPasswordUrl =  "${request.contextPath}/login/resetPassword";
-            render view: view, plugin: "bannerCore", model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl, userNameRequired: true,
-                    rememberMeParameter: config.rememberMe.parameter]
+            render view: view, model: [postUrl: postUrl, forgotPasswordUrl: forgotPasswordUrl, userNameRequired: true,
+                                                             rememberMeParameter: config.rememberMe.parameter]
         }
         else{
             session.setAttribute("requestPage", "questans")
@@ -196,9 +205,10 @@ class LoginController {
         }
     }
 
-    def error = {
-        def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
-        render view: "customerror", plugin: "bannerCore", model: [msg: getMessageFor( exception ), uri: buildLogout()]
+    def error (){
+        //def exception = session[AbstractAuthenticationProcessingFilter.SPRING_SECURITY_LAST_EXCEPTION_KEY]
+        def exception = session[WebAttributes.AUTHENTICATION_EXCEPTION]
+        render view: "customerror", model: [msg: getMessageFor( exception ), uri: buildLogout()]
     }
 
     private def buildLogout() {
