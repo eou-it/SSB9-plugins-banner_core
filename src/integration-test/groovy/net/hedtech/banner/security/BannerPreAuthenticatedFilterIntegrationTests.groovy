@@ -5,12 +5,14 @@
 package net.hedtech.banner.security
 
 import grails.gorm.transactions.Rollback
+import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.testing.mixin.integration.Integration
 import grails.util.Holders
 import groovy.sql.Sql
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.springframework.mock.web.MockFilterChain
 import org.springframework.mock.web.MockHttpServletRequest
@@ -51,6 +53,10 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
 
     @Test
     void testAdminDoFilter() {
+        HashMap wildCardMap = new HashMap()
+        wildCardMap.put('pattern','/**')
+        wildCardMap.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove(wildCardMap)
         Map roleMap = new LinkedHashMap()
         roleMap.put('pattern','/ssb/**')
         roleMap.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
@@ -68,11 +74,19 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
         assertEquals SecurityContextHolder.context.getAuthentication().user.pidm, Integer.valueOf(bannerPIDM.intValue())
 
         assertNotNull(SecurityContextHolder.context.getAuthentication())
+        HashMap wildCardMap1 = new HashMap()
+        wildCardMap1.put('pattern','/ssb/**')
+        wildCardMap1.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove(wildCardMap1)
     }
 
 
     @Test
     void testAttributeNull() {
+        HashMap wildCardMap = new HashMap()
+        wildCardMap.put('pattern','/**')
+        wildCardMap.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove(wildCardMap)
         Map roleMap = new LinkedHashMap()
         roleMap.put('pattern','/ssb/**')
         roleMap.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
@@ -91,11 +105,21 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
         def msg = request.getSession()?.SPRING_SECURITY_LAST_EXCEPTION?.getMessage()
         assertEquals msg, "System is configured for external authentication and identity assertion UDC_IDENTIFIER is null"
         assertEquals response.getRedirectedUrl(), "/login/error"
+
+        HashMap wildCardMap1 = new HashMap()
+        wildCardMap1.put('pattern','/ssb/**')
+        wildCardMap1.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove(wildCardMap1)
+
     }
 
 
     @Test
     void testBannerUserNotFound() {
+        HashMap wildCardMap = new HashMap()
+        wildCardMap.put('pattern','/**')
+        wildCardMap.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove(wildCardMap)
         MockHttpServletRequest request = new MockHttpServletRequest()
         Map roleMap = new LinkedHashMap()
         roleMap.put('pattern','/ssb/**')
@@ -119,11 +143,20 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
         assertEquals msg, "System is configured for external authentication, identity assertion 2 does not map to a Banner user"
         assertNull(SecurityContextHolder.context.getAuthentication())
 
+        HashMap wildCardMap1 = new HashMap()
+        wildCardMap1.put('pattern','/ssb/**')
+        wildCardMap1.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove(wildCardMap1)
+
     }
 
 
     @Test
     void testFilterSkip() {
+        HashMap wildCardMap = new HashMap()
+        wildCardMap.put('pattern','/**')
+        wildCardMap.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove(wildCardMap)
         Map roleMap = new LinkedHashMap()
         roleMap.put('pattern','/ssb/**')
         roleMap.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
@@ -141,19 +174,29 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
         bannerPreAuthenticatedFilter.doFilter(request, response, chain)
 
         assertNull(SecurityContextHolder.context.getAuthentication())
+        HashMap wildCardMap1 = new HashMap()
+        wildCardMap1.put('pattern','/ssb/**')
+        wildCardMap1.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove(wildCardMap1)
+
     }
 
 
     @Test
     void testFilterMultiAntUrlMatch() {
+        HashMap wildCardMap = new HashMap()
+        wildCardMap.put('pattern','/**')
+        wildCardMap.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove(wildCardMap)
         Map roleMap = new LinkedHashMap()
         roleMap.put('pattern','/external/test/**')
         roleMap.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
         Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(roleMap)
 
-        roleMap.put('pattern','/external/**')
-        roleMap.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
-        Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(roleMap)
+        Map roleMap1 = new LinkedHashMap()
+        roleMap1.put('pattern','/external/**')
+        roleMap1.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.add(roleMap1)
 
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRequestURI("/external/test/foo/super/somefile2.html");
@@ -170,6 +213,15 @@ class BannerPreAuthenticatedFilterIntegrationTests extends BaseIntegrationTestCa
         assertNotNull(SecurityContextHolder.context.getAuthentication())
 
         assertEquals SecurityContextHolder.context.getAuthentication().user.pidm, Integer.valueOf(bannerPIDM.intValue())
+        HashMap wildCardMap1 = new HashMap()
+        wildCardMap1.put('pattern','/external/**')
+        wildCardMap1.put('access',['IS_AUTHENTICATED_ANONYMOUSLY'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove(wildCardMap1)
+
+        HashMap wildCardMap2 = new HashMap()
+        wildCardMap2.put('pattern','/external/test/**')
+        wildCardMap2.put('access',['ROLE_SELFSERVICE-STUDENT_BAN_DEFAULT_M', 'ROLE_SELFSERVICE-GUEST_BAN_DEFAULT_M'])
+        Holders.config.grails.plugin.springsecurity.interceptUrlMap.remove(wildCardMap2)
     }
 
     //----------------------------- Helper Methods ------------------------------
