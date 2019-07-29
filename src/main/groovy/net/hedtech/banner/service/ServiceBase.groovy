@@ -1,5 +1,5 @@
 /* *****************************************************************************
- Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.service
 
@@ -218,10 +218,16 @@ class ServiceBase {
         }
     }
 
-    private void updateDomainProperties(domainObject, content) {
+    public void updateDomainProperties(domainObject, content) {
 
         def d = Holders.getGrailsApplication().getMappingContext().getPersistentEntity( ConverterUtil.trimProxySuffix(getDomainClass().getName()))
         d.getPersistentProperties().each { it ->
+            if(content.containsKey(it.name))   {
+                domainObject[it.name] = content[it.name]
+            }
+        }
+
+        d.parentEntity?.getAssociations()?.each { it ->
             if(content.containsKey(it.name))   {
                 domainObject[it.name] = content[it.name]
             }
@@ -611,6 +617,10 @@ class ServiceBase {
         Map content = extractParams(domainClass, domainObjectOrProperties, log)
         def entity = Holders.getGrailsApplication().getMappingContext().getPersistentEntity(ConverterUtil.trimProxySuffix(getDomainClass().getName()))
         def propertyNames = entity.getPersistentProperties().collect{ it.name }
+        def associations = entity.parentEntity?.getAssociations()
+        if(associations) {
+            propertyNames.addAll(associations?.collect { it.name })
+        }
         def properties = content.subMap(propertyNames)
         def domainObject = domainClass.newInstance(properties)
         return domainObject

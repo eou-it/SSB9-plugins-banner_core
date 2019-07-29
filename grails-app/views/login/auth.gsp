@@ -58,6 +58,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 
 <body class="pageBg">
 <g:analytics/>
+<g:pageAccessAudit/>
 <div class="splashBg">
     <div class="ie-warning" id="ieWarningMessage">
         <div>
@@ -138,11 +139,6 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 
             </div>
         </div>
-        <g:if test="${grails.util.Holders.config.ssbPassword.reset.enabled == true || grails.util.Holders.config.ssbPassword.guest.reset.enabled == true}">
-            <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" id="forgotpasswordLink"
-                                              class="forgotpassword">${message(code: 'net.hedtech.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')}</a>
-            </div>
-        </g:if>
 
         <div class="logIn sign-in">
             <div class="textfield-wrapper">
@@ -154,11 +150,19 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                 </div>
             </div>
         </div>
+        <g:if test="${grails.util.Holders.config.ssbPassword.reset.enabled == true || grails.util.Holders.config.ssbPassword.guest.reset.enabled == true}">
+            <div class="forgotPasswordDiv"><a onclick="gotoForgotPassword()" href="#" id="forgotpasswordLink"
+                                              class="forgotpassword">${message(code: 'net.hedtech.banner.resetpassword.resetpassword.link.message', default: 'Forgot Password')}</a>
+            </div>
+        </g:if>
 
     </form>
 
     <div class="copyright">
-        <p>&copy; <g:message code="default.copyright.startyear"/><g:message code="default.copyright.endyear"/> <g:message code="default.copyright.message"/></p>
+        <p>&copy; <g:message code="default.copyright.message"
+                   args="${[g.message(code:'default.copyright.startyear'),
+                            g.message(code:'default.copyright.endyear')]}"/>
+        </p>
 
         <p><g:message code="net.hedtech.banner.login.copyright2"/></p>
     </div>

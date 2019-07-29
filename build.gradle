@@ -11,7 +11,7 @@ buildscript {
     }
 }
 
-version "9.31.1"
+version "9.32"
 group "banner.core"
 
 apply plugin:"eclipse"
@@ -51,11 +51,6 @@ dependencies {
     provided "org.grails:grails-plugin-services"
     provided "org.grails:grails-plugin-domain-class"
     runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.14.6"
-    
-	//testCompile "org.grails:grails-gorm-testing-support"
-    //testCompile "org.grails:grails-plugin-testing"
-    //testCompile "org.grails:grails-web-testing-support"
-	
 	compile "org.grails:grails-gorm-testing-support"
     compile "org.grails:grails-plugin-testing"
     compile "org.grails:grails-web-testing-support"
@@ -71,7 +66,7 @@ dependencies {
     compile "junit:junit:4.12"
     compile "commons-codec:commons-codec:1.10"
     compile "org.codehaus.groovy:groovy-ant:2.4.13"
-    //compile "org.codenarc:CodeNarc:0.17"
+    runtime "org.grails.plugins:x-frame-options:1.1.2"
     compile 'org.grails.plugins:grails-markdown:3.0.0'
     // Added for BannerXE - Oracle jars - specified as physical path
     compile files("lib/ojdbc6-11.2.0.1.0.jar")
@@ -91,32 +86,6 @@ assets {
     packagePlugin = true
 }
 
-/*assemble.doLast {
-
-    //def packageDir = "build/libs/packaging/"+"${rootProject.name}"+version
-    def packageDir = "../../build/libs/packaging/${rootProject.name}${rootProject.version}"
-    def targetDir = "../../target"
-    ant.mkdir( dir: packageDir)
-    ant.mkdir( dir: targetDir)
-    println "packageDir >>>>>>>${packageDir}"
-    def warName = "${rootProject.name}-${rootProject.version}.war"
-    println ".....Unzipping ... build/libs/${rootProject.name}-${rootProject.version}.war"
-    ant.unzip(src: "../../build/libs/${warName}", dest: packageDir, overwrite: "true")
-
-    println "......Moving >>>>> ${packageDir}WEB-INF/lib/ojdbc6-11.2.0.1.0.jar  to ${targetDir}"
-
-    ant.move (file: packageDir+"/WEB-INF/lib/ojdbc6-11.2.0.1.0.jar", toDir: targetDir )
-    println "......Moving >>>>> ${packageDir}WEB-INF/lib/xdb6-11.2.0.4.jar  to ${targetDir}"
-
-    ant.move (file: packageDir+"/WEB-INF/lib/xdb6-11.2.0.4.jar", toDir: targetDir )
-    //ant.delete(directory:packageDir+"/assets/", excl  )
-    ant.zip(destfile: targetDir+"/${rootProject.name}-${rootProject.version}.war", basedir: packageDir)
-    ant.delete(file: "../../build/libs/${warName}")
-    println "War created! - Copy the war from the target directory folder."
-    ant.delete( dir: packageDir )
-}*/
-
-// TODO :grails_332_change, needs to revisit
 // Added for BannerXE - Internal plugin dependency
 grails {
     plugins {
@@ -126,22 +95,11 @@ grails {
     }
 }
 
-/*tasks.withType(CodeNarc) {
-    def allGroovySourceDirs = subprojects.collect { Project p -> p.sourceSets.main.allGroovy.getSrcDirs() }.flatten()
-
-    //println allGroovySourceDirs
-    //println "-----------------" + codenarcClasspath
-    codenarcClasspath = codenarcClasspath + files("${rootProject.projectDir}/out/banner_codenarc.git-9.26.2.jar")
-    println "-----------------" + codenarcClasspath
-    allGroovySourceDirs.each {
-        println "-----------------" + it
-        source(it)
-    }
+apply plugin: 'codenarc'
+codenarc {
+    def codenarcRulePath = project(":banner-codenarc").projectDir.absolutePath + "/config/codenarc/rules.groovy"
+    configFile = file(codenarcRulePath)
+    maxPriority1Violations = Integer.MAX_VALUE
+    maxPriority2Violations = Integer.MAX_VALUE
+    maxPriority3Violations = Integer.MAX_VALUE
 }
-
-task codeNarcConsole(type: CodeNarc) {
-    // other config
-    reportFormat = 'console'
-}
-check.dependsOn('codeNarcConsole')
-*/

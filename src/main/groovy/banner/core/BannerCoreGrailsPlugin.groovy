@@ -16,17 +16,17 @@ import groovy.util.logging.Slf4j
 import net.hedtech.banner.configuration.ExternalConfigurationUtils
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.db.BannerDataSourceConnectionSourceFactory
+import net.hedtech.banner.general.audit.LoginAuditService
 import net.hedtech.banner.mep.MultiEntityProcessingService
 import net.hedtech.banner.security.*
 import net.hedtech.banner.service.DefaultLoaderService
 import net.hedtech.banner.service.HttpSessionService
-import net.hedtech.banner.service.LoginAuditService
+import net.hedtech.banner.service.BannerLoginAuditService
 import net.hedtech.banner.service.ServiceBase
 import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.runtime.GStringImpl
 import org.grails.orm.hibernate.HibernateEventListeners
-import org.springframework.context.event.SimpleApplicationEventMulticaster
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.security.web.access.ExceptionTranslationFilter
@@ -36,7 +36,6 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import net.hedtech.banner.service.AuditTrailPropertySupportHibernateListener
 import javax.servlet.Filter
-import java.util.concurrent.Executors
 
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
 import net.hedtech.banner.db.DbConnectionCacheSessionListener
@@ -90,6 +89,11 @@ class BannerCoreGrailsPlugin extends Plugin {
                             jndiName = "${Holders.config.bannerSsbDataSource.jndiName}"
                         }
                     }
+                    if (isCommmgrDataSourceEnabled()) {
+                        underlyingCommmgrDataSource(JndiObjectFactoryBean) {
+                            jndiName = "${Holders.config.bannerCommmgrDataSource.jndiName}"
+                        }
+                    }
                 } else {
                     log.info "Tomcat Will use a dataSource configured via JNDI"
                     underlyingDataSource(JndiObjectFactoryBean) {
@@ -100,11 +104,10 @@ class BannerCoreGrailsPlugin extends Plugin {
                             jndiName = "java:comp/env/${CH.config.bannerSsbDataSource.jndiName}"
                         }
                     }
-                }
-                //new DS
-                if (isCommmgrDataSourceEnabled()) {
-                    underlyingCommmgrDataSource(JndiObjectFactoryBean) {
-                        jndiName = "java:comp/env/${CH.config.bannerCommmgrDataSource.jndiName}"
+                    if (isCommmgrDataSourceEnabled()) {
+                        underlyingCommmgrDataSource(JndiObjectFactoryBean) {
+                            jndiName = "java:comp/env/${CH.config.bannerCommmgrDataSource.jndiName}"
+                        }
                     }
                 }
                 break
@@ -195,9 +198,11 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         authenticationDataSource(OracleDataSource)
 
-        loginAuditService(LoginAuditService) {
+        bannerLoginAuditService(BannerLoginAuditService) {
             dataSource = ref(dataSource)
         }
+
+        //loginAuditService(LoginAuditService)
 
         defaultLoaderService(DefaultLoaderService) {
             dataSource = ref(dataSource)
@@ -321,12 +326,6 @@ class BannerCoreGrailsPlugin extends Plugin {
             name = 'Banner Core Session Listener'
             listener = ref('dbConnectionCacheSessionListener')
         }
-
-        // Switch to grails.util.Holders in Grails 2.x
-        if (!CH.config.privacy?.codes) {
-            // Populate with default privacy policy codes
-            CH.config.privacy.codes = "INT NAV UNI"
-        }
     }
     }
 
@@ -442,17 +441,5 @@ class BannerCoreGrailsPlugin extends Plugin {
         names.collect {
             name -> ctx.getBean(name)
         }
-    }
-
-    private static void loadExternalPropertiesConfig(String filePathName) {
-        FileInputStream inputStream = new FileInputStream(filePathName)
-        Properties prop = new Properties()
-        prop.load(inputStream)
-        Holders.config.merge(prop)
-    }
-
-    private static void loadExternalGroovyConfig(String configText) {
-        Map properties = configText ? new ConfigSlurper(Environment.current.name).parse(configText)?.flatten() : [:]
-        Holders.config.merge(properties)
     }
 }

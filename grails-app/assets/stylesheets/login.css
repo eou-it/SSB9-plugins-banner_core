@@ -38,6 +38,7 @@ BODY {
 
 /*EDS*/
 html, body{
+    direction: ltr;
     height: 100%;
     background-position: center center;
     background-repeat:  no-repeat;

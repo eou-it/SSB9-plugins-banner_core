@@ -90,16 +90,18 @@ class BannerPreAuthenticatedFilter extends AbstractPreAuthenticatedProcessingFil
         log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url {}", url
         List interceptUrls= SpringSecurityUtils.securityConfig["interceptUrlMap"]
         AntPathMatcher antPathMatcher = new AntPathMatcher()
-        interceptUrls.each {interceptUrl ->
+        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication antUrlPathMatcher $antPathMatcher"
+        for ( interceptUrl in interceptUrls ) {
+            log.debug "BannerPreAuthenticatedFilter.requiresAuthentication entry : $interceptUrl"
             if (antPathMatcher.match(interceptUrl.pattern, url)) {
-                log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url {} matches {} from interceptUrlMap", url, interceptUrl.pattern
-                if(interceptUrl.configAttributes?.attrib?.contains("IS_AUTHENTICATED_ANONYMOUSLY")) {
-                    log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url {} is authenticated anonymously", url
-                    return false
+                    log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url matches $interceptUrl from interceptUrlMap"
+                    if(interceptUrl.access?.contains("IS_AUTHENTICATED_ANONYMOUSLY")) {
+                        log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url is authenticated anonymously"
+                        return false
+                    }
+                    return true
                 }
-                return true
             }
-        }
         log.debug "BannerPreAuthenticatedFilter.requiresAuthentication url $url requires authentication"
         return true
     }

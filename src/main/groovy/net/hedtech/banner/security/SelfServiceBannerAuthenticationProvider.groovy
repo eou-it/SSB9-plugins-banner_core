@@ -1,11 +1,13 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
+import grails.util.Holders
 import grails.util.Holders  as CH
 import groovy.sql.Sql
 import groovy.util.logging.Slf4j
+import net.hedtech.banner.general.audit.LoginAuditService
 import org.springframework.security.authentication.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
@@ -20,9 +22,9 @@ import java.sql.SQLException
 @Slf4j
 public class SelfServiceBannerAuthenticationProvider implements AuthenticationProvider {
 
-
     def dataSource	// injected by Spring
-    def preferredNameService
+    def loginAuditService
+
 
 
     public boolean supports( Class clazz ) {
@@ -74,8 +76,16 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             }
 
             setTransactionTimeout( authenticationResults['transactionTimeout'] )
-
+            String loginAuditConfiguration = AuthenticationProviderUtility.getLoginAuditConfiguration()
+            if (authenticationResults != null && loginAuditConfiguration?.equalsIgnoreCase('Y')){
+                 String loginComment = "Login successful"
+                 if (!loginAuditService) {
+                     loginAuditService = Holders.grailsApplication.mainContext.getBean("loginAuditService")
+                 }
+                 loginAuditService.createLoginLogoutAudit(authenticationResults.name, authenticationResults.pidm, loginComment)
+            }
             newAuthenticationToken( authenticationResults )
+
         }
         catch (DisabledException de)           { throw de }
         catch (CredentialsExpiredException ce) { throw ce }
@@ -92,8 +102,6 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             conn?.close()
         }
     }
-
-
 
 
 // ------------------------------- Helper Methods ------------------------------
