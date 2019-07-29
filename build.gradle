@@ -103,3 +103,7 @@ codenarc {
     maxPriority2Violations = Integer.MAX_VALUE
     maxPriority3Violations = Integer.MAX_VALUE
 }
+
+integrationTest {
+    ignoreFailures = true
+}
