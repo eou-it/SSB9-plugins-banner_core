@@ -4,6 +4,7 @@
 
 var path = document.querySelector('meta[name=menuBaseURL]').content || document.location.href;
 var appUrl = path.substring(0, path.indexOf('/ssb'));
+appUrl=appUrl+"/";
 document.getElementById("branding").setAttribute('href', appUrl);
 // define a handler
 function goToHome(e) {
