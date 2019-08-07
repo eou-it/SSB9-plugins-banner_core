@@ -119,7 +119,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
         resetPasswordController.request.setParameter("username", PERSON_RESP001)
         def oldIsResetSsbPasswordEnabled = Holders?.config.ssbPassword.reset.enabled
-        Holders?.config.ssbPassword.reset.enabled = null
+        Holders?.config.ssbPassword.reset.enabled = false
         resetPasswordController.questans()
         assertEquals(302, resetPasswordController.response.status)
         Holders?.config.ssbPassword.reset.enabled = oldIsResetSsbPasswordEnabled
