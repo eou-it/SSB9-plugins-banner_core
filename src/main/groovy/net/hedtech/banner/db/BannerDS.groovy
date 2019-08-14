@@ -135,10 +135,16 @@ public class BannerDS implements DataSource {
 
                 setRoles(oconn, user, applicableAuthorities)
 
-                if (ApiUtils.isApiRequest() || DBUtility.isSSBProxySupportEnabled()){ // APIs handle MEP like SSB
-                    setMepSsb(conn, user) // validate user is authorized for the MEP code
+                if (ApiUtils.isApiRequest()){ // APIs handle MEP like SSB
+                    log.debug ('Setting mep for user for API request')
+                    setMepSsb(conn, user)
+                }
+                else if (DBUtility.isSSBProxySupportEnabled()){ //proxiedUser
+                    log.debug ('Setting mep for user for proxiedUser')
+                    setMepSsb(conn)
                 }
                 else {
+                    log.debug ('Setting mep for other request')
                     setMep(conn, user)
                 }
 
