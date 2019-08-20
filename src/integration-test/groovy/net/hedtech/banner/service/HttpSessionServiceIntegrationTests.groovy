@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.service
 
@@ -39,8 +39,8 @@ class HttpSessionServiceIntegrationTests extends BaseIntegrationTestCase {
         HttpSessionService.sessionCreated(session)
         assertNotNull session.id
         String userName = session.getAttribute("SPRING_SECURITY_CONTEXT" )?.authentication?.user?.username
-        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(userName))
-            getHttpSessionService().sessionDestroyed(userName)
+        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(session.id))
+            getHttpSessionService().sessionDestroyed(session.id)
     }
 
 
@@ -51,8 +51,8 @@ class HttpSessionServiceIntegrationTests extends BaseIntegrationTestCase {
         HttpSessionService.sessionCreated(session)
         assertNotNull session.id
         String userName = session.getAttribute("SPRING_SECURITY_CONTEXT" )?.authentication?.user?.username
-        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(userName))
-            getHttpSessionService().sessionDestroyed(userName)
+        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(session.id))
+            getHttpSessionService().sessionDestroyed(session.id)
     }
 
 
@@ -65,8 +65,8 @@ class HttpSessionServiceIntegrationTests extends BaseIntegrationTestCase {
         HttpSessionService.cachedConnectionMap.put(userName,conn)
         HttpSessionService.sessionCreated(session)
         assertNotNull session.id
-        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(userName))
-                    getHttpSessionService().sessionDestroyed(userName)
+        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(session.id))
+                    getHttpSessionService().sessionDestroyed(session.id)
     }
 
 }
