@@ -23,6 +23,7 @@ import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.apache.http.conn.util.InetAddressUtils
 
+import javax.servlet.http.HttpServletRequest
 
 
 @Integration
@@ -191,6 +192,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     private LoginAudit newLoginAudit() {
 
         def user = BannerGrantedAuthorityService.getUser()
+        HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
         LoginAudit loginAudit = new LoginAudit(
                 auditTime: new Date(),
                 loginId: user.username,
@@ -199,7 +201,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
                 lastModified: new Date(),
                 lastModifiedBy: Holders.config.app.appId ,
                 dataOrigin: Holders.config.dataOrigin,
-                ipAddress: InetAddress.getLocalHost().getHostAddress(),
+                ipAddress: request.getRemoteAddr(),
                 userAgent: System.getProperty('os.name'),
                 logonComment: 'Test Comment',
                 version: 0L
