@@ -75,4 +75,8 @@ class ControllerUtils {
         return Holders?.config.banner.about.serviceUrl
     }
 
+    public static String privacyPolicyUrl() {
+        return Holders.config.PrivacyPolicy
+    }
+
 }
