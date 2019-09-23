@@ -1,5 +1,5 @@
 /* *****************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db
 
@@ -109,10 +109,16 @@ public class BannerDS implements DataSource {
 
                 setRoles(oconn, user, applicableAuthorities)
 
-                if (ApiUtils.isApiRequest() || DBUtility.isSSBProxySupportEnabled()){ // APIs handle MEP like SSB
-                    setMepSsb(conn, user) // validate user is authorized for the MEP code
+                if (ApiUtils.isApiRequest()){ // APIs handle MEP like SSB
+                    log.debug ('Setting mep for user for API request')
+                    setMepSsb(conn, user)
+                }
+                else if (DBUtility.isSSBProxySupportEnabled()){ //proxiedUser
+                    log.debug ('Setting mep for user for proxiedUser')
+                    setMepSsb(conn)
                 }
                 else {
+                    log.debug ('Setting mep for other request')
                     setMep(conn, user)
                 }
 
@@ -122,7 +128,7 @@ public class BannerDS implements DataSource {
                     bannerConnection.isCached = true
                     def session = RequestContextHolder.currentRequestAttributes().request.session
                     session.setAttribute("bannerRoles", roles)
-                    HttpSessionService.cachedConnectionMap.put(user?.username,bannerConnection)
+                    HttpSessionService.cachedConnectionMap.put(session.id, bannerConnection)
                     session.setAttribute("formContext", FormContext.get())
                 }
             }
@@ -183,7 +189,7 @@ public class BannerDS implements DataSource {
 
         if (Environment.current != Environment.TEST && ApiUtils.shouldCacheConnection()) {
             def session = RequestContextHolder?.currentRequestAttributes()?.request?.session
-            bannerConnection = HttpSessionService.cachedConnectionMap.get(user?.username)
+            bannerConnection = HttpSessionService.cachedConnectionMap.get(session.id)
             if (session.getAttribute("formContext"))
                 formContext = new ArrayList(session?.getAttribute("formContext"))
         }

@@ -1,5 +1,5 @@
 /* ****************************************************************************
-Copyright 2017 Ellucian Company L.P. and its affiliates.
+Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
 ******************************************************************************/
 
 package net.hedtech.banner.db
@@ -30,8 +30,9 @@ class DbConnectionCacheSessionListener implements HttpSessionListener {
         // Login causes the earlier established session to be destroyed and then no request
         // is avaiable and HTTPSerice sessionDestroyed throws an Exception
         String userName = session.getAttribute("SPRING_SECURITY_CONTEXT" )?.authentication?.user?.username
-        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(userName) && (Environment.current != Environment.TEST))
-            getHttpSessionService().sessionDestroyed(userName)
+        String sessionId = session.id
+        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(sessionId) && (Environment.current != Environment.TEST))
+            getHttpSessionService().sessionDestroyed(sessionId)
     }
 
 

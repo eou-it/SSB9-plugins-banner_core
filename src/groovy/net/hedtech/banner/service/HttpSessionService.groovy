@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2017 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2019 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 package net.hedtech.banner.service
@@ -19,23 +19,24 @@ class HttpSessionService {
         log.trace("Session created: " + session.id)
     }
 
-    def sessionDestroyed(String user) {
-        closeDBConnection(user)
+    def sessionDestroyed(String sessionId) {
+        closeDBConnection(sessionId)
     }
 
-    def closeDBConnection(String user) {
+    def closeDBConnection(String sessionId) {
         log.trace("HttpSessionService.closeDBConnection invoked")
         try {
-            Connection conn = cachedConnectionMap.get(user)
-
-            log.trace("HttpSessionService.closeDBConnection invoked $conn cleaned up")
+            Connection conn = cachedConnectionMap.get(sessionId)
+            log.debug("HttpSessionService.closeDBConnection invoked for $sessionId cleaned up")
             if (conn){
                 dataSource.removeConnection(conn)
-                cachedConnectionMap.remove(user)
+                cachedConnectionMap.remove(sessionId)
             }
 
         }
         catch (e) {
-			log.trace(e)        }
+            log.trace(e.toString())
+            log.error("Exception occured while closeDBConnection for $sessionId.")
+        }
     }
 }
