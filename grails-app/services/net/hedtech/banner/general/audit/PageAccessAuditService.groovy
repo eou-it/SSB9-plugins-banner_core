@@ -66,6 +66,7 @@ class PageAccessAuditService extends ServiceBase {
             }
             String pageUrl = queryString ? "${requestURI}?${queryString}" : requestURI
             PageAccessAudit pageAccessAudit = new PageAccessAudit()
+            TimeZone.setDefault(TimeZone.getTimeZone('UTC'))
             pageAccessAudit.setAuditTime(new Date())
             pageAccessAudit.setLoginId(loginId)
             pageAccessAudit.setPidm(pidm)

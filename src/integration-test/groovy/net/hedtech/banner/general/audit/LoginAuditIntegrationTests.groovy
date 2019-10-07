@@ -201,6 +201,7 @@ class LoginAuditIntegrationTests extends BaseIntegrationTestCase {
     private LoginAudit newLoginAudit() {
         def user = BannerGrantedAuthorityService.getUser()
         def request = RequestContextHolder.getRequestAttributes()?.request
+        TimeZone.setDefault(TimeZone.getTimeZone('UTC'))
         LoginAudit loginAudit = new LoginAudit(
                 auditTime: new Date(),
                 loginId: user.username,
