@@ -198,7 +198,6 @@ class PageAccessAuditIntegrationTests extends BaseIntegrationTestCase {
 
     private PageAccessAudit getPageAccessAudit() {
         def user = BannerGrantedAuthorityService.getUser()
-        TimeZone.setDefault(TimeZone.getTimeZone('UTC'))
         PageAccessAudit selfServicePageAccess = new PageAccessAudit(
                 auditTime: new Date(),
                 loginId: user.username,

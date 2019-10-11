@@ -9,6 +9,7 @@ import net.hedtech.banner.audit.AuditUtility
 import net.hedtech.banner.service.ServiceBase
 import org.springframework.web.context.request.RequestContextHolder
 import javax.servlet.http.HttpServletRequest
+import java.text.SimpleDateFormat
 
 @Transactional
 class LoginAuditService extends ServiceBase {
@@ -24,8 +25,10 @@ class LoginAuditService extends ServiceBase {
 
             LoginAudit loginAudit = new LoginAudit()
             loginAudit.setAppId(appId)
-            TimeZone.setDefault(TimeZone.getTimeZone('UTC'))
-            loginAudit.setAuditTime(new Date())
+            SimpleDateFormat sdf = new SimpleDateFormat()
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"))
+            Date auditTime = new Date(sdf.format(new Date()))
+            loginAudit.setAuditTime(auditTime)
             loginAudit.setLoginId(loginId)
             String ipAddressConfiguration = AuditUtility.getAuditIpAddressConfiguration()
             if (ipAddressConfiguration == 'y') {
