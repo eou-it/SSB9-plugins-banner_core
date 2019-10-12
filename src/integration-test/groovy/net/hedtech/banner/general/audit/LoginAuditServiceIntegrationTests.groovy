@@ -187,6 +187,17 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         assertEquals loginAuditObject.ipAddress , ipAddressTest
     }
 
+    @Test
+    void testVerifyUTCTimeLoginAudit(){
+        loginSSB('HOSH00001', '111111')
+        def user = BannerGrantedAuthorityService.getUser()
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
+        def  loginAuditObject = loginAuditService.createLoginLogoutAudit(user.username, user.pidm, 'Login Successful')
+        Date auditTime = new Date()
+        assertNotEquals(loginAuditObject.auditTime,auditTime)
+    }
+
 
     private LoginAudit newLoginAudit() {
 

@@ -20,6 +20,7 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 
 import javax.servlet.ServletRequest
+import java.text.SimpleDateFormat
 
 @Integration
 @Rollback
@@ -273,6 +274,15 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         String ipAddressTest = request.getRemoteAddr()
         PageAccessAudit pageAccessAudit = pageAccessAuditService.checkAndCreatePageAudit()
         assertEquals pageAccessAudit.ipAddress , ipAddressTest
+    }
+
+    @Test
+    void testVerifyUTCTimePageAudit(){
+        loginSSB('HOSH00001', '111111')
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/home')
+        def  pageAccessAuditObject = pageAccessAuditService.createPageAudit()
+        Date auditTime = new Date()
+        assertNotEquals(pageAccessAuditObject.auditTime,auditTime)
     }
 
     private static PageAccessAudit createPageAccessAudit() {
