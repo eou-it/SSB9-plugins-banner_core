@@ -68,9 +68,9 @@ class PageAccessAuditService extends ServiceBase {
             }
             String pageUrl = queryString ? "${requestURI}?${queryString}" : requestURI
             PageAccessAudit pageAccessAudit = new PageAccessAudit()
-            SimpleDateFormat sdf = new SimpleDateFormat()
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yy hh.mm.ss.SS a")
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"))
-            Date auditTime = new Date(sdf.format(new Date()))
+            Date auditTime = sdf.parse(sdf.format(new Date()))
             pageAccessAudit.setAuditTime(auditTime)
             pageAccessAudit.setLoginId(loginId)
             pageAccessAudit.setPidm(pidm)

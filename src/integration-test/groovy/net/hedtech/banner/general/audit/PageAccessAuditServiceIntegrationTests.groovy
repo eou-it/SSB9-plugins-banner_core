@@ -20,7 +20,6 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 
 import javax.servlet.ServletRequest
-import java.text.SimpleDateFormat
 
 @Integration
 @Rollback

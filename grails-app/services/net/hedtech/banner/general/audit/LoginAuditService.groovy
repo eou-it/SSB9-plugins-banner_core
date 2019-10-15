@@ -25,9 +25,9 @@ class LoginAuditService extends ServiceBase {
 
             LoginAudit loginAudit = new LoginAudit()
             loginAudit.setAppId(appId)
-            SimpleDateFormat sdf = new SimpleDateFormat()
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yy hh.mm.ss.SS a")
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"))
-            Date auditTime = new Date(sdf.format(new Date()))
+            Date auditTime = sdf.parse(sdf.format(new Date()))
             loginAudit.setAuditTime(auditTime)
             loginAudit.setLoginId(loginId)
             String ipAddressConfiguration = AuditUtility.getAuditIpAddressConfiguration()
