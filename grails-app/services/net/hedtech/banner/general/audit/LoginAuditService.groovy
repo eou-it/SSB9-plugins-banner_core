@@ -25,9 +25,11 @@ class LoginAuditService extends ServiceBase {
 
             LoginAudit loginAudit = new LoginAudit()
             loginAudit.setAppId(appId)
-            SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yy hh.mm.ss.SS a")
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC"))
-            Date auditTime = sdf.parse(sdf.format(new Date()))
+            SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MMM-yy hh.mm.ss.SS a")
+            sdf1.setTimeZone(TimeZone.getTimeZone("UTC"))
+            SimpleDateFormat sdf2 = new SimpleDateFormat("dd-MMM-yy hh.mm.ss.SS a");
+            def d1  = sdf1.format(new Date())
+            Date auditTime = sdf2.parse(d1, new java.text.ParsePosition(0))
             loginAudit.setAuditTime(auditTime)
             loginAudit.setLoginId(loginId)
             String ipAddressConfiguration = AuditUtility.getAuditIpAddressConfiguration()
@@ -43,6 +45,7 @@ class LoginAuditService extends ServiceBase {
             loginAudit.setPidm(userpidm as Integer)
             loginAudit.setVersion(0L)
             loginAudit.setLogonComment(comment)
+            println " new object ${loginAudit}"
             this.create(loginAudit)
         } catch (Exception ex) {
             log.error("Exception occured while creating loginAudit ${ex.getMessage()}")
