@@ -13,7 +13,11 @@ import javax.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.context.request.RequestContextHolder
 
+import java.text.ParsePosition
 import java.text.SimpleDateFormat
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 @Transactional
 class PageAccessAuditService extends ServiceBase {
@@ -68,11 +72,9 @@ class PageAccessAuditService extends ServiceBase {
             }
             String pageUrl = queryString ? "${requestURI}?${queryString}" : requestURI
             PageAccessAudit pageAccessAudit = new PageAccessAudit()
-            SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MMM-yy hh.mm.ss.SS a")
-            sdf1.setTimeZone(TimeZone.getTimeZone("UTC"))
-            SimpleDateFormat sdf2 = new SimpleDateFormat("dd-MMM-yy hh.mm.ss.SS a");
-            def d1  = sdf1.format(new Date())
-            Date auditTime = sdf2.parse(d1, new java.text.ParsePosition(0))
+            SimpleDateFormat sdf2 = new SimpleDateFormat("dd-MMM-yy hh.mm.ss.SS a")
+            def time = ZonedDateTime.now(ZoneId.of("UTC")).format(DateTimeFormatter.ofPattern('dd-MMM-yy hh.mm.ss.SS a'))
+            Date auditTime = sdf2.parse(time, new ParsePosition(0))
             pageAccessAudit.setAuditTime(auditTime)
             pageAccessAudit.setLoginId(loginId)
             pageAccessAudit.setPidm(pidm)
@@ -88,6 +90,8 @@ class PageAccessAuditService extends ServiceBase {
             }
             pageAccessAudit.setLastModifiedBy('BANNER')
             pageAccessAudit.setVersion(0L)
+            println "------------------------------"
+            println "pageAccessAudit ${pageAccessAudit}"
             this.create(pageAccessAudit)
         } catch (Exception ex) {
             log.error("Exception occured while creating PageAccess Audit ${ex.getMessage()}")
