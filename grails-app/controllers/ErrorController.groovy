@@ -23,6 +23,7 @@ class ErrorController {
     public static final String VIEW_ERROR_PAGE = "error"
     public static final String VIEW_PAGE_NOT_FOUND = "pageNotFound"
     public static final String VIEW_FORBIDDEN = "forbidden"
+    public static final String VIEW_NETWORK_FAILURE = "networkFailure"
     def logoutHandlers
 
     def internalServerError () {
@@ -61,12 +62,21 @@ class ErrorController {
                 handler.onLogoutSuccess(request, response, SCH.context?.authentication)
             }
         }
-        def model = [
-                exception            : targetException,
-                returnHomeLinkAddress: returnHomeLinkAddress
-        ]
+        if (targetException.cause instanceof  java.sql.SQLException || targetException.cause instanceof oracle.net.ns.NetException){
+            def model = [
+                    exception            : targetException,
+                    returnHomeLinkAddress: returnHomeLinkAddress
+            ]
+            render view: VIEW_NETWORK_FAILURE, model: model
+        }else{
+            def model = [
+                    exception            : targetException,
+                    returnHomeLinkAddress: returnHomeLinkAddress
+            ]
+            render view: VIEW_ERROR_PAGE, model: model
+        }
 
-        render view: VIEW_ERROR_PAGE, model: model
+
     }
 
     def pageNotFoundError() {
