@@ -275,6 +275,15 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         assertEquals pageAccessAudit.ipAddress , ipAddressTest
     }
 
+    @Test
+    void testVerifyUTCTimePageAudit(){
+        loginSSB('HOSH00001', '111111')
+        RequestContextHolder?.currentRequestAttributes()?.request?.setRequestURI('/ssb/home')
+        def  pageAccessAuditObject = pageAccessAuditService.createPageAudit()
+        Date auditTime = new Date()
+        assertNotEquals(pageAccessAuditObject.auditTime,auditTime)
+    }
+
     private static PageAccessAudit createPageAccessAudit() {
         def user = BannerGrantedAuthorityService.getUser()
         PageAccessAudit pageAccessAudit = new PageAccessAudit(
