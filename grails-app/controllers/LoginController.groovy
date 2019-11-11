@@ -144,7 +144,7 @@ class LoginController {
                 msg = SpringSecurityUtils.securityConfig.errors.login.expired
             }
             else if (exception instanceof CredentialsExpiredException) {
-                msg = message( code:"net.hedtech.banner.errors.login.expired" )
+                msg = message( code:"net.hedtech.banner.errors.connection" )
             }
             else if (exception instanceof DisabledException) {
                 msg = message( code:"net.hedtech.banner.errors.login.disabled" )
