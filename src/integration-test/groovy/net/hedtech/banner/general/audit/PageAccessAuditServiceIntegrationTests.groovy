@@ -20,6 +20,7 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 
 import javax.servlet.ServletRequest
+import javax.servlet.http.HttpServletRequest
 
 @Integration
 @Rollback
@@ -286,13 +287,14 @@ class PageAccessAuditServiceIntegrationTests extends BaseIntegrationTestCase{
 
     private static PageAccessAudit createPageAccessAudit() {
         def user = BannerGrantedAuthorityService.getUser()
+        HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
         PageAccessAudit pageAccessAudit = new PageAccessAudit(
                 auditTime: new Date(),
                 loginId: "TestLogin",
-                pidm: 123,
+                pidm: user.pidm,
                 appId: Holders.config.app.appId,
                 pageUrl: "/testPageid/",
-                ipAddress: InetAddress.getLocalHost().getHostAddress()
+                ipAddress: request.getRemoteAddr()
         )
         return pageAccessAudit
     }
