@@ -90,8 +90,6 @@ class PageAccessAuditService extends ServiceBase {
             }
             pageAccessAudit.setLastModifiedBy('BANNER')
             pageAccessAudit.setVersion(0L)
-            println "------------------------------"
-            println "pageAccessAudit ${pageAccessAudit}"
             this.create(pageAccessAudit)
         } catch (Exception ex) {
             log.error("Exception occured while creating PageAccess Audit ${ex.getMessage()}")
