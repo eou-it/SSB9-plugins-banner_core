@@ -14,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler
 
+import java.sql.SQLException
+
 class ErrorController {
 
     static defaultAction = "internalServerError"
@@ -23,7 +25,6 @@ class ErrorController {
     public static final String VIEW_ERROR_PAGE = "error"
     public static final String VIEW_PAGE_NOT_FOUND = "pageNotFound"
     public static final String VIEW_FORBIDDEN = "forbidden"
-    public static final String VIEW_NETWORK_FAILURE = "networkFailure"
     def logoutHandlers
 
     def internalServerError () {
@@ -63,20 +64,15 @@ class ErrorController {
             }
         }
         if (targetException.cause instanceof  java.sql.SQLException || targetException.cause instanceof oracle.net.ns.NetException){
-            def model = [
-                    exception            : targetException,
-                    returnHomeLinkAddress: returnHomeLinkAddress
-            ]
-            render view: VIEW_NETWORK_FAILURE, model: model
-        }else{
-            def model = [
-                    exception            : targetException,
-                    returnHomeLinkAddress: returnHomeLinkAddress
-            ]
-            render view: VIEW_ERROR_PAGE, model: model
+            targetException = new SQLException(message( code: "net.hedtech.banner.errors.connection" ))
+
         }
 
-
+        def model = [
+                exception            : targetException,
+                returnHomeLinkAddress: returnHomeLinkAddress
+        ]
+        render view: VIEW_ERROR_PAGE, model: model
     }
 
     def pageNotFoundError() {
