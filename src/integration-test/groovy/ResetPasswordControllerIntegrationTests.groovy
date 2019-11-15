@@ -119,7 +119,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
         resetPasswordController.request.setParameter("username", PERSON_RESP001)
         def oldIsResetSsbPasswordEnabled = Holders?.config.ssbPassword.reset.enabled
-        Holders?.config.ssbPassword.reset.enabled = null
+        Holders?.config.ssbPassword.reset.enabled = false
         resetPasswordController.questans()
         assertEquals(302, resetPasswordController.response.status)
         Holders?.config.ssbPassword.reset.enabled = oldIsResetSsbPasswordEnabled
@@ -178,7 +178,7 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
         resetPasswordController.request.setParameter("username", PERSON_RESP004)
         def oldIsResetSsbPasswordEnabled = Holders?.config.ssbPassword.guest.reset.enabled
-        Holders?.config.ssbPassword.guest.reset.enabled = null
+        Holders?.config.ssbPassword.guest.reset.enabled = false
         resetPasswordController.questans()
         assertEquals(302, resetPasswordController.response.status)
         Holders?.config.ssbPassword.guest.reset.enabled = oldIsResetSsbPasswordEnabled
@@ -629,9 +629,9 @@ class ResetPasswordControllerIntegrationTests extends BaseIntegrationTestCase {
     @Test
     void testResetPasswordWithQuestionsGuestGuestUrl() {
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.setAttribute("requestPage", "questans")
-        resetPasswordController.request.setParameter("j_username", GUEST1)
+        resetPasswordController.request.setParameter("username", GUEST1)
         def oldRestEnabledValue = Holders?.config.ssbPassword.guest.reset.enabled
-        Holders?.config.ssbPassword.guest.reset.enabled = null
+        Holders?.config.ssbPassword.guest.reset.enabled = false
         resetPasswordController.questans()
         assertEquals(302, resetPasswordController.response.status)
         RequestContextHolder?.currentRequestAttributes()?.request?.session?.removeAttribute("requestPage")

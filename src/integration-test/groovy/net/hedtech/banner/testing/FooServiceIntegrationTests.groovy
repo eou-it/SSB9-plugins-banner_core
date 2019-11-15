@@ -14,6 +14,7 @@ import org.junit.Before
 import org.junit.Test
 import groovy.sql.Sql
 import grails.util.Holders
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.context.SecurityContextHolder
 import org.junit.Ignore
 import org.springframework.web.context.request.RequestContextHolder
@@ -27,10 +28,11 @@ import org.springframework.web.context.request.RequestContextHolder
 @Slf4j
 class FooServiceIntegrationTests extends BaseIntegrationTestCase {
 
-
     def fooService                     // injected by Spring
-//    private static final Logger log = Logger.getLogger(getClass())
 
+    @Autowired
+    TermController controller
+//    private static final Logger log = Logger.getLogger(getClass())
 
     @Before
     public void setUp() {
@@ -83,7 +85,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
             fooService.create(newTestFooParams('TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT'))
             fail("Was able to save an invalid Foo!")
         } catch (ApplicationException e) {
-            def returnMap = e.returnMap(new TermController().localizer)
+            def returnMap = e.returnMap(controller.localizer)
             assertTrue "Return map not as expected but was: ${returnMap.message}",
                     returnMap.message ==~ /.*The Foo cannot be saved, as it contains errors.*/
             assertFalse returnMap.success
@@ -165,7 +167,7 @@ class FooServiceIntegrationTests extends BaseIntegrationTestCase {
         try {
             fooService.update(foo)
         } catch (ApplicationException e) {
-            def returnMap = e.returnMap(new TermController().localizer)
+            def returnMap = e.returnMap(controller.localizer)
             assertTrue "Return map not as expected but was: ${returnMap.message}",
                     returnMap.message ==~ /.*There was an attempt to modify read-only properties: Address Country, Address Zip Code\. This has been logged already.*/
         }

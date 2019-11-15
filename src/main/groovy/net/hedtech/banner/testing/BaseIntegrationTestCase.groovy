@@ -5,13 +5,17 @@ package net.hedtech.banner.testing
 
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebMockUtil
+import grails.util.Holders
+import grails.web.mapping.LinkGenerator
 import grails.web.servlet.context.GrailsWebApplicationContext
 import groovy.sql.Sql
+import groovy.util.logging.Slf4j
 import net.hedtech.banner.configuration.ConfigurationUtils
 import net.hedtech.banner.exceptions.ApplicationException
 import net.hedtech.banner.security.FormContext
 import org.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.grails.plugins.testing.GrailsMockHttpServletResponse
+import org.grails.plugins.web.taglib.ApplicationTagLib
 import org.grails.plugins.web.taglib.ValidationTagLib
 import org.junit.After
 import org.junit.Assert
@@ -23,6 +27,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.WebApplicationContext
+import org.springframework.web.context.request.RequestContextHolder
 
 import static org.junit.Assert.*
 
@@ -37,7 +42,7 @@ import static org.junit.Assert.*
  * Lastly, this base class provides additional helper methods.  To ensure the login/logout is
  * effective, this class manipulates the hibernate session and database connecitons.
  */
-
+@Slf4j
 class BaseIntegrationTestCase extends Assert {
 
     def transactional = false         // this turns off 'Grails' test framework management of transactions
@@ -72,10 +77,9 @@ class BaseIntegrationTestCase extends Assert {
 	
 	@Autowired
     WebApplicationContext webAppCtx
-	
-    
-	//private static final def log = Logger.getLogger(this.getClass())
-    
+
+    LinkGenerator grailsLinkGenerator
+
 	/**
      * Performs a login for the standard 'grails_user' if necessary, and calls super.setUp().
      * If you need to log in another user or ensure no user is logged in,
@@ -100,7 +104,7 @@ class BaseIntegrationTestCase extends Assert {
             formContext = associatedFormsList
             FormContext.set( associatedFormsList )
         } else {
-            //log.info("Warning: No FormContext has been set, and it cannot be set automatically without knowing the controller...")
+            log.info("Warning: No FormContext has been set, and it cannot be set automatically without knowing the controller...")
         }
 
         MockHttpServletRequest request = new GrailsMockHttpServletRequest(webAppCtx.servletContext)
@@ -112,6 +116,10 @@ class BaseIntegrationTestCase extends Assert {
             controller.class.metaClass.getFlash = { -> flash  }
             controller.class.metaClass.redirect = { Map args -> redirectMap = args  }
             controller.class.metaClass.render = { Map args -> renderMap = args  }
+            def applicationTagLib = Holders.grailsApplication.mainContext.getBean(ApplicationTagLib)
+            controller.metaClass.message = applicationTagLib.message
+            controller.grails_artefact_controller_support_RequestForwarder__linkGenerator = applicationTagLib.linkGenerator
+            controller.grails_artefact_controller_support_ResponseRedirector__linkGenerator = applicationTagLib.linkGenerator
         }
         loginIfNecessary(username,password)
 
@@ -137,6 +145,7 @@ class BaseIntegrationTestCase extends Assert {
     @After
     public void tearDown() {
         FormContext.clear()
+        //RequestContextHolder.resetRequestAttributes()
 		/*
         if (useTransactions) {
             sessionFactory.currentSession.connection().rollback()

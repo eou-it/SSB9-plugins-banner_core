@@ -10,6 +10,7 @@ import org.junit.Before
 import org.junit.After
 
 import org.junit.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * Used to test reporting of an ORA-01465 exception.N
@@ -18,6 +19,8 @@ import org.junit.Test
 @Rollback
 class AreaLibraryIntegrationTests extends BaseIntegrationTestCase {
 
+    @Autowired
+    TermController controller
 
 	@Before
     public void setUp() {
@@ -46,8 +49,7 @@ class AreaLibraryIntegrationTests extends BaseIntegrationTestCase {
             assertTrue ('SQLException' == ae.type || 'UncategorizedSQLException' == ae.type)
             assertEquals 1465, ae.sqlExceptionErrorCode
 
-            def localizer = new TermController().localizer // just using this as a quick way to get a localizer closure
-            def returnMap = ae.returnMap( localizer )
+            def returnMap = ae.returnMap( controller.localizer )
             returnMap.underlyingErrorMessage
             assertTrue "Underlying error message not as expected but was ${returnMap.underlyingErrorMessage}",
                         returnMap.underlyingErrorMessage.contains( "ORA-01465: invalid hex number" )

@@ -21,16 +21,14 @@ import org.springframework.web.context.request.RequestContextHolder
 
 @Integration
 @Rollback
-class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
+class LoginControllerIntegrationTests extends BaseIntegrationTestCase{
 
-    @Autowired
-    LoginController controller
+    //@Autowired
+    //LoginController controller
 
     def msg
-
     def selfServiceBannerAuthenticationProvider
     def authenticationTrustResolver
-
     def springSecurityService
 
     private static final String PERSON_HOSWEB001 = 'HOSWEB001'
@@ -46,6 +44,7 @@ class LoginControllerIntegrationTests extends BaseIntegrationTestCase {
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
+        controller = new LoginController()
         super.setUp()
         controller.springSecurityService = springSecurityService
         controller.authenticationTrustResolver = authenticationTrustResolver

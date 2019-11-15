@@ -23,6 +23,7 @@ import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.apache.http.conn.util.InetAddressUtils
 
+import javax.servlet.http.HttpServletRequest
 
 
 @Integration
@@ -187,10 +188,22 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
         assertEquals loginAuditObject.ipAddress , ipAddressTest
     }
 
+    @Test
+    void testVerifyUTCTimeLoginAudit(){
+        loginSSB('HOSH00001', '111111')
+        def user = BannerGrantedAuthorityService.getUser()
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
+        def  loginAuditObject = loginAuditService.createLoginLogoutAudit(user.username, user.pidm, 'Login Successful')
+        Date auditTime = new Date()
+        assertNotEquals(loginAuditObject.auditTime,auditTime)
+    }
+
 
     private LoginAudit newLoginAudit() {
 
         def user = BannerGrantedAuthorityService.getUser()
+        HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
         LoginAudit loginAudit = new LoginAudit(
                 auditTime: new Date(),
                 loginId: user.username,
@@ -199,7 +212,7 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
                 lastModified: new Date(),
                 lastModifiedBy: Holders.config.app.appId ,
                 dataOrigin: Holders.config.dataOrigin,
-                ipAddress: InetAddress.getLocalHost().getHostAddress(),
+                ipAddress: request.getRemoteAddr(),
                 userAgent: System.getProperty('os.name'),
                 logonComment: 'Test Comment',
                 version: 0L
