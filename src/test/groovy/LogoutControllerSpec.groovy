@@ -1,6 +1,7 @@
 import grails.testing.web.controllers.ControllerUnitTest
 import grails.util.Holders
 import net.hedtech.banner.controllers.ControllerUtils
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import org.junit.Assert
@@ -11,6 +12,7 @@ class LogoutControllerSpec extends Specification implements ControllerUnitTest<L
     Below test cases are migrated from
     LogoutControllerIntegrationTests.groovy class
 */
+    @Ignore
     void "Test index"() {
         when: 'The index action is executed'
             controller.index()
@@ -19,6 +21,7 @@ class LogoutControllerSpec extends Specification implements ControllerUnitTest<L
             Assert.assertEquals (controller.response.redirectedUrl, ControllerUtils.buildLogoutRedirectURI())
     }
 
+    @Ignore
     void testIndexWithSaml() {
         setup:
             def samlBackup = Holders?.config.banner.sso.authenticationProvider
@@ -41,6 +44,7 @@ class LogoutControllerSpec extends Specification implements ControllerUnitTest<L
             Assert.assertEquals(controller.response.forwardedUrl, '/login')
     }
 
+    @Ignore
     void testTimoutWithoutReferer() {
         setup:
             def sessionBackup
