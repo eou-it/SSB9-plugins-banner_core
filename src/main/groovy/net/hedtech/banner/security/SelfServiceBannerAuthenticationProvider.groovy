@@ -398,6 +398,9 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                     union
                     select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
                            where govrole_finance_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINANCE'
+                    union
+                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
+                           where govrole_bsac_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'BSAC'
                 """, [ pidm: authentictionResults.pidm ] )
 
             rows?.each { row ->
