@@ -78,7 +78,7 @@ class ControllerUtils {
     public static String privacyPolicyUrl() {
         String privacyPolicyUrl = ""
         def mep = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
-        privacyPolicyUrl = (mep) ? Holders.config?.Institution.privacyPolicy[mep] : Holders?.config?.Institution.privacyPolicy["DEFAULT"]
+        privacyPolicyUrl = (mep) ? Holders.config?.institution.privacyPolicy[mep] : Holders?.config?.institution.privacyPolicy["DEFAULT"]
         return privacyPolicyUrl
     }
 
