@@ -148,6 +148,10 @@ LOG IN
     padding-left: 1.5em;
 }
 
+.icon-error-text {
+    padding-right: 10px;
+}
+
 .splashBg .password-error-state {
     background: url(../images/textbox.png) no-repeat left -54px;
     padding: 0px 0px 0px 20px;
