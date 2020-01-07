@@ -91,12 +91,14 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
         catch (CredentialsExpiredException ce) { throw ce }
         catch (LockedException le)             { throw le }
         catch (BadCredentialsException be) {
-            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, but another provider may be able to..."
+            log.debug "SelfServiceBannerAuthenticationProvider unable to authenticate user $authentication.name caused by exception: " + be.toString()
+            log.error "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, but another provider may be able to..."
             return null // Other providers follow this one, and returning null will give them an opportunity to authenticate the user
         }
         catch (e) {
             // We'll bury other exceptions (e.g., we'll get a SQLException because the user couldn't be found)
-            log.warn "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, but another provider may be able to..."
+            log.debug "SelfServiceBannerAuthenticationProvider unable to authenticate user $authentication.name caused by exception: " + e.toString()
+            log.error "SelfServiceBannerAuthenticationProvider was not able to authenticate user $authentication.name, but another provider may be able to..."
             return null // again, we'll return null to allow other providers a chance to authenticate the user
         } finally {
             conn?.close()
@@ -142,7 +144,8 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                                       pidm: pidm, oracleUserName: oracleUserName ].withDefault { k -> false }
         switch (errorStatus) {
             case -20101:
-                log.debug "SelfServiceAuthenticationProvider failed on invalid login id/pin"
+                log.error "SelfServiceAuthenticationProvider failed on invalid login id/pin"
+                log.debug "The following user " + authenticationResults.name + " authentication failed with error code " + errorStatus
                 authenticationResults.valid = false
                 break
             case -20112:
@@ -150,11 +153,13 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
                 authenticationResults.deceased = true
                 break
             case -20105:
-                log.debug "SelfServiceAuthenticationProvider failed on disabled pin"
+                log.error "SelfServiceAuthenticationProvider failed on disabled pin"
+                log.debug "The following user " + authenticationResults.name + " authentication failed with error code " + errorStatus
                 authenticationResults.disabled = true
                 break
             case -20901:
-                log.debug "SelfServiceAuthenticationProvider failed on expired pin"
+                log.error "SelfServiceAuthenticationProvider failed on expired pin"
+                log.debug "The following user " + authenticationResults.name + " authentication failed with error code " + errorStatus
                 authenticationResults.expired = true
                 AuthenticationProviderUtility.setUserDetails(authenticationResults.pidm,authenticationResults.name)
                 break
