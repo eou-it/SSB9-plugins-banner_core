@@ -103,7 +103,6 @@ codenarc {
     maxPriority2Violations = Integer.MAX_VALUE
     maxPriority3Violations = Integer.MAX_VALUE
 }
-<<<<<<< HEAD
 
 cobertura{
     coverageFormats = ['xml','html']
@@ -120,5 +119,3 @@ tasks.withType(Test) {
         showStandardStreams false
     }
 }
-=======
->>>>>>> ee29e840e48fb6627e6c152d4beebb05663d950f
