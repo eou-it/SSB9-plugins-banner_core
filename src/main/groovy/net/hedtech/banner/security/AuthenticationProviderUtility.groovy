@@ -288,13 +288,12 @@ class AuthenticationProviderUtility {
     }
 
     private static handleFailure( provider, authentication, authenticationResults, exception ) {
-
-        log.warn "${provider.class.simpleName} was not able to authenticate user $authentication.name due to exception ${exception.class.simpleName}: ${exception.message} "
-
+        def sessionObj = RequestContextHolder.currentRequestAttributes().request.session
+        String user =  sessionObj.getAttribute('auth_name')
+        log.warn "${provider.class.simpleName} was not able to authenticate user $user due to exception ${exception.class.simpleName}: ${exception.message}"
         applicationContext = getApplicationContext()
         def firstAuthProvider = applicationContext.authenticationManager.providers[0]
         def shortName = "SSB"
-        def sessionObj = RequestContextHolder.currentRequestAttributes().request.session
         def msg = GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception"))
         def module = GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider"))
         def sessionModule = sessionObj.getAttribute("module")
