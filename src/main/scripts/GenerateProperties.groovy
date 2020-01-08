@@ -1,20 +1,20 @@
 /*******************************************************************************
-Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
-*******************************************************************************/ 
+ Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+ *******************************************************************************/
 
-includeTargets << grailsScript("Init")
-includeTargets << grailsScript("_GrailsInit")
-
-import grails.util.BuildSettings
 import groovy.io.FileType
-import java.math.MathContext
-import java.math.RoundingMode
 import org.apache.commons.lang.StringUtils
 
+import java.math.MathContext
+import java.math.RoundingMode
+
 /**
- * This script will take a properties bundle and generate a 'dummy' bundle with markup that will
- * allow us identify a property value as being localized or more importantly, something that is not localized.
- */
+ * This script will take a properties bundle and generate a 'dummy' bundle.
+ * This dummy bundle will allow us identify a property value as being localized
+ * or more importantly, something that is not localized.
+ **/
+description "Generate a psuedo properties file for debugging i18n issues", "grails generate-properties filter=messages.properties targetLocale=en_PS"
+
 
 def getNewFileName(file, locale) {
     def absolutePathOfFile = file.absolutePath
@@ -35,8 +35,9 @@ def writeToFile(fileName, generatedProps) {
 def shouldFormatKey(key) {
     def shouldFormat = true;
 
-    if (key.indexOf(".format") >= 0
-            || "default.language.direction".equals(key)) {
+    if (key.indexOf(".format") >= 0 ||
+            key.indexOf(".dateFormat") >= 0 ||
+            "default.language.direction".equals(key)) {
         shouldFormat = false
     }
     return shouldFormat
@@ -58,10 +59,10 @@ def generateNewProp( line, params ) {
         }
         else if (shouldFormatKey( key )) {
 
-            def calculateBufferSize = { word ->
+            def calculateBufferSize = { valueString ->
                 def factor = 0.0
 
-                switch (word.size()) {
+                switch (valueString.size()) {
                     case 1..5:
                         factor = 1
                         break
@@ -81,15 +82,10 @@ def generateNewProp( line, params ) {
                         factor = 0.1
                 }
 
-               return word.size() * factor
+                return valueString.size() * factor
             }
 
-            def numberOfCharactersToAdd = 0.0
-
-            def words = value.tokenize( " " )
-            words.each {
-                numberOfCharactersToAdd += calculateBufferSize( it )
-            }
+            def numberOfCharactersToAdd = calculateBufferSize(value)
 
             def buffer = { num, character ->
 
@@ -128,14 +124,23 @@ def generateNewProp( line, params ) {
 def generatePropertiesFile( args = null ) {
 
     def params = getParamsMap( args )
+    def generatedProps
+    String filename
 
+    def dirPath = System.getProperty('user.dir')
 
-    def dir = BuildSettings.BASE_DIR
-    def generatedProps = []
-    dir.traverse(type: FileType.FILES, nameFilter: params.filter) { source ->
-        println "Generating props for " + source.canonicalFile
-        source.eachLine { line ->
-            generatedProps << generateNewProp(line, params)
+    new File(dirPath).traverse(type: FileType.FILES, nameFilter: params.filter) { source ->
+        filename = source.canonicalFile
+        if ( StringUtils.contains(filename,"i18n_core.git") ) {
+            generatedProps = []
+            source.eachLine { line ->
+                generatedProps << generateNewProp(line, params)
+            }
+        } else {
+            generatedProps = []
+            source.eachLine { line ->
+                generatedProps << generateNewProp(line, params)
+            }
         }
 
         def newFile = getNewFileName(source, params.targetLocale)
@@ -153,7 +158,10 @@ def generatePropertiesFile( args = null ) {
     }
 }
 
-def getParamsMap( args = null ) {
+
+def getParamsMap( argMap = [:] ) {
+
+    def paramMap = [:]
 
     def defaultMap = [
             dummyCharacter: "@",
@@ -161,15 +169,39 @@ def getParamsMap( args = null ) {
             targetLocale: "en_PS" // English Pseduo
     ]
 
-    // TODO:  Allow us to override the params map from the command line.
+    paramMap.putAll( defaultMap )
+    paramMap.putAll( argMap )
 
-    return defaultMap
+    return paramMap
 }
 
+//'Generates a psuedo properties file for debugging i18n issues.
+//
+//Examples:
+//grails generate-properties filter=<source file> targetLocale=<locale>'
+//filter: A properties file to dummy translate.
+//targetLocale: A dummy locale determining the name of the output file.
+//
+//E.g.: grails generate-properties filter=messages.properties targetLocale=en_PS
+//
+//'''
 
-target(generateProperties: "Transform properties files to required format") {
+def mainMethod() {
     Number startTime = System.currentTimeMillis()
     println "Start Generation"
-    generatePropertiesFile( args )
+
+    // Turn args into a map
+    def argMap = [:]
+
+    args?.each {
+        def key = StringUtils.substringBefore( it, "=" )
+        def value = StringUtils.substringAfter( it, "=" )
+        argMap[key] = value
+    }
+
+    generatePropertiesFile( argMap )
+
     println "Generation Complete in " + (System.currentTimeMillis() - startTime) + "ms"
 }
+
+mainMethod()
