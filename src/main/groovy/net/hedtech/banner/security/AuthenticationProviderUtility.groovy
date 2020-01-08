@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -66,8 +66,8 @@ class AuthenticationProviderUtility {
 
             conn = dataSource.unproxiedConnection
             Sql db = new Sql( conn )
-
-            log.trace "AuthenticationProviderUtility.getMappedUserForUdcId mapping for $Holders?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue"
+            def sessionObj = RequestContextHolder.currentRequestAttributes().request.session
+            log.trace "AuthenticationProviderUtility.getMappedUserForUdcId mapping for ${Holders.config.banner.sso.authenticationAssertionAttribute} = $assertAttributeValue"
             // Determine if they map to a Banner Admin user
             def sqlStatement = '''SELECT gobeacc_username, gobeacc_pidm FROM gobumap, gobeacc
                                   WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
@@ -84,7 +84,10 @@ class AuthenticationProviderUtility {
                     accountStatus = row.account_status
                 }
                 if ( accountStatus.contains("LOCKED")) {
-                    log.trace "AuthenticationProviderUtility.getMappedUserForUdcId account status of user $oracleUserName is Locked"
+                    String user =  sessionObj.getAttribute('auth_name')
+                    log.debug "AuthenticationProviderUtility.getMappedUserForUdcId account status of user = $user is Locked."
+                    log.error "Exception occurred due to account is locked, refer GURALOG table for more information."
+                    log.trace "AuthenticationProviderUtility.getMappedUserForUdcId account status of oracle user = $oracleUserName is Locked."
                     authenticationResults = [locked : true]
                 } else {
                     log.trace "AuthenticationProviderUtility.getMappedUserForUdcId account status of user $oracleUserName is valid"
