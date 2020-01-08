@@ -1,10 +1,9 @@
 /* ****************************************************************************
-Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
 import groovy.util.logging.Slf4j
-import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
 /**
@@ -36,8 +35,9 @@ class AccessControlInterceptor {
 
     boolean before() {
         def theUrl
-        if (params?.mepCode && !springSecurityService.isLoggedIn()) {
-            RequestContextHolder.currentRequestAttributes()?.request?.session?.setAttribute("mep", params?.mepCode?.toUpperCase())
+        String sessionMepCode = RCH.currentRequestAttributes()?.request?.session?.getAttribute("mep")
+        if (params?.mepCode && !sessionMepCode) {
+            RCH.currentRequestAttributes()?.request?.session?.setAttribute("mep", params?.mepCode?.toUpperCase())
         }
         Map formControllerMap = grailsApplication.config.formControllerMap
         //def associatedFormsList = formControllerMap[ controllerName?.toLowerCase() ]
