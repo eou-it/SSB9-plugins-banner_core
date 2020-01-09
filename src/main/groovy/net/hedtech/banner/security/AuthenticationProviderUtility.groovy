@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -66,8 +66,8 @@ class AuthenticationProviderUtility {
 
             conn = dataSource.unproxiedConnection
             Sql db = new Sql( conn )
-
-            log.trace "AuthenticationProviderUtility.getMappedUserForUdcId mapping for $Holders?.config?.banner.sso.authenticationAssertionAttribute = $assertAttributeValue"
+            def sessionObj = RequestContextHolder.currentRequestAttributes().request.session
+            log.trace "AuthenticationProviderUtility.getMappedUserForUdcId mapping for ${Holders.config.banner.sso.authenticationAssertionAttribute} = $assertAttributeValue"
             // Determine if they map to a Banner Admin user
             def sqlStatement = '''SELECT gobeacc_username, gobeacc_pidm FROM gobumap, gobeacc
                                   WHERE gobumap_pidm = gobeacc_pidm AND gobumap_udc_id = ?'''
@@ -84,7 +84,10 @@ class AuthenticationProviderUtility {
                     accountStatus = row.account_status
                 }
                 if ( accountStatus.contains("LOCKED")) {
-                    log.trace "AuthenticationProviderUtility.getMappedUserForUdcId account status of user $oracleUserName is Locked"
+                    String user =  sessionObj.getAttribute('auth_name')
+                    log.debug "AuthenticationProviderUtility.getMappedUserForUdcId account status of user = $user is Locked."
+                    log.error "Exception occurred due to account is locked, refer GURALOG table for more information."
+                    log.trace "AuthenticationProviderUtility.getMappedUserForUdcId account status of oracle user = $oracleUserName is Locked."
                     authenticationResults = [locked : true]
                 } else {
                     log.trace "AuthenticationProviderUtility.getMappedUserForUdcId account status of user $oracleUserName is valid"
@@ -285,13 +288,12 @@ class AuthenticationProviderUtility {
     }
 
     private static handleFailure( provider, authentication, authenticationResults, exception ) {
-
-        log.warn "${provider.class.simpleName} was not able to authenticate user $authentication.name due to exception ${exception.class.simpleName}: ${exception.message} "
-
+        def sessionObj = RequestContextHolder.currentRequestAttributes().request.session
+        String user =  sessionObj.getAttribute('auth_name')
+        log.warn "${provider.class.simpleName} was not able to authenticate user $user due to exception ${exception.class.simpleName}: ${exception.message}"
         applicationContext = getApplicationContext()
         def firstAuthProvider = applicationContext.authenticationManager.providers[0]
         def shortName = "SSB"
-        def sessionObj = RequestContextHolder.currentRequestAttributes().request.session
         def msg = GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(exception.class.simpleName, "Exception"))
         def module = GrailsNameUtils.getNaturalName(GrailsNameUtils.getLogicalName(provider.class.simpleName, "AuthenticationProvider"))
         def sessionModule = sessionObj.getAttribute("module")
