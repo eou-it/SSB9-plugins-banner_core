@@ -72,7 +72,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
 
     <div class="loginMsg" id="loginMsg">
         <g:if test='${flash.message}'>
-            <span class="icon-error"></span>${flash.message}
+            <span class="icon-error"></span><span class="icon-error-text">${flash.message}</span>
         </g:if>
         <g:elseif test="${flash.reloginMessage}">
             ${flash.reloginMessage}

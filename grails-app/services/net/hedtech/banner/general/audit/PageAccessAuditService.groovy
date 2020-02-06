@@ -13,6 +13,12 @@ import javax.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.context.request.RequestContextHolder
 
+import java.text.ParsePosition
+import java.text.SimpleDateFormat
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+
 @Transactional
 class PageAccessAuditService extends ServiceBase {
 
@@ -66,7 +72,10 @@ class PageAccessAuditService extends ServiceBase {
             }
             String pageUrl = queryString ? "${requestURI}?${queryString}" : requestURI
             PageAccessAudit pageAccessAudit = new PageAccessAudit()
-            pageAccessAudit.setAuditTime(new Date())
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yy hh.mm.ss.SS a")
+            String utcTime = ZonedDateTime.now(ZoneId.of("UTC")).format(DateTimeFormatter.ofPattern('dd-MMM-yy hh.mm.ss.SS a'))
+            Date auditTime = sdf.parse(utcTime)
+            pageAccessAudit.setAuditTime(auditTime)
             pageAccessAudit.setLoginId(loginId)
             pageAccessAudit.setPidm(pidm)
             pageAccessAudit.setAppId(appId)

@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.controllers
 
@@ -73,6 +73,13 @@ class ControllerUtils {
 
     public static def aboutServiceUrl() {
         return Holders?.config.banner.about.serviceUrl
+    }
+
+    public static String privacyPolicyUrl() {
+        String privacyPolicyUrl = ""
+        def mep = RequestContextHolder.currentRequestAttributes()?.request?.session?.getAttribute("mep")
+        privacyPolicyUrl = (mep) ? Holders.config?.institution.privacyPolicy[mep] : Holders?.config?.institution.privacyPolicy["DEFAULT"]
+        return privacyPolicyUrl
     }
 
 }

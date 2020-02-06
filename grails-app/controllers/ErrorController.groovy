@@ -14,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler
 
+import java.sql.SQLException
+
 class ErrorController {
 
     static defaultAction = "internalServerError"
@@ -61,11 +63,15 @@ class ErrorController {
                 handler.onLogoutSuccess(request, response, SCH.context?.authentication)
             }
         }
+        if (targetException.cause instanceof  java.sql.SQLException || targetException.cause instanceof oracle.net.ns.NetException){
+            targetException = new SQLException(message( code: "net.hedtech.banner.errors.connection" ))
+
+        }
+
         def model = [
                 exception            : targetException,
                 returnHomeLinkAddress: returnHomeLinkAddress
         ]
-
         render view: VIEW_ERROR_PAGE, model: model
     }
 

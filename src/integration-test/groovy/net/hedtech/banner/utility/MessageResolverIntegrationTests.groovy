@@ -18,6 +18,7 @@ class MessageResolverIntegrationTests extends BaseIntegrationTestCase {
     @Before
     public void setUp() {
         formContext = ['GUAGMNU']
+        LocaleContextHolder.resetLocaleContext()
         super.setUp()
     }
 
