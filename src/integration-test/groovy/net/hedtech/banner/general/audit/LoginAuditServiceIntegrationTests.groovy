@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2019-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.general.audit
 
@@ -36,8 +36,8 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     public void setUp() {
         formContext = ['GUAGMNU']
         super.setUp()
-        logout()
-        loginSSB('HOSH00001', '111111')
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        request.addHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36")
         Holders.config.app.appId = 'TESTAPP'
     }
 
@@ -201,7 +201,6 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
 
 
     private LoginAudit newLoginAudit() {
-
         def user = BannerGrantedAuthorityService.getUser()
         HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
         LoginAudit loginAudit = new LoginAudit(
@@ -213,10 +212,9 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
                 lastModifiedBy: Holders.config.app.appId ,
                 dataOrigin: Holders.config.dataOrigin,
                 ipAddress: request.getRemoteAddr(),
-                userAgent: System.getProperty('os.name'),
+                userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36",
                 logonComment: 'Test Comment',
                 version: 0L
-
         )
         return loginAudit
     }
