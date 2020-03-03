@@ -99,4 +99,10 @@ class LogoutController {
         }
 
     }
+
+	 def redirect = {
+        String redirectUrl = request.getParameter("URL")
+        session.invalidate()
+        redirect(url: "${redirectUrl}")
+    }
 }
