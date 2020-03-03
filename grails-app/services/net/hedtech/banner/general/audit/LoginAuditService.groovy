@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2019 Ellucian Company L.P. and its affiliates.
+Copyright 2019-2020 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.general.audit
 
@@ -46,7 +46,7 @@ class LoginAuditService extends ServiceBase {
             loginAudit.setPidm(userpidm as Integer)
             loginAudit.setVersion(0L)
             loginAudit.setLogonComment(comment)
-            println " new object ${loginAudit}"
+            log.debug "LoginAudit created for Application=${loginAudit.appId} by ${loginAudit.loginId} at ${utcTime}."
             this.create(loginAudit)
         } catch (Exception ex) {
             log.error("Exception occured while creating loginAudit ${ex.getMessage()}")
