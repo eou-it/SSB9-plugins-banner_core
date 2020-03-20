@@ -65,7 +65,7 @@ dependencies {
     compile "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
     compile "junit:junit:4.12"
     compile "commons-codec:commons-codec:1.10"
-    compile "org.codehaus.groovy:groovy-ant:2.4.13"
+    compile "org.codehaus.groovy:groovy-ant:2.4.17"
     runtime "org.grails.plugins:x-frame-options:1.1.2"
     compile 'org.grails.plugins:grails-markdown:3.0.0'
     // Added for BannerXE - Oracle jars - specified as physical path
