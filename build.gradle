@@ -6,12 +6,12 @@ buildscript {
     }
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
-        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.6"
+        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.15.1"
         classpath "net.saliman:gradle-cobertura-plugin:2.6.0"
     }
 }
 
-version "9.33.2"
+version "9.33.3"
 group "banner.core"
 
 apply plugin:"eclipse"
@@ -50,27 +50,34 @@ dependencies {
     profile "org.grails.profiles:web-plugin"
     provided "org.grails:grails-plugin-services"
     provided "org.grails:grails-plugin-domain-class"
-    runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.14.6"
+    runtime "com.bertramlabs.plugins:asset-pipeline-grails:3.0.6"
 	compile "org.grails:grails-gorm-testing-support"
     compile "org.grails:grails-plugin-testing"
     compile "org.grails:grails-web-testing-support"
 
     // Added for BannerXE for Grails-3
     compile "org.grails.plugins:hibernate5"
-    compile "org.hibernate:hibernate-core:5.1.5.Final"
-    compile "org.hibernate:hibernate-ehcache:5.1.5.Final"
+    compile "org.hibernate:hibernate-core:5.1.17.Final"
+    compile "org.hibernate:hibernate-ehcache:5.1.17.Final"
     testCompile "org.grails.plugins:hibernate-filter-plugin:0.5.4"
     compile "org.grails.plugins:spring-security-core:3.2.3"
     compile "commons-dbcp:commons-dbcp:1.4"
-    compile "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
+    compile ("org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"){
+        exclude module: "xercesImpl"
+    }
     compile "junit:junit:4.12"
     compile "commons-codec:commons-codec:1.10"
-    compile "org.codehaus.groovy:groovy-ant:2.4.13"
+    compile "org.codehaus.groovy:groovy-ant:2.4.17"
     runtime "org.grails.plugins:x-frame-options:1.1.2"
     compile 'org.grails.plugins:grails-markdown:3.0.0'
     // Added for BannerXE - Oracle jars - specified as physical path
     compile files("lib/ojdbc6-11.2.0.1.0.jar")
     runtime files("lib/xdb6-11.2.0.4.jar")
+}
+
+configurations {
+    runtime.exclude group: "org.springframework.boot", module: "spring-boot-starter-actuator"
+    runtime.exclude group: "org.grails", module: "grails-gorm-testing-support"
 }
 
 bootRun {
