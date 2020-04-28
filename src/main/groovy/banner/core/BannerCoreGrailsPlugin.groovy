@@ -48,7 +48,7 @@ import net.hedtech.banner.db.DbConnectionCacheSessionListener
 class BannerCoreGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "3.3.2 > *"
+    def grailsVersion = "3.3.11 > *"
 
     // the other plugins this plugin depends on
     List loadAfter = ['hibernate','i18nCore','springSecurityCore','springSecuritySaml','springSecurityCas']
