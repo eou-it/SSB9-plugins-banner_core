@@ -1,3 +1,6 @@
+/*****************************************************************************
+Copyright 2020 Ellucian Company L.P. and its affiliates.
+*******************************************************************************/
 package net.hedtech.banner.logback
 
 
@@ -13,6 +16,8 @@ class CorrelationInterceptor {
     //TODO check the precedence using constants
     int order = HIGHEST_PRECEDENCE + 60
 
+    // The X-Correlation-Id is used while sending the correlation id from the ui.
+    // TODO Need to confirm whether we need to send the correlation id from ui.
     private static final String CORRELATION_ID_HEADER_NAME = "X-Correlation-Id";
     private static final String CORRELATION_DATA_LOG_VAR_NAME = "elcn_logging_correlationData";
 
@@ -28,7 +33,6 @@ class CorrelationInterceptor {
 
         final Map<String, String> correlationLogLevelMap = new HashMap<>()
         correlationLogLevelMap.put( "name", "correlationLogLevel" )
-
         correlationLogLevelMap.put( "value", "%-5p" )
 
         final Map<String, String> correlationTenantMap = new HashMap<>()
