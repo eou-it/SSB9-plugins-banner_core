@@ -102,9 +102,9 @@ class LogoutController {
         String newApplicationURL = request.getRequestURL()
         if (isValidateMepCode(newMepCode)) {
             newApplicationURL = (request.getRequestURL() - request.getServletPath()) + "?mepCode=${newMepCode}"
-            session.invalidate()
         }
         log.debug("Redirect is invoked for = {}", newApplicationURL)
+        session.invalidate()
         redirect(url: "${newApplicationURL}")
     }
 
