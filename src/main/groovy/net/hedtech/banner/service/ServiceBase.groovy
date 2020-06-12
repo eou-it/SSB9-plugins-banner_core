@@ -7,8 +7,11 @@ package net.hedtech.banner.service
 import grails.validation.ValidationException
 import grails.util.GrailsNameUtils
 import groovy.util.logging.Slf4j
-import org.grails.core.DefaultGrailsDomainClass
+
+import org.grails.datastore.mapping.model.AbstractPersistentEntity
 import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.model.PersistentProperty
+
 import org.grails.web.converters.ConverterUtil
 import org.hibernate.StaleObjectStateException
 
@@ -221,9 +224,16 @@ class ServiceBase {
     public void updateDomainProperties(domainObject, content) {
 
         def d = Holders.getGrailsApplication().getMappingContext().getPersistentEntity( ConverterUtil.trimProxySuffix(getDomainClass().getName()))
+
+        PersistentProperty idProp = d.getIdentity()
+        PersistentProperty versionProp = d.getVersion()
+
         d.getPersistentProperties().each { it ->
             if(content.containsKey(it.name))   {
-                domainObject[it.name] = content[it.name]
+                //Do not copy ID and Version values
+                if(! (it.name.equalsIgnoreCase(idProp?.name) || it.name.equalsIgnoreCase(versionProp?.name))) {
+                    domainObject[it.name] = content[it.name]
+                }
             }
         }
 
@@ -790,7 +800,14 @@ class ServiceBase {
         if (domainObject.hasProperty( 'version' )) {
             if (content.version != null) {
                 int ver = content.version instanceof String ? content.version.toInteger() : content.version
-                if (ver != domainObject.version) {
+
+                PersistentEntity entity = Holders.getGrailsApplication().getMappingContext().getPersistentEntity( ConverterUtil.trimProxySuffix(getDomainClass().getName()))
+                AbstractPersistentEntity parentEntity = entity?.parentEntity
+                if(parentEntity?.abstract) {
+                    if (ver != domainObject.getParentVersion()) {
+                        throw exceptionForOptimisticLock( domainObject, content, log )
+                    }
+                } else if (ver != domainObject.version) {
                     throw exceptionForOptimisticLock( domainObject, content, log )
                 }
             }
