@@ -29,9 +29,8 @@ class DbConnectionCacheSessionListener implements HttpSessionListener {
         // Ensure that the service is called only when the session contains a connection
         // Login causes the earlier established session to be destroyed and then no request
         // is avaiable and HTTPSerice sessionDestroyed throws an Exception
-        String userName = session.getAttribute("SPRING_SECURITY_CONTEXT" )?.authentication?.user?.username
         String sessionId = session.id
-        if(userName!=null && HttpSessionService.cachedConnectionMap.containsKey(sessionId) && (Environment.current != Environment.TEST))
+        if(HttpSessionService.cachedConnectionMap.containsKey(sessionId) && (Environment.current != Environment.TEST))
             getHttpSessionService().sessionDestroyed(sessionId)
     }
 
