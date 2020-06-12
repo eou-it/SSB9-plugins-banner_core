@@ -6,7 +6,9 @@ package net.hedtech.banner.general.audit
 import grails.gorm.transactions.Transactional
 import grails.util.Holders
 import net.hedtech.banner.audit.AuditUtility
+import net.hedtech.banner.apisupport.ApiUtils
 import net.hedtech.banner.service.ServiceBase
+import org.apache.commons.lang.StringUtils
 import org.springframework.web.context.request.RequestContextHolder
 import javax.servlet.http.HttpServletRequest
 import java.text.SimpleDateFormat
@@ -17,6 +19,10 @@ import java.time.format.DateTimeFormatter
 @Transactional
 class LoginAuditService extends ServiceBase {
 
+    private static final String NOTAVAILABLE = 'Not Available'
+    private static final String APIREQUEST = 'API request'
+
+
     public def createLoginLogoutAudit(username, userpidm, comment) {
         try {
             log.debug "In LoginAuditService createLoginLogoutAudit "
@@ -24,7 +30,7 @@ class LoginAuditService extends ServiceBase {
             String loginId = username ?: 'ANONYMOUS'
             HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
             String ipAddress = AuditUtility.getClientIpAddress(request, LoginAudit.getConstrainedProperties().get('ipAddress').getMaxSize())
-            String userAgent = request.getHeader("User-Agent")
+            String userAgent = getUserAgentForCurrentRequest(request)
 
             LoginAudit loginAudit = new LoginAudit()
             loginAudit.setAppId(appId)
@@ -56,6 +62,15 @@ class LoginAuditService extends ServiceBase {
     public List getDataByLoginID(loginId) {
         List loginAuditPage = LoginAudit.fetchByLoginId(loginId)
         loginAuditPage
+    }
+
+
+    private String getUserAgentForCurrentRequest(request){
+        String userAgent = request.getHeader("User-Agent")
+        if (StringUtils.isBlank(userAgent)){
+            userAgent = ApiUtils.isApiRequest() ? APIREQUEST : NOTAVAILABLE
+        }
+        return userAgent
     }
 }
 
