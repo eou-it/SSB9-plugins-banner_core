@@ -305,7 +305,7 @@ class BannerCoreGrailsPlugin extends Plugin {
             name = 'Banner Core Session Listener'
             listener = ref('dbConnectionCacheSessionListener')
         }
-        databaseHealthCheck(DataSourceHealthIndicator, dataSource)
+        databaseHealthCheck(DataSourceHealthIndicator, underlyingDataSource)
       }
     }
 
