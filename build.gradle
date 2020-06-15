@@ -73,6 +73,7 @@ dependencies {
     // Added for BannerXE - Oracle jars - specified as physical path
     compile files("lib/ojdbc6-11.2.0.1.0.jar")
     runtime files("lib/xdb6-11.2.0.4.jar")
+    compile group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '4.11'
 }
 
 configurations {
