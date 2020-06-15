@@ -200,6 +200,17 @@ class LoginAuditServiceIntegrationTests extends BaseIntegrationTestCase{
     }
 
 
+    @Test
+    void testCreateLoginAuditWithOutUserAgent(){
+        loginSSB('HOSH00001', '111111')
+        def user = BannerGrantedAuthorityService.getUser()
+        MockHttpServletRequest request  =  RequestContextHolder.currentRequestAttributes().request
+        request.removeHeader(HttpHeaders.USER_AGENT)
+        def  loginAuditObject = loginAuditService.createLoginLogoutAudit(user.username, user.pidm, 'Login Successful')
+        assertNotNull loginAuditObject
+    }
+
+
     private LoginAudit newLoginAudit() {
         def user = BannerGrantedAuthorityService.getUser()
         HttpServletRequest request = RequestContextHolder.getRequestAttributes()?.request
