@@ -1,5 +1,5 @@
 /* ****************************************************************************
-Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.exceptions
 
@@ -13,6 +13,9 @@ import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.validation.FieldError
 import java.text.DecimalFormat
 import net.hedtech.banner.i18n.DateConverterService
+
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 /**
  * A runtime exception thrown from services (and other artifacts as necessary).
@@ -661,20 +664,17 @@ class ApplicationException extends RuntimeException {
      */
     private String getConstraintName( String message ) {
         log.debug( "ExceptionMapper given exception message: " + message );
+        String subString
 
-        int templateStartPosition = message.indexOf( "constraint (" )
-        if (templateStartPosition < 0) {
+        Pattern p = Pattern.compile("\\(([^)]+)\\)");
+        Matcher m = p.matcher(message);
+        if (m.find()) {
+            subString = m.group(1);  // The matched substring
+        }else{
             return null
         }
 
-        int start = templateStartPosition + "constraint (".length()
-        int end = message.indexOf( ") violated", start )
-        if ( end < 0 ) {
-            end = message.length()
-        }
-
-        String constraintName = stripSchemaNameFrom( message.substring( start, end ) )
-        log.debug( "ExceptionMapper will return substring from " + start + " to " + end )
+        String constraintName = stripSchemaNameFrom( subString)
         constraintName
     }
 
