@@ -42,7 +42,11 @@ class LogbackMDCInterceptor {
     boolean after() {
         MDC.remove( CORRELATION_ID )
         if ( Holders.config.banner.logback.log.debug ) {
-            MDC.remove( PRINCIPAL_ID )
+            if ( springSecurityService.isLoggedIn() ) {
+                MDC.remove( PRINCIPAL_ID )
+            } else {
+                MDC.remove( CLIENT_IP )
+            }
         }
         true
     }
