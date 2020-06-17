@@ -17,6 +17,7 @@ class LogbackMDCInterceptor {
 
     private static final String CORRELATION_ID = "correlationId"
     private static final String PRINCIPAL_ID = "principalId"
+    private static final String CLIENT_IP = "clientIp"
 
     def springSecurityService
 
@@ -32,7 +33,7 @@ class LogbackMDCInterceptor {
                 BannerUser principal = springSecurityService.principal
                 MDC.put( PRINCIPAL_ID, principal.username )
             } else {
-                MDC.put( PRINCIPAL_ID, request.getRemoteAddr() )
+                MDC.put( CLIENT_IP, request.getRemoteAddr() )
             }
         }
         true
