@@ -17,6 +17,7 @@ class LogbackMDCInterceptor {
 
     private static final String CORRELATION_ID = "correlationId"
     private static final String PRINCIPAL_ID = "principalId"
+    private static final String CLIENT_IP = "clientIp"
 
     def springSecurityService
 
@@ -32,7 +33,7 @@ class LogbackMDCInterceptor {
                 BannerUser principal = springSecurityService.principal
                 MDC.put( PRINCIPAL_ID, principal.username )
             } else {
-                MDC.put( PRINCIPAL_ID, request.getRemoteAddr() )
+                MDC.put( CLIENT_IP, request.getRemoteAddr() )
             }
         }
         true
@@ -41,7 +42,11 @@ class LogbackMDCInterceptor {
     boolean after() {
         MDC.remove( CORRELATION_ID )
         if ( Holders.config.banner.logback.log.debug ) {
-            MDC.remove( PRINCIPAL_ID )
+            if ( springSecurityService.isLoggedIn() ) {
+                MDC.remove( PRINCIPAL_ID )
+            } else {
+                MDC.remove( CLIENT_IP )
+            }
         }
         true
     }
