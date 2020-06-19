@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 import grails.util.Holders
@@ -9,7 +9,7 @@ import net.hedtech.banner.security.AuthenticationProviderUtility
 import net.hedtech.banner.security.BannerUser
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-
+import net.hedtech.banner.exceptions.MepCodeNotFoundException
 import javax.servlet.http.Cookie
 
 /**
@@ -27,6 +27,7 @@ class LogoutController {
     public static final String ACTION_TIMEOUT_PAGE = 'timeoutPage'
     public static final String JSESSIONID_COOKIE_NAME = "JSESSIONID"
     private boolean GUEST_USER = false
+    def multiEntityProcessingService
     /*
      * Index action. Redirects to the Spring security logout uri.
      */
@@ -43,9 +44,7 @@ class LogoutController {
         } else {
             GUEST_USER = false
             redirect uri: ControllerUtils.buildLogoutRedirectURI()
-
         }
-
     }
 
     def timeout() {
@@ -100,9 +99,28 @@ class LogoutController {
 
     }
 
-	 /*def redirect = {
-        String redirectUrl = request.getParameter("URL")
+
+    def redirect() {
+        String newMepCode = request.getParameter('mepCode')
+        String newApplicationURL = request.getRequestURL()
+        if (isValidateMepCode(newMepCode)) {
+            newApplicationURL = (request.getRequestURL() - request.getServletPath()) + "?mepCode=${newMepCode}"
+        }
+        log.debug("Redirect is invoked for = {}", newApplicationURL)
         session.invalidate()
-        redirect(url: "${redirectUrl}")
-    }*/
+        redirect(url: "${newApplicationURL}")
+    }
+
+
+    private boolean isValidateMepCode(String newMepCode) {
+        String mepDescription = multiEntityProcessingService?.getMepDescription(newMepCode)
+        boolean isValidateMepCode = false
+        if(mepDescription){
+            isValidateMepCode = true
+        } else {
+            log.error("Redirect is invoked with invalid MepCode= {}", newMepCode)
+            isValidateMepCode = false
+        }
+        return isValidateMepCode
+    }
 }

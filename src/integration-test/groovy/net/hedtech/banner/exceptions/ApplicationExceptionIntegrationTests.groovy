@@ -1,5 +1,5 @@
 /*******************************************************************************
-Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.exceptions
 
@@ -17,6 +17,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
+import net.hedtech.banner.i18n.MessageHelper
 import org.springframework.dao.DataIntegrityViolationException as ConstraintException
 import org.springframework.orm.hibernate5.HibernateOptimisticLockingFailureException as OptimisticLockException
 import org.springframework.security.core.context.SecurityContextHolder as SCH
@@ -289,6 +290,29 @@ class ApplicationExceptionIntegrationTests extends BaseIntegrationTestCase {
 	    assertNull returnMap.errors
 	    assertTrue "Underlying error message not as expected, but was: ${returnMap.underlyingErrorMessage}",
 	               returnMap.underlyingErrorMessage ==~ /.*ORA-02292.*integrity constraint \(SATURN\.FK1_SV_FOO_INV_DUMMY_CODE\) violated - child record found ORA-06512.*/
+    }
+
+    @Test
+    public void testWrappedMultilingualChildExistsIntegrityConstraintException() {
+        SQLException e = new SQLException( "ORA-02292: integrity constraint (GENERAL.FK1_GCRMINT_INV_GCRORAN) violated - child record found ORA-06512: more info...", "0", 2292 )
+        def ae = new ApplicationException( Foo, e )
+        //assertTrue "toString() does not have expected content, but has: ${ae}", ae.toString() ==~ /.*child record found ORA-06512.*/
+
+        assertEquals 'SQLException', ae.getType()
+
+        def returnMap = ae.returnMap( controller.localizer )
+        assertFalse returnMap.success
+
+        assertEquals "Message not as expected, but was: ${returnMap.message}","Cannot delete template as relation exist for this template.", returnMap.message
+        assertNull returnMap.errors
+        assertTrue "Underlying error message not as expected, but was: ${returnMap.underlyingErrorMessage}",
+            returnMap.underlyingErrorMessage ==~ /.*ORA-02292.*integrity constraint \(GENERAL\.FK1_GCRMINT_INV_GCRORAN\) violated - child record found ORA-06512.*/
+
+
+        returnMap = ae.createReturnMapForSQLException( e, controller.localizer )
+
+        assertEquals "Message not as expected, but was: ${returnMap.message}","Cannot delete template as relation exist for this template.", returnMap.message
+        assertNull returnMap.errors
     }
 
 
