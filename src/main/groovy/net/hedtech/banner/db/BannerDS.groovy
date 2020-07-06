@@ -502,7 +502,6 @@ public class BannerDS implements DataSource {
         properties.put(OracleConnection.PROXY_USER_NAME, ("${userName}" as String))
 
         oconn.openProxySession(OracleConnection.PROXYTYPE_USER_NAME, properties)
-        log.debug "in BannerDS.proxyConnection - proxied connection for $userName and connection $oconn"
     }
 
 
