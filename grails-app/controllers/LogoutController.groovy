@@ -48,6 +48,7 @@ class LogoutController {
     }
 
     def timeout() {
+        log.debug("Timeout is invoked for = {}", SecurityContextHolder.context?.authentication?.principal)
         if (request?.getHeader(HTTP_REQUEST_REFERER_STRING)?.endsWith(LOGIN_AUTH_ACTION_URI)) {
             forward(controller: LOGIN_CONTROLLER)
         } else {
@@ -62,6 +63,7 @@ class LogoutController {
             }
             AuthenticationProviderUtility.captureLogoutInformation(username, pidm)
             invalidateSession(response)
+            ControllerUtils.clearUserContext()
             redirect uri: uri, params: mepCode ? [mepCode: mepCode] : []
         }
     }
@@ -88,7 +90,6 @@ class LogoutController {
         if (request.getParameter("error") || ControllerUtils.isCasEnabled()) {
             show = false
         }
-
         if (ControllerUtils.isCasEnabled() && !GUEST_USER) {
             render view: VIEW_CUSTOM_LOGOUT, model: [logoutUri: ControllerUtils.getAfterLogoutRedirectURI(), uri: ControllerUtils.getHomePageURL(), show: show]
         } else if (ControllerUtils.isCasEnabled() && GUEST_USER) {
@@ -96,7 +97,6 @@ class LogoutController {
         } else {
             render view: VIEW_CUSTOM_LOGOUT, model: [uri: ControllerUtils.getHomePageURL(), show: show]
         }
-
     }
 
 

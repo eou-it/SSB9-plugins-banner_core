@@ -1,10 +1,11 @@
 /*******************************************************************************
-Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.controllers
 
 import grails.plugin.springsecurity.SpringSecurityUtils
 import grails.util.Holders
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
@@ -82,4 +83,7 @@ class ControllerUtils {
         return privacyPolicyUrl
     }
 
+    public static void clearUserContext() {
+        SecurityContextHolder?.clearContext()
+    }
 }
