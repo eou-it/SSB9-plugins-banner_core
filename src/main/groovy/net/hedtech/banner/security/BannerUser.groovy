@@ -67,7 +67,7 @@ public class BannerUser extends GrailsUser {
 
 
     public String toString() {
-        "BannerUser[username=$username]"
+        "BannerUser[username=$username, oracleUserName=$oracleUserName]"
     }
 
 
