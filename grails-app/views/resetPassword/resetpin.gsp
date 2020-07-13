@@ -95,7 +95,7 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
         </script>
   </head>
   <body>
-  <div id="mainContent" class="page-with-sidebar">
+  <div id="mainContent" role="main" class="page-with-sidebar">
       <div class="ui-layout-center inner-content" id="inner-content">
           <div class="inner-center">
               <div id="resetpassword" class="ui-widget ui-widget-section">

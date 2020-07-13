@@ -11,7 +11,7 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
 </head>
 <body>
 
-<div class="dialog-mask">
+<div class="dialog-mask" role="main">
     <div class="dialog-wrapper">
         <div class="dialog">
             <div class="dialog-content" role="dialog" id="dialog-message">
