@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <%@ page contentType="text/html;charset=UTF-8" %>
