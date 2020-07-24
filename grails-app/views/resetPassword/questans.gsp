@@ -101,7 +101,8 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                                 <tr><td class="tabletext"><g:message
                                         code="net.hedtech.banner.resetpassword.username"/> :</td><td
                                         class="tabledata"><input type="text" class="eds-text-field eds-text-field-readonly" readonly="readonly" value="${userName}"
-                                                                 name="username" class="input-text disabled-state"/>
+                                                                 name="username" class="input-text disabled-state" aria-required="true" aria-label="<g:message
+                                                    code="net.hedtech.banner.resetpassword.username"/>"/>
                                 </td></tr>
                                 <g:if test="${questionValidationMap}">
                                     <g:each in="${questions}">
@@ -115,7 +116,9 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                                                                              id="answer${it[0]}"
                                                                              class="eds-text-field error-state"
                                                                              data-error-message="${questionValidationMap.get(it[0]).get("message")}"
-                                                                             autocomplete="off"/></td></tr>
+                                                                             autocomplete="off"
+                                                                             aria-required="true"
+                                                                             aria-label="<g:message code="net.hedtech.banner.resetpassword.question"/>"/></td></tr>
                                         </g:if>
                                         <g:else>
                                             <tr><td class="tabletext"><g:message
@@ -124,7 +127,9 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                                                                              id="answer${it[0]}"
                                                                              class="eds-text-field default-state"
                                                                              value='${questionValidationMap.get(it[0]).get("answer")}'
-                                                                             autocomplete="off"/></td></tr>
+                                                                             autocomplete="off"
+                                                                             aria-required="true"
+                                                                             aria-label="<g:message code="net.hedtech.banner.resetpassword.answer"/>"/></td></tr>
                                         </g:else>
                                     </g:each>
                                 </g:if>
@@ -138,7 +143,9 @@ Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
                                                 class="tabledata"><input type="password" name="answer${it[0]}"
                                                                          id="answer${it[0]}"
                                                                          class="eds-text-field default-state"
-                                                                         autocomplete="off"/></td></tr>
+                                                                         autocomplete="off"
+                                                                         aria-required="true"
+                                                                         aria-label="<g:message code="net.hedtech.banner.resetpassword.answer"/> "/></td></tr>
                                     </g:each>
                                 </g:else>
                             </table>

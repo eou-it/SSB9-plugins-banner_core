@@ -54,10 +54,10 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                                   <input type="hidden" name="nonPidmId" value='${nonPidmIdm}'/>
                              <tr><td class="tabledata" colspan="2"><g:message code="net.hedtech.banner.resetpassword.recoverycode.message"/></td></tr>
                              <g:if test="${flash.message}">
-                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="eds-text-field error-state" data-error-message="${flash.message}" autocomplete="off"/> </td></tr>
+                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="eds-text-field error-state" data-error-message="${flash.message}" autocomplete="off" aria-label="<g:message code="net.hedtech.banner.resetpassword.recoverycode"/>" aria-required="true"/> </td></tr>
                              </g:if>
                              <g:else>
-                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="eds-text-field default-state" autocomplete="off"/> </td></tr>
+                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="eds-text-field default-state" autocomplete="off" aria-label="<g:message code="net.hedtech.banner.resetpassword.recoverycode"/>" aria-required="true"/> </td></tr>
                              </g:else>
                              </g:elseif>
                           </table>
