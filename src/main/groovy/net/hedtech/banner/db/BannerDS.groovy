@@ -1,6 +1,7 @@
 /* *****************************************************************************
  Copyright 2015-2020 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
+
 package net.hedtech.banner.db
 
 import grails.util.Environment

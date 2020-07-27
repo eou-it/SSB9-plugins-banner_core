@@ -1,6 +1,7 @@
 /*******************************************************************************
  Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
+
 import grails.util.Holders
 import net.hedtech.banner.controllers.ControllerUtils
 import net.hedtech.banner.general.audit.LoginAuditService
