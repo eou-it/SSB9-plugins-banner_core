@@ -34,7 +34,7 @@ class LogbackMDCInterceptor {
                 BannerUser principal = springSecurityService.principal
                 MDC.put( PRINCIPAL_ID, principal.username )
             } else {
-                MDC.put( CLIENT_IP, AuditUtility.getClientIpAddress(request) )
+                MDC.put( CLIENT_IP, AuditUtility.getClientIpAddress(request) , 0 )
             }
         }
         true

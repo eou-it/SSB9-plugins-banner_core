@@ -13,7 +13,7 @@ class AuditUtility {
         String clientIpAddress
         if (ipAddressList?.length() > 0) {
             String ipAddress = ipAddressList.split(",")[0]
-            if (ipAddress.length() <= maxSize) {
+            if (ipAddress.length() <= maxSize || maxSize == 0) {
                 clientIpAddress = ipAddress
             } else {
                 clientIpAddress = request.getRemoteAddr()
@@ -22,12 +22,6 @@ class AuditUtility {
         } else {
             clientIpAddress = request.getRemoteAddr()
         }
-        clientIpAddress
-    }
-
-    public static String getClientIpAddress(request) {
-        String ipAddressList = request.getHeader("X-FORWARDED-FOR")
-        String clientIpAddress = (ipAddressList?.length() > 0) ? ipAddressList.split(",")[0] : request.getRemoteAddr()
         clientIpAddress
     }
 
