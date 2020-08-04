@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2019-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.audit
 import grails.util.Holders
@@ -22,6 +22,12 @@ class AuditUtility {
         } else {
             clientIpAddress = request.getRemoteAddr()
         }
+        clientIpAddress
+    }
+
+    public static String getClientIpAddress(request) {
+        String ipAddressList = request.getHeader("X-FORWARDED-FOR")
+        String clientIpAddress = (ipAddressList?.length() > 0) ? ipAddressList.split(",")[0] : request.getRemoteAddr()
         clientIpAddress
     }
 
