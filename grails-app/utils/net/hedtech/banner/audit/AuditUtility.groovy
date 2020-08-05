@@ -8,7 +8,7 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class AuditUtility {
 
-    public static String getClientIpAddress(request, Integer maxSize) {
+    public static String getClientIpAddress(request, Integer maxSize=0) {
         String ipAddressList = request.getHeader("X-FORWARDED-FOR")
         String clientIpAddress
         if (ipAddressList?.length() > 0) {
