@@ -45,9 +45,9 @@ class LogbackMDCInterceptor {
         if ( Holders.config.banner.logback.log.debug ) {
             if ( springSecurityService.isLoggedIn() ) {
                 MDC.remove( PRINCIPAL_ID )
-            } /*else {
+            } else {
                 MDC.remove( CLIENT_IP )
-            }*/
+            }
         }
         true
     }
