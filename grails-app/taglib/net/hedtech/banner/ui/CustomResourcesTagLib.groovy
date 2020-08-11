@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.ui
 
@@ -25,27 +25,26 @@ class CustomResourcesTagLib {
         def action = attrs.action ?: actionName
 
 //        // Check to see bannerSelfService-custom.css exists\r
-        writeCssIfExists( out, "stylesheets/bannerSelfService-custom.css" )
+        writeCssIfExists( out, "css/bannerSelfService-custom.css" )
         // Determine the current page
-        writeCssIfExists( out, "stylesheets/views/$controller/${action}-custom.css" )
+        writeCssIfExists( out, "css/views/$controller/${action}-custom.css" )
     }
 
     def customJavaScriptIncludes = { attrs ->
         def controller = attrs.controller ?: controllerName
         def action = attrs.action ?: actionName
 //        // Check to see bannerSelfService-custom.js exists\r
-        writeJavaScriptIfExists( out, "javascripts/bannerSelfService-custom.js" )
+        writeJavaScriptIfExists( out, "js/bannerSelfService-custom.js" )
 
         // Determine the current page
-        writeJavaScriptIfExists( out, "javascripts/views/$controller/${action}-custom.js" )
+        writeJavaScriptIfExists( out, "js/views/$controller/${action}-custom.js" )
     }
 
 
-    def specScriptIncludes = { attrs ->
+/*    def specScriptIncludes = { attrs ->
         def name = attrs.name
-
         writeJavaScriptIfExists( out, "js/specs/${name}.spec.js" )
-    }
+    }*/
 
     private resourceExists( resPath ) {
         return grailsApplication.parentContext.getResource( resPath ).file.exists()
@@ -54,17 +53,13 @@ class CustomResourcesTagLib {
 
     private writeJavaScriptIfExists( writer, js ) {
         if (resourceExists(js)) {
-            def baseUri = grailsAttributes.getApplicationUri(request)
-
-            writer << r.external(uri: (baseUri.endsWith('/') ? '' : '/') + js , type: 'js', disposition: 'defer')
-        }
+            writer << "<script type='text/javascript' src='${resource(file: js)}'></script>"
+           }
     }
 
     private writeCssIfExists( writer, css ) {
         if (resourceExists(css)) {
-            def baseUri = grailsAttributes.getApplicationUri(request)
-
-            writer << r.external(uri: (baseUri.endsWith('/') ? '' : '/') + css , type: 'css')
+            writer << "<link rel='stylesheet' href='${resource(file: css)}'/>"
         }
     }
 }
