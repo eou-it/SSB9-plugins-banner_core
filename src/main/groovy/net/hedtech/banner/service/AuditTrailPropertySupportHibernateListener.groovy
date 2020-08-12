@@ -25,7 +25,6 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
     public boolean onPreInsert(final PreInsertEvent event) {
         try {
             updateSystemFields(event)
-            log.debug "After onPreInsert event - ${event.entity}"
         } catch (e) {
             e.printStackTrace()
             throw e
@@ -37,7 +36,6 @@ class AuditTrailPropertySupportHibernateListener implements PreInsertEventListen
     public boolean onPreUpdate(final PreUpdateEvent event) {
         try {
             updateSystemFields(event)
-            log.debug "After onPreUpdate event - ${event.entity}"
         } catch (e) {
             e.printStackTrace()
             throw e

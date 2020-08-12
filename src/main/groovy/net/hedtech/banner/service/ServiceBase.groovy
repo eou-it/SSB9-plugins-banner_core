@@ -95,7 +95,7 @@ class ServiceBase {
      **/
     public def create( domainModelOrMap, flushImmediately = true ) {
 
-        log.debug "${this.class.simpleName}.create invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
+        log.debug "${this.class.simpleName}.create invoked flushImmediately = $flushImmediately"
         log.trace "${this.class.simpleName}.create transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
 
         setDbmsApplicationInfo "${this.class.simpleName}.create()"
@@ -155,7 +155,7 @@ class ServiceBase {
      **/
     public def update( domainModelOrMap, flushImmediately = true ) {
 
-        log.debug "${this.class.simpleName}.update invoked with domainModelOrMap = $domainModelOrMap and flushImmediately = $flushImmediately"
+        log.debug "${this.class.simpleName}.update invoked flushImmediately = $flushImmediately"
         log.trace "${this.class.simpleName}.update transaction attributes: ${TransactionAspectSupport?.currentTransactionInfo()?.getTransactionAttribute()}"
         setDbmsApplicationInfo "${this.class.simpleName}.update()"
 

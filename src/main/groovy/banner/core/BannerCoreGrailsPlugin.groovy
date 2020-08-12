@@ -27,6 +27,7 @@ import oracle.jdbc.pool.OracleDataSource
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.runtime.GStringImpl
 import org.grails.orm.hibernate.HibernateEventListeners
+import org.springframework.boot.actuate.health.DataSourceHealthIndicator
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor as NativeJdbcExtractor
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.security.web.access.ExceptionTranslationFilter
@@ -298,35 +299,14 @@ class BannerCoreGrailsPlugin extends Plugin {
                            'pre-update': auditTrailPropertySupportHibernateListener]
         }
 
-        // ---------------- JMX Mbeans (incl. Logging) ----------------
-
-        /*
-    log4jBean(HierarchyDynamicMBean)
-
-    mbeanServer(MBeanServerFactoryBean) {
-        locateExistingServerIfPossible = true
-    }
-
-    switch (GrailsUtil.environment) {
-        case "development": // 'pass through', so logging will be exported via JMX for 'development' and 'production'
-        case "production":
-            String log4jBeanName = getUniqueJmxBeanNameFor('log4j') + ':hierarchy=default'
-
-            exporter(MBeanExporter) {
-                server = mbeanServer
-                beans = [("$log4jBeanName" as String): log4jBean]
-            }
-            break
-    }
-        */
-
         /*** Register Http Session Listener ***/
         dbConnectionCacheSessionListener(DbConnectionCacheSessionListener)
         servletListenerRegistrationBean(ServletListenerRegistrationBean){
             name = 'Banner Core Session Listener'
             listener = ref('dbConnectionCacheSessionListener')
         }
-    }
+        databaseHealthCheck(DataSourceHealthIndicator, underlyingDataSource)
+      }
     }
 
     void doWithDynamicMethods() {

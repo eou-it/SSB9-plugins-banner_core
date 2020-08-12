@@ -86,7 +86,6 @@ class PreferredNameService {
     public  String getPreferredName(pidm, conn){
         def params = setupPreferredNameParams(pidm)
         String displayName = getName(params,conn)
-        log.debug "PreferredNameService.getPreferredName is returning $displayName"
         return displayName
     }
 
