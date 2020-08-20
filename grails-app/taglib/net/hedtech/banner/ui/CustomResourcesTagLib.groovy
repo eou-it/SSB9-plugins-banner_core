@@ -3,6 +3,8 @@
  *******************************************************************************/
 package net.hedtech.banner.ui
 
+import groovy.util.logging.Slf4j
+
 /**
  * Inserts custom css and/or javascript that is present.
  *
@@ -18,12 +20,13 @@ package net.hedtech.banner.ui
  * css/views/facultyGradeEntry/facultyGradeEntry-custom.css will add this CSS only for the controller 'facultyGradeEntry'
  * and the action 'facultyGradeEntry'.
  */
+@Slf4j
 class CustomResourcesTagLib {
 
     def customStylesheetIncludes = { attrs ->
         def controller = attrs.controller ?: controllerName
         def action = attrs.action ?: actionName
-
+        log.debug("Controller for this page: " + controller + " and action is " + action)
 //        // Check to see bannerSelfService-custom.css exists\r
         writeCssIfExists( out, "css/bannerSelfService-custom.css" )
         // Determine the current page
@@ -33,6 +36,7 @@ class CustomResourcesTagLib {
     def customJavaScriptIncludes = { attrs ->
         def controller = attrs.controller ?: controllerName
         def action = attrs.action ?: actionName
+        log.debug("Controller for this page: " + controller + " and action is " + action)
 //        // Check to see bannerSelfService-custom.js exists\r
         writeJavaScriptIfExists( out, "js/bannerSelfService-custom.js" )
 
