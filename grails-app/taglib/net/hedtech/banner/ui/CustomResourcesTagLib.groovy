@@ -26,7 +26,7 @@ class CustomResourcesTagLib {
     def customStylesheetIncludes = { attrs ->
         def controller = attrs.controller ?: controllerName
         def action = attrs.action ?: actionName
-        log.debug("Controller for this page: " + controller + " and action is " + action)
+        log.debug("Controller for this page is : {} and action is : {}" , controller, action)
 //        // Check to see bannerSelfService-custom.css exists\r
         writeCssIfExists( out, "css/bannerSelfService-custom.css" )
         // Determine the current page
@@ -36,7 +36,7 @@ class CustomResourcesTagLib {
     def customJavaScriptIncludes = { attrs ->
         def controller = attrs.controller ?: controllerName
         def action = attrs.action ?: actionName
-        log.debug("Controller for this page: " + controller + " and action is " + action)
+        log.debug("Controller for this page is : {} and action is : {}" , controller, action)
 //        // Check to see bannerSelfService-custom.js exists\r
         writeJavaScriptIfExists( out, "js/bannerSelfService-custom.js" )
 
