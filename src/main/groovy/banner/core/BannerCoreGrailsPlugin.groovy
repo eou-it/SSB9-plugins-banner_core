@@ -40,6 +40,8 @@ import javax.servlet.Filter
 
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
 import net.hedtech.banner.db.DbConnectionCacheSessionListener
+import net.hedtech.banner.db.SessionCounterListener
+import net.hedtech.banner.endpoint.BannerApplicationInfo
 
 /**
  * A Grails Plugin supporting cross cutting concerns.
@@ -301,10 +303,12 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         /*** Register Http Session Listener ***/
         dbConnectionCacheSessionListener(DbConnectionCacheSessionListener)
+        sessionCounterListener(SessionCounterListener)
         servletListenerRegistrationBean(ServletListenerRegistrationBean){
             name = 'Banner Core Session Listener'
             listener = ref('dbConnectionCacheSessionListener')
         }
+        bannerApplicationInfo(BannerApplicationInfo)
         databaseHealthCheck(DataSourceHealthIndicator, underlyingDataSource)
       }
     }
