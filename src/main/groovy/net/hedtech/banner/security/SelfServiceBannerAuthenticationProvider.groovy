@@ -382,30 +382,30 @@ public class SelfServiceBannerAuthenticationProvider implements AuthenticationPr
             rows = db.rows(
                     """select twgrrole_pidm,twgrrole_role from twgrrole
                            where twgrrole_pidm = :pidm
-                    union
-                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_faculty_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FACULTY'
-                    union
-                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_student_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'STUDENT'
-                    union
-                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_employee_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'EMPLOYEE'
-                    union
-                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_alumni_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'ALUMNI'
-                    union
-                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_friend_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FRIEND'
-                    union
-                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_finaid_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINAID'
-                    union
-                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_finance_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'FINANCE'
-                    union
-                    select govrole_pidm,twtvrole_code from govrole,twtvrole,twgrrole
-                           where govrole_bsac_ind = 'Y' and govrole_pidm = :pidm and twtvrole_code = 'BSAC'
+                        union
+                        select govrole_pidm,'FACULTY' from govrole
+                               where govrole_faculty_ind = 'Y' and govrole_pidm = :pidm
+                        union
+                        select govrole_pidm,'STUDENT' from govrole
+                               where govrole_student_ind = 'Y' and govrole_pidm = :pidm
+                        union
+                        select govrole_pidm,'EMPLOYEE' from govrole
+                               where govrole_employee_ind = 'Y' and govrole_pidm = :pidm
+                        union
+                        select govrole_pidm,'ALUMNI' from govrole
+                               where govrole_alumni_ind = 'Y' and govrole_pidm = :pidm
+                        union
+                        select govrole_pidm,'FRIEND' from govrole
+                               where govrole_friend_ind = 'Y' and govrole_pidm = :pidm
+                        union
+                        select govrole_pidm,'FINAID' from govrole
+                               where govrole_finaid_ind = 'Y' and govrole_pidm = :pidm
+                        union
+                        select govrole_pidm,'FINANCE' from govrole
+                               where govrole_finance_ind = 'Y' and govrole_pidm = :pidm
+                        union
+                        select govrole_pidm,'BSAC'  from govrole
+                               where govrole_bsac_ind = 'Y' and govrole_pidm = :pidm
                 """, [ pidm: authentictionResults.pidm ] )
 
             rows?.each { row ->
