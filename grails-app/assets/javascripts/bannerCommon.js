@@ -1,5 +1,5 @@
 /*********************************************************************************
- Copyright 2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2018-2020 Ellucian Company L.P. and its affiliates.
  **********************************************************************************/
 
 var path = document.querySelector('meta[name=menuBaseURL]').content || document.location.href;
