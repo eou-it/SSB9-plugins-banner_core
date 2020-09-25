@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2016-18 Ellucian Company L.P. and its affiliates.
+Copyright 2016-2020 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <html>
@@ -50,7 +50,7 @@ Copyright 2016-18 Ellucian Company L.P. and its affiliates.
                                            <label for="oldpassword"> <g:message code="changeExpiredPassword.old.password"/>:</label>
                                         </td>
                                         <td class="tabledata">
-                                            <input type="password" id="oldpassword" name="oldpassword" class="eds-text-field default-state " autocomplete="off"/>
+                                            <input type="password" id="oldpassword" name="oldpassword" class="eds-text-field default-state " autocomplete="off" aria-required="true"/>
                                         </td>
                                     </tr>
                                     <tr>
@@ -58,7 +58,7 @@ Copyright 2016-18 Ellucian Company L.P. and its affiliates.
                                             <label for="password"><g:message code="changeExpiredPassword.new.password"/>:</label>
                                         </td>
                                         <td class="tabledata">
-                                            <input type="password" id="password" name="password" class="eds-text-field default-state" autocomplete="off"/>
+                                            <input type="password" id="password" name="password" class="eds-text-field default-state" autocomplete="off" aria-required="true"/>
                                         </td>
                                     </tr>
                                     <tr>
@@ -66,7 +66,7 @@ Copyright 2016-18 Ellucian Company L.P. and its affiliates.
                                             <label for="repassword"><g:message code="changeExpiredPassword.re.password"/> :</label>
                                         </td>
                                         <td class="tabledata">
-                                            <input type="password" id="repassword" name="repassword" class="eds-text-field default-state" autocomplete="off"/>
+                                            <input type="password" id="repassword" name="repassword" class="eds-text-field default-state" autocomplete="off" aria-required="true"/>
                                         </td>
                                     </tr>
                             </table>
