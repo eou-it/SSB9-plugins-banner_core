@@ -1,5 +1,5 @@
 /*********************************************************************************
- Copyright 2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2018-2020 Ellucian Company L.P. and its affiliates.
  **********************************************************************************/
 
 var path = document.querySelector('meta[name=menuBaseURL]').content || document.location.href;
@@ -9,7 +9,7 @@ document.getElementById("branding").setAttribute('href', appUrl);
 // define a handler
 function goToHome(e) {
     // this would go to Home page of Application=> key is Home and the Shift key at the same time
-    if (e.ctrlKey && e.altKey && e.keyCode == 36) {
+    if (e.altKey && e.keyCode == 81) {
        document.getElementById("branding").click();
     }
 }
