@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
@@ -21,7 +21,7 @@ import java.sql.SQLException
 public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     private static def applicationContext // set lazily via 'getApplicationContext()'
-
+    private static Map<String,DetermineAuthoritiesCacheItem> determineAuthorities_cache = new HashMap<String,DetermineAuthoritiesCacheItem>();
     def dataSource               // injected by Spring
     def authenticationDataSource // injected by Spring
 
@@ -50,7 +50,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             loadDefault( getApplicationContext(), authenticationResults['oracleUserName'] )
             getApplicationContext().publishEvent( new BannerAuthenticationEvent( authenticationResults['oracleUserName'], true, '', '', new Date(), '' ) )
 
-            authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, dataSource )
+            authenticationResults['authorities'] = (Collection<GrantedAuthority>) cached_determineAuthorities( authenticationResults, dataSource )
 
             def pidm=AuthenticationProviderUtility.getUserPidm(authenticationResults.name.toUpperCase(),dataSource);
 
@@ -96,6 +96,41 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
      **/
     public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, Sql db ) {
         return BannerGrantedAuthorityService.determineAuthorities (authenticationResults, db)
+    }
+
+    static private class DetermineAuthoritiesCacheItem
+    {
+        public Collection<GrantedAuthority> authorities;
+        public String key;
+        public long expiration;
+    }
+
+    public static Collection<GrantedAuthority> cached_determineAuthorities( Map authenticationResults, DataSource dataSource ) {
+        String key=authenticationResults["oracleUserName"];
+
+        DetermineAuthoritiesCacheItem cacheItem=null;
+        if (determineAuthorities_cache.containsKey(key))
+        {
+            cacheItem=determineAuthorities_cache[key];
+            if (System.currentTimeMillis()>cacheItem.expiration)
+                cacheItem=null;
+        }
+
+        if (cacheItem==null)
+        {
+            log.trace "cached_determineAuthorities miss"
+            cacheItem = new DetermineAuthoritiesCacheItem();
+            cacheItem.key = key;
+            cacheItem.expiration = System.currentTimeMillis()+5*60*1000;//5 minutes
+            cacheItem.authorities = BannerGrantedAuthorityService.determineAuthorities (authenticationResults, dataSource)
+            determineAuthorities_cache[key] = cacheItem;
+        }
+        else {
+            log.trace "cached_determineAuthorities hit"
+        }
+
+
+        return cacheItem.authorities;
     }
 
 
