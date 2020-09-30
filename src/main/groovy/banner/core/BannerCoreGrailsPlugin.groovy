@@ -17,7 +17,6 @@ import groovy.util.logging.Slf4j
 import net.hedtech.banner.configuration.ExternalConfigurationUtils
 import net.hedtech.banner.db.BannerDS as BannerDataSource
 import net.hedtech.banner.db.BannerDataSourceConnectionSourceFactory
-import net.hedtech.banner.general.audit.LoginAuditService
 import net.hedtech.banner.mep.MultiEntityProcessingService
 import net.hedtech.banner.security.*
 import net.hedtech.banner.service.DefaultLoaderService
@@ -41,6 +40,8 @@ import javax.servlet.Filter
 
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean
 import net.hedtech.banner.db.DbConnectionCacheSessionListener
+import net.hedtech.banner.db.SessionCounterListener
+import net.hedtech.banner.endpoint.StatusEndPoint
 
 /**
  * A Grails Plugin supporting cross cutting concerns.
@@ -302,10 +303,12 @@ class BannerCoreGrailsPlugin extends Plugin {
 
         /*** Register Http Session Listener ***/
         dbConnectionCacheSessionListener(DbConnectionCacheSessionListener)
+        sessionCounterListener(SessionCounterListener)
         servletListenerRegistrationBean(ServletListenerRegistrationBean){
             name = 'Banner Core Session Listener'
             listener = ref('dbConnectionCacheSessionListener')
         }
+        status(StatusEndPoint)
         databaseHealthCheck(DataSourceHealthIndicator, underlyingDataSource)
       }
     }
