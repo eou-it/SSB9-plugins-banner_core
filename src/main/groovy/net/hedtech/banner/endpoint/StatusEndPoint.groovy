@@ -46,13 +46,18 @@ public class StatusEndPoint implements Endpoint<Map<String, Object>> {
         Map<String, Object> result = new LinkedHashMap<String, Object>()
         result.put('totalActiveSession', SessionCounterListener.totalActiveSession)
         DataSource ssbDataSource = this.applicationContext.getBean('underlyingSsbDataSource')
+        String ssbDataSourceClassName = ssbDataSource.getClass().getName()
         DataSource dataSource = this.applicationContext.getBean('underlyingDataSource')
-        println("ssbDataSource="+ssbDataSource.url)
-        println("dataSource="+dataSource.url)
-        result.put('ssbDataSource.active', ssbDataSource.getNumActive())
-        result.put('ssbDataSource.idle', ssbDataSource.getNumIdle())
-        result.put('dataSource.active', dataSource.getNumActive())
-        result.put('dataSource.idle', dataSource.getNumIdle())
+        String dataSourceClassName = dataSource.getClass().getName()
+
+        if(!('weblogic.jdbc.common.internal.RmiDataSource'.contentEquals(ssbDataSourceClassName))){
+            result.put('ssbDataSource.active', ssbDataSource.getNumActive())
+            result.put('ssbDataSource.idle', ssbDataSource.getNumIdle())
+        }
+        if(!('weblogic.jdbc.common.internal.RmiDataSource'.contentEquals(dataSourceClassName))){
+            result.put('dataSource.active', dataSource.getNumActive())
+            result.put('dataSource.idle', dataSource.getNumIdle())
+        }
         result.put('totalMemory', Runtime.getRuntime().totalMemory()/mb+" MB")
         result.put('freeMemory',  Runtime.getRuntime().freeMemory()/mb+" MB")
         result.put('maxMemory', Runtime.getRuntime().maxMemory()/mb+" MB")
