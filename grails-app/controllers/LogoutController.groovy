@@ -17,6 +17,7 @@ import javax.servlet.http.Cookie
  */
 class LogoutController {
 
+    static scope = "singleton"
     static defaultAction = "index"
     public static final String VIEW_LOGOUT_PAGE = "logoutPage"
     public static final String VIEW_TIMEOUT = "timeout"

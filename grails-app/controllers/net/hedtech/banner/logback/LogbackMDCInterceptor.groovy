@@ -6,6 +6,7 @@ package net.hedtech.banner.logback
 
 import grails.util.Holders
 import groovy.util.logging.Slf4j
+import net.hedtech.banner.audit.AuditUtility
 import net.hedtech.banner.security.BannerUser
 import org.slf4j.MDC
 
@@ -33,7 +34,7 @@ class LogbackMDCInterceptor {
                 BannerUser principal = springSecurityService.principal
                 MDC.put( PRINCIPAL_ID, principal.username )
             } else {
-                MDC.put( CLIENT_IP, request.getRemoteAddr() )
+                MDC.put( CLIENT_IP, AuditUtility.getClientIpAddress(request) )
             }
         }
         true
