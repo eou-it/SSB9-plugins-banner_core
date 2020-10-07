@@ -104,6 +104,12 @@ class DBUtility {
         enabled
     }
 
+
+    public static boolean isContextSecurityEnabled() {
+        Boolean contextSecurityEnabled = config.contextSecurityEnabled instanceof Boolean ? config.contextSecurityEnabled : false
+        log.debug "contextSecurityEnabled flag is = ${contextSecurityEnabled}"
+        contextSecurityEnabled
+    }
     //Checks if user is SS user with roles in GOVROLE/TWGRROLE table
     public static boolean isSsbUserWithAnyRole() {
         def user = SecurityContextHolder?.context?.authentication?.principal
