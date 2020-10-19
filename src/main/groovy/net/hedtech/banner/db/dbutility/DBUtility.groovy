@@ -1,5 +1,5 @@
 /* *****************************************************************************
- Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
+ Copyright 2017-2020 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
 package net.hedtech.banner.db.dbutility
 
@@ -104,6 +104,12 @@ class DBUtility {
         enabled
     }
 
+
+    public static boolean isContextSecurityEnabled() {
+        Boolean contextSecurityEnabled = config.contextSecurityEnabled instanceof Boolean ? config.contextSecurityEnabled : false
+        log.debug "contextSecurityEnabled flag is = ${contextSecurityEnabled}"
+        contextSecurityEnabled
+    }
     //Checks if user is SS user with roles in GOVROLE/TWGRROLE table
     public static boolean isSsbUserWithAnyRole() {
         def user = SecurityContextHolder?.context?.authentication?.principal

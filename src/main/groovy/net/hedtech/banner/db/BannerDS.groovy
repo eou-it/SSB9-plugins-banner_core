@@ -142,7 +142,11 @@ public class BannerDS implements DataSource {
                 }
                 else if (DBUtility.isSSBProxySupportEnabled()){ //proxiedUser
                     log.debug ('Setting mep for user for proxiedUser')
-                    setMepSsb(conn)
+                    if(DBUtility.isContextSecurityEnabled()){
+                        setMepSsb(conn, user)
+                    } else {
+                        setMepSsb(conn)
+                    }
                 }
                 else {
                     log.debug ('Setting mep for other request')
