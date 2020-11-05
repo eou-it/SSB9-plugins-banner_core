@@ -65,7 +65,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                     while(notifications.length != 0){
                        notifications.remove(notifications.first())
                     }
-                    var errorNotification = new Notification({message: emptyErrorMessage, type: "error", id: $(element).attr("id")});
+                    var errorNotification = new Notification({message: emptyErrorMessage, type: "error", id: $(element).attr("id"), component : $(element)});
                     notifications.addNotification(errorNotification);
                 }
                 if($("#password").val().trim().length != 0 && $("#repassword").val().trim().length){
@@ -91,6 +91,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
             setTimeout( function(){
                 $('input:password').attr('value', '');
             }, 100);
+            $('input:password')[0].focus();
         });
         </script>
   </head>

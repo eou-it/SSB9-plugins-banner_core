@@ -83,6 +83,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                     element.parent().prev().removeClass("invalid");
                 }
             });
+            $('input:password')[0].focus();
         });
     </script>
 </head>
