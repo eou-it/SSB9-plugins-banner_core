@@ -40,7 +40,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                     var errorMessageList = "${flash.message}".split("::::");
                     for(var i=0; i< errorMessageList.length; i++){
                         var error = errorMessageList[i].replace(/:/g, "");
-                        var errorNotification = new Notification({message: error, type: "error", id: $(element).attr("id")});
+                        var errorNotification = new Notification({message: error, type: "error", id: $(element).attr("id"), component : $(element)});
                         notifications.addNotification(errorNotification);
                     }
                 })
@@ -72,7 +72,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                    notifications.remove(notifications.get("password"));
                    notifications.remove(notifications.get("repassword"));
                    if($("#password").val() != $("#repassword").val()){
-                      var errorNotification = new Notification({message: passwordMatchError, type: "error", id: "match"});
+                      var errorNotification = new Notification({message: passwordMatchError, type: "error", id: "match", component : $(element)});
                       notifications.addNotification(errorNotification);
                    }
                     else{
