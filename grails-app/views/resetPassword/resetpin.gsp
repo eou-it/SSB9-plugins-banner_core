@@ -34,13 +34,21 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                 form.action='${cancelUrl}';
                 form.submit();
             }
+
+           window.onload = function () {
+               $('input:password')[0].focus();
+           }
+
            $(document).ready(function (){
             setTimeout(function() {
                 $(".error-state").each(function(i, element){
+                    while(notifications.length != 0){
+                        notifications.remove(notifications.first());
+                    }
                     var errorMessageList = "${flash.message}".split("::::");
                     for(var i=0; i< errorMessageList.length; i++){
                         var error = errorMessageList[i].replace(/:/g, "");
-                        var errorNotification = new Notification({message: error, type: "error", id: $(element).attr("id"), component : $(element)});
+                        var errorNotification = new Notification({message: error, type: "error", id: $(element).attr("id"), component : $('input:password')[0]});
                         notifications.addNotification(errorNotification);
                     }
                 })
@@ -91,7 +99,6 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
             setTimeout( function(){
                 $('input:password').attr('value', '');
             }, 100);
-            $('input:password')[0].focus();
         });
         </script>
   </head>

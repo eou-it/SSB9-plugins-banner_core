@@ -38,6 +38,11 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
             form.action = '${cancelUrl}';
             form.submit();
         }
+
+        window.onload = function () {
+            $('input:password')[0].focus();
+        }
+        
         $(document).ready(function () {
             setTimeout(function () {
                 $(".error-state").each(function (i, element) {
@@ -83,7 +88,6 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                     element.parent().prev().removeClass("invalid");
                 }
             });
-            $('input:password')[0].focus();
         });
     </script>
 </head>
