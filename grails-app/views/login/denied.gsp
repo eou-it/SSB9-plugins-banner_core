@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <%@ page contentType="text/html;charset=UTF-8" defaultCodec="none" %>
@@ -11,7 +11,7 @@ Copyright 2009-2017 Ellucian Company L.P. and its affiliates.
         <g:set var="target" value="${request.contextPath}${uri}"/>
     </head>
     <body>
-        <div class="dialog-mask">
+        <div class="dialog-mask" role="main">
             <div class="dialog-wrapper">
                 <div class="dialog">
                     <div class="dialog-content" role="dialog" id="dialog-message">

@@ -1,6 +1,7 @@
 /* *****************************************************************************
- Copyright 2015-2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2015-2020 Ellucian Company L.P. and its affiliates.
  ****************************************************************************** */
+
 package net.hedtech.banner.db
 
 import grails.util.Environment
@@ -141,7 +142,11 @@ public class BannerDS implements DataSource {
                 }
                 else if (DBUtility.isSSBProxySupportEnabled()){ //proxiedUser
                     log.debug ('Setting mep for user for proxiedUser')
-                    setMepSsb(conn)
+                    if(DBUtility.isContextSecurityEnabled()){
+                        setMepSsb(conn, user)
+                    } else {
+                        setMepSsb(conn)
+                    }
                 }
                 else {
                     log.debug ('Setting mep for other request')

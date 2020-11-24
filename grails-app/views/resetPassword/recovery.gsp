@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 <%@ page contentType="text/html;charset=UTF-8" %>
@@ -38,7 +38,7 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
         </script>
   </head>
   <body>
-  <div id="mainContent" class="page-with-sidebar">
+  <div id="mainContent" role="main" class="page-with-sidebar">
       <div class="ui-layout-center inner-content" id="inner-content">
           <div class="inner-center">
               <div id="resetpassword" class="ui-widget ui-widget-section">
@@ -54,10 +54,10 @@ Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
                                   <input type="hidden" name="nonPidmId" value='${nonPidmIdm}'/>
                              <tr><td class="tabledata" colspan="2"><g:message code="net.hedtech.banner.resetpassword.recoverycode.message"/></td></tr>
                              <g:if test="${flash.message}">
-                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="eds-text-field error-state" data-error-message="${flash.message}" autocomplete="off"/> </td></tr>
+                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="eds-text-field error-state" data-error-message="${flash.message}" autocomplete="off" aria-label="<g:message code="net.hedtech.banner.resetpassword.recoverycode"/>" aria-required="true"/> </td></tr>
                              </g:if>
                              <g:else>
-                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="eds-text-field default-state" autocomplete="off"/> </td></tr>
+                                <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.recoverycode"/>:</td><td class="tabledata"><input type="password" name="recoverycode" class="eds-text-field default-state" autocomplete="off" aria-label="<g:message code="net.hedtech.banner.resetpassword.recoverycode"/>" aria-required="true"/> </td></tr>
                              </g:else>
                              </g:elseif>
                           </table>
