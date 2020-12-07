@@ -120,8 +120,6 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
         }
         if (cacheItem==null)
         {
-            println "User:$key"
-            println "Data is picked from DataBase"
             log.trace "cached_determineAuthorities miss"
             cacheItem = new DetermineAuthoritiesCacheItem()
             cacheItem.key = key
@@ -130,8 +128,6 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             determineAuthorities_cache[key] = cacheItem
         }
         else {
-            println "User:$key"
-            println "Data is picked from Cache"
             log.trace "cached_determineAuthorities hit"
         }
         return cacheItem.authorities
