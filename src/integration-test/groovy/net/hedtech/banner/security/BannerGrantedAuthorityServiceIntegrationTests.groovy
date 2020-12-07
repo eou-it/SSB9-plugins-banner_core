@@ -1,8 +1,9 @@
 /*******************************************************************************
-Copyright 2009-2012 Ellucian Company L.P. and its affiliates.
+Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 package net.hedtech.banner.security
 
+import grails.util.Holders
 import net.hedtech.banner.testing.BaseIntegrationTestCase
 import org.junit.Before
 import org.junit.After
@@ -42,13 +43,36 @@ class BannerGrantedAuthorityServiceIntegrationTests extends BaseIntegrationTestC
 
     @Test
     void testDetermineAuthorities() {
-
         Authentication authentication = bannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(EDITABLE_USER, "u_pick_it"))
         Map authenticationResults = [ name:           authentication.name,
                                       credentials:    authentication.credentials,
                                       oracleUserName: authentication.name,
                                       valid:          true ].withDefault { k -> false }
 
+        def s = BannerGrantedAuthorityService.determineAuthorities(authenticationResults, dataSource)
+        assertNotNull(s)
+    }
+
+    @Test
+    void testDetermineAuthoritiesWithAuthorityCachingEnabled() {
+        Holders.config.authorityCachingEnabled = true
+        Authentication authentication = bannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(EDITABLE_USER, "u_pick_it"))
+        Map authenticationResults = [ name:           authentication.name,
+                                      credentials:    authentication.credentials,
+                                      oracleUserName: authentication.name,
+                                      valid:          true ].withDefault { k -> false }
+        def s = BannerGrantedAuthorityService.determineAuthorities(authenticationResults, dataSource)
+        assertNotNull(s)
+    }
+
+    @Test
+    void testDetermineAuthoritiesWithoutAuthorityCachingEnabled() {
+        Holders.config.authorityCachingEnabled = false
+        Authentication authentication = bannerAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(EDITABLE_USER, "u_pick_it"))
+        Map authenticationResults = [ name:           authentication.name,
+                                      credentials:    authentication.credentials,
+                                      oracleUserName: authentication.name,
+                                      valid:          true ].withDefault { k -> false }
         def s = BannerGrantedAuthorityService.determineAuthorities(authenticationResults, dataSource)
         assertNotNull(s)
     }

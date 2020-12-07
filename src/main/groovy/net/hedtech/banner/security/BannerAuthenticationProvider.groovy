@@ -1,16 +1,15 @@
 /*******************************************************************************
- Copyright 2009-2016 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.security
 
-import grails.util.Holders  as CH
+import grails.util.Holders
 import groovy.sql.Sql
 import groovy.util.logging.Slf4j
 import org.springframework.context.ApplicationContext
 import org.springframework.security.authentication.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
-
 import javax.sql.DataSource
 import java.sql.SQLException
 
@@ -21,7 +20,7 @@ import java.sql.SQLException
 public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     private static def applicationContext // set lazily via 'getApplicationContext()'
-
+    private static Map<String,DetermineAuthoritiesCacheItem> determineAuthorities_cache = new HashMap<String,DetermineAuthoritiesCacheItem>();
     def dataSource               // injected by Spring
     def authenticationDataSource // injected by Spring
 
@@ -50,12 +49,17 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
             loadDefault( getApplicationContext(), authenticationResults['oracleUserName'] )
             getApplicationContext().publishEvent( new BannerAuthenticationEvent( authenticationResults['oracleUserName'], true, '', '', new Date(), '' ) )
 
-            authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, dataSource )
-
-            def pidm=AuthenticationProviderUtility.getUserPidm(authenticationResults.name.toUpperCase(),dataSource);
+            Boolean authorityCachingEnabled = Holders?.config?.authorityCachingEnabled instanceof Boolean ? Holders?.config?.authorityCachingEnabled : false
+            log.debug "Authority Caching Enable = {}", authorityCachingEnabled
+            if(authorityCachingEnabled){
+                authenticationResults['authorities'] = (Collection<GrantedAuthority>) cached_determineAuthorities( authenticationResults, dataSource )
+            } else {
+                authenticationResults['authorities'] = (Collection<GrantedAuthority>) determineAuthorities( authenticationResults, dataSource )
+            }
+            def pidm=AuthenticationProviderUtility.getUserPidm(authenticationResults.name.toUpperCase(),dataSource)
 
             if(pidm!=null){
-                authenticationResults['fullName']=AuthenticationProviderUtility.getUserFullName(pidm,authenticationResults.name,dataSource);
+                authenticationResults['fullName']=AuthenticationProviderUtility.getUserFullName(pidm,authenticationResults.name,dataSource)
 
             }else{
                 authenticationResults['fullName'] = AuthenticationProviderUtility.getFullName( authenticationResults.name.toUpperCase(), dataSource ) as String
@@ -78,7 +82,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
     public static def getApplicationContext() {
         if (!applicationContext) {
-            applicationContext = (ApplicationContext) CH.grailsApplication.getMainContext()
+            applicationContext = (ApplicationContext) Holders.grailsApplication.getMainContext()
         }
         applicationContext
     }
@@ -96,6 +100,37 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
      **/
     public static Collection<GrantedAuthority> determineAuthorities( Map authenticationResults, Sql db ) {
         return BannerGrantedAuthorityService.determineAuthorities (authenticationResults, db)
+    }
+
+    static private class DetermineAuthoritiesCacheItem
+    {
+        public Collection<GrantedAuthority> authorities
+        public String key
+        public long expiration
+    }
+
+    public static Collection<GrantedAuthority> cached_determineAuthorities (Map authenticationResults, DataSource dataSource ) {
+        String key=authenticationResults["oracleUserName"]
+        DetermineAuthoritiesCacheItem cacheItem = null
+        if (determineAuthorities_cache.containsKey(key))
+        {
+            cacheItem = determineAuthorities_cache[key]
+            if (System.currentTimeMillis() > cacheItem.expiration)
+                cacheItem = null
+        }
+        if (cacheItem==null)
+        {
+            log.trace "cached_determineAuthorities miss"
+            cacheItem = new DetermineAuthoritiesCacheItem()
+            cacheItem.key = key
+            cacheItem.expiration  = System.currentTimeMillis() + 5*60*1000   //5 minutes
+            cacheItem.authorities = BannerGrantedAuthorityService.determineAuthorities (authenticationResults, dataSource)
+            determineAuthorities_cache[key] = cacheItem
+        }
+        else {
+            log.trace "cached_determineAuthorities hit"
+        }
+        return cacheItem.authorities
     }
 
 
@@ -142,7 +177,7 @@ public class BannerAuthenticationProvider implements AuthenticationProvider {
 
 
     private def isAdministrativeBannerEnabled() {
-        CH.config.administrativeBannerEnabled instanceof Boolean ? CH.config.administrativeBannerEnabled : true // default is 'true'
+        Holders.config.administrativeBannerEnabled instanceof Boolean ? Holders.config.administrativeBannerEnabled : true // default is 'true'
     }
 
 
