@@ -35,6 +35,10 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                 form.submit();
             }
 
+            function resetPasswordSubmit() {
+                return ($("#password").val() === "" )? false: true;
+            }
+
            window.onload = function () {
                $('input:password')[0].focus();
            }
@@ -110,7 +114,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
 
                   <div class="main-wrapper" >
                       <div class="ui-widget-panel">
-                      <form action="${postBackUrl}" method="post" id="resetPinForm">
+                      <form action="${postBackUrl}" method="post" id="resetPinForm" onsubmit="return resetPasswordSubmit()">
                           <table cellpadding="5" cellspacing="10" class="input-table">
                              <tr align="center"><td class="tabledata" colspan="2"><g:message code="net.hedtech.banner.resetpassword.resetpassword.message"/></td></tr>
                               <g:if test="${flash.message}">
