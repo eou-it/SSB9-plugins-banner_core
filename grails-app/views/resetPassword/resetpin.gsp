@@ -34,13 +34,25 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                 form.action='${cancelUrl}';
                 form.submit();
             }
+
+            function resetPasswordSubmit() {
+                return ($("#password").val() === "" )? false: true;
+            }
+
+           window.onload = function () {
+               $('input:password')[0].focus();
+           }
+
            $(document).ready(function (){
             setTimeout(function() {
                 $(".error-state").each(function(i, element){
+                    while(notifications.length != 0){
+                        notifications.remove(notifications.first());
+                    }
                     var errorMessageList = "${flash.message}".split("::::");
                     for(var i=0; i< errorMessageList.length; i++){
                         var error = errorMessageList[i].replace(/:/g, "");
-                        var errorNotification = new Notification({message: error, type: "error", id: $(element).attr("id")});
+                        var errorNotification = new Notification({message: error, type: "error", id: $(element).attr("id"), component : $('input:password')[0]});
                         notifications.addNotification(errorNotification);
                     }
                 })
@@ -65,14 +77,14 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                     while(notifications.length != 0){
                        notifications.remove(notifications.first())
                     }
-                    var errorNotification = new Notification({message: emptyErrorMessage, type: "error", id: $(element).attr("id")});
+                    var errorNotification = new Notification({message: emptyErrorMessage, type: "error", id: $(element).attr("id"), component : $(element)});
                     notifications.addNotification(errorNotification);
                 }
                 if($("#password").val().trim().length != 0 && $("#repassword").val().trim().length){
                    notifications.remove(notifications.get("password"));
                    notifications.remove(notifications.get("repassword"));
                    if($("#password").val() != $("#repassword").val()){
-                      var errorNotification = new Notification({message: passwordMatchError, type: "error", id: "match"});
+                      var errorNotification = new Notification({message: passwordMatchError, type: "error", id: "match", component : $(element)});
                       notifications.addNotification(errorNotification);
                    }
                     else{
@@ -102,7 +114,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
 
                   <div class="main-wrapper" >
                       <div class="ui-widget-panel">
-                      <form action="${postBackUrl}" method="post" id="resetPinForm">
+                      <form action="${postBackUrl}" method="post" id="resetPinForm" onsubmit="return resetPasswordSubmit()">
                           <table cellpadding="5" cellspacing="10" class="input-table">
                              <tr align="center"><td class="tabledata" colspan="2"><g:message code="net.hedtech.banner.resetpassword.resetpassword.message"/></td></tr>
                               <g:if test="${flash.message}">

@@ -38,6 +38,11 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
             form.action = '${cancelUrl}';
             form.submit();
         }
+
+        window.onload = function () {
+            $('input:password')[0].focus();
+        }
+        
         $(document).ready(function () {
             setTimeout(function () {
                 $(".error-state").each(function (i, element) {
@@ -69,9 +74,10 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                         notifications.remove(notifications.get(element.attr("id")))
                     }
                     var errorNotification = new Notification({
-                        message: emptyErrorMessage + $(element).attr("id").charAt($(element).attr("id").length - 1),
+                        message: emptyErrorMessage + $(element).attr("id").charAt($(element).attr("id").length),
                         type: "error",
-                        id: $(element).attr("id")
+                        id: $(element).attr("id"),
+                        component : $(element)
                     });
                     notifications.addNotification(errorNotification);
                 }
@@ -91,7 +97,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
     <div class="ui-layout-center inner-content" id="inner-content">
         <div class="inner-center">
             <div id="resetpassword" class="ui-widget ui-widget-section resetpasswordsection">
-                <div class="fotgotpasswordtitle"><g:message
+                <div class="fotgotpasswordtitle" role="heading"><g:message
                         code="net.hedtech.banner.resetpassword.forgotpassword.title"/></div>
 
                 <div class="main-wrapper">
@@ -135,7 +141,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                                 </g:if>
                                 <g:else>
                                     <g:each in="${questions}">
-                                        <tr><td class="tabletext"><g:message
+                                        <tr id="securityQuestion${it[0]}"><td class="tabletext"><g:message
                                                 code="net.hedtech.banner.resetpassword.question"/>:</td><td
                                                 class="tabledata">${it[1]}</td></tr>
                                         <tr><td class="tabletext"><g:message
@@ -145,7 +151,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                                                                          class="eds-text-field default-state"
                                                                          autocomplete="off"
                                                                          aria-required="true"
-                                                                         aria-label="<g:message code="net.hedtech.banner.resetpassword.answer"/> "/></td></tr>
+                                                                         aria-labelledby="securityQuestion${it[0]}"/></td></tr>
                                     </g:each>
                                 </g:else>
                             </table>

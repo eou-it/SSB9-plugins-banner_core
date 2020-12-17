@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2009-2019 Ellucian Company L.P. and its affiliates.
+ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 
 
@@ -32,6 +32,8 @@ class ErrorController {
         def targetException
         def mepCodeException
 
+        log.debug("In ErrorController Current Env is = ${Environment.current}")
+        log.debug("Exception is = ${request.exception}")
         if (Environment.current == Environment.PRODUCTION || Environment.current == Environment.TEST) {
             targetException = exception
             mepCodeException = exception?.cause
@@ -56,16 +58,22 @@ class ErrorController {
              pidm = authentication.user.pidm
          }
         AuthenticationProviderUtility.captureLogoutInformation(username, pidm)
-        logoutHandlers.each { handler ->
-            if (handler instanceof LogoutHandler) {
-                handler.logout(request, response, SCH.context?.authentication)
-            } else if (handler instanceof LogoutSuccessHandler) {
-                handler.onLogoutSuccess(request, response, SCH.context?.authentication)
+        try{
+            logoutHandlers.each { handler ->
+                if (handler instanceof LogoutHandler) {
+                    handler.logout(request, response, SCH.context?.authentication)
+                } else if (handler instanceof LogoutSuccessHandler) {
+                    handler.onLogoutSuccess(request, response, SCH.context?.authentication)
+                }
             }
         }
-        if (targetException.cause instanceof  java.sql.SQLException || targetException.cause instanceof oracle.net.ns.NetException){
+        catch (Exception ex) {
+            log.error("Exception occured during logout =" + ex)
+            targetException = ex
+        }
+        log.debug("TargetException is = ${targetException}")
+        if (targetException?.cause instanceof  java.sql.SQLException || targetException?.cause instanceof oracle.net.ns.NetException){
             targetException = new SQLException(message( code: "net.hedtech.banner.errors.connection" ))
-
         }
 
         def model = [
