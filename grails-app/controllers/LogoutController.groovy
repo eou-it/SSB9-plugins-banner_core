@@ -35,7 +35,7 @@ class LogoutController {
 
     def index() {
         AuthenticationProviderUtility.captureLogoutInformation(response?.authBeforeExecution?.user?.username, response?.authBeforeExecution?.user?.pidm)
-        boolean isGuestUser = response?.authBeforeExecution?.user?.gidm ? true : false
+        boolean isGuestUser = response?.authBeforeExecution?.user?.gidm && !response?.authBeforeExecution?.user?.pidm
         if (!ControllerUtils.isSamlEnabled()) {
             invalidateSession(response)
         }
