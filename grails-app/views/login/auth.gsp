@@ -59,7 +59,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
 <body class="pageBg">
 <g:analytics/>
 <g:pageAccessAudit/>
-<div class="splashBg" role="form">
+<div class="splashBg" role="main">
     <div class="ie-warning" id="ieWarningMessage">
         <div>
             <g:message code="net.hedtech.banner.login.warning"/>
@@ -94,8 +94,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                     <div class="error-state">
                         <span><input type='text' name='username' id='username' class="eds-text-field"
                                      placeholder="<g:message code="net.hedtech.banner.login.username"/>"
-                                     aria-labelledby='userNameTxt'
-                                     aria-describedby='loginMsg'/>
+                                     aria-labelledby='loginMsg userNameTxt'/>
                         </span>
                     </div>
 
@@ -110,8 +109,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                     <div class="error-state">
                         <span><input type='text' name='username' id='username' class="eds-text-field"
                                      placeholder="<g:message code="net.hedtech.banner.login.username"/>"
-                                     aria-labelledby='userNameTxt'
-                                     aria-describedby='loginMsg'/>
+                                     aria-labelledby='loginMsg userNameTxt'/>
                         </span>
                     </div>
 
@@ -126,7 +124,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                     <div class="">
                         <span><input type='text' id="userName" name='username' id='username' class="eds-text-field"
                                      placeholder="<g:message code="net.hedtech.banner.login.username"/>"
-                                     aria-labelledby='userNameTxt' aria-describedby='loginMsg'/>
+                                     aria-labelledby='loginMsg userNameTxt'/>
                         </span>
                     </div>
 
