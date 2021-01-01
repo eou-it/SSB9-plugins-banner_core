@@ -97,7 +97,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
     <div class="ui-layout-center inner-content" id="inner-content">
         <div class="inner-center">
             <div id="resetpassword" class="ui-widget ui-widget-section resetpasswordsection">
-                <div class="fotgotpasswordtitle" role="heading"><g:message
+                <div class="fotgotpasswordtitle" role="heading" aria-level="1"><g:message
                         code="net.hedtech.banner.resetpassword.forgotpassword.title"/></div>
 
                 <div class="main-wrapper">
