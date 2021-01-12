@@ -1,5 +1,5 @@
 /*******************************************************************************
- Copyright 2013-2014 Ellucian Company L.P. and its affiliates.
+ Copyright 2013-2020 Ellucian Company L.P. and its affiliates.
  *******************************************************************************/
 package net.hedtech.banner.query.criteria
 
@@ -14,9 +14,9 @@ class DateQueryBuilder {
     }
 
     public void appendDateSupport(String str) {
-        stringBuilder.append("(TO_DATE(trunc(")
+        stringBuilder.append("TO_DATE(TO_CHAR(")
         stringBuilder.append(str)
-        stringBuilder.append(")))")
+        stringBuilder.append(",'MM-DD-YYYY'), 'MM-DD-YYYY')")
     }
 
 
