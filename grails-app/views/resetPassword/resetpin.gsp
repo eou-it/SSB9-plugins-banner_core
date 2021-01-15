@@ -116,7 +116,7 @@ Copyright 2009-2020 Ellucian Company L.P. and its affiliates.
                       <div class="ui-widget-panel">
                       <form action="${postBackUrl}" method="post" id="resetPinForm" onsubmit="return resetPasswordSubmit()">
                           <table cellpadding="5" cellspacing="10" class="input-table">
-                             <tr align="center"><td class="tabledata" colspan="2"><g:message code="net.hedtech.banner.resetpassword.resetpassword.message"/></td></tr>
+                             <tr align="center"><td class="tabledata" colspan="2" role="heading" aria-level="1"><g:message code="net.hedtech.banner.resetpassword.resetpassword.message"/></td></tr>
                               <g:if test="${flash.message}">
                                     <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.newpassword"/>:</td><td class="tabledata"><input type="password" id="password" name="password" class="eds-text-field error-state" autocomplete="off" aria-label="<g:message code="net.hedtech.banner.resetpassword.newpassword"/>" aria-required="true"/> </td></tr>
                                     <tr><td class="tabletext"> <g:message code="net.hedtech.banner.resetpassword.repassword" /> :</td><td  class="tabledata"><input type="password" id="repassword" name="repassword" class="eds-text-field error-state" autocomplete="off" aria-label="<g:message code="net.hedtech.banner.resetpassword.repassword" />" aria-required="true"/> </td></tr>
