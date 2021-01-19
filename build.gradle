@@ -76,7 +76,7 @@ dependencies {
     runtime "org.grails.plugins:x-frame-options:1.1.2"
     compile 'org.grails.plugins:grails-markdown:3.0.0'
     // Added for BannerXE - Oracle jars - specified as physical path
-    compile files("lib/ojdbc6-11.2.0.1.0.jar")
+    compile files("lib/ojdbc8.jar")
     runtime files("lib/xdb6-11.2.0.4.jar")
     compile group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '4.11'
 }
