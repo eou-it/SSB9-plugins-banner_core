@@ -71,13 +71,9 @@ body,html {
     float: left;
 }
 .institutionalBranding {
-    height: inherit;
-    width: 15em;
-    float: left;
     margin-left: 1em;
-    margin-right: 0;
-    padding-right: 1em;
-    padding-left: 0;
+    margin-right:0;
+    display: flex;
 }
 #brandingDiv, #branding {
     height: inherit;
