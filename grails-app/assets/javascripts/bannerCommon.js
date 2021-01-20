@@ -1,5 +1,5 @@
 /*********************************************************************************
- Copyright 2018-2020 Ellucian Company L.P. and its affiliates.
+ Copyright 2018-2021 Ellucian Company L.P. and its affiliates.
  **********************************************************************************/
 
 var path = document.querySelector('meta[name=menuBaseURL]').content || document.location.href;
@@ -15,5 +15,15 @@ function goToHome(e) {
 }
 // register the handler
 document.addEventListener('keyup', goToHome, false);
-
+var element=document.getElementsByClassName('institutionalBranding');
+var bgImage= window.getComputedStyle(element[0], null).getPropertyValue("background-image");
+var brandinglogo='';
+if(bgImage.indexOf('url')>=0) {
+    brandinglogo=bgImage.replace('url(','').replace(')','').replace(/\"/gi, "");
+    element[0].style.background="none";
+}
+else{
+    brandinglogo=appUrl + "assets/eds/logo.svg";
+}
+document.getElementById('brandingImage').src=brandinglogo;
 
