@@ -1,6 +1,6 @@
 <!--
 /*******************************************************************************
-Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
+Copyright 2017-2021 Ellucian Company L.P. and its affiliates.
 *******************************************************************************/
 -->
 
@@ -75,9 +75,8 @@ Copyright 2017-2018 Ellucian Company L.P. and its affiliates.
     <header id='banner-header-main-section' class='banner-header-theme' role='banner'>
         <div id='banner-header-main-section-west-part'>
             <div id='brandingDiv' title="${message(code: 'aurora.areas_label_home_title')}" tabindex='-1'>
-                <a id='branding' aria-label="${message(code: 'aurora.areas_label_home_description')}"
-                   alt="${message(code: 'aurora.areas_label_branding')}" href='javascript:void(0);'
-                    class='institutionalBranding'></a>
+                <a id='branding' aria-label="${message(code: 'aurora.areas_label_home_description')}" href='javascript:void(0);'
+                   class='institutionalBranding'><img id='brandingImage' src='../assets/eds/logo.svg' alt="${message(code: 'aurora.areas_label_branding')}"></a>
             </div>
         </div>
     </header>
